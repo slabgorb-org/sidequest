@@ -18,7 +18,7 @@ stories:
     completed: '2026-05-02'
   - id: 47-2
     title: Magic Phase 4 — Playtest smoke verification (AC1-AC5)
-    description: "Followup to 47-1. Manual 10-turn Coyote Star smoke deferred during 47-1 (Option 2: defer-with-followup). Requires Keith at the keyboard. Run plan Task 4.5 cut-point: innate working with cost (AC1), item working (AC1), threshold-cross to Bleeding through (AC1+AC2), save/load roundtrip (AC3), DEEP_RED-triggering working (AC4+AC5). Dashboard verified via 'just otel'. Captures playgroup-quality observations beyond the 7 automated tests in PR #183. See sprint/archive/47-1-session.md for full smoke runbook + Reviewer's mandatory follow-up #1."
+    description: "BLOCKED on 47-9 (do not start until 47-9 lands). Forensic audit 2026-05-07 found magic subsystem fires zero innate workings across 7 saves / 111 turns despite 5-6 playtests since this story opened — verification-of-nothing is not useful. 47-9 makes magic surfacing proactive on innate-active worlds. After 47-9 merges: original Phase 4 cut-point smoke runbook applies — innate working with cost (AC1), item working (AC1), threshold-cross to Bleeding through (AC1+AC2), save/load roundtrip (AC3), DEEP_RED-triggering working (AC4+AC5). Dashboard verified via 'just otel'. Requires Keith at the keyboard. See sprint/archive/47-1-session.md for full smoke runbook + Reviewer's mandatory follow-up #1."
     points: 1
     priority: p2
     status: backlog
@@ -94,3 +94,19 @@ stories:
     repos: server,content
     workflow: bdd
     type: chore
+  - id: 47-9
+    title: Magic — force first innate_v1 firing on Coyote Star with GM-panel observability
+    description: 'Magic subsystem is wired end-to-end but never invoked: 1 working_log entry across 7 saves / 111 turns. Architect audit (2026-05-07) found the wiring is intact — the narrator prompt is reactive ("emit magic_working when prose depicts a working") with no proactive trigger to depict one. innate_v1 has fired zero times because nothing in the prose flow stresses a character into reflexive surfacing. Fix: make magic surfacing PROACTIVE on innate-active worlds via prompt strengthening + a worked example in the <magic-context> block + a scripted innate-firing opening on coyote_star. TDD via headless scenario assertion. Out of scope: caverns_and_claudes magic content gap (independent — story 47-7 owns); learned_v1 plugin (specced, not implemented); organic emission UX tuning (separate iteration). Architect approved: scripted-opening-induced firing is acceptable proof for 47-1 Phase 4 cut-point closure. UNBLOCKS: 47-2 (smoke verification) and 47-5 (multiplayer playtest).'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    acceptance_criteria:
+      - innate_v1 worked example block injected into <magic-context> prompt zone via context_builder.py when innate_v1 ∈ active_plugins (one paragraph showing stress → reflexive surfacing → sanity cost → magic_working JSON shape)
+      - "Narrator's CRITICAL MAGIC RULE rewritten in narrator.py to be plugin-aware and proactive: on innate-active worlds, every PC action under stress MUST consider whether reflexive innate flavor surfaces, with a debit applied"
+      - coyote_star opening line in openings.yaml scripted to stage an inevitable innate working on turn 1 (PC under immediate stress, innate surfaces, sanity bar debits)
+      - 'Headless playtest scenario at scenarios/ asserts: at least one magic.working OTEL span emitted with plugin=innate_v1 in the first 5 turns'
+      - Same scenario asserts working_log length ≥ 1 and character sanity bar value < 1.0 after the scripted opening turn (proves cost was debited, not just narrated)
+      - GM dashboard (just otel) verified to display the magic.working span with plugin, actor, costs_debited, and ledger_after fields populated
+      - Save/load roundtrip preserves magic_state.working_log and ledger bar values (regression check; AC3 from 47-1)
