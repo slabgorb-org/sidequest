@@ -99,7 +99,8 @@ stories:
     description: 'Magic subsystem is wired end-to-end but never invoked: 1 working_log entry across 7 saves / 111 turns. Architect audit (2026-05-07) found the wiring is intact — the narrator prompt is reactive ("emit magic_working when prose depicts a working") with no proactive trigger to depict one. innate_v1 has fired zero times because nothing in the prose flow stresses a character into reflexive surfacing. Fix: make magic surfacing PROACTIVE on innate-active worlds via prompt strengthening + a worked example in the <magic-context> block + a scripted innate-firing opening on coyote_star. TDD via headless scenario assertion. Out of scope: caverns_and_claudes magic content gap (independent — story 47-7 owns); learned_v1 plugin (specced, not implemented); organic emission UX tuning (separate iteration). Architect approved: scripted-opening-induced firing is acceptable proof for 47-1 Phase 4 cut-point closure. UNBLOCKS: 47-2 (smoke verification) and 47-5 (multiplayer playtest).'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-07'
     repos: server,content
     workflow: tdd
     acceptance_criteria:
@@ -110,3 +111,4 @@ stories:
       - Same scenario asserts working_log length ≥ 1 and character sanity bar value < 1.0 after the scripted opening turn (proves cost was debited, not just narrated)
       - GM dashboard (just otel) verified to display the magic.working span with plugin, actor, costs_debited, and ledger_after fields populated
       - Save/load roundtrip preserves magic_state.working_log and ledger bar values (regression check; AC3 from 47-1)
+    completed: '2026-05-07'
