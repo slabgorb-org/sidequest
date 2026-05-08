@@ -281,7 +281,15 @@ Two new spans in `sidequest-server/sidequest/telemetry/spans/combat.py`:
 
 Both fire on every relevant call, never suppressed. Missing spans → GM panel shows the subsystem isn't engaged → bug.
 
-### 4.7 — Out of Dev story scope
+### 4.7 — Narrator prompt zone invariant
+
+The narrator improvises actions outside the schema unless told not to. Add a one-line invariant to the per-turn prompt zone (per ADR-009 attention-aware zones; near the existing turn-context block):
+
+> "The player's available actions for this turn are listed above. Do not narrate actions outside that list as performed."
+
+This is a single-line prompt edit in the narrator agent's context-builder. Belongs in this Dev story, not as content authoring — the prompt template lives in server code.
+
+### 4.8 — Out of Dev story scope
 
 - Memorization wiring (story #2 — separate; this story creates the seam at §4.5).
 - New confrontation types (chase, negotiation untouched in v1).
@@ -376,7 +384,8 @@ Each row records a decision made during brainstorming, with the alternative and 
 - B/X D&D Basic Set Rulebook (Moldvay 1981) — `~/Downloads/D&D_Basic_Set_Rulebook_(B_X_ed.)_(Basic).pdf`. Morale: B27 (Optional). Class abilities: B9–B10. Monster reactions: B24.
 - ADR-039 — Narrator Structured Output (JSON Sidecar Block). Used by `intimidated` trigger.
 - ADR-033 — Confrontation engine + resource pools. Foundation for the existing combat ConfrontationDef.
-- ADR-067 — Unified Narrator Agent. Narrator prompt zone modification (Risks §6) lives here.
+- ADR-067 — Unified Narrator Agent. Narrator prompt zone modification (§4.7) lives here.
+- ADR-009 — Attention-aware prompt zones. Insertion point for the §4.7 invariant.
 - `sidequest-server/sidequest/genre/models/rules.py` — BeatDef, MetricDef, ConfrontationDef.
 - `sidequest-server/sidequest/genre/models/character.py` — ClassDef, NpcArchetype.
 - `sidequest-content/genre_packs/caverns_and_claudes/rules.yaml` — confrontations + class config.
