@@ -690,10 +690,13 @@ stories:
       and was not the choice made in 45-11.
     points: 1
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-09'
     repos: server
     workflow: trivial
+    completed: '2026-05-09'
     type: chore
+    review_verdict: approved
   - id: 45-35
     title: Remove legacy chargen HP system (post-EdgePool migration)
     description: |-
