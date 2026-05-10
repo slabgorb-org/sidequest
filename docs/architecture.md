@@ -3,7 +3,13 @@
 > System design for the SideQuest AI Narrator engine.
 > Python package composition, narrator-primary agent model, three turn modes.
 >
-> **Last updated:** 2026-04-28 (LocalDM preprocessor moved off live turn path)
+> **Last updated:** 2026-05-10
+> - 2026-04-28: LocalDM preprocessor moved off live turn path
+> - 2026-05-02: Narrator streaming pipeline built end-to-end (dormant behind `SIDEQUEST_NARRATOR_STREAMING=0`, ADR-066)
+> - 2026-05-07: Magic prompt made plugin-aware proactive on innate-active worlds
+> - 2026-05-08: Daemon music tier wired via ACE-Step (ADR-095)
+> - 2026-05-09: Cavern renderer revival (ADR-096, partial — Python port of maze-maker Cellular)
+> - 2026-05-10: Class mechanical surface — Lv1 abilities tab + Fighter Taunt (ADR-095 class-side)
 
 ## Architectural Layers
 
@@ -56,13 +62,13 @@
 │  Genre Layer         │ │           Persistence Layer                 │
 │  (sidequest.genre)   │ │  sqlite3 (saves), PyYAML (genre packs)     │
 │  YAML pack loader    │ │  Narrative log, KnownFact accumulation     │
-│  6 genre packs       │ │  sidequest.game.persistence                │
+│  5 live genre packs       │ │  sidequest.game.persistence                │
 └──────────────────────┘ └────────────────────────────────────────────┘
 
          ┌────────────────────────────────────────────────────────────┐
          │              Daemon Client (sidequest.daemon_client)        │
          │  Unix socket → sidequest-daemon (Python sidecar)           │
-         │  Image gen (Flux / Z-Image), music (ACE-Step), SFX mixing  │
+         │  Image gen (Z-Image MLX), music (ACE-Step, operator-triggered), SFX │
          └────────────────────────────────────────────────────────────┘
 ```
 
@@ -116,7 +122,7 @@ Each WebSocket connection runs as an asyncio task owning a `Session`. Single-pla
 
 ### ADR-004: Genre Packs as YAML
 
-6 genre packs loaded via PyYAML into pydantic models. Read-only at runtime. Shared with the `sidequest-content` repo as single source of truth. Each pack defines: world topology, NPC archetypes (with OCEAN profiles), item catalogs, trope definitions, audio themes, visual style, conlang morphemes, and faction agendas. Layered inheritance between genre and world tiers is handled via a base-class pattern in `sidequest.genre.models`.
+5 live genre packs loaded via PyYAML into pydantic models. Read-only at runtime. Shared with the `sidequest-content` repo as single source of truth. Each pack defines: world topology, NPC archetypes (with OCEAN profiles), item catalogs, trope definitions, audio themes, visual style, conlang morphemes, and faction agendas. Layered inheritance between genre and world tiers is handled via a base-class pattern in `sidequest.genre.models`.
 
 ### ADR-005: Background-First Pipeline
 
@@ -229,8 +235,9 @@ The ML inference pipeline is its own service. `sidequest.daemon_client` communic
 
 | Subsystem | Stack | Notes |
 |-----------|-------|-------|
-| Image generation | Flux.1 / Z-Image Turbo, MLX | Multiple render tiers, scene cache, beat filter |
-| Music library | ACE-Step pre-render | Mood-indexed theme tracks, cross-fade on scene change |
+| Image generation | Z-Image Turbo via MLX (`zimage_mlx_worker.py`, ADR-070) | Composition tiers per ADR-086 (portrait / POI / illustration); no negative prompts |
+| Music generation | ACE-Step, operator-triggered (ADR-095) | Per-track `*_input_params.json` in sidequest-content is canonical; daemon produces OGG → R2 |
+| Cavern maps | Python-ported Cellular (ADR-096, partial) | Pre-rendered tactical maps; replaces failed SVG-from-ASCII renderer (ADR-071 retired) |
 | Audio mixing | pygame mixer | Music + SFX channels only (no voice/TTS) |
 | Scene interpretation | Pattern matching | Narrative text → structured stage cues |
 | Subject extraction | Claude CLI | Prose → visual descriptions |

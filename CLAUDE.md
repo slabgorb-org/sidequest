@@ -50,25 +50,34 @@ orc-quest/                    # This repo (orchestrator, also cloned as oq-1 / o
 └── justfile                  # Cross-repo task runner
 
 sidequest-content/            # Genre packs — single source of truth (subrepo)
-├── genre_packs/
-│   ├── caverns_and_claudes/
-│   ├── elemental_harmony/
-│   ├── heavy_metal/
-│   ├── mutant_wasteland/
-│   ├── space_opera/
-│   ├── spaghetti_western/
-│   └── <genre>/worlds/<world>/
+├── genre_packs/              # Live, wired packs (5: caverns_and_claudes, elemental_harmony,
+│   │                         #   mutant_wasteland, space_opera, victoria)
+│   └── <genre>/worlds/<world>/   # World-specific overrides
+├── genre_workshopping/       # Pre-wired packs in design (heavy_metal, low_fantasy,
+│                             #   neon_dystopia, pulp_noir, road_warrior, spaghetti_western)
+├── corpus/                   # Conlang word lists per culture (ADR-091)
+├── tools/                    # Pack authoring tooling
+├── PROMPTING_Z_IMAGE.md      # Z-Image prompting guide
+├── README.md
 └── CLAUDE.md
 
 sidequest-server/             # Python FastAPI backend (subrepo, uv-managed)
 ├── sidequest/
 │   ├── agents/               # Claude CLI subprocess orchestration (narrator; LocalDM preprocessor dormant per 2026-04-28 spec)
-│   ├── cli/                  # Standalone CLIs (encountergen, loadoutgen, namegen, promptpreview, validate)
+│   ├── audio/                # Server-side music + SFX coordination
+│   ├── cli/                  # Standalone CLIs (encountergen, loadoutgen, namegen, validate, corpus*)
+│   ├── corpus/               # Conlang corpus + Markov naming (ADR-091)
 │   ├── daemon_client/        # Client for Python media daemon
-│   ├── game/                 # State, characters, encounters, tropes, turns, persistence
+│   ├── game/                 # State, characters, encounters, tropes, turns, persistence (~70 modules)
 │   ├── genre/                # YAML genre pack loader
-│   ├── protocol/             # GameMessage, typed payloads (pydantic)
-│   ├── server/               # FastAPI app, WebSocket, dispatch, sessions
+│   ├── handlers/             # Per-message-type dispatch handlers
+│   ├── interior/             # Room / interior state
+│   ├── magic/                # Magic system mechanics
+│   ├── media/                # Image generation orchestration (daemon client wrapper)
+│   ├── orbital/              # Orbital / space-scene mechanics
+│   ├── protocol/             # GameMessage, typed payloads (pydantic v2)
+│   ├── renderer/             # Render scheduling + throttle (ADR-050)
+│   ├── server/               # FastAPI app, WebSocket, dispatch, sessions, watcher
 │   └── telemetry/            # OTEL span definitions and watcher hooks
 ├── tests/
 └── pyproject.toml
@@ -76,23 +85,30 @@ sidequest-server/             # Python FastAPI backend (subrepo, uv-managed)
 sidequest-ui/                 # React frontend (subrepo)
 ├── src/
 │   ├── __tests__/
-│   ├── audio/                # Music + SFX playback (no TTS)
-│   ├── components/
-│   ├── dice/                 # 3D dice overlay (Three.js + Rapier)
-│   ├── hooks/
+│   ├── assets/               # Static assets (icons, fonts)
+│   ├── audio/                # Music + SFX playback (no TTS, post-2026-04)
+│   ├── components/           # GameBoard, NarrationCards, PartyPanel, Dashboard/, etc.
+│   ├── dice/                 # 3D dice overlay (Three.js + Rapier, ADR-075)
+│   ├── hooks/                # useWebSocket, useGameSocket, useStateMirror, useGenreTheme, etc.
 │   ├── lib/
-│   ├── providers/
-│   ├── screens/
+│   ├── providers/            # GameState, ImageBus, Theme
+│   ├── screens/              # ConnectScreen, CharacterCreation, NarrativeView
 │   ├── styles/
-│   └── types/
+│   └── types/                # WebSocket payload TypeScript definitions
 └── package.json
 
 sidequest-daemon/             # Python media services (subrepo)
 ├── sidequest_daemon/         # Package root
-│   ├── genre/
-│   ├── media/                # Flux / Z-Image image pipeline + ACE-Step music_pipeline
-│   ├── ml/
-│   └── renderer/
+│   ├── audio/                # pygame-ce mixer (music + SFX, no TTS)
+│   ├── genre/                # Genre pack model subset (VisualStyle, AudioConfig)
+│   ├── media/
+│   │   ├── workers/          # zimage_mlx_worker.py — sole runtime image worker (ADR-070)
+│   │   ├── music_pipeline.py # ACE-Step → ffmpeg → R2 (ADR-095, operator-triggered)
+│   │   ├── prompt_composer.py, subject_extractor.py, recipes.py, ...
+│   │   └── daemon.py         # Unix socket server + CLI entry
+│   ├── ml/                   # GPU memory management (ADR-046)
+│   ├── renderer/             # Data models (StageCue, RenderTier, RenderResult)
+│   └── scene_interpreter.py
 ├── tests/
 └── pyproject.toml
 ```
