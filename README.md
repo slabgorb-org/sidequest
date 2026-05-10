@@ -18,12 +18,12 @@ Multiplayer with submit-and-wait turn barriers, perception rewriting, and collab
 │sidequest-    │ │sidequest- │ │sidequest-    │ │sidequest-      │
 │server (Py)   │ │  ui (TS)  │ │daemon (Py)   │ │content         │
 │              │ │           │ │              │ │                │
-│ FastAPI +    │ │ React 19  │ │ Z-Image /    │ │ Genre pack     │
-│ uvicorn      │ │ client    │ │ Flux image   │ │ YAML + audio   │
-│ WebSocket    │ │ Audio     │ │ renderer     │ │ + images       │
-│ Narrator     │ │ engine    │ │ ACE-Step     │ │                │
-│ subprocess   │ │ 3D dice   │ │ music + SFX  │ │ 8 genre packs  │
-│ (claude -p)  │ │ overlay   │ │ mixer        │ │                │
+│ FastAPI +    │ │ React 19  │ │ Z-Image      │ │ Genre pack     │
+│ uvicorn      │ │ client    │ │ (MLX)        │ │ YAML + audio   │
+│ WebSocket    │ │ Audio     │ │ renderer     │ │ params + LFS   │
+│ Narrator     │ │ engine    │ │ ACE-Step     │ │ images         │
+│ subprocess   │ │ 3D dice   │ │ music tier   │ │ 5 live packs   │
+│ (claude -p)  │ │ overlay   │ │ + SFX mixer  │ │ + workshopping │
 └──────────────┘ └───────────┘ └──────────────┘ └────────────────┘
        ▲              │              ▲
        │  WebSocket   │   Unix sock  │
@@ -76,21 +76,24 @@ and [`scenarios/`](scenarios/) for headless playtest YAML driven by `just playte
 
 ## Genre Packs
 
-Eight narrative worlds, each with its own rules, tropes, character creation, audio, visual
-style, faction agendas, OCEAN personality archetypes, and conlang morphemes:
+Five narrative packs are live and wired into the runtime, each with its own
+rules, tropes, character creation, audio, visual style, faction agendas, OCEAN
+personality archetypes, and conlang morphemes:
 
 | Pack | Theme |
 |------|-------|
-| **caverns_and_claudes** | High fantasy dungeon crawl |
+| **caverns_and_claudes** | High fantasy dungeon crawl (meta-humor on D&D tropes) |
 | **elemental_harmony** | Martial arts / elemental magic |
-| **heavy_metal** | Apocalyptic metal opera |
-| **mutant_wasteland** | Post-apocalyptic mutants |
-| **space_opera** | Sci-fi space adventure |
-| **spaghetti_western** | Dusty frontier / outlaw west |
-| **victoria** | Brontë-flavored gaslamp gothic (social-first) |
+| **mutant_wasteland** | Post-apocalyptic mutants (world `flickering_reach` fully spoilable) |
+| **space_opera** | Sci-fi space adventure (world `coyote_star`) |
+| **victoria** | Brontë-flavored gaslamp gothic, drawing-room intrigue (no swords, no starships; tunable occult) |
 
-Genre packs live in `sidequest-content/genre_packs/` and are loaded via the
-`SIDEQUEST_GENRE_PACKS` env var. See
+Workshopping packs (not yet wired) live in
+`sidequest-content/genre_workshopping/` — heavy_metal, low_fantasy,
+neon_dystopia, pulp_noir, road_warrior, spaghetti_western at various levels
+of completeness.
+
+Genre packs are loaded via the `SIDEQUEST_GENRE_PACKS` env var. See
 [`docs/genre-pack-status.md`](docs/genre-pack-status.md) for per-pack completeness.
 
 ## How It Works
