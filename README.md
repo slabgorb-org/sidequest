@@ -1,9 +1,11 @@
 # SideQuest — AI Dungeon Master
 
-An AI narrator engine that runs tabletop-style RPGs in any genre, powered by a persistent
-Claude narrator. Players connect via browser, create characters through genre-driven
-scenes, and explore procedural worlds with real-time image generation and adaptive music.
-Multiplayer with submit-and-wait turn barriers, perception rewriting, and collaborative peer-action visibility (see ADR-036).
+An AI narrator engine that runs tabletop-style RPGs in any genre, powered by a Claude
+narrator invoked stateless per turn (ADR-098). Players connect via browser, create
+characters through genre-driven scenes, and explore procedural worlds with real-time
+image generation, streaming narration, adaptive music, and pre-rendered tactical maps.
+Multiplayer with submit-and-wait turn barriers, perception rewriting, live teammate
+typing, and collaborative peer-action visibility (see ADR-036).
 
 ## Repository Ecosystem
 
@@ -99,27 +101,43 @@ Genre packs are loaded via the `SIDEQUEST_GENRE_PACKS` env var. See
 ## How It Works
 
 1. **Player connects** via WebSocket from the React client
-2. **Character creation** flows through genre-driven scenes (choices + freeform text)
+2. **Character creation** flows through genre-driven scenes (choices + freeform text);
+   the C&C pack offers a visible-dice flow with arrange + story steps and four classic
+   B/X classes (fighter / mage / cleric / thief)
 3. **Each turn:** player action → narrator dispatch → state patch → narration broadcast
-4. **Unified narrator** (per [ADR-067](docs/adr/067-unified-narrator-agent.md)) handles
-   all intents via a persistent Opus session; auxiliary agents (world_builder, troper,
-   resonator) run for specialist tasks, all via `claude -p` subprocess
-   ([ADR-001](docs/adr/001-claude-cli-only.md))
-5. **Media pipeline:** narration triggers image generation and mood-based music in
-   parallel — background-first, only text is critical path
-   ([ADR-005](docs/adr/005-background-first-pipeline.md))
-6. **Pacing engine:** dual-track TensionTracker produces `drama_weight` (0.0–1.0) →
+4. **Unified narrator** (per [ADR-067](docs/adr/067-unified-narrator-agent.md), invoked
+   stateless per turn per [ADR-098](docs/adr/098-stateless-narrator-turns.md)) handles
+   all intents through a single bounded `claude -p` invocation
+   ([ADR-001](docs/adr/001-claude-cli-only.md)). Auxiliary subsystem agents
+   (chassis_voice, distinctive_detail, npc_agency, reflect_absence) run topologically
+   off the live turn critical path. Narration streams live to the client by default
+   (`SIDEQUEST_NARRATOR_STREAMING=1`)
+5. **Media pipeline:** narration triggers Z-Image MLX renders and mood-based audio
+   cues in parallel — background-first, only text is critical path
+   ([ADR-005](docs/adr/005-background-first-pipeline.md)). Renders and music both
+   upload to R2; pre-rendered cellular caverns ship as PNG tactical maps (ADR-096).
+   Music is generated on operator command via `scripts/generate_music.py` (ADR-095)
+6. **Magic system** (Epic 47): three plugins live — `innate_v1`, `item_legacy_v1`, and
+   `learned_v1` (Vancian memorization for C&C). Ledger bars track per-character magic
+   state; five wired confrontations resolve through Phase-5 sealed-letter lookup
+7. **Pacing engine:** dual-track TensionTracker produces `drama_weight` (0.0–1.0) →
    controls narration length, delivery speed, beat escalation, and media render gating
-7. **World systems:** faction agendas inject per-turn, trope engine drives narrative arcs,
-   world materialization tracks campaign maturity
-8. **NPC personality:** OCEAN Big Five profiles shape NPC dialogue and behavior, shifting
+8. **World systems:** faction agendas inject per-turn, trope engine drives narrative arcs,
+   world materialization tracks campaign maturity, orbital chart drives space-scene
+   navigation (ADR-094)
+9. **NPC personality:** OCEAN Big Five profiles shape NPC dialogue and behavior, shifting
    over time from game events
-9. **Knowledge:** KnownFacts accumulate from play, lore fragments seed from genre packs,
-   conlang names generated from morpheme glossaries
-   ([ADR-091](docs/adr/091-culture-corpus-markov-naming.md))
-10. **Multiplayer:** submit-and-wait turn barriers with adaptive timeout, three turn modes
-    (FREE_PLAY / STRUCTURED / CINEMATIC), collaborative peer-action visibility, perception rewriting
-    (see ADR-036 for the visibility doctrine; sealed/hidden-submission mode is reserved for PvP)
+10. **Knowledge:** KnownFacts accumulate from play with footnoted narrator callbacks,
+    Knowledge Journal supports keyword filtering, lore fragments seed from genre packs,
+    conlang names generated from culture corpora via Markov
+    ([ADR-091](docs/adr/091-culture-corpus-markov-naming.md))
+11. **Combat:** Edge / Composure on `CreatureCore` replaces HP across the codebase
+    (ADR-078); 3D dice (Three.js + Rapier) render inline in the confrontation overlay
+12. **Multiplayer:** submit-and-wait turn barriers with adaptive timeout, Cinematic
+    mode as the live default (FREE_PLAY available; STRUCTURED dead code), collaborative
+    peer-action visibility with live teammate typing via `ACTION_REVEAL`, perception
+    rewriting (see ADR-036 for the visibility doctrine; sealed-visibility mode is
+    reserved for PvP and not yet implemented)
 
 ## Server Module Layout
 
