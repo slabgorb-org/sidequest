@@ -25,6 +25,7 @@ server *flags:
     cd {{root}}/sidequest-server
     SIDEQUEST_GENRE_PACKS={{content}} \
     SIDEQUEST_RENDER_ENABLED=1 \
+    SIDEQUEST_NARRATOR_STREAMING="${SIDEQUEST_NARRATOR_STREAMING:-1}" \
     SIDEQUEST_ASSET_BASE_URL="${SIDEQUEST_ASSET_BASE_URL:-https://cdn.slabgorb.com}" \
         uv run uvicorn sidequest.server.app:create_app \
             --factory --reload --host 127.0.0.1 --port 8765 {{flags}} 2>&1 \
@@ -50,6 +51,7 @@ serve *flags:
     cd {{root}}/sidequest-server
     SIDEQUEST_GENRE_PACKS={{content}} \
     SIDEQUEST_RENDER_ENABLED=1 \
+    SIDEQUEST_NARRATOR_STREAMING="${SIDEQUEST_NARRATOR_STREAMING:-1}" \
     SIDEQUEST_ASSET_BASE_URL="${SIDEQUEST_ASSET_BASE_URL:-https://cdn.slabgorb.com}" \
     SIDEQUEST_UI_DIST={{root}}/sidequest-ui/dist \
         uv run uvicorn sidequest.server.app:create_app \
