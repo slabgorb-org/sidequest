@@ -96,9 +96,11 @@ stories:
     title: Ratification gate for narrator_invented NPCs before npc_registry promotion
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-12'
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-05-12'
   - id: 49-7
     title: Confrontation panel — project per-PC beats to UI (server-side filter on the outbound)
     description: |-
