@@ -81,10 +81,14 @@ stories:
       present (separate PR if needed).
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-12'
     repos: server
     workflow: tdd
+    completed: '2026-05-12'
     type: chore
+    review_findings: 4 HIGH + 8 MEDIUM + 2 LOW. Two regression guards don't guard (wiring is string-grep; AC1 stateless never captures messages body). Late import + unvalidated negative baseline in operator script. 4 doc/comment lies. Production code clean; rework is test+script+doc only. See session Reviewer Assessment for fix list.
+    review_verdict: approved
   - id: 48-3
     title: 'Run sidequest-train on accumulated corpus + close MLX→Ollama serving gap (Group F)'
     description: |
