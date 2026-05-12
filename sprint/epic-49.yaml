@@ -136,9 +136,13 @@ stories:
       `011-donut-confrontation-tab.png`, `012-katia-confrontation-tab.png`.
     points: 3
     priority: p1
-    status: backlog
+    status: in_progress
+    started: '2026-05-12'
+    assigned_to: dev
     repos: sidequest-server,sidequest-ui
     workflow: tdd
+    session: .session/49-7-session.md
+    branch: feat/49-7-confrontation-panel-per-pc-beats
     acceptance_criteria:
       - "Refactor `build_confrontation_payload` (or add a sibling) to take a `recipient_pc` context — class_def, spell_slots_remaining, prepared_spells — and emit a payload whose `beats` field is the result of `beats_available_for(cdef, class_def, slots, prepared)`. Opponent-side beat selection in the narrator prompt is unaffected (continues to see all beats via the existing narrator.py:297 listing)."
       - "In `server/websocket_session_handler.py` around line 3085, replace the single-emit broadcast with a per-recipient loop: for each connected player in `self._room.connected_player_ids()`, resolve `(class_def, spell_slots, prepared_spells)` from session state, build the per-recipient payload, and emit a recipient-targeted CONFRONTATION message. Same change for the `mid_turn_payload` path at `server/dispatch/dice.py:504` and the `yield_action` handler emits at `handlers/yield_action.py:140,176`. All five build sites must move to per-recipient (audit with grep before declaring done — `build_confrontation_payload\\|build_clear_confrontation_payload`)."
