@@ -13,6 +13,8 @@ completed_epics:
   - '42'
   - '44'
   - '49'
+  - '45'
+  - '47'
 completed_stories:
   - id: 39-1
     epic: '39'
@@ -129,3 +131,313 @@ completed_stories:
     title: Narration projection — fill _visibility sidecar + 2nd-person swap on POV-anchor recipient
     points: 5
     completed: '2026-05-12'
+  - id: 45-1
+    epic: '45'
+    title: "Sealed-letter world-state handshake — shared-world delta between turns (port-drift re-scope of 37-37)"
+    points: 5
+    completed: '2026-04-27'
+  - id: 45-2
+    epic: '45'
+    title: "Turn barrier counts active turn-takers, not lobby connections (was 37-42)"
+    points: 3
+    completed: '2026-04-27'
+  - id: 45-3
+    epic: '45'
+    title: "Momentum readout state sync — UI subscribes to BEAT_RESOLVED (was 37-32)"
+    points: 2
+    completed: '2026-04-28'
+  - id: 45-4
+    epic: '45'
+    title: "Strip {{generated at session start}} placeholder leaks from world history.yamls (split from 37-40 sub-3)"
+    points: 1
+    completed: '2026-04-27'
+  - id: 45-5
+    epic: '45'
+    title: "Stale-slot reuse on session reinit blocks turn 1 (split from 37-40 sub-1)"
+    points: 3
+    completed: '2026-04-28'
+  - id: 45-6
+    epic: '45'
+    title: "Chargen partial-completion path leaves resolved_archetype=NULL (split from 37-40 sub-2)"
+    points: 2
+    completed: '2026-04-28'
+  - id: 45-7
+    epic: '45'
+    title: "Race-aware character description template (split from 37-40 sub-4)"
+    points: 2
+    completed: '2026-04-28'
+  - id: 45-8
+    epic: '45'
+    title: "Notorious-party gating on session player_count (split from 37-40 sub-5)"
+    points: 2
+    completed: '2026-04-28'
+  - id: 45-9
+    epic: '45'
+    title: "total_beats_fired counter increments on every beat fire + OTEL (split from 37-38 sub-1)"
+    points: 1
+    completed: '2026-04-28'
+  - id: 45-10
+    epic: '45'
+    title: "Scrapbook backfill detection on save resume (split from 37-38 sub-3)"
+    points: 2
+    completed: '2026-04-28'
+  - id: 45-11
+    epic: '45'
+    title: "turn_manager.round invariant against narrative_log.max_round (split from 37-38 sub-4)"
+    points: 2
+    completed: '2026-04-28'
+  - id: 45-12
+    epic: '45'
+    title: "Chargen double-init dedup of starting kit (split from 37-39 sub-1)"
+    points: 2
+    completed: '2026-04-28'
+  - id: 45-13
+    epic: '45'
+    title: "Container/object retrieved-state on room re-entry (split from 37-39 sub-3)"
+    points: 2
+    completed: '2026-04-29'
+  - id: 45-14
+    epic: '45'
+    title: "Discarded weapon transitions out of state=Carried (split from 37-39 sub-4)"
+    points: 1
+    completed: '2026-04-28'
+  - id: 45-15
+    epic: '45'
+    title: "Consumed-state items removed from inventory (split from 37-39 sub-5)"
+    points: 1
+    completed: '2026-04-28'
+  - id: 45-16
+    epic: '45'
+    title: "Reject non-room entries from discovered_regions (split from 37-41 sub-2)"
+    points: 1
+    completed: '2026-04-29'
+  - id: 45-17
+    epic: '45'
+    title: "Region slug normalization at write (split from 37-41 sub-3)"
+    points: 2
+    completed: '2026-04-29'
+  - id: 45-18
+    epic: '45'
+    title: "encounter.actors registers all combatants, not just player (split from 37-41 sub-4)"
+    points: 2
+    completed: '2026-04-28'
+  - id: 45-19
+    epic: '45'
+    title: "world_history arcs extend past turn 30 (split from 37-41 sub-5)"
+    points: 3
+    completed: '2026-04-30'
+  - id: 45-20
+    epic: '45'
+    title: "Resolved tropes write quest_log entry + active_stakes update (split from 37-41 sub-6)"
+    points: 2
+    completed: '2026-04-30'
+  - id: 45-21
+    epic: '45'
+    title: "NPC registry HP/max_hp populated from combat stats (split from 37-41 sub-7)"
+    points: 2
+    completed: '2026-04-28'
+  - id: 45-22
+    epic: '45'
+    title: "Player turns logged with author=player (split from 37-41 sub-8)"
+    points: 1
+    completed: '2026-04-29'
+  - id: 45-23
+    epic: '45'
+    title: "world_history arc embedding pipeline writes back to narrative_log/lore (split from 37-41 sub-9)"
+    points: 3
+    completed: '2026-04-30'
+  - id: 45-24
+    epic: '45'
+    title: "Retry button aria-describedby on slug-mode metadata-error (was 37-50)"
+    points: 1
+    completed: '2026-05-02'
+  - id: 45-25
+    epic: '45'
+    title: "Replace 300ms setTimeout with effect-based readyState=OPEN wait (was 37-51)"
+    points: 2
+    completed: '2026-04-29'
+  - id: 45-26
+    epic: '45'
+    title: "Delete legacy /api/saves/* endpoints + (genre, world, player) save-path helper (was 37-52)"
+    points: 2
+    completed: '2026-05-01'
+  - id: 45-27
+    epic: '45'
+    title: "Trope progression cooldown + simultaneous-active cap (was 37-43)"
+    points: 3
+    completed: '2026-05-04'
+  - id: 45-28
+    epic: '45'
+    title: "Markov namegen min-pool guard + thin-corpus audit (was 37-45)"
+    points: 3
+    completed: '2026-04-29'
+  - id: 45-29
+    epic: '45'
+    title: "Daemon span-context per-call art_style scoping (was 37-34)"
+    points: 2
+    completed: '2026-05-04'
+  - id: 45-30
+    epic: '45'
+    title: "Render trigger policy contract + OTEL render.trigger reasons (was 37-46)"
+    points: 3
+    completed: '2026-05-02'
+  - id: 45-31
+    epic: '45'
+    title: "Daemon worker heartbeat + render-unavailable degradation (was 37-47)"
+    points: 5
+    completed: '2026-05-03'
+  - id: 45-32
+    epic: '45'
+    title: Post-review cleanup for 45-2 (test docstrings, lint, vacuous assertion, framing)
+    points: 1
+    completed: '2026-05-04'
+  - id: 45-33
+    epic: '45'
+    title: Sealed-letter bypass test + empty-fallback intent for 45-18
+    points: 2
+    completed: '2026-05-04'
+  - id: 45-34
+    epic: '45'
+    title: ADR-051 amendment + architecture.md update for 45-11 lockstep collapse
+    points: 1
+    completed: '2026-05-09'
+  - id: 45-35
+    epic: '45'
+    title: Remove legacy chargen HP system (post-EdgePool migration)
+    points: 3
+    completed: '2026-04-28'
+  - id: 45-36
+    epic: '45'
+    title: 45-10 follow-up — reviewer cleanup (logger, vacuous test, doc fixes)
+    points: 1
+    completed: '2026-05-05'
+  - id: 45-37
+    epic: '45'
+    title: Image pipeline silent-fallback teardown — kill SF1-SF7 + render.completed lie detector
+    points: 8
+    completed: '2026-04-29'
+  - id: 45-38
+    epic: '45'
+    title: Z-Image config — add high-fidelity tier (base 1.0) for genre-pack pre-gen
+    points: 3
+    completed: '2026-04-30'
+  - id: 45-39
+    epic: '45'
+    title: Worker swap — load base z-image when SIDEQUEST_DAEMON_FIDELITY=high_fidelity
+    points: 2
+    completed: '2026-04-30'
+  - id: 45-40
+    epic: '45'
+    title: Course overlay aesthetic alignment with Star Wars HUD palette
+    points: 2
+    completed: '2026-05-03'
+  - id: 45-41
+    epic: '45'
+    title: OTEL exporter not flowing — Jaeger registered but receives 0 spans (ADR-090 partial)
+    points: 3
+    completed: '2026-05-04'
+  - id: 45-42
+    epic: '45'
+    title: Confrontation difficulty calibration v1 (ADR-093)
+    points: 3
+    completed: '2026-05-04'
+  - id: 45-43
+    epic: '45'
+    title: Orrery v2 visual restoration — match design source
+    points: 5
+    completed: '2026-05-04'
+  - id: 45-45
+    epic: '45'
+    title: Wave 1 — snapshot split-brain dedup & rename (S1+S4+S5)
+    points: 3
+    completed: '2026-05-04'
+  - id: 45-46
+    epic: '45'
+    title: Wave 1 cleanup — drop EncounterTag deprecation alias
+    points: 1
+    completed: '2026-05-12'
+  - id: 45-47
+    epic: '45'
+    title: Snapshot split-brain Wave 2A — NPC pool/state split (S2)
+    points: 8
+    completed: '2026-05-04'
+  - id: 45-48
+    epic: '45'
+    title: Snapshot split-brain Wave 2B — location derivation (S3)
+    points: 5
+    completed: '2026-05-06'
+  - id: 45-49
+    epic: '45'
+    title: R2 media migration Task 17 — LFS strip + token revoke on sidequest-content
+    points: 2
+    completed: '2026-05-09'
+  - id: 45-50
+    epic: '45'
+    title: ADR-066 §8 — narrator session crash recovery (reactive)
+    points: 3
+    completed: '2026-05-04'
+  - id: 45-51
+    epic: '45'
+    title: ADR-066 §7/§9/§10 — proactive narrator session rotation watchdog
+    points: 5
+    completed: '2026-05-12'
+  - id: 45-52
+    epic: '45'
+    title: Wave 2A cleanup — drop NpcRegistryEntry + test repoints + observability counters
+    points: 5
+    completed: '2026-05-12'
+  - id: 45-53
+    epic: '45'
+    title: Recurring NPC presence — narrator emits npcs_met every turn they're onstage
+    points: 3
+    completed: '2026-05-07'
+  - id: 47-1
+    epic: '47'
+    title: Magic Phase 4 — Verification + cut-point smoke (Tasks 4.4-4.5)
+    points: 2
+    completed: '2026-05-02'
+  - id: 47-2
+    epic: '47'
+    title: Magic Phase 4 — Playtest smoke verification (AC1-AC6)
+    points: 1
+    completed: '2026-05-08'
+  - id: 47-3
+    epic: '47'
+    title: Magic Phase 5 — Confrontations Wired (the_standoff, the_salvage, the_bleeding_through, the_quiet_word, the_long_resident)
+    points: 8
+    completed: '2026-05-02'
+  - id: 47-4
+    epic: '47'
+    title: Rig MVP Phase C — the_tea_brew confrontation wiring
+    points: 5
+    completed: '2026-05-03'
+  - id: 47-5
+    epic: '47'
+    title: Magic Phase 6 — multiplayer playgroup playtest + MP stabilization
+    points: 5
+    completed: '2026-05-12'
+  - id: 47-6
+    epic: '47'
+    title: Tea ritual auto-fire — three-layer fix (room matcher, bond rebind, opening hook, OTEL)
+    points: 5
+    completed: '2026-05-04'
+  - id: 47-7
+    epic: '47'
+    title: Magic state bars initialized at world-load + uninit warning span
+    points: 2
+    completed: '2026-05-09'
+  - id: 47-8
+    epic: '47'
+    title: Coyote Object salvage hooks — design (ADR + scenario seed)
+    points: 3
+    completed: '2026-05-12'
+  - id: 47-9
+    epic: '47'
+    title: Magic — force first innate_v1 firing on Coyote Star with GM-panel observability
+    points: 3
+    completed: '2026-05-07'
+  - id: 47-10
+    epic: '47'
+    title: C&C memorization wiring — prepared-list gate, null-stat auto-apply, init seeding, UI panel
+    points: 8
+    completed: '2026-05-09'

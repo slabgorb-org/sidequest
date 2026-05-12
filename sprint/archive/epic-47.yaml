@@ -3,7 +3,7 @@ type: epic
 title: Magic System Coyote Reach v1
 description: 'Coyote Star magic system implementation per docs/superpowers/plans/2026-04-28-magic-system-coyote-reach-v1.md. Phases 1-3 shipped (engine, GameSnapshot integration, narrator integration). Phase 4 (UI) and Phase 5 (confrontations) remain. Phase 6 is multiplayer playtest. Total estimate: 35-50 SP. Unblocks Rig MVP Phase C downstream.'
 priority: p2
-status: in_progress
+status: done
 repos: ui,server,content
 stories:
   - id: 47-1
@@ -101,9 +101,11 @@ stories:
     title: Coyote Object salvage hooks — design (ADR + scenario seed)
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-05-12'
     repos: server,content
     workflow: bdd
+    completed: '2026-05-12'
     type: chore
   - id: 47-9
     title: Magic — force first innate_v1 firing on Coyote Star with GM-panel observability
@@ -146,3 +148,4 @@ stories:
       - 'Smoke playtest: full Sünden delve with Mage and Cleric playable end-to-end; OTEL dashboard observed by Keith; cast economics (slot drain, prepared list accuracy) confirmed at table.'
     completed: '2026-05-09'
     branch: feat/cc-magic-memorization
+completed: '2026-05-12'
