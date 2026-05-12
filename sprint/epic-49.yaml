@@ -45,9 +45,12 @@ stories:
     description: "In the 2026-05-11 Glenross playtest the narrator silently relocated the scene across four different room titles (The Bee Garden → The Manse Garden → Front Parlour → Study → Study → Sickroom Passage) while the canonical state held character_locations[Ziggy]='the_manse' for turns 1-5. State only caught up on turn 6 (Sickroom Passage). game_patch.extracted logs show has_location=False on turns 2-5: narrator wrote new **Room Title** headers in markdown prose without filling the structured location patch field. This is the SOUL.md 'Illusionism' failure mode — narrator and state machine running on different tracks; the GM panel cannot tell where the party actually is. Fix is to parse the narrator's prose for a leading bold room title and (a) auto-fill patch.location when it disagrees with current state, plus (b) emit a loud OTEL span so the GM panel sees the drift catch. Auto-fill instead of fail-loud-and-bail because the cost of blocking a turn is too high — but the OTEL must be loud so we can iterate on the prompt later."
     points: 3
     priority: p1
-    status: backlog
+    status: in_progress
+    started: '2026-05-12'
     repos: sidequest-server
     workflow: tdd
+    session: .session/49-3-session.md
+    branch: feat/49-3-location-patch-enforcement
     acceptance_criteria:
       - In narration_apply (orchestrator.py around line 715 where patch.location is read), if patch.location is empty BUT the narration body starts with a bold markdown header like '**<text>**', extract <text> as the candidate location
       - Compare the candidate against snapshot.party_location(perspective=char_name). If different, auto-fill patch.location with the candidate value and continue applying
