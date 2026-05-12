@@ -59,6 +59,20 @@ Worse, sending `num_ctx` in the request `options` field — even a value within 
 
 This learning applies to ADR-073 / Group E's `OllamaClient` (`sidequest-server`) too: the client should not route `num_ctx` through per-request options if the server's loaded context already covers the prompt size. Worth a follow-up when SideQuest's Ollama backend is exercised.
 
+### Audit conclusion — story 48-2 (OllamaClient `num_ctx` review)
+
+Story **48-2** completed the follow-up audit. The `OllamaClient` request bodies were reviewed against the per-request `num_ctx` anti-pattern:
+
+- **`/api/generate`** (`send_with_model`): body is `{"model", "prompt", "stream": False}` — **no `options` field at all**, so **no per-request `num_ctx`**.
+- **`/api/chat`** (`send_with_session`, and transitively `send_stateless` — the narrator's canonical post-ADR-098 path): body is `{"model", "messages", "stream": False}` — **no `options` field at all**, so **no per-request `num_ctx`**.
+- Static scan of `sidequest/agents/ollama_client.py` finds zero occurrences of the substring `num_ctx`.
+
+**Audit outcome:** no per-request `num_ctx` pattern present in `OllamaClient`. The KV-cache-reload regression observed with `qwen-code` (~28s per call) cannot occur via this client today. No fix needed.
+
+**Regression guard:** `sidequest-server/tests/agents/test_ollama_backend_e2e_48_2.py` pins this with four tests — three runtime body-shape assertions (one per public method) and one static source check. Future maintainers who reintroduce `num_ctx` per-request will get a fast red signal.
+
+**Operator follow-up:** if you ever need to constrain Ollama's loaded context below the model's native max for `sidequest-narrator:latest` or `sidequest-decomposer:latest`, do it via a custom Modelfile (`PARAMETER num_ctx <N>`) and `ollama create`, never by re-introducing a per-request override in `OllamaClient`.
+
 ## Deviations from spec
 
 - **qwen-code CLI was not pre-installed.** The plan flagged this as a possible blocker (Task 4 Step 1) and recommended installing per the qwen-code repo README. Resolution: `npm install -g @qwen-code/qwen-code` (5 packages, completed in 1 second). The local `~/Projects/qwen-code/` checkout was not used for the install — the published package serves the daily-driver use case fine; rebuild from source if needed for development.
