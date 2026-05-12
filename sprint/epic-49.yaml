@@ -82,3 +82,138 @@ stories:
     status: backlog
     repos: sidequest-server
     workflow: tdd
+  - id: 49-7
+    title: Confrontation panel — project per-PC beats to UI (server-side filter on the outbound)
+    description: |-
+      Found in the 2026-05-12 Carl/Donut/Katia caverns_sunden playtest. During the
+      Chalk Moth combat (encounter_type=combat fired live), the right-rail
+      Confrontation tab on every connected tab showed the FULL 16-button union of
+      every class's beats — Carl (Fighter) saw Backstab/Slip Behind (Thief), Cast
+      Cantrip/Cast Spell (Mage), Turn Undead/Pray for Aid (Cleric); Donut and
+      Katia saw the same identical list. Verified by enumerating <button>
+      elements with the stat-tag regex on each of the three tabs — output
+      identical to the byte.
+
+      The fix is pure "Don't Reinvent — Wire Up What Exists." The per-class beat
+      filter already exists at `sidequest/game/beat_filter.py::beats_available_for(cdef, class_def, spell_slots_remaining, prepared_spells)`
+      and runs PER-PC inside the narrator prompt builder (`agents/narrator.py:332`),
+      rendering lines like "Fighter (Carl) can: attack, defend, hold_the_line,
+      ..." for the LLM. It includes class-membership filter + spell-slot gating
+      + prepared-spell gating (the same hook that correctly refused Donut's
+      out-of-prep Sanctuary in the playtest) and already emits
+      `confrontation_beat_filter_span` OTEL.
+
+      That intel is dropped on the floor for the UI: in
+      `server/websocket_session_handler.py:3085`, the server calls
+      `build_confrontation_payload(encounter=..., cdef=cdef, ...)` once with the
+      full `cdef.beats` list and `_emit_event("CONFRONTATION", payload)` once;
+      the broadcast fans out to every connected socket identically (peer_projection_broadcast
+      telemetry confirms but does not filter).
+
+      Critically this lives in the POST-narration dispatch path — the narrator
+      subprocess has already returned. Filtering per recipient does NOT add
+      narrator calls (the 15-60s cost center). It adds N tiny calls to
+      `beats_available_for` (pure dict ops) and N WebSocket emits. For N≤4 in
+      MP this is microseconds; the narrator latency budget is untouched.
+
+      Pingpong filing: "[BUG] Confrontation tab shows the FULL union of all
+      class beat-choices to every player" (2026-05-12 ~04:14). OQ-1 picked
+      up the pingpong entry as in-progress at 04:35 — coordinate before
+      claiming the story to avoid duplicate work.
+      Screenshots: `oq-2/.playwright-mcp/010-carl-confrontation-tab.png`,
+      `011-donut-confrontation-tab.png`, `012-katia-confrontation-tab.png`.
+    points: 3
+    priority: p1
+    status: backlog
+    repos: sidequest-server,sidequest-ui
+    workflow: tdd
+    type: bug
+    acceptance_criteria:
+      - "Refactor `build_confrontation_payload` (or add a sibling) to take a `recipient_pc` context — class_def, spell_slots_remaining, prepared_spells — and emit a payload whose `beats` field is the result of `beats_available_for(cdef, class_def, slots, prepared)`. Opponent-side beat selection in the narrator prompt is unaffected (continues to see all beats via the existing narrator.py:297 listing)."
+      - "In `server/websocket_session_handler.py` around line 3085, replace the single-emit broadcast with a per-recipient loop: for each connected player in `self._room.connected_player_ids()`, resolve `(class_def, spell_slots, prepared_spells)` from session state, build the per-recipient payload, and emit a recipient-targeted CONFRONTATION message. Same change for the `mid_turn_payload` path at `server/dispatch/dice.py:504` and the `yield_action` handler emits at `handlers/yield_action.py:140,176`. All five build sites must move to per-recipient (audit with grep before declaring done — `build_confrontation_payload\\|build_clear_confrontation_payload`)."
+      - "`build_clear_confrontation_payload` is empty-beats already (`server/dispatch/confrontation.py:145`) — keep single broadcast for clear since there is nothing to per-PC project. Document the asymmetry in a comment so the next reader doesn't unify them."
+      - "OTEL: `confrontation_beat_filter_span` already exists in the narrator-prompt call site. Add a SECOND emission site at the panel-projection call, distinguishable via `source='ui_panel_projection'` vs the existing `source='narrator_prompt'`. Sebastien's GM panel needs to see when the panel filter runs separately from the prompt filter. Span attributes: `recipient_pc`, `recipient_class`, `pool_size`, `filtered_size`, `spell_slots_remaining`, `cast_spell_rejection_reason` (optional)."
+      - "Wiring test (per CLAUDE.md `Every Test Suite Needs a Wiring Test`): integration test that boots a 3-PC MP session, drives an `encounter_type=combat` activation, captures the outbound CONFRONTATION messages per socket, and asserts the Fighter recipient does NOT receive Cast Spell / Backstab / Turn Undead and the Cleric recipient DOES receive Pray for Aid / Turn Undead. Use the existing test_confrontation_wiring.py shape as a starting point."
+      - "Unit test (RED → GREEN per TDD workflow): given a `ConfrontationDef` with 16 beats and a Fighter `ClassDef`, `build_confrontation_payload` with the Fighter recipient context emits a payload whose `beats` list has length == |beats_available_for(cdef, fighter, slots, prepared)| and contains only those ids. Repeat for Cleric (with and without remaining spell slots), Mage, Thief."
+      - "Unit test: a Cleric with 0 spell slots remaining gets `cast_spell` filtered out; with slots > 0 and prepared_spells=[]; with slots > 0 and prepared_spells=['light']. Reuses the same fixtures the narrator-prompt filter already covers — single source of truth for filter semantics."
+      - "UI verification (manual, post-merge): re-run the 3-PC caverns_sunden playtest. On entry to combat, Carl's Confrontation tab shows ~10 beats (Fighter movelist), Donut's shows ~9-11 (Cleric, varies with slots), Katia's shows ~10 (Thief). No tab shows the full 16-button union. Screenshots filed to `oq-2/.playwright-mcp/` and the original pingpong entry transitioned to `verified`."
+      - "Narrator latency: capture before/after p50 + p95 narrator-turn duration from `Claude CLI returned streaming narration duration_ms=...`. Per-recipient filter must add <100ms to total turn dispatch time at N=4 (it should be ~ms). If it adds more, the implementation is wrong (probably re-running heavy lookups inside the loop) — investigate before merge."
+      - "No regression in the existing narrator-prompt-side filter — the `Fighter (Carl) can: ...` block in the prompt continues to render correctly; per-PC menus in the prompt are unchanged. Re-run `tests/test_narrator_prompt_pc_beat_menus.py` (or whatever covers it) green."
+  - id: 49-8
+    title: Narration projection — fill _visibility sidecar + 2nd-person swap on POV-anchor recipient
+    description: |-
+      Found in the 2026-05-12 Carl/Donut/Katia caverns_sunden playtest.
+      Every multi-card round (rounds 1–10), all three connected tabs receive
+      every per-PC POV narration card identically, third-person, in nearly the
+      same order. No perception filtering, no POV swap, no per-recipient
+      rewriting. Round 10 (Chalk Moth coup de grâce) — all three tabs show:
+
+        - "Carl plants a boot on the moth's thorax and hauls the polearm out wet..."
+        - "Donut's mace arrives a beat behind — backhand, low, brutal..."
+        - "Katia eases the knife back out by quarter-inches..."
+
+      On Carl's tab his own card should read "**You** plant a boot…" (2nd-person
+      POV) with peers either filtered or perception-rewritten. SOUL.md
+      "Tabletop First, Then Better" — asymmetric message passing is the
+      central axis SideQuest is supposed to beat tabletop on; today narration
+      fans out as if it were a single shared DM voice.
+
+      The infrastructure is 90% there and dormant. Evidence:
+
+        1. `genre_packs/caverns_and_claudes/projection.yaml` already declares
+           a NARRATION rule: `{ kind: NARRATION, visibility_tag: {} }`. The
+           ComposedFilter reads `payload._visibility` (the
+           `visibility_sidecar` field on the narration message) to make
+           per-recipient include/exclude decisions.
+        2. `ComposedFilter` is installed on every session in `handlers/connect.py:647`
+           via `session._projection_filter = ComposedFilter(rules=projection_rules, pack_slug=...)`.
+        3. EVERY narration emit goes through `emit_event` → `emitters.py:150`
+           which consults `_projection_filter` per recipient (per Plan 03).
+        4. BUT at the emit site (`websocket_session_handler.py:2955`):
+              `visibility_sidecar=None,`
+           with a comment: "the dispatch package that fed
+           aggregate_visibility(...) is dormant. MP wiring will reintroduce a
+           visibility classifier; until then, peers see the same canonical
+           narration."
+
+      So the filter is wired and active, the rule expects metadata, the
+      narration emit ships `None`, ComposedFilter falls through to
+      pass-through, every peer sees every card. This story reintroduces the
+      visibility classifier in the simplest shape that delivers per-PC POV
+      framing — and as a single deliverable, NOT as a full perception
+      rewriter (which is ADR-028 territory and out of scope here).
+
+      Critically, like 49-7, this lives ENTIRELY in the post-narration
+      dispatch path — the `claude -p` subprocess has already returned. No
+      added narrator calls. The user has explicitly flagged this concern
+      (don't drop us from ~15s back to ~60s on narration); the fix path is
+      pure data classification + per-recipient send, microseconds at N=4.
+
+      Pingpong filing: "[BUG] Narration projection — all players see every
+      per-PC POV card third-person, identically (no perception rewriter, no
+      2nd-person swap)" (2026-05-12 ~04:14). Companion to 49-7
+      (Confrontation panel) — both are the projection-fanout family; this
+      one is the narration-card surface, 49-7 is the mechanical-panel
+      surface. They likely share one dispatch path under the hood but ship
+      as two stories so neither thread is lost. Cross-link to ADR-028
+      (Perception Rewriter — full rewrite of peer prose is a follow-up).
+    points: 5
+    priority: p1
+    status: backlog
+    repos: sidequest-server,sidequest-ui
+    workflow: tdd
+    type: bug
+    acceptance_criteria:
+      - "Add a per-PC POV classifier at the narration emit site (`websocket_session_handler.py` around line 2955). For each per-PC POV card the narrator produced (cards anchored on a named PC — Carl/Donut/Katia), tag the card with `anchor_pc` (the PC whose action the card narrates) and `visible_to` (default: all PCs in the same `snap.location` perspective as the anchor PC, including the anchor). For omniscient/atmospheric cards (no PC anchor), default `visible_to` = all seated PCs. Stamp these into the `visibility_sidecar` field instead of `None`."
+      - "Define the `visibility_sidecar` shape concretely: `{ anchor_pc: str | null, visible_to: list[str], pov_strategy: 'pc_anchored' | 'atmospheric' | 'private' }`. Document the shape on `NarrationPayload` in `protocol/messages.py:84` (the field already exists as `visibility_sidecar: dict | None`)."
+      - "ComposedFilter side: the existing `visibility_tag: {}` rule in `genre_packs/caverns_and_claudes/projection.yaml` should now have a non-null sidecar to act on. Confirm via reading `game/projection/rules.py` (or equivalent) that the rule projects `include=True` when `recipient_pc in visible_to` and `include=False` otherwise. If the existing rule doesn't behave this way, extend it — but DO NOT introduce a new rule kind; keep the genre-content YAML untouched."
+      - "POV anchor inference: the narrator currently emits per-PC POV cards interleaved (Carl's POV card → Donut's POV card → Katia's POV card). Identify each card's anchor PC by either (a) scanning the card's opening sentence for the leading PC name (Carl/Donut/Katia are exact matches per the seated-PC roster) and treating that PC as the anchor, OR (b) — preferred — extracting from the narrator's JSON sidecar (ADR-039 structured output) if the per-card POV is already declared there. Audit `agents/orchestrator.py` for the existing per-card metadata before adding a new prose scanner; use the structured field if it exists, fall back to prose scan with a loud OTEL warning if not."
+      - "**2nd-person swap (the user-facing deliverable):** when sending a NARRATION card to a recipient whose `recipient_pc == card.anchor_pc`, swap third-person references to the anchor PC into 2nd-person on the wire. `Carl plants a boot` → `You plant a boot` on Carl's tab only. `Carl's polearm` → `Your polearm`. Possessive pronouns swap with subject. Implementation lives in `emitters.py` per-recipient render step (NOT in the narrator prompt — we are not retraining the narrator, we are post-processing prose deterministically). Use a small regex/token-replacement helper; keep it pure and unit-testable."
+      - "Pronoun handling: the swap MUST use the recipient PC's pronouns from chargen (he/him, she/her, they/them) to drive the swap. Carl is he/him → 'his polearm' → 'your polearm'; Donut is she/her → 'her mace' → 'your mace'; Katia is they/them → 'their knife' → 'your knife'. Pull pronouns from `snap.characters[recipient_pc].pronouns`. Fail loud with OTEL warning + skip-the-swap when pronouns are ambiguous; never guess."
+      - "Wiring test (per CLAUDE.md `Every Test Suite Needs a Wiring Test`): integration test that boots a 3-PC MP session, triggers a 3-card per-PC POV narration turn, captures the outbound NARRATION messages per socket, and asserts: (a) Carl's tab receives Carl's card with `You plant a boot` (2nd-person); (b) Donut's tab receives Carl's card unchanged with `Carl plants a boot` (third-person); (c) all three tabs receive all three cards (filter on this story is POV-anchor-only, not perception-filtering; that's the ADR-028 follow-up)."
+      - "OTEL: emit `narration.visibility_classified` span per card with `anchor_pc`, `visible_to`, `pov_strategy`. Emit `narration.second_person_swap` span per recipient with `recipient_pc`, `swap_target_name`, `swap_count` (number of substitutions made). Sebastien's GM panel must show the classification ran AND the swap fired — without these spans, regressions to pass-through fan-out are invisible."
+      - "Unit test: 2nd-person swap helper — given (`Carl plants a boot on the moth's thorax`, target=`Carl`, pronouns=`he/him`), output is `You plant a boot on the moth's thorax`. Add tests for: possessive (`Carl's polearm` → `Your polearm`); reflexive (`Carl himself` → `you yourself`); mid-sentence (`then Carl charged` → `then you charged`); does NOT swap when target name appears in dialogue (`'Now, Carl,' Donut said` — Carl is being addressed BY Donut, not narrating his own POV; keep third-person). Edge cases for she/her, they/them."
+      - "Narrator latency: capture before/after p50 + p95 narrator-turn duration from `Claude CLI returned streaming narration duration_ms=...`. Per-recipient classifier + swap must add <100ms total at N=4 (target ~ms). Same budget guard as 49-7. If exceeded, investigate before merge."
+      - "No regression: peers still receive every card (no filtering yet; that's ADR-028 / a follow-up story). Atmospheric / no-anchor cards continue to broadcast unchanged to everyone (no 2nd-person swap when `anchor_pc is None`). Test the existing single-player solo path to confirm no behavior change for N=1."
+      - "UI verification (manual, post-merge): re-run the 3-PC caverns_sunden playtest. On each multi-card narration round, Carl's tab shows his own cards as `You ...` and peers' cards as `Donut ...` / `Katia ...`. Donut's and Katia's tabs symmetric. Screenshots filed to `oq-2/.playwright-mcp/` and the original pingpong entry transitioned to `verified`."
+      - "Follow-up story (NOT in scope here): full ADR-028 perception rewriter — peer prose rewritten to perception-limited fidelity (`a clatter from the gallery, the moth's wings beat against something steel`) when a PC isn't in earshot. File as a new 49-N or 53-N once 49-8 lands and we have the visibility_sidecar plumbing exercised."
