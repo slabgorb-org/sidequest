@@ -65,9 +65,9 @@ stories:
     priority: p2
     status: done
     started: '2026-05-10'
-    completed: '2026-05-12'
     repos: server,ui,content
     workflow: trivial
+    completed: '2026-05-12'
     type: chore
     branch: feat/47-5-magic-phase-6-mp-playtest
     review_verdict: approved

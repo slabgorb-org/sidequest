@@ -45,12 +45,10 @@ stories:
     description: "In the 2026-05-11 Glenross playtest the narrator silently relocated the scene across four different room titles (The Bee Garden → The Manse Garden → Front Parlour → Study → Study → Sickroom Passage) while the canonical state held character_locations[Ziggy]='the_manse' for turns 1-5. State only caught up on turn 6 (Sickroom Passage). game_patch.extracted logs show has_location=False on turns 2-5: narrator wrote new **Room Title** headers in markdown prose without filling the structured location patch field. This is the SOUL.md 'Illusionism' failure mode — narrator and state machine running on different tracks; the GM panel cannot tell where the party actually is. Fix is to parse the narrator's prose for a leading bold room title and (a) auto-fill patch.location when it disagrees with current state, plus (b) emit a loud OTEL span so the GM panel sees the drift catch. Auto-fill instead of fail-loud-and-bail because the cost of blocking a turn is too high — but the OTEL must be loud so we can iterate on the prompt later."
     points: 3
     priority: p1
-    status: in_progress
+    status: done
     started: '2026-05-12'
     repos: sidequest-server
     workflow: tdd
-    session: .session/49-3-session.md
-    branch: feat/49-3-location-patch-enforcement
     acceptance_criteria:
       - In narration_apply (orchestrator.py around line 715 where patch.location is read), if patch.location is empty BUT the narration body starts with a bold markdown header like '**<text>**', extract <text> as the candidate location
       - Compare the candidate against snapshot.party_location(perspective=char_name). If different, auto-fill patch.location with the candidate value and continue applying
@@ -58,6 +56,10 @@ stories:
       - "Add a Recency-zone Guardrail section ('location_patch_constraint') reminding the narrator: 'If your prose changes the room (any new **Bold Title** header, any explicit movement to a different named space), your game_patch MUST set location to the new value. State must not lag prose.' This addresses the issue at narration time so the auto-repair becomes a backstop, not a load-bearing component"
       - "Regression test: a turn fixture where snapshot.character_locations[Ziggy]='the_manse' and narration body begins '**The Manse — Front Parlour**\\n\\nThe kettle...' with patch.location=None. After apply, character_locations[Ziggy] must equal 'The Manse — Front Parlour' and the OTEL span must have fired"
       - "Replay glenross save turn 3: state must update from 'the_manse' to 'The Manse — Front Parlour' instead of holding stale"
+    completed: '2026-05-12'
+    session: .session/49-3-session.md
+    branch: feat/49-3-location-patch-enforcement
+    review_verdict: approved
   - id: 49-4
     title: Victoria archetypes — author starting inventories
     description: "Separate from the ADR-098 continuity regression cluster: the Victoria genre pack ships zero starting inventory. After chargen the player has nothing — no Gladstone bag for the Country Doctor, no prayer book for the Clergyman, no notebook for the Detective. Confirmed: sidequest-content/genre_packs/victoria/ has no inventory.yaml, no equipment_tables.yaml, no starting_inventory keys anywhere in archetypes.yaml. Reference pattern lives in caverns_and_claudes — equipment_tables.yaml + inventory.yaml item catalog, wired via a 'the_kit' scene with equipment_generation: random_table in char_creation.yaml. Author equivalent files for Victoria so each archetype arrives with the kit they need. This is content-lane (World Builder), not server-lane — no code changes."
