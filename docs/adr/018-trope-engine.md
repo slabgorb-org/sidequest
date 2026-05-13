@@ -8,7 +8,7 @@ supersedes: []
 superseded-by: null
 related: []
 tags: [game-systems]
-implementation-status: partial
+implementation-status: accepted
 implementation-pointer: 87
 ---
 
@@ -63,15 +63,29 @@ Tropes tick forward via `rate_per_turn` during gameplay and `rate_per_day` betwe
 - Genre packs define narrative pacing without code
 - Between-session advancement keeps the world "alive"
 
-## Implementation status (2026-05-02)
+## Implementation status (2026-05-13)
 
 The Rust era (`sidequest-api/crates/sidequest-game/src/trope.rs`) implemented this ADR in full: `TropeStatus::{Dormant, Active, Progressing, Resolved}`, `fired_beats: HashSet`, `tick()` driving `rate_per_turn`, `advance_between_sessions()` driving `rate_per_day`.
 
-The 2026-04 port to Python carried the **data structures** (`sidequest/genre/models/tropes.py`: `TropeDefinition`, `TropeEscalation`, `PassiveProgression`) and the **YAML schemas** (every genre pack's `tropes.yaml`) but did not port the engine. As an interim, the unified narrator (ADR-067) emits `beat_selections` in its structured output and `narration_apply.py` records them on `active_tropes`. This covers escalation-beat firing during play but does not provide:
+The 2026-04 port to Python carried the **data structures** (`sidequest/genre/models/tropes.py`: `TropeDefinition`, `TropeEscalation`, `PassiveProgression`) and the **YAML schemas** (every genre pack's `tropes.yaml`) but did not port the engine. Story 45-27 restored the in-session engine at `sidequest-server/sidequest/game/trope_tick.py` (417 lines), wired at `_execute_narration_turn` in `websocket_session_handler.py`. The unified narrator (ADR-067) still emits `beat_selections`; `narration_apply.py` records them — the tick engine handles passive advancement and lifecycle around that.
 
-- passive `rate_per_turn` advancement (the LLM is the only thing that moves a trope)
-- the canonical four-state lifecycle (current `status` is narrator-set; no automaton enforces transitions)
-- `fired_beats` dedup at the runtime layer (the narrator can re-emit the same beat; nothing rejects it)
-- `rate_per_day` between-session advancement
+### Restored (no longer gaps)
 
-Restoration is scheduled as **P1 RESTORE** in [ADR-087](087-post-port-subsystem-restoration-plan.md). The decision in this ADR stands; the work is wiring the engine back onto the already-ported data structure.
+- **Passive `rate_per_turn` advancement** — `trope_tick.py` Pass A; `turn.tropes` span fires every tick.
+- **Beat-fire dedup** — implemented as `beats_fired: int` counter advancing through `tdef.escalation` (different shape from the Rust `HashSet<(String, f32)>`, but functionally equivalent — same beat cannot fire twice).
+- **Activation gating** — dormant→progressing transitions are gated by a simultaneous-active cap and a post-fire cooldown window, emitting `trope.cooldown_blocked` / `trope.cap_blocked` for GM-panel visibility.
+- **Implicit resolution** — a trope with all beats fired AND progress at 1.0 transitions to `resolved` and emits `trope_resolve`.
+
+### Remaining gaps
+
+None — all four pillars are wired.
+
+### Implementation update (2026-05-13)
+
+Story 50-4 closed the `rate_per_day` gap. The narrator now emits `days_advanced: int` in the `game_patch` block (CRITICAL TIME RULE in `output_only.md`); `tick_tropes` runs a new Pass A2 (`sidequest/game/trope_time_skip.py`) between Pass A and Pass B; every progressing trope advances by `rate_per_day * clamp(days_advanced, 0, 14)`; every crossed beat threshold fires and is queued as a `TimeSkipBeatEvent` in `snapshot.pending_time_skip_summary`; the next narrator prompt renders these as a `## TIME-SKIP CONTEXT` block (Early attention zone) and clears the queue (one-shot lifecycle). A distinct `trope.time_skip` OTEL span carries `days_requested`, `days_applied`, `clamped`, `tropes_affected`, `tropes_skipped_zero_rate`, `beats_fired_count`, and `resolved_during_skip` for GM-panel observability. Persistence rides the existing whole-snapshot JSON column — no schema migration.
+
+### Drift between ADR text and implementation
+
+- **Lifecycle is three-state, not four.** This ADR's prose specifies `DORMANT → ACTIVE → PROGRESSING → RESOLVED`. The restored engine uses `dormant → progressing → resolved` — the `ACTIVE` state was collapsed into `PROGRESSING` during restoration because the distinction was never load-bearing (beats fire on the progressing edge regardless). The code is the source of truth; this ADR's text is the lagging document. The lifecycle diagram above should be read as illustrative of the lineage, not the current state machine.
+
+Status downgraded from "all four pillars missing" (the prior 2026-05-02 reading) to "one mechanical gap + one documentation drift." [ADR-087](087-post-port-subsystem-restoration-plan.md) row 64 is correspondingly stale and is updated alongside this amendment.
