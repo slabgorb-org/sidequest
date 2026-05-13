@@ -46,9 +46,12 @@ stories:
       Out of scope: retroactively flipping the ~90 archive `fixed`-without-`verified` items that look paperwork-only. Those are written off as "verified via PR merge" historical debt.
     points: 2
     priority: p3
-    status: backlog
+    status: in-progress
     repos: orchestrator
     workflow: trivial
+    branch: feat/50-1-pingpong-archive-triage
+    assignee: slabgorb
+    started: '2026-05-13'
     acceptance_criteria:
       - All 8 items from the "To Be Verified" section in sq-playtest-pingpong.md have a re-test verdict (still-broken / silently-fixed / unable-to-repro)
       - Confirmed-broken items are filed as new stories under epic 50 with their own AC blocks
