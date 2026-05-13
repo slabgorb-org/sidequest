@@ -93,10 +93,6 @@ stories:
     priority: p2
     status: done
     started: '2026-05-13'
-    completed: '2026-05-13'
-    branch: feat/50-3-partypanel-renders-recruited-companions
-    assignee: keith
-    review_verdict: approved
     repos: sidequest-ui
     workflow: trivial
     acceptance_criteria:
@@ -105,6 +101,10 @@ stories:
       - The sub-section is hidden (not just empty) when the roster is empty
       - Vitest covers the empty / single-companion / multi-companion / split-party-location states
       - Wiring test confirms the section is reachable from the production state-mirror path (not just storybook fixtures)
+    completed: '2026-05-13'
+    branch: feat/50-3-partypanel-renders-recruited-companions
+    assignee: keith
+    review_verdict: approved
     type: bug
   - id: 50-4
     title: Trope rate_per_day between-session advancement
@@ -191,3 +191,37 @@ stories:
     repos: server,content
     workflow: tdd
     depends_on: 50-10
+  - id: 50-14
+    title: 'Journal: JOURNAL_REQUEST handler — server replies from character.known_facts (seam C server-side per ADR-100)'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 50-5
+  - id: 50-15
+    title: 'Journal: UI fact_id respect — drop synthetic id, consume narrator-supplied Footnote.fact_id (seam C UI part 1 per ADR-100)'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: tdd
+    depends_on: 50-14
+    type: bug
+  - id: 50-16
+    title: "Journal: UI confidence propagation — drop hardcoded 'Suspected' in useStateMirror, source from JOURNAL_RESPONSE (seam C UI part 2 per ADR-100)"
+    points: 2
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: tdd
+    depends_on: 50-14
+    type: bug
+  - id: 50-17
+    title: 'Journal: KnownFact.confidence enum promotion — Literal[Certain|Suspected|Rumored|Discovered] (J-4 per ADR-100)'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
