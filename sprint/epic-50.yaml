@@ -110,12 +110,14 @@ stories:
     title: Trope rate_per_day between-session advancement
     points: 5
     priority: p2
-    status: active
+    status: done
     started: '2026-05-13'
     repos: server,content
     workflow: tdd
+    completed: '2026-05-13'
     assignee: keith
     branch: feat/50-4-trope-rate-per-day-advancement
+    review_verdict: approved
   - id: 50-5
     title: 'Scenario: wire discover_clue to narration consumption (call site + SPAN_SCENARIO_ADVANCE fires in play)'
     points: 3
