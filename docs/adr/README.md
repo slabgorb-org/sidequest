@@ -89,6 +89,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-013: Lazy JSON Extraction](013-lazy-json-extraction.md) | ✓ accepted | live |
 | [ADR-067: Unified Narrator Agent — Collapse Multi-Agent into Single Narrator](067-unified-narrator-agent.md) | ✓ accepted | live |
 | [ADR-098: Stateless Narrator Turns — Drop --resume, Bounded Per-Turn Prompts](098-stateless-narrator-turns.md) | ✓ accepted | live |
+| [ADR-100: Journal Pipeline Coherence — Footnotes, KnownFacts, JOURNAL_RESPONSE, and the Scenario Clue Hook](100-journal-pipeline-coherence.md) | ✓ accepted | *partial* → ADR-087 |
 
 ## Game Systems
 
@@ -109,7 +110,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-078: Edge / Composure Combat, Mechanical Advancement, and Push-Currency Rituals](078-edge-composure-advancement-rituals.md) | ✓ accepted | *partial* → ADR-087 |
 | [ADR-080: Unified Narrative Weight Trait](080-unified-narrative-weight-trait.md) | ✓ accepted | — |
 | [ADR-081: Advancement Effect Variant Expansion (v1)](081-advancement-effect-variant-expansion.md) | ✓ accepted | deferred → ADR-087 |
-| [ADR-095: Class Mechanical Surface — One Signature Ability Per Non-Magical Class](095-class-mechanical-surface.md) | ✓ accepted | live |
+| [ADR-095: Class Mechanical Surface — One Signature Ability Per Non-Magical Class](097-class-mechanical-surface.md) | ✓ accepted | live |
 | [ADR-096: Cavern Renderer Revival — Pre-Rendered Cellular Caverns for Tactical Maps](096-cavern-renderer-revival.md) | ✓ accepted | *partial* |
 
 ## Frontend / Protocol
@@ -278,5 +279,6 @@ ADRs whose implementation is absent, partial, or deferred. See [DRIFT.md](DRIFT.
 | [ADR-078: Edge / Composure Combat, Mechanical Advancement, and Push-Currency Rituals](078-edge-composure-advancement-rituals.md) | *partial* | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
 | [ADR-092: Scene Harness — Dev-Gated HTTP Endpoint for Scenario Fixtures](092-scene-harness-http-endpoint.md) | *partial* | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
 | [ADR-096: Cavern Renderer Revival — Pre-Rendered Cellular Caverns for Tactical Maps](096-cavern-renderer-revival.md) | *partial* | — |
+| [ADR-100: Journal Pipeline Coherence — Footnotes, KnownFacts, JOURNAL_RESPONSE, and the Scenario Clue Hook](100-journal-pipeline-coherence.md) | *partial* | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
 
 <!-- ADR-INDEX:GENERATED:END -->
