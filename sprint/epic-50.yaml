@@ -117,9 +117,12 @@ stories:
     title: 'Scenario: wire discover_clue to narration consumption (call site + SPAN_SCENARIO_ADVANCE fires in play)'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-13'
     repos: server
     workflow: tdd
+    completed: '2026-05-13'
+    review_verdict: approved
   - id: 50-6
     title: 'Scenario: ClueGraph DAG prerequisite enforcement in discover_clue (reject orphan discoveries)'
     points: 2
