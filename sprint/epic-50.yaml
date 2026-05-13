@@ -87,11 +87,18 @@ stories:
       Found 2026-05-07 in archive `sq-playtest-pingpong.archive-20260507-085200.md`, repeated in `sq-playtest-pingpong.archive-20260508-pre472.md`. The recruitment subsystem maintains a server-side roster of companion NPCs; the UI `PartyPanel` component has no element to render them. The bug was marked `fixed` on the server-side at the time but never reached `verified` because the UI half wasn't wired. Playtests moved to tea_and_murder solo immediately afterwards, leaving the UI gap silently broken for ~6 days.
 
       Sebastien-axis loss: recruited companions are mechanical state players cannot see. Aspirational household-audience loss: companion-driven play (which is half the Heavy Metal / road_warrior pitch) is invisible.
+
+      Resolution 2026-05-13: silently-fixed by 2026-05-06/07 commits (sidequest-ui 890dc4b/6d7fdd3/784147b). 50-1 pingpong triage carried a stale-read forward without re-testing. Workflow switched mid-flight tdd→trivial. Deliverable: companions-app-wire-integration.test.tsx (sidequest-ui PR #236, merged) — the genuine App-level wiring guard the pre-existing companions-party-status-wiring.test.tsx never actually was. AC2/AC4 split-party-location deferred as out-of-scope (new feature, not in original bug report).
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-13'
+    completed: '2026-05-13'
+    branch: feat/50-3-partypanel-renders-recruited-companions
+    assignee: keith
+    review_verdict: approved
     repos: sidequest-ui
-    workflow: tdd
+    workflow: trivial
     acceptance_criteria:
       - PartyPanel renders a "Companions" sub-section when the server's PARTY_STATUS / state mirror reports a non-empty companions roster
       - Each companion row shows name, archetype/role, current location (if split-party), and a portrait or letter-fallback per the existing chrome
