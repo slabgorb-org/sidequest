@@ -1,0 +1,52 @@
+# Social fixture — closed-door negotiation in a Glenross parlour.
+# Usage: http://localhost:5173/?scene=social_negotiation_tea (requires DEV_SCENES=1)
+
+name: Negotiation — Parlour Sit-Down
+genre: tea_and_murder
+world: glenross
+player_name: fixture-negotiation
+description: A closed-door sit-down with Mr. Cornelius Moreton, Glenross merchant. One wrong word ends it.
+location: Private Parlour, Moreton Residence
+turn: 3
+
+character:
+  name: Mrs. Halloran
+  description: A weary lady investigator with a reputation for reading a room.
+  personality: Cynical, patient, and harder to rattle than she looks.
+  level: 3
+  hp: 14
+  max_hp: 14
+  inventory:
+    items:
+      - id: leather-notebook
+        name: Leather Notebook
+        description: Half-filled with shorthand observations
+        category: tool
+        value: 1
+        weight: 0.4
+        rarity: common
+        narrative_weight: 0.5
+        tags: [investigator]
+        equipped: true
+        quantity: 1
+    gold: 12
+  statuses: []
+  backstory: Widowed early; took up private inquiries to keep the household afloat. The Moreton case is her third this season.
+  narrative_state: Seated across from a man who would rather she were elsewhere
+  hooks:
+    - Moreton's account doesn't match the housekeeper's
+  char_class: Investigator
+  race: Human
+  pronouns: she/her
+  stats:
+    Brawn: 9
+    Instinct: 14
+    Presence: 13
+    Reflexes: 11
+    Toughness: 11
+    Wits: 15
+
+npcs:
+  - name: Cornelius Moreton
+    role: tense merchant under suspicion
+    disposition: -10

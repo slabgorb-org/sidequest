@@ -1,0 +1,77 @@
+# Combat fixture — ship boarding action in coyote_star.
+# Usage: http://localhost:5173/?scene=combat_boarding_space (requires DEV_SCENES=1)
+
+name: Combat — Boarding Action
+genre: space_opera
+world: coyote_star
+player_name: fixture-boarding
+description: The cutter is alongside, the hatch is breached, and two hostile crew are between you and the bridge.
+location: Hostile Cutter — Forward Corridor
+turn: 3
+
+character:
+  name: Calder Vance
+  description: A boarding-party petty officer with mag-soles and a stubby coil pistol.
+  personality: Loud, decisive, impatient with hesitation.
+  level: 4
+  hp: 16
+  max_hp: 20
+  inventory:
+    items:
+      - id: coil-pistol
+        name: Coil Pistol
+        description: Six rounds in the magazine
+        category: weapon
+        value: 60
+        weight: 1.5
+        rarity: uncommon
+        narrative_weight: 0.6
+        tags: [ranged, energy]
+        equipped: true
+        quantity: 1
+      - id: bulkhead-cutter
+        name: Bulkhead Cutter
+        description: A short plasma blade for hatches and necks
+        category: weapon
+        value: 90
+        weight: 2.0
+        rarity: uncommon
+        narrative_weight: 0.6
+        tags: [melee, energy, breach]
+        equipped: true
+        quantity: 1
+      - id: vac-mask
+        name: Vac Mask
+        description: One hour of sealed atmo in a pinch
+        category: tool
+        value: 25
+        weight: 0.5
+        rarity: common
+        narrative_weight: 0.5
+        tags: [survival]
+        equipped: true
+        quantity: 1
+    gold: 40
+  statuses: []
+  backstory: Three boardings under his belt. The fourth always feels wrong.
+  narrative_state: Through the breach, two contacts at the next bulkhead
+  hooks:
+    - The corridor lights are flickering — someone is at the breakers
+  char_class: Boarder
+  race: Human
+  pronouns: he/him
+  stats:
+    Brawn: 14
+    Instinct: 12
+    Presence: 12
+    Reflexes: 14
+    Toughness: 14
+    Wits: 11
+
+npcs:
+  - name: Hostile Crewer A
+    role: hostile spacer
+    disposition: -25
+  - name: Hostile Crewer B
+    role: hostile spacer
+    disposition: -25
