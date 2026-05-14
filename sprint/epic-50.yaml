@@ -256,10 +256,13 @@ stories:
     title: 'Journal: KnownFact.confidence enum promotion — Literal[Certain|Suspected|Rumored|Discovered] (J-4 per ADR-100)'
     points: 1
     priority: p3
-    status: backlog
+    status: active
+    started: '2026-05-14'
     repos: server
     workflow: tdd
     type: refactor
+    branch: feat/50-17-knownfact-confidence-enum
+    assignee: slabgorb
   - id: 50-18
     title: ADR-092 scene harness — Python POST /dev/scene/{name} hydrator
     description: "Implement the accepted ADR-092 design in Python — restores scene-harness fixture loading lost during the Rust→Python port. The UI is already wired (App.tsx:1183-1217: ?scene=NAME → POST /dev/scene/{name} → navigate to /solo/{slug}); 4 fixture YAMLs already exist in scenarios/fixtures/ (combat_test, dogfight, negotiation, poker). What's missing: the Python endpoint that hydrates a fixture YAML into a GameSnapshot, persists via SqliteStore, and returns {slug}. Gated behind DEV_SCENES=1 env var per the ADR — route is not registered when the flag is unset, so production builds carry zero scene-harness surface. Also wire scripts/playtest.py with a --fixture <name> flag that POSTs to /dev/scene/{name} instead of /api/games, so headless mechanical playtests can skip chargen the same way the UI can. See ADR-092 for the full design, ADR-069 for the superseded CLI-first version (do not implement), ADR-087 row 125 for the gating question this resolves."
