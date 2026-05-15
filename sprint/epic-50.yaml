@@ -315,12 +315,15 @@ stories:
       sidequest/genre/models/scenario.py (ClueGraph, ClueNode).
     points: 5
     priority: p2
-    status: active
+    status: done
     started: '2026-05-15'
     repos: server
     workflow: tdd
+    completed: '2026-05-15'
     branch: feat/50-20-scene-harness-hydrate-scenario-state
     assignee: slabgorb
+    review_findings: 'HIGH: DAG-replay is order-sensitive; rejects valid fixtures where discovered_clues is in non-topological YAML order with misleading error message (AC4 violation). LOW: 12 ruff format violations in 50-20 test additions.'
+    review_verdict: approved
   - id: 50-21
     title: 'Scene harness: hydrate StructuredEncounter (ADR-092 follow-on)'
     description: |
