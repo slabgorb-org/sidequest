@@ -1,7 +1,7 @@
 # Beneath Sünden — Content Cookbook
 
 - **Date:** 2026-05-16
-- **Status:** Approved (design) — pending spec review, then implementation plan
+- **Status:** Implemented — plan docs/superpowers/plans/2026-05-16-beneath-sunden-content-cookbook.md
 - **Pack:** `caverns_and_claudes`
 - **World:** `beneath_sunden` (the world artifact itself is authored under the oq-1 plan; this spec defines the *content tables* it draws from)
 - **Owning workspace:** oq-2
@@ -281,3 +281,42 @@ Likely implementation sub-plans (sequenced):
 - CR-band boundaries (§4.2 `cr_bands`) and rarity-by-band weights are first-pass tuning values; expect playtest revision.
 - Burst→SIZE budget magnitudes pending the same `connection_burst`/threads-lit tuning oq-1 is calibrating (Sünden Deep §12) — coordinate values, do not fork them.
 - Reskin map breadth (§5 `reskin`) is intentionally minimal v1; expand only where a playtest says an admissible row reads as generic (Diamonds-and-Coal, deferred).
+
+### Resolved during implementation (2026-05-16)
+
+- **§4.3 seam:** the signature is extended with an oq-1-supplied
+  `is_first_band_entry: bool` contract input so §4.2's
+  `big_bad_gate.on_first_band_entry` is implementable. oq-1 still
+  *produces* the band-crossing signal; the cookbook only consumes it.
+- **§7 capstone gate — authoritative resolution:** a RACE must resolve
+  ≥1 curated row at (a) the entry/shallow band and (b) **the declared
+  `min_band` of each of its `big_bads` only**. An earlier draft said
+  "every band ≥ min_band"; that contradicted the Data-Forced decision
+  and the must-pass real-bundle test and is **not** what is
+  implemented. Depths a RACE cannot fill (incl. bands *above* a
+  big_bad's min_band, e.g. `ooze` cannot fill `deep`) trigger a bounded,
+  observable affinity re-roll emitting `cookbook.race.reroll` — never a
+  silent empty wandering table. The hard-exclude alternative is deferred
+  unless playtest prefers it.
+- **Data-Forced Design Item:** SRD 5.1 Ooze tops at CR 4, goblinoid at
+  CR 1; both legitimately cannot fill a `deep` region. Handled by the
+  re-roll above, not a build error.
+- **`generator_binding` seam:** validated against
+  `KNOWN_GENERATOR_BINDINGS = {cellular, depthfirst, prim, braid}`.
+  Authoritative source is the maze-maker family port
+  `sidequest-server/sidequest/dungeon/interiors/` (cellular = `gen_cave`,
+  + `depthfirst`/`prim`/`braid`) — **not** the ADR-096 `cavern_renderer`
+  tool (cellular-only PNG renderer). `roomcorridor` also exists in that
+  port but is intentionally out of the set; coordinate any addition with
+  oq-1.
+- **Corpus source + parser:** corpus is ingested from
+  `BTMorton/dnd-5e-srd` (SRD 5.1, CC-BY-4.0), vendored under
+  `corpus/_source/`. SRD 5.1 has no Kuo-toa → the §4.2/§5 illustrative
+  `kuo_toa` RACE is `ooze` ("The Seep"). Two parser corrections were
+  required for the loot contract to be real, not a silent lie:
+  `item_type` is the head before the first `(`/`,` (the old regex
+  captured the rarity separator → trailing comma on every row and
+  dropped all Weapon/Armor items); `rarity` is sentence-case
+  (`Very rare`) to match the hand-authored `affinities.rarity_by_band`
+  keys (`.title()` → `Very Rare` silently excluded the entire very-rare
+  tier from deep loot). Regression-tested.
