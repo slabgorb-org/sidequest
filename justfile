@@ -23,6 +23,18 @@ server *flags:
     log={{logdir}}/sidequest-server.log
     : > "$log"
     cd {{root}}/sidequest-server
+    # Anthropic SDK narrator (ADR-101) hard-requires ANTHROPIC_API_KEY — the
+    # SDK client raises without it. Don't depend on the launching shell having
+    # sourced ~/.zshrc: resolve it here (env override wins; else pull the
+    # canonical ~/.zshrc export). Fail loudly, never start silently keyless.
+    if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+      ANTHROPIC_API_KEY="$(sed -nE 's/^[[:space:]]*export[[:space:]]+ANTHROPIC_API_KEY=["'\'']?([^"'\'' ]+).*/\1/p' "$HOME/.zshrc" 2>/dev/null | tail -n1)"
+    fi
+    if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+      echo "✗ ANTHROPIC_API_KEY not set and no 'export ANTHROPIC_API_KEY=' in ~/.zshrc — Anthropic SDK narrator (ADR-101) cannot start. Export it or add it to ~/.zshrc." >&2
+      exit 1
+    fi
+    export ANTHROPIC_API_KEY
     SIDEQUEST_GENRE_PACKS={{content}} \
     SIDEQUEST_RENDER_ENABLED=1 \
     SIDEQUEST_NARRATOR_STREAMING="${SIDEQUEST_NARRATOR_STREAMING:-1}" \
@@ -52,6 +64,18 @@ serve *flags:
     echo "▶ building UI…"
     ( cd {{root}}/sidequest-ui && npm run build )
     cd {{root}}/sidequest-server
+    # Anthropic SDK narrator (ADR-101) hard-requires ANTHROPIC_API_KEY — the
+    # SDK client raises without it. Don't depend on the launching shell having
+    # sourced ~/.zshrc: resolve it here (env override wins; else pull the
+    # canonical ~/.zshrc export). Fail loudly, never start silently keyless.
+    if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+      ANTHROPIC_API_KEY="$(sed -nE 's/^[[:space:]]*export[[:space:]]+ANTHROPIC_API_KEY=["'\'']?([^"'\'' ]+).*/\1/p' "$HOME/.zshrc" 2>/dev/null | tail -n1)"
+    fi
+    if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+      echo "✗ ANTHROPIC_API_KEY not set and no 'export ANTHROPIC_API_KEY=' in ~/.zshrc — Anthropic SDK narrator (ADR-101) cannot start. Export it or add it to ~/.zshrc." >&2
+      exit 1
+    fi
+    export ANTHROPIC_API_KEY
     SIDEQUEST_GENRE_PACKS={{content}} \
     SIDEQUEST_RENDER_ENABLED=1 \
     SIDEQUEST_NARRATOR_STREAMING="${SIDEQUEST_NARRATOR_STREAMING:-1}" \
