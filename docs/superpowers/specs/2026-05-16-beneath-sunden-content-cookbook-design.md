@@ -251,6 +251,15 @@ The GM panel is the lie detector. The cookbook *specifies* these spans; oq-1 emi
 - `cookbook.bigbad.gated` — `{depth_score, threshold_crossed, big_bad|null}`
 - `cookbook.curation.denied` — `{race, denied_count, sample_names}`
 
+**One emission carve-out (resolved in implementation):**
+`cookbook.race.reroll` — `{look, band, from_race, to_race, excluded}` —
+is the Data-Forced low-ceiling re-roll evidence. The re-roll happens
+*inside* the pure `assemble_region` function, so oq-1 cannot observe it
+from outside; therefore the cookbook itself emits this **one** span at
+runtime (the only oq-2 runtime emission — all other spans above are
+definitions oq-1 emits at materialization). Without it the yield would
+be a silent fallback, violating §7 and the lie-detector mandate.
+
 ## 9. Testing Strategy
 
 - **Ingest fidelity:** row counts match source; CR parses (fractions→floats); CR list monotonic per source ordering.
@@ -265,7 +274,7 @@ The GM panel is the lie detector. The cookbook *specifies* these spans; oq-1 emi
 
 **In scope (oq-2):** corpus ingest, the five cookbook files, `world_register.yaml`, region-assembly semantics, OTEL definitions, all tests.
 
-**Out / oq-1-owned (referenced only):** LOOK→generator binding, `depth_score`, burst magnitude, CR→Edge materializer translation, OTEL emission, the region_graph/themes loader, set-piece slot schema.
+**Out / oq-1-owned (referenced only):** LOOK→generator binding, `depth_score`, burst magnitude, CR→Edge materializer translation, OTEL emission (**except** the single internal `cookbook.race.reroll` span — see §8 carve-out: it fires inside the pure function and oq-1 cannot observe it externally), the region_graph/themes loader, set-piece slot schema.
 
 Likely implementation sub-plans (sequenced):
 
