@@ -1,7 +1,10 @@
 # Beneath Sünden — Plan 5: Persistence Layer (Design)
 
 - **Date:** 2026-05-16
-- **Status:** Approved (design) — pending spec review, then implementation plan
+- **Status:** Approved (design); **revised 2026-05-16** at plan-writing — reconciled
+  to actual Plan-2 code (graph-centric model → added `dungeon_edge` table §3.5,
+  Decisions 4/4a; serde is *created*, not *reused*). User-approved the edge-storage
+  resolution before the implementation plan was written.
 - **Parent spec:** `docs/superpowers/specs/2026-05-16-sunden-deep-procedural-megadungeon-design.md` (§7, §8, §11; §10 decomposition item 5)
 - **Sub-plan:** 5 of 8 — *Persistence layer* (`dungeon_map`, `frontier`, mutation overlay, complication ledger; round-trip tests)
 - **Predecessors (all merged):** Plan 1 maze-maker family port · Plan 2 region-graph + Jaquays · Plan 3 `depth_score` · Plan 4 theme palette + set-piece schema
@@ -29,33 +32,55 @@ wiring).
 | 1 | **Module:** new `sidequest-server/sidequest/dungeon/persistence.py`, self-contained domain module (Plan 2–4 `sidequest/dungeon/` precedent). Split a `_serde.py` only if serialization adapters bloat the file — decided at implementation, not pre-optimized. |
 | 2 | **Scope depth:** module + real save-DB round-trip; **no materializer/session caller** (Plan 7). Honest deferral + a Plan-7 wiring-test contract. |
 | 3 | **Table home:** the four dungeon structures persist in the **same save DB**, on a **caller-supplied** SQLite connection (the store does not open its own), reusing `game/persistence.py`'s `_configure_connection` WAL + `foreign_keys` PRAGMA discipline. Plan 7's materializer later owns the single-transaction commit spanning game-save + dungeon-save (parent §7.5). |
-| 4 | **Serialization (Approach A):** keyed-row + JSON `TEXT` payload built from the Plan 2–4 models' existing `as_dict()` serializers; Plan 5 adds the symmetric `from_dict()`. The few queried fields are promoted to real indexed columns. Masks ride as an in-DB `BLOB` (single-save-file invariant). |
+| 4 | **Serialization (Approach A):** keyed-row + JSON `TEXT` payload. The Plan 2–4 persisted models (`RegionGraph`/`RegionNode`/`RegionEdge`) are plain dataclasses with **no** `as_dict()` — Plan 5 **creates** the exact-inverse `to_dict()`/`from_dict()` pair on them (it does not "reuse" one; the only existing `as_dict()` methods are on the transient `GenerationReport`/`DepthReport` OTEL-report objects, which are **not** persisted and are left untouched). The few queried fields are promoted to real indexed columns. Masks ride as an in-DB `BLOB` (single-save-file invariant). |
+| 4a | **Edge storage (reconciliation, 2026-05-16):** Plan 2's region graph is **graph-centric** — `RegionGraph` holds a flat `edges: list[RegionEdge]` separate from `nodes`; `RegionNode` has no edges field. Edges therefore cannot live "in the region payload" as an earlier draft assumed. Resolution: regions persist one-row-per-region in `dungeon_map`; edges persist one-row-per-edge in a dedicated **`dungeon_edge`** table (§3.5). `load_map()` rebuilds the `RegionGraph` from region rows + edge rows. This preserves every Approach-A intent (per-region freeze, promoted query columns, model-owned exact round-trip, single save file); it costs one table beyond the original four. |
 | 5 | **No migration burden:** no `beneath_sunden` campaign exists yet, so there is no legacy dungeon data to migrate. Schema is additive `CREATE TABLE IF NOT EXISTS` (matches the existing `SqliteStore` pattern; no migration framework). |
 | 6 | **No floors:** no table, column, or index may be keyed by or named for a floor (parent §5/§11 hard constraint), enforced by a schema-introspection test. |
 
-## 3. Schema — Four Tables (additive `CREATE TABLE IF NOT EXISTS`)
+## 3. Schema — Five Tables (additive `CREATE TABLE IF NOT EXISTS`)
 
-All four use the keyed-row + JSON-payload shape (Approach A). Queried fields are
-promoted out of the payload into real indexed columns; everything else lives in
-the model-owned JSON so additive frozen-dataclass field growth never forces a
-schema change.
+Keyed-row + JSON-payload shape (Approach A). Queried fields are promoted out of
+the payload into real indexed columns; everything else lives in the model-owned
+JSON so additive frozen-dataclass field growth never forces a schema change.
+Tables: `dungeon_map`, `dungeon_edge`, `dungeon_frontier`,
+`dungeon_mutation_overlay`, `dungeon_complication_ledger`.
 
 ### 3.1 `dungeon_map` — the single growing region graph
 One row per region. **Keyed by `region_id`, never by floor.**
 
 | Column | Type | Notes |
 |---|---|---|
-| `region_id` | `TEXT PRIMARY KEY` | natural domain id |
-| `expansion_id` | `TEXT` | indexed; the materialization batch |
-| `depth_score` | `REAL` | indexed; from Plan 3 (`RegionNode.depth_score`) |
+| `region_id` | `TEXT PRIMARY KEY` | natural domain id (e.g. `exp001.r0`) |
+| `expansion_id` | `INTEGER` | indexed; the materialization batch (`RegionNode.expansion_id` is `int`) |
+| `depth_score` | `REAL NULL` | indexed; from Plan 3 (`RegionNode.depth_score`, `None` until attach) |
 | `generator_version` | `TEXT` | per-region freeze stamp (parent §7) |
-| `payload` | `TEXT` | JSON `RegionNode.as_dict()` — includes typed edges (corridor/stairs/shaft/chute/secret), hidden/shortcut/conditional flags, set-piece component-state refs |
+| `payload` | `TEXT` | JSON `RegionNode.to_dict()` (Plan-5-added): `id`, `expansion_id`, `theme`, `depth_score` |
 | `mask` | `BLOB NULL` | ADR-096 interior mask sidecar, kept in-DB for the single-save-file invariant |
 | `created_at` | `TEXT` | ISO timestamp |
 
-Edges are stored **in the region payload** (Plan 2's `RegionNode.as_dict()`
-already emits them; a separate edge table would re-invent serialization the
-Approach-A contract owns). Cross-region edges are reconciled on `load_map()`.
+Edges are **not** in the region payload (the model is graph-centric — see
+Decision 4a); they persist in `dungeon_edge` (§3.5). `load_map()` rebuilds the
+`RegionGraph` from `dungeon_map` rows + `dungeon_edge` rows.
+
+### 3.5 `dungeon_edge` — typed region connections
+One row per `RegionEdge`. Edges are graph-level in Plan 2's model (flat
+`RegionGraph.edges` list), not node-owned.
+
+| Column | Type | Notes |
+|---|---|---|
+| `edge_id` | `INTEGER PRIMARY KEY AUTOINCREMENT` | stable load order |
+| `expansion_id` | `INTEGER` | indexed; the expansion that introduced this edge (freeze unit) |
+| `a` | `TEXT` | endpoint region id (`RegionEdge.a`) |
+| `b` | `TEXT` | endpoint region id (`RegionEdge.b`) |
+| `kind` | `TEXT` | `corridor`/`stairs`/`shaft`/`chute`/`secret` |
+| `hidden` | `INTEGER` | 0/1 — secret/conditional (`RegionEdge.hidden`) |
+| `shortcut` | `INTEGER` | 0/1 — collapses distance toward entrance (`RegionEdge.shortcut`) |
+| `payload` | `TEXT` | JSON `RegionEdge.to_dict()` (Plan-5-added) — authoritative; columns are promoted query keys |
+| `created_at` | `TEXT` | |
+
+Indexed on `a`, `b`, `expansion_id`. A cross-expansion stitch edge is owned by
+the expansion that introduced it (so freezing an expansion freezes its stitch
+edges too). No floor column anywhere (parent §5/§11).
 
 ### 3.2 `dungeon_frontier` — unexpanded edges
 One row per frontier edge.
@@ -100,22 +125,27 @@ transition API, **not the producers**.
 
 ## 4. Serialization Contract (Approach A)
 
-Plan 5 adds symmetric `from_dict()` classmethods **only to the models it
-persists** — `RegionNode` (incl. its `depth_score` and nested typed-edge
-structures) and the frontier/mutation/thread payload models. The transient
-*report* classes (`GenerationReport`, `DepthReport`) are **not** persisted —
-they are referenced here solely as the authoritative `as_dict()` *span-contract
-shape* the persisted models' serialization must stay consistent with. Do **not**
-add `from_dict()` to the report classes.
+Plan 5 **creates** a symmetric `to_dict()` / `from_dict()` pair **only on the
+models it persists**:
 
-**`as_dict()` / `from_dict()` are an exact round-trip pair — the central
-asserted invariant.** The `as_dict()` shapes *are already* the OTEL span
-contracts (Plan 2 carry-forward: `GenerationReport.as_dict()` is Plan-7's
-`dungeon.materialize.*` span contract; Plan 3: `DepthReport.as_dict()` is the
-`attach` span contract). Plan 5 **reuses** these shapes and must **not** fork or
-redefine them. If a model genuinely needs a field for round-trip fidelity that
-`as_dict()` omits, that is a Plan 2/3 correction logged as a deviation — not a
-Plan-5-local serialization fork.
+- `RegionNode` — `{id, expansion_id, theme, depth_score}` (plain frozen
+  dataclass; `dataclasses.asdict` is the natural `to_dict`).
+- `RegionEdge` — `{a, b, kind, hidden, shortcut}` (plain frozen dataclass).
+- `RegionGraph` — `{entrance_id, nodes, edges}` (composed of the two above);
+  this is the load-time reassembly target.
+- The Plan-5-owned frontier / mutation / complication-thread payload models.
+
+These models currently have **no** serialization methods at all — Plan 5 adds
+them. The only existing `as_dict()` methods in the package are on the transient
+`GenerationReport` (invariants.py) and `DepthReport` (depth.py) **report**
+objects, which are **not** persisted (they are Plan-7's `dungeon.materialize.*`
+OTEL span contracts). Plan 5 must **not** touch the report classes and must
+**not** add `from_dict()` to them — there is no field overlap with the persisted
+models, so there is nothing to "reuse" and nothing to fork.
+
+**`to_dict()` / `from_dict()` are an exact round-trip pair — the central
+asserted invariant** (`from_dict(to_dict(x)) == x` for every persisted model,
+property-tested across a Plan 2/3 seed sweep).
 
 ## 5. Public API — the Deferred Plan-7 Caller Surface
 
@@ -164,7 +194,7 @@ parent-§7.5 transaction. Presented as API; **no caller exists yet** (Plan 7).
 - **Round-trip:** `model → commit → reload → assert equal` for all four
   structures, against real SQLite — both `:memory:` and a temp-file variant (the
   temp-file path exercises WAL, matching `_configure_connection`).
-- **`as_dict()/from_dict()` exact-inverse property sweep** across a Plan 2/3 seed
+- **`to_dict()/from_dict()` exact-inverse property sweep** across a Plan 2/3 seed
   sweep, reusing the existing region-graph + depth generators as fixtures (no new
   fixtures invented).
 - **Mutation overlay** survives reload; replay order is deterministic
@@ -202,7 +232,7 @@ migration framework (none exists, none needed — Decision 5).
 - **Plan 6** (set-piece attach + trope/quest-at-attach) produces the
   component-state and thread objects that Plan 5's `record_mutation` /
   `open_thread` persist. Plan 6 must serialize through the Approach-A
-  `as_dict()/from_dict()` pair — not a parallel format.
+  `to_dict()/from_dict()` pair — not a parallel format.
 - **Plan 7** (materializer) owns: `commit_expansion`'s *caller*, the parent-§7.5
   single transaction spanning game-save + dungeon-save, the
   `dungeon.materialize.*` / `frontier.expand` spans, and the **mandatory
