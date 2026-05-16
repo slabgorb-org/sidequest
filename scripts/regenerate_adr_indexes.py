@@ -212,9 +212,14 @@ IMPL_BADGES = {
 
 def impl_cell(adr: ADR) -> str:
     label = IMPL_BADGES.get(adr.impl_status, adr.impl_status)
-    if adr.impl_pointer is not None:
-        return f"{label} → ADR-{adr.impl_pointer:03d}"
-    return label
+    pointer = adr.impl_pointer
+    if pointer is None:
+        return label
+    if isinstance(pointer, int):
+        return f"{label} → ADR-{pointer:03d}"
+    if isinstance(pointer, str) and pointer.isdigit():
+        return f"{label} → ADR-{int(pointer):03d}"
+    return f"{label} → {pointer}"
 
 
 def render_readme_body(adrs: list[ADR]) -> str:
@@ -279,11 +284,19 @@ def render_readme_body(adrs: list[ADR]) -> str:
         lines.append("|-----|------|---------|")
         for adr in sorted(drift, key=lambda a: (a.impl_status, a.id)):
             label = IMPL_BADGES.get(adr.impl_status, adr.impl_status)
-            if adr.impl_pointer is not None:
-                by = next((a for a in adrs if a.id == adr.impl_pointer), None)
-                ptr = by.short_link if by else f"ADR-{adr.impl_pointer:03d}"
-            else:
+            pointer = adr.impl_pointer
+            if pointer is None:
                 ptr = "—"
+            else:
+                by = next((a for a in adrs if a.id == pointer), None)
+                if by:
+                    ptr = by.short_link
+                elif isinstance(pointer, int):
+                    ptr = f"ADR-{pointer:03d}"
+                elif isinstance(pointer, str) and pointer.isdigit():
+                    ptr = f"ADR-{int(pointer):03d}"
+                else:
+                    ptr = str(pointer)
             lines.append(f"| {adr.link} | {label} | {ptr} |")
         lines.append("")
 
@@ -369,11 +382,19 @@ def render_drift(adrs: list[ADR]) -> str:
         lines.append("|-----|--------|---------|")
         for a in sorted(bucket, key=lambda x: x.id):
             status = STATUS_BADGES.get(a.status, a.status)
-            if a.impl_pointer is not None:
-                by = adr_map.get(a.impl_pointer)
-                ptr = by.link if by else f"ADR-{a.impl_pointer:03d}"
-            else:
+            pointer = a.impl_pointer
+            if pointer is None:
                 ptr = "—"
+            else:
+                by = adr_map.get(pointer)
+                if by:
+                    ptr = by.link
+                elif isinstance(pointer, int):
+                    ptr = f"ADR-{pointer:03d}"
+                elif isinstance(pointer, str) and pointer.isdigit():
+                    ptr = f"ADR-{int(pointer):03d}"
+                else:
+                    ptr = str(pointer)
             lines.append(f"| {a.link} | {status} | {ptr} |")
         lines.append("")
 

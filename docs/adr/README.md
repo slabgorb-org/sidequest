@@ -113,6 +113,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-081: Advancement Effect Variant Expansion (v1)](081-advancement-effect-variant-expansion.md) | ✓ accepted | deferred → ADR-087 |
 | [ADR-095: Class Mechanical Surface — One Signature Ability Per Non-Magical Class](097-class-mechanical-surface.md) | ✓ accepted | live |
 | [ADR-096: Cavern Renderer Revival — Pre-Rendered Cellular Caverns for Tactical Maps](096-cavern-renderer-revival.md) | ✓ accepted | *partial* |
+| [ADR-106: Runtime Procedural Jaquaysed Megadungeon — Contiguous Edge-Expansion, maze-maker Family Port + Complication Ledger](106-runtime-procedural-jaquaysed-megadungeon.md) | ✓ accepted | *partial* → docs/superpowers/specs/2026-05-16-sunden-deep-procedural-megadungeon-design.md |
 
 ## Frontend / Protocol
 
@@ -289,5 +290,6 @@ ADRs whose implementation is absent, partial, or deferred. See [DRIFT.md](DRIFT.
 | [ADR-103: Native OTEL via Tool Registry](103-native-otel-via-tool-registry.md) | *partial* | [ADR-101](101-anthropic-sdk-as-narrator-backend.md) |
 | [ADR-104: Perception Filtering at the Tool Layer](104-perception-filtering-at-the-tool-layer.md) | *partial* | [ADR-105](105-broadcast-layer-perception-firewall.md) |
 | [ADR-105: Broadcast-Layer Perception Firewall — Completing ADR-104 in the MP Fan-Out](105-broadcast-layer-perception-firewall.md) | *partial* | [ADR-101](101-anthropic-sdk-as-narrator-backend.md) |
+| [ADR-106: Runtime Procedural Jaquaysed Megadungeon — Contiguous Edge-Expansion, maze-maker Family Port + Complication Ledger](106-runtime-procedural-jaquaysed-megadungeon.md) | *partial* | docs/superpowers/specs/2026-05-16-sunden-deep-procedural-megadungeon-design.md |
 
 <!-- ADR-INDEX:GENERATED:END -->
