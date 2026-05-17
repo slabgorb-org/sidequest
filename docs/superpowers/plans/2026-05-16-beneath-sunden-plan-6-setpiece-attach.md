@@ -528,9 +528,42 @@ Plan 5's `DungeonStore.resolve_thread(thread_id)` emits `ledger.resolve` interna
 > 3. Own quest-thread resolution: when a quest finishes/fails via the scenario mechanic, call `store.resolve_thread(thread_id)` for the matching `kind="quest"` threads. Plan 6's resolution function ONLY handles tropes.
 > 4. Update `test_mandatory_wiring_decision_n_handler_site_present_and_seam_declared` — invert the `"dungeon_store" not in sd_fields` assertion once Plan 7 wires the seam.
 
-**Re-verification (Task 5):**
-- `uv run pytest tests/dungeon/test_setpiece_attach.py tests/dungeon/test_setpiece_attach_wiring.py -v` → **47 passed** (43 prior Task-4 + 2 Task-5 tests in `test_setpiece_attach.py` + 4 mandatory wiring tests in `test_setpiece_attach_wiring.py`).
+> **PLAN 7 HANDOFF (TASK 5) — superseded by the spec-review correction below.** See "Decision N — CORRECTED" for the authoritative handoff. The runtime-warning item is void (no warning exists anymore).
+
+**Re-verification (Task 5, initial pass):**
+- `uv run pytest tests/dungeon/test_setpiece_attach.py tests/dungeon/test_setpiece_attach_wiring.py -v` → **47 passed**.
 - `uv run pytest tests/ -k "trope or quest or scenario or dungeon" -q` → **650 passed, 3 skipped, 0 failed**.
 - `uv run pytest tests/telemetry/test_routing_completeness.py -q` → **2 passed**.
-- `uv run ruff check` / `format` clean on all changed files.
-- `uv run pyright sidequest/dungeon/setpiece_attach.py` → **0 errors, 0 warnings**. `websocket_session_handler.py` has 23 pre-existing pyright errors (none on the Task-5 additions at lines ~2786–2825); new lines introduce zero errors.
+
+---
+
+### Task 5 spec-review corrections (2026-05-16, supersedes the Decision-N note above)
+
+Server commit: `1ca51cb` (base `cb6ac94`) on `feat/beneath-sunden-plan-6-setpiece-attach`.
+
+**BLOCKER 1 — Decision N CORRECTED (supersedes the prior "STOP-AND-REPORT / WARNING log" note in this section):**
+The prior implementation emitted a per-turn `logger.warning("dungeon.ledger_resolve.skipped …")` whenever `sd.dungeon_store` was absent. **This is wrong and is removed entirely.** The trope engine is global (not dungeon-only); a normal non-dungeon session resolves tropes constantly, so a per-turn warning fires on ~100% of pre-Plan-7 turns regardless of gating — ignorable noise, not a guard. Architect's corrected invariant: **pre-Plan-7, `attach_set_piece` is never called in production (it is Plan 7's materializer entry point — nothing in prod creates `ComplicationThread`s yet). Therefore store-absent ⟺ zero dungeon ledger threads exist ⟹ the no-op is provably correct.** Plan 7 wires the materializer (which creates threads) AND the session `dungeon_store` together — inseparable. So: the handler-site call is gated on `getattr(sd, "dungeon_store", None) is not None`; when absent it does **nothing — no warning, no log** (a provably-correct no-op), accompanied by a precise CODE COMMENT stating the invariant. The LOUD declaration moved to the **mandatory wiring test's structural tripwire**: `test_mandatory_wiring_decision_n_handler_site_present_and_seam_declared` keeps the `"dungeon_store" not in _SessionData fields` assertion (zero runtime noise; a CI tripwire that fires exactly once — when Plan 7 must finish). That test now also asserts (i) the resolution call is GUARDED by the `getattr(...) is not None` gate with the gate preceding the call in source order (real structure check, not the prior tautology), and (ii) the noisy `dungeon.ledger_resolve.skipped` string is GONE. This is honest-deferral done right: invariant documented + provably true (no silent fallback); wiring test is the tripwire (no buried bomb).
+
+**BLOCKER 2 — origin region on `ledger.resolve` (continuation of the Seam-1 ledger-span supersession):**
+Spec Task-5 test-1 says `ledger.resolve` "carries origin region". Merged Plan 5's `ledger_resolve_span` (`sidequest/telemetry/spans/dungeon_persist.py`) emits **only `thread_id`** — and Plan 5 OWNS that span (the Seam-1 supersession; Plan 6 must NOT modify Plan 5's span emission). **Architect decision: "(origin region carried) on `ledger.resolve`" is SUPERSEDED — origin region is carried on Plan 5's `ledger.add` span and is durably persisted on the thread row.** Test 1 was rewritten: it captures the open thread's `thread_id` before resolution, then after resolution asserts via the SOURCE OF TRUTH `store.get_thread(thread_id).origin_region_id == <attach origin>` AND `.status == "resolved"`, AND that the real `ledger.resolve` span (via the in-memory exporter) carries THAT `thread_id`. That proves origin↔resolution end-to-end through the persisted row — what the spec actually requires. The prior "thread_id non-None, origin unverifiable" hand-wave is deleted.
+
+**BLOCKER 3 — resolution semantics correctness (3 new tests):**
+`resolve_complications_for_resolved_tropes` now consumes each open matching thread **at most once** per call (pop a per-`ref_id` worklist built from one `open_threads()` snapshot). Behaviour, all tested:
+- (a) `test_resolution_case_a_resolved_trope_no_dungeon_thread_is_clean_noop` — a resolved trope_id with NO matching open dungeon thread is a clean no-op (NO `NotFoundError`, NO raise, NO log). This is the dominant path (most resolved tropes are normal non-dungeon tropes).
+- (b) `test_resolution_case_b_duplicate_components_both_threads_flip` — two resolved instances of the same trope_id with two open `kind="trope"` threads → BOTH flip resolved (count-matched). `resolved_trope_ids` is NOT deduped (the handshake diff legitimately carries the id once per resolved `TropeState`).
+- (c) `test_resolution_case_c_surplus_resolved_instances_clean_noop_no_raise` — more resolved instances than open threads, plus a repeated call → exactly one `ledger.resolve` per thread, surplus/repeat are clean no-ops, NO double-resolve, NO raise. The `Raises: NotFoundError` docstring clause was removed (it no longer raises in normal operation; the pop-once worklist makes a surplus a no-op).
+
+**LOW + nits fixed:** the tautological `"getattr" in src or "dungeon_store" in src` wiring assertion replaced with a real guarded-call structure check (gate marker present, `is not None` precedes the call). The misleading `_make_terminal_trope_def` docstrings in both test files (claimed it constructs a `TropeState` with `progress=1.0`; it returns the trope DEFINITION — the caller sets the live `TropeState.progress`) corrected. The handler diff is minimal: only the comment block + the removed `else: logger.warning` (no cosmetic reformatting of untouched lines).
+
+> **PLAN 7 HANDOFF (TASK 5) — AUTHORITATIVE:** Plan 7 must, in ONE change:
+> 1. Add `dungeon_store: DungeonStore | None = None` to `_SessionData` in `session_handler.py`.
+> 2. Populate `sd.dungeon_store` at session-construction time (connect / chargen-confirmation) so the gated handler call fires from the live turn path.
+> 3. Own quest-thread resolution: when a quest finishes/fails via the scenario mechanic, call `store.resolve_thread(thread_id)` for matching `kind="quest"` threads. Plan 6's resolution function handles ONLY tropes.
+> 4. INVERT (do NOT delete/skip) `test_mandatory_wiring_decision_n_handler_site_present_and_seam_declared`: flip the `"dungeon_store" not in sd_fields` assertion to a positive `DungeonStore | None` type check AND add/keep an integration test proving a real resolution flows turn → handshake diff → `resolve_complications_for_resolved_tropes` → `store.resolve_thread`. The test's failure message spells out this required action.
+
+**Re-verification (Task 5, spec-review pass):**
+- `uv run pytest tests/dungeon/test_setpiece_attach.py tests/dungeon/test_setpiece_attach_wiring.py -v` → **50 passed** (47 prior + 3 new Blocker-3 cases).
+- `uv run pytest tests/ -k "trope or quest or scenario or dungeon" -q` → **653 passed, 3 skipped, 0 failed** (Task-4 conftest OTEL guard remains green).
+- `uv run pytest tests/telemetry/test_routing_completeness.py -q` → **2 passed**.
+- `uv run ruff check` / `format --check` clean on all changed files.
+- `uv run pyright` → **0 errors, 0 warnings** on `setpiece_attach.py`, `test_setpiece_attach.py`, `test_setpiece_attach_wiring.py`, `tests/dungeon/conftest.py`. `websocket_session_handler.py` retains 24 pre-existing pyright errors (none on the Task-5 region ~2785–2820; removing the `else` block did not change the count).
