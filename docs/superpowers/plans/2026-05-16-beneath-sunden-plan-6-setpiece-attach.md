@@ -497,9 +497,40 @@ Spec verification required both the code path AND a test that calling `attach_se
 
 **ITEM 6 (`started_at_depth_score` not in `as_dict()`) — correct by Decision K; no code change.** Documented in the PLAN 7 HANDOFF callout above (Plan 7 reads depth from the thread rows, not the span).
 
-**Re-verification (review-fix pass):**
+**Re-verification (review-fix pass, Task 4):**
 - `uv run pytest tests/dungeon/test_setpiece_attach.py -v` → **41 passed** (39 prior, with `test_attach_report_as_dict_matches_fields` rewritten to `test_attach_report_as_dict_is_the_scalar_fields_minus_rolled` keeping the count, + 2 new: re-attach PersistError, rolled determinism).
 - `uv run pytest tests/ -k "trope or quest or scenario or dungeon" -q` → **644 passed, 3 skipped, 0 failed** (ITEM 2 unblocked `test_commit_and_ledger_emit_spans`).
 - `uv run pytest tests/telemetry/test_routing_completeness.py -q` → **2 passed**.
 - `uv run ruff check` / `format` clean on all changed files (`setpiece_attach.py`, `test_setpiece_attach.py`, `conftest.py`, the `test_persistence.py` addition). The `test_persistence.py` whole-file `ruff format` would also reformat several **pre-existing** style deviations in functions Task 4 never touched (lines 77/89/264 — multi-line `conn.execute` / `ComplicationThread(...)` calls); these are out of Task-4-review scope and were left untouched to avoid cross-scope Plan-5-test churn. The 9-line Task-4 addition itself is correctly formatted.
 - `uv run pyright` → **0 errors, 0 warnings** on `setpiece_attach.py`, `dungeon_setpiece.py`, `test_setpiece_attach.py`, AND `tests/dungeon/conftest.py`.
+
+---
+
+### Task 5 Post-Implementation Corrections (2026-05-16)
+
+Server commit: `cb6ac94` on branch `feat/beneath-sunden-plan-6-setpiece-attach`.
+
+**Seam 1 supersession (ledger.resolve) — continuation, Task 5:**
+Plan 5's `DungeonStore.resolve_thread(thread_id)` emits `ledger.resolve` internally (inside `persistence.py:419`). Task 5 calls `store.resolve_thread(thread_id)` from `resolve_complications_for_resolved_tropes`; Plan 5 emits the span. Plan 6 does NOT add a second `ledger.resolve` emit in `setpiece_attach.py`. This is the continuation of the Seam 1 supersession documented under Task 4 — Plan 5 owns both `ledger.add` and `ledger.resolve`; Plan 6 only calls the primitives.
+
+**Decision M — resolution function + wiring:**
+`resolve_complications_for_resolved_tropes(*, resolved_trope_ids: list[str], store: DungeonStore) -> None` is the Plan 6 public resolution function, added at the bottom of `sidequest/dungeon/setpiece_attach.py`. It is wired at the REAL Story 45-20 handshake site in `sidequest/server/websocket_session_handler.py`, immediately after the existing `_handshake_resolved_tropes(...)` call (approximately line 2786). The call consumes the resolved-trope diff computed by the 45-20 handshake: a list comprehension over `snapshot.active_tropes` selecting tropes whose `status == "resolved"` and whose baseline status was not already `"resolved"` — the exact diff the handshake site already computes. This is the "reuse-first, subscribe to the existing event" mandate from the plan. The function fetches all open threads once, filters `kind="trope"` threads by `payload["ref_id"]`, and calls `store.resolve_thread(thread_id)` for each match.
+
+**Decision N — STOP-AND-REPORT (store-source seam):**
+`_SessionData` has NO `dungeon_store` attribute — confirmed by inspecting `sidequest/server/session_handler.py:427–580`. Plan 7 owns the session→DungeonStore wiring. The handler-site call uses `getattr(sd, "dungeon_store", None)` to reference the Plan 7–designated attribute name without blowing up pre-Plan 7. The guard is NOT a silent no-op: when `dungeon_store` is `None` (pre-Plan 7), the handler emits a `logger.warning("dungeon.ledger_resolve.skipped — sd.dungeon_store is not set...")` visible in the server log and GM panel. Plan 7 adds `dungeon_store: DungeonStore | None = None` to `_SessionData` and populates it at session-construction time to activate the path. The mandatory wiring test (`test_mandatory_wiring_decision_n_handler_site_present_and_seam_declared`) asserts: (a) the function name is in the handler file, (b) the string `"dungeon_store"` is in the handler file, (c) `_SessionData` does NOT yet have `dungeon_store` (the honest-deferral finding), (d) the handler uses `getattr`. This test will need updating when Plan 7 lands.
+
+**Decision O — quest-thread resolution is Plan 7's:**
+`resolve_complications_for_resolved_tropes` resolves ONLY `kind="trope"` threads. Quest threads (`kind="quest"`) remain `open` — Plan 6 has no quest-resolution detector (the ScenarioState finish/fail mechanic and the resolve call are Plan 7's). Task 5 Test 2 and the mandatory wiring test both assert the quest thread stays `open` after the trope resolves, proving the accumulation spine works correctly and Decision O is honored.
+
+> **PLAN 7 HANDOFF (TASK 5):** Plan 7 must:
+> 1. Add `dungeon_store: DungeonStore | None = None` to `_SessionData` in `session_handler.py`.
+> 2. Populate `sd.dungeon_store` at session-construction time (connect / chargen-confirmation path) so the handler-site WARNING disappears and `resolve_complications_for_resolved_tropes` actually fires from the live turn path.
+> 3. Own quest-thread resolution: when a quest finishes/fails via the scenario mechanic, call `store.resolve_thread(thread_id)` for the matching `kind="quest"` threads. Plan 6's resolution function ONLY handles tropes.
+> 4. Update `test_mandatory_wiring_decision_n_handler_site_present_and_seam_declared` — invert the `"dungeon_store" not in sd_fields` assertion once Plan 7 wires the seam.
+
+**Re-verification (Task 5):**
+- `uv run pytest tests/dungeon/test_setpiece_attach.py tests/dungeon/test_setpiece_attach_wiring.py -v` → **47 passed** (43 prior Task-4 + 2 Task-5 tests in `test_setpiece_attach.py` + 4 mandatory wiring tests in `test_setpiece_attach_wiring.py`).
+- `uv run pytest tests/ -k "trope or quest or scenario or dungeon" -q` → **650 passed, 3 skipped, 0 failed**.
+- `uv run pytest tests/telemetry/test_routing_completeness.py -q` → **2 passed**.
+- `uv run ruff check` / `format` clean on all changed files.
+- `uv run pyright sidequest/dungeon/setpiece_attach.py` → **0 errors, 0 warnings**. `websocket_session_handler.py` has 23 pre-existing pyright errors (none on the Task-5 additions at lines ~2786–2825); new lines introduce zero errors.
