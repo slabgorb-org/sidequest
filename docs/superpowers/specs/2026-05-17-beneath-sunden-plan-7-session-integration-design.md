@@ -215,6 +215,17 @@ orchestrator SDK path is the precedent; no `.send()`-shim exists — call
   tests inject a fake). Widen the `ClaudeClient | None` annotations to the
   tooling-client protocol / `Any` consistent with the rest of the migrated
   surface.
+- **Necessary test-seam consequence (not scope creep):** the shared Plan-7
+  test client fakes (`_reflecting_claude_client`, `_fake_claude_client`,
+  `_yielding_concurrency_probe_client` in `tests/dungeon/test_materializer.py`
+  / `test_lookahead_worker.py`) are `ClaudeClient.send`-shaped. Once curate
+  calls `complete_with_tools`, those fakes must move to an SDK shape (an
+  injected fake `AsyncAnthropic` behind `AnthropicSdkClient(sdk=…)`, or a
+  `ToolingLlmClient` stub returning a `ToolingResult` whose `.text` is the
+  curation verdict). Migrating these shared fakes is part of the §7 change —
+  it is the only way §10's "existing materializer/worker tests stay green"
+  holds. The reflected-verdict semantics are preserved exactly; only the
+  client surface changes.
 - **Model tier:** `CallType.SCRATCH` (Haiku) — **decided** (spec read,
   2026-05-17). Curation is structured selection/refinement of monster
   manifests + telegraphs (JSON-shaped, not player-facing prose) and runs
