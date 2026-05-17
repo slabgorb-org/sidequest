@@ -275,6 +275,20 @@ edit.
 - **Corrupt-save guard:** map present but `campaign_seed` row absent → raise
   loud (a real corruption, never a silent re-seed that would fork the
   dungeon).
+- **Cross-session double-register guard (residual, §14.D).** Each session
+  builds a *new* `LookaheadWorkerHandle` → a *new* bound `_observer`;
+  `register_lookahead_worker`'s identity-dedup therefore does **not** hold
+  across sessions, so two concurrent sessions on one save would
+  double-register and double-materialize. The hard constraint forbids
+  touching `lookahead_worker.py`/`frontier_hook.py`, so the guard lives in
+  the seam this story owns: `session_integration` keeps a process-level
+  live registry keyed by **save identity** (save DB path; in-memory stores
+  are distinct objects). A second `attach_dungeon_to_session` for an
+  already-attached save raises **loud** (concurrent sessions on one save is
+  a real contract violation, not a silent upsert — No Silent Fallbacks);
+  `detach_dungeon_from_session` clears the key. Sequential reopen (the
+  real playgroup pattern — one shared session per save, submit-and-wait)
+  is unaffected; the idempotent-reopen contract (§6) is unchanged.
 
 ## 10. Testing Strategy
 
@@ -285,9 +299,16 @@ the *session lifecycle*).
 - **Session-lifecycle wiring test (new, keystone):** drive the real
   connect → region-crossing → teardown path for a fresh
   `caverns_and_claudes` / `beneath_sunden` save on a real save-DB
-  connection; the only mock is the SDK curate call (the Task-4
-  injected-client precedent, now an SDK fake). Assert:
-  (a) bootstrap commits expansion 0 + expansion 1;
+  connection, against the **real `GenreLoader().load('caverns_and_claudes')`
+  GenrePack** — **no `_attach_pack`-fabricated `.tropes`** (§14.C: that
+  fabrication was the No-Stubbing violation that masked the content gap;
+  it is deleted from both `test_session_lifecycle_wiring.py` and
+  `test_session_integration.py`). The only mock is the SDK curate call
+  (the Task-4 injected-client precedent, now an SDK fake). Assert:
+  (a) bootstrap commits expansion 0 + expansion 1 (the depth-0 entrance
+  theme `drowned_cavern` set-piece `the_siphon` resolves its
+  `the_thing_that_followed_you_down` trope against the real pack — the
+  exact path that aborted connect before §14.A);
   (b) `frontier_hook.registered_observer_count() >= 1` while the session is
   live;
   (c) a real region crossing toward an unexpanded frontier edge materializes
@@ -295,7 +316,11 @@ the *session lifecycle*).
   (d) the live `frontier.region_transition` span carries **`observers >=
   1`** (the lie-detector signal flips off zero);
   (e) after `cleanup()`, observer count returns to its pre-session baseline
-  (no registry leak).
+  (no registry leak);
+  (f) a second `attach_dungeon_to_session` for the same live save (before
+  `detach`) raises loud and does **not** add a second observer
+  (§14.D save-keyed dedup); after `detach`, a fresh attach for that save
+  succeeds (sequential reopen is unaffected).
 - **Idempotency:** second open of the same save does not re-seed and reuses
   the persisted `campaign_seed`.
 - **Seed persistence round-trip;** **non-`beneath_sunden` is a clean
@@ -313,17 +338,25 @@ the *session lifecycle*).
 **In scope:** the `session_integration` module; the two
 `DungeonStore`/`SqliteStore` accessors; `dungeon_meta` seed table; the
 synchronous idempotent bootstrap; the §7 curate SDK edit; the two lifecycle
-incisions; the test suite above.
+incisions; the test suite above; **plus the §14 DO-NOT-SHIP resolution: the
+4-trope content fix + `visual_style.yaml` port in `sidequest-content`
+(§14.A/B), the real-pack keystone rewrite (§14.C), the save-keyed residual
+guard (§14.D), and — gated on a verified real-pack growth — the ADR-106
+CLOSED recording in spec §10 + Post-Implementation Corrections (§14.E)**.
+The ADR-106 closure recording is now part of *this* story's close-out
+(Keith's decision 2026-05-17: genuinely close ADR-106 here, verified not
+asserted) — it is no longer deferred to a separate deliverable.
 
 **Out of scope:** streaming-narrator SDK migration and any `claude -p` → SDK
 work beyond the curate stage; the broader Anthropic SDK migration (its own
-spec); companion docs PR #234 and the spec §10 / Post-Implementation
-Corrections "bottleneck CLOSED" recording (a verified-not-asserted
-end-of-implementation deliverable, coordinated with that tracker after this
-lands and a live session is observed activating the worker);
-`lookahead_breadth > 1` tuning (default 1); the Plan-5 mask-persistence gap
-(inert, tracked in `project_beneath_sunden`); ADR authoring (this reuses
-ADR-106 / Plan 7 decisions, adds none).
+spec); the companion docs PR #234 *mechanics* (tracker bookkeeping —
+coordinated with, not authored by, this story); adapting any
+`caverns_sunden` asset **beyond `visual_style.yaml`** (the rest is
+sins-comedy-specific or already authored fresh in `beneath_sunden` — a
+faithful port would import the wrong tone; steerable later if Keith names a
+specific file); `lookahead_breadth > 1` tuning (default 1); the Plan-5
+mask-persistence gap (inert, tracked in `project_beneath_sunden`); ADR
+authoring (this reuses ADR-106 / Plan 7 decisions, adds none).
 
 ## 12. Decomposition (implementation-plan seed)
 
@@ -358,3 +391,117 @@ per task, the Plan 7 discipline:
    implementation plan against the test seeding helpers + the
    Seed=Expansion-0 contract; no fixed dedicated "entrance" theme is
    introduced.
+
+## 14. Post-Design Correction — DO-NOT-SHIP Resolution (2026-05-17)
+
+> The 7-task branch (`feat/beneath-sunden-plan-7-session-integration`, tip
+> `ffff55c6`) is engineering-correct and 6480-suite green, but the final
+> adversarial review returned **DO-NOT-SHIP**: a verified, pre-existing
+> Plan-4 content gap means a real `beneath_sunden` session aborts at
+> connect and the dungeon never grows — **ADR-106 is NOT closed; it was
+> relocated.** This section is the authoritative resolution and supersedes
+> any earlier clause it contradicts. Keith's chosen path (2026-05-17): *fix
+> the content gap + drive the keystone with the real GenrePack* so ADR-106
+> is genuinely closed, verified not asserted.
+
+**The verified blocker (traced in code, not asserted).**
+`connect.py:~400` constructs `genre_pack = GenreLoader().load(genre_slug)`
+(the **genre-level** pack) and passes it straight through as
+`pack_tropes`. `setpiece_attach.py:411-413` resolves a set-piece's
+`trope_id` against `{t.id: t for t in pack_tropes.tropes}` — i.e. the
+genre-level `genre_packs/caverns_and_claudes/tropes.yaml`, which defines
+only `{the_keeper_stirs, extraction_panic, hireling_mutiny,
+the_deeper_dark}`. World tropes live under `genre_pack.worlds[w].tropes`
+(== `[]` for `beneath_sunden`) and are **never passed**; `resolve.py`
+emits only world tropes anyway. The 5 Plan-4 genre-level themes reference 4
+trope_ids that exist nowhere:
+
+| trope_id | theme (set-piece) | set-piece params |
+|---|---|---|
+| `the_thing_that_followed_you_down` | `drowned_cavern` (`the_siphon`) | `{from_region: surface}` |
+| `the_keeper_notices_the_disturbance` | `bone_crypt` (`the_false_floor`) | `{patience: low}` |
+| `priest_demands_a_sacrifice` | `sunless_temple` (`the_altar_that_waits`) | `{countdown_expansions: 2}` |
+| `the_resource_clock_you_can_see` | `labyrinth_trap` (`the_only_path`) | `{resource: light}` |
+
+`drowned_cavern` is the depth-0 **entrance** theme (`DepthBand min 0.0`),
+hit *first* by the bootstrap → `attach_set_piece` PASS-1 raises
+`ValueError: trope_id 'the_thing_that_followed_you_down' not found in pack`
+→ connect aborts. The 7 tasks' tests pass only because
+`test_session_integration.py`/`test_session_lifecycle_wiring.py` inject
+`_attach_pack(*fabricated ids)` — a No-Stubbing violation masking the gap
+(false green). `winding_catacomb` / `sunless_temple` `quest_components`
+(`find_the_unlit_way_out`, `deny_or_feed_the_altar`) need **nothing** —
+re-verified: `setpiece_attach.py` (Decisions B/C, L488-489, L584) has no
+quest registry; quest_id is thread-provenance only.
+
+### 14.A — Author the 4 tropes (genre-level, `sidequest-content`)
+
+Home **decided by code-tracing, not guessed:** the 4 tropes go in
+genre-level **`genre_packs/caverns_and_claudes/tropes.yaml`** — the only
+file the materializer resolves against (chain above). A
+`worlds/beneath_sunden/tropes.yaml` would never be consulted by the
+materializer *and* `resolve.py` would drop the 4 genre tropes from the
+world view — architecturally wrong for this path. The Plan-4 themes are
+themselves genre-level, so their tropes belong genre-level (consistent;
+they are generic megadungeon set-piece tropes — the genre *is* the
+megadungeon now).
+
+Author all 4 **faithfully** to the real `TropeDefinition` schema
+(`id`, `name`, `description`, `category`, `triggers`, `narrative_hints`,
+`tension_level`, `resolution_hints`/`resolution_patterns`, `tags`,
+`escalation[at/event/npcs_involved/stakes]`, `passive_progression`) — real
+game tropes, **not stubs**. Match (a) the existing genre trope voice
+(`the_keeper_stirs` family — Keeper/extraction/depth, grave, lethal),
+(b) `beneath_sunden`'s tone ("Grave, lethal, Moria-as-tragedy. No
+winking."), (c) each set-piece's mechanical intent + params (e.g.
+`priest_demands_a_sacrifice` escalation is a ~2-expansion countdown ending
+in sacrifice-or-consequence; `the_resource_clock_you_can_see` escalates a
+visible light/resource drain). Authored by the **writer** +
+**scenario-designer** agents, two-stage reviewed. **Subrepo-branch
+discipline:** a `sidequest-content` `feat/*` branch created **before**
+dispatching any content implementer; this content must merge first/with
+the server branch (the server keystone reads the sibling content
+checkout).
+
+### 14.B — Port `visual_style.yaml` (genre-neutral, same content branch)
+
+`caverns_sunden/visual_style.yaml`'s `positive_suffix` (B&W Otus/Trampier
+pen-and-ink discipline) + `color_palette` are genuinely world-neutral and
+port cleanly to `worlds/beneath_sunden/visual_style.yaml`; the header
+doctrine is **rewritten** for the single grave shaft (drop the
+Grimvault/Horden/Mawdeep three-dungeon + sins-hamlet references). Loaded
+via the existing `_load_yaml_raw_optional(world_path/"visual_style.yaml")`
+path — **no server change**. Authored by the **art-director** agent. Scope
+is exactly this one file (see §11 — the rest of `caverns_sunden` is
+sins-comedy-specific).
+
+### 14.C — Real-pack keystone rewrite (`sidequest-server` branch)
+
+Rewrite `tests/dungeon/test_session_lifecycle_wiring.py` **and**
+`tests/dungeon/test_session_integration.py` to drive the real
+`GenreLoader().load('caverns_and_claudes')` GenrePack and **delete every
+`_attach_pack` fabrication**. They must pass *for real* once 14.A merges —
+genuinely proving a real session grows the dungeon (§10 (a)–(f)).
+
+### 14.D — Save-keyed residual guard (`session_integration`, the seam we own)
+
+Per §9's new cross-session bullet. The hard constraint forbids touching
+`lookahead_worker.py`/`frontier_hook.py`; the save-identity dedup lives in
+`session_integration.py` (process-level live registry keyed by save DB
+path). Second concurrent attach for an already-attached save raises loud;
+detach clears the key. Covered by §10 (f).
+
+### 14.E — Close-out (gated, verified-not-asserted)
+
+Only **after** 14.A–D land and the real-pack keystone genuinely passes
+(observers ≥ 1 on a real `frontier.region_transition` span + a real
+crossing materializes the next expansion): re-run the final adversarial
+whole-impl review against the real pack; then — and only then — record
+**ADR-106 CLOSED** in the parent megadungeon spec
+(`docs/superpowers/specs/2026-05-16-sunden-deep-procedural-megadungeon-design.md`)
+§10 decomposition item 7 (Plan 7) + that spec's Post-Implementation
+Corrections appendix (coordinated with companion docs PR #234), and finish
+the branch via `superpowers:finishing-a-development-branch`.
+Until that verification passes, ADR-106 is **not** claimed closed
+anywhere. No push/merge until the real-pack keystone is genuinely green
+and the final review clears.
