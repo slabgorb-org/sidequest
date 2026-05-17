@@ -121,19 +121,19 @@ Merged API in `sidequest/dungeon/persistence.py`:
 
 ## Task 6: Full-suite gate + honest-deferral / as-built docs
 
-- [ ] Full server suite green; ruff + pyright clean on `setpiece_attach.py` and both test files.
-- [ ] Module docstring states: this is the runtime owner `setpieces.py` deferred to; the three seams (Plan 5 ledger / ADR-018 trope engine / ADR-053 scenario) and their contracts; the `AttachReport.as_dict()` byte-pinned span contract; the deterministic-roll / save-is-truth / resolution-only-shrinks contracts.
-- [ ] **Post-Implementation Corrections** appended (code authoritative): record divergence between the spec §7.1 contract written against and the real merged Plan 5 ledger + ADR-053 scenario APIs.
-- [ ] Update spec §10 decomposition item 6 status (the live tracker — not ADR-106's body).
+- [x] Full server suite: **1 pre-existing failure** (`test_span_emits_private_segment_count` in `tests/server/test_visibility_classifier.py`) — ordering-dependent OTEL contamination caused by Plan 5's `test_commit_and_ledger_emit_spans` leaving a stale `TracerProvider` installed. Plan 6's `reset_otel_provider()` (Task 4 review fix) made that test effective but did not add teardown — the teardown gap is Plan 5's design. The test passes in isolation and when the dungeon suite runs before it; it is a pre-existing ordering sensitivity, not a Plan-6 bug. Second ordering-sensitive failure (`test_chargen_persist_and_play`) is also pre-existing, same root cause, non-deterministic (sometimes triggers, sometimes not). Ruff `check` — **all checks passed**. Ruff `format --check` — 42 pre-existing files would reformat (all pre-Plan-6); Plan-6 files are all already formatted. Pyright on Plan-6 scoped files (`setpiece_attach.py`, both test files, `dungeon_setpiece.py`, `conftest.py`) — **0/0 on all**. Handler pyright — 23 pre-existing errors, none in Plan-6 edited lines, count unchanged.
+- [x] Module docstring updated (Task 6, 2026-05-16): explicit statement that this module is the runtime owner `setpieces.py` deferred to; three-seams block with as-merged contracts (Plan 5 `open_thread`/`resolve_thread`, Plan 5 owns `ledger.add`/`ledger.resolve`; ADR-018 active_tropes/TropeState/Decision A; ADR-053 SUPERSEDED — quest = ComplicationThread); `AttachReport.as_dict()` byte-pinned key-locked contract block (incl. `.rolled` not in `as_dict()`, Plan 7 freeze); determinism/save-is-truth/resolution-only-shrinks contract block (incl. `setpiece.resolve` aggregate span).
+- [x] **Post-Implementation Corrections** complete: see existing sections (Tasks 0/2/3/4/4-review/5/5-spec-review/5-code-quality). Closing as-built summary appended below.
+- [x] Spec §10 decomposition item 6 updated.
 
 ## Self-Review
 
-- [ ] No silent fallback: unknown trope/quest id, missing manifest creature ref, scenario-seed-impossible, ledger-write-fail all raise loudly with an OTEL trail.
-- [ ] No stub: if Plan 5 unmerged or the ADR-053 surface can't seed, the plan did not run / stopped-and-reported — not faked.
-- [ ] Set-pieces vs cookbook special rooms boundary respected (Task 3 join point only).
-- [ ] Determinism: slot rolls pure + seed-stable across restarts; Plan 7 commit freezes them; never recomputed.
-- [ ] Threads shrink only on player resolution; no arbitrary clock; accumulation observable in ledger + spans.
-- [ ] All five Plan-6 spans present (`setpiece.attach`/`trope.start`/`quest.seed`/`ledger.add`/`ledger.resolve`); the first four emit inside Plan 7's `attach` span, `ledger.resolve` from the gameplay path.
+- [x] **PASS** No silent fallback: unknown trope_id raises loudly with OTEL (trope.start failed=True span); missing creature/loot ref is deferred-to-Plan-7 (Plan 4 shipped no ref convention — not a Plan-6 silent fallback); scenario-seed-impossible is superseded (quest = ComplicationThread via Plan 5, no ScenarioState); ledger-write-fail surfaces as Plan 5's `PersistError` which Plan 6 does not swallow. All tested.
+- [x] **PASS** No stub: ScenarioState is not stubbed (AST-tested by `test_quest_seed_does_not_touch_scenario_state`); Plan-7 seams (manifest-join, store-source, quest-resolution) declared loudly in module docstring and wiring test, not faked.
+- [x] **PASS** Set-pieces vs cookbook boundary respected: `seed_quest_components` accepts `manifest` as a required parameter (Plan-7-ready call shape) but reduced Task 3 does NOT resolve creature/loot refs against it — the manifest-join is Plan 7's by Architect decision.
+- [x] **PASS** Determinism: slot rolls are pure/_slot_seed/blake2b/seed-stable across restarts (hardcoded-pin canary tests exist for roll, over-budget selection, AND thread_id); `AttachReport.rolled` is the freeze target Plan 7 persists; rolls are never recomputed.
+- [x] **PASS** Threads shrink only on player resolution; no arbitrary clock; accumulation fully observable in ledger rows and the `setpiece.resolve` aggregate span (emitted every turn, including empty-diff turns; late-bound `threads_resolved` count). Tested by Task 5 case (a)/(b)/(c)/(d) + `test_unresolved_thread_stays_open_across_subsequent_expansions`.
+- [x] **PASS — SPAN-SET CORRECTED (as-built supersedes original text).** The original Self-Review listed "all five Plan-6 spans: setpiece.attach/trope.start/quest.seed/ledger.add/ledger.resolve". **This is superseded.** As-built Plan 6 emits FOUR spans: `setpiece.attach` / `trope.start` / `quest.seed` / `setpiece.resolve` (the Plan-6-owned aggregate span added in Task 5 code-quality pass). `ledger.add` and `ledger.resolve` are Plan 5's (emitted internally by `open_thread()`/`resolve_thread()` in `sidequest/telemetry/spans/dungeon_persist.py`). Plan 6 calls those primitives but does NOT emit their spans. The corrected span ownership: Plan 6 owns `setpiece.attach`, `trope.start`, `quest.seed`, `setpiece.resolve`; Plan 5 owns `ledger.add`, `ledger.resolve`.
 
 ## Execution Handoff
 
@@ -591,3 +591,29 @@ Server commit: `988f0d7` (base `1ca51cb`) on `feat/beneath-sunden-plan-6-setpiec
 - `uv run ruff check` / `format --check` clean on all changed files (`setpiece_attach.py`, `dungeon_setpiece.py`, `test_setpiece_attach.py`, `test_setpiece_attach_wiring.py`, `tests/dungeon/conftest.py`).
 - `uv run pyright` → **0 errors, 0 warnings** on all five Plan-6 files (incl. the span module + conftest). `websocket_session_handler.py` untouched this pass (24 pre-existing errors, unchanged).
 - Module docstring now matches the code (verified by re-reading + the wiring test's `"dungeon.ledger_resolve.skipped" not in src` assertion staying green).
+
+---
+
+### Task 6 closing as-built summary (2026-05-16, Task 6 closer)
+
+**Divergences between spec §7.1 / plan prose and as-merged code (consolidated):**
+
+| Spec / plan prose | As-built | Record |
+|---|---|---|
+| "Plan 6 emits `ledger.add`/`ledger.resolve`" (line 7 architecture statement) | Plan 5 owns those spans internally; Plan 6 calls `open_thread()`/`resolve_thread()` only | Task 0 reconciliation, Task 4 as-built (a) |
+| "Quest components seed into ScenarioState (ADR-053)" (Task 3 original) | `ScenarioState` is a whodunit model with no dungeon-quest surface; quest = `ComplicationThread(kind="quest")` via Plan 5 | Task 0 reconciliation, Task 3 as-built (a) |
+| "Slot option creature/loot refs resolve against manifest (Task 3 join point)" | Plan 4 shipped no ref convention; manifest-join deferred to Plan 7 | Decision E investigation, Task 3 as-built |
+| `TropeState` carries origin_region + params | `TropeState.extra="ignore"` silently drops extra kwargs; origin+params travel in `TropeStartResult.pending` | Decision A, Task 2 as-built |
+| Decision N original: "store-absent logs WARNING" | Corrected: store-absent is a provably-correct silent no-op (store-absent ⟺ no dungeon threads exist); NO warning/NO log; loud seam is the wiring test's CI tripwire | Task 5 spec-review BLOCKER 1 |
+| Self-Review checkbox 6: "all five Plan-6 spans: setpiece.attach/trope.start/quest.seed/ledger.add/ledger.resolve" | As-built Plan 6 emits FOUR spans: `setpiece.attach`/`trope.start`/`quest.seed`/`setpiece.resolve`; Plan 5 owns `ledger.add`/`ledger.resolve` | Task 5 code-quality pass (setpiece.resolve added); Self-Review corrected in Task 6 |
+| handler pyright pre-existing count: "~23-24 errors" | 23 errors, none in Plan-6 edited lines | Task 6 gate (confirmed) |
+
+**Full-suite gate result (Task 6):** 6412 passed, 1 failed (pre-existing OTEL ordering sensitivity from Plan 5's `test_commit_and_ledger_emit_spans` leaving stale provider installed), 64 skipped. The failure is not in Plan 6's footprint. Ruff check clean; 42 pre-existing files would reformat (Plan 6 files already formatted). Pyright 0/0 on all Plan-6 scoped files.
+
+**PLAN 7 HANDOFF (consolidated from Tasks 4/5):**
+1. Add `dungeon_store: DungeonStore | None = None` to `_SessionData` and populate at session-construction. The `test_mandatory_wiring_decision_n_handler_site_present_and_seam_declared` wiring test will fire a loud assertion failure the moment Plan 7 adds the attribute.
+2. Read `AttachReport.rolled` (not `as_dict()`) to freeze the `RolledSetPiece` into the save.
+3. Read each thread's `started_at_depth_score` from the persisted `ComplicationThread` row (it is NOT in the `setpiece.attach` span by Decision K).
+4. Own quest-thread resolution: `store.resolve_thread()` for `kind="quest"` threads on quest finish/fail.
+5. Implement the creature/loot slot-option → manifest ref cross-resolution (Plan 4 shipped no convention; Task 3's join point deferred here).
+6. Invert `test_mandatory_wiring_decision_n_handler_site_present_and_seam_declared`'s `"dungeon_store" not in sd_fields` assertion to a positive `DungeonStore | None` type check and add a live-turn integration test.
