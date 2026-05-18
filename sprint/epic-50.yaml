@@ -214,7 +214,8 @@ stories:
     description: 'Make the disposition→attitude numeric thresholds genre-pack-configurable. Today disposition.py:78-82 hardcodes >10⇒friendly / <-10⇒hostile / else neutral. Add a genre-pack model field (default ±10) read at pack load time so a pack can widen/narrow the bands. CONSTRAINT (50-12 lesson, verified against code): the Attitude enum is the THREE-tier lowercase wire contract friendly/neutral/hostile (sidequest/game/disposition.py:41-54, locked by tests/game/test_disposition_attitude_enum.py). This story changes the numeric BOUNDARIES only — it does NOT add/rename bands and there is NO five-tier capitalised set. Change vector is the disposition module + genre-pack model + pack loader (repos: server,content); 50-12 already wired Disposition.attitude() into the narrator roster so corrected thresholds flow through with zero roster rework. Do NOT reintroduce the fictional Literal["Hostile","Guarded","Neutral","Trusting","Allied"] that sm-setup invented for 50-12.'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-18'
     repos: server,content
     workflow: tdd
     depends_on: 50-10
@@ -224,6 +225,10 @@ stories:
       - 'AC-3: A pack overriding the threshold (e.g. ±5) reclassifies dispositions at the new boundary; default/unset packs are byte-identical to pre-50-13 behavior (regression-locked).'
       - 'AC-4: No silent fallback — a malformed/out-of-range threshold in pack YAML fails loudly at load, not silently clamped.'
       - 'AC-5: OTEL/dashboard continuity — SPAN_DISPOSITION_SHIFT before/after attitude (shipped by 50-11) still reflects the configured thresholds; no new narrator-facing numeric leak (ADR-104/105).'
+    completed: '2026-05-18'
+    branch: feat/50-13-genre-configurable-thresholds
+    assignee: slabgorb
+    review_verdict: approved
   - id: 50-14
     title: 'Journal: JOURNAL_REQUEST handler — server replies from character.known_facts (seam C server-side per ADR-100)'
     points: 3
