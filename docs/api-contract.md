@@ -124,7 +124,14 @@ Player types something in the game.
   "player_id": ""
 }
 ```
-- `aside: true` = out-of-character message (not narrated)
+- `aside: true` on `PLAYER_ACTION` = an out-of-band OOC question to the GM
+  (ADR-107). It is a non-turn input: it spends no turn, advances the world
+  not at all, and does not count toward the multiplayer submit-and-wait
+  barrier (ADR-036). The server answers with an `ASIDE_ANSWER` message
+  broadcast to the whole room (table-visible). The asker still owes their
+  normal action for the turn to resolve — an aside costs no turn.
+- `ASIDE_ANSWER` payload: `{ asker_id, question, answer, grounded_on[],
+  round }`. `round` is for client ordering only — it is never a turn record.
 - Slash commands (`/status`, `/inventory`, etc.) are intercepted server-side before intent classification
 - Player text is sanitized at the protocol layer (ADR-047) before reaching intent classification or any agent prompt.
 
@@ -181,7 +188,10 @@ Broadcasts in-progress action text to peers in real time. ADR-036 amendment 2026
 - `seq` is monotonic per `(player_id, round)`; receivers drop non-monotonic seq within a round. Round transitions hard-flush state.
 - `status` ∈ `composing` | `submitted` | `cleared` (`cleared` is server-only).
 - `action` is the current text; empty string when `status="cleared"`.
-- `aside: true` is the OOC convention; broadcast identically to in-character text.
+- `aside: true` marks the in-progress text as an out-of-band OOC question
+  (ADR-107), not an in-fiction action. It is mirrored to peers as OOC
+  table-talk and resolved via `ASIDE_ANSWER` — it does not become narration
+  and does not count toward the ADR-036 barrier.
 - Server rate-limit floor: 100ms per socket for `composing` (excess silently dropped, OTEL counter increments). `submitted` bypasses the floor.
 
 ### PLAYER_SEAT (outbound)
