@@ -1,0 +1,13 @@
+# Sprint TO Sprint 2621 - Completed Stories
+# Jira Sprint ID: 0
+# Archived: 2026-05-18
+
+sprint:
+  name: "TO Sprint 2621"
+  number: 2621
+  jira_sprint_id: 0
+  jira_sprint_name: "TO Sprint 2621"
+  goal: Post-Playtest-3 development — scope TBD pending epic promotion
+
+completed:
+  # Completed stories will be appended here by pf sprint archive

@@ -1,12 +1,10 @@
 sprint:
-  name: "3"
-  goal: "Playtest 3 closeout — MP correctness, state hygiene, post-port cleanup"
-  start_date: "2026-04-27"
-  end_date: "2026-05-10"
+  name: TO Sprint 2621
+  jira_sprint_id: 0
+  jira_sprint_name: TO Sprint 2621
+  goal: Post-Playtest-3 development — scope TBD pending epic promotion
+  start_date: '2026-05-18'
+  end_date: '2026-05-25'
   status: active
-  number: 3
-epics:
-  - '48'
-  - '50'
-  - '51'
-  - '52'
+  number: 2621
+epics: []
