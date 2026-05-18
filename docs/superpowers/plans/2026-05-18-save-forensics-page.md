@@ -1313,3 +1313,47 @@ No spec requirement is unmapped.
 **2. Placeholder scan:** No "TBD/TODO/handle edge cases" — every code step is complete. Task 9's intentionally-minimal HTML is explicitly replaced in Task 10 (called out, not a hidden placeholder).
 
 **3. Type consistency:** `FoldResult{derived: dict[str,DerivedField], unparseable_seqs: tuple[int,...]}` and `DerivedField{value, source_seqs}` defined Task 2, consumed unchanged Tasks 3,4,7. `build_turn_bundle` JSON keys (`round, narrative, events, derived, projection, scrapbook, unparseable_seqs`) identical across Task 7 impl, Task 8 unknown-slug fallback, and Task 9/10 UI. `EventRow(seq,kind,payload_json,created_at)` used consistently. Endpoint paths identical between Task 8 routes and Task 10 `fetch` calls.
+
+---
+
+## Spike Findings (Task 1)
+
+Investigated against real save `~/.sidequest/saves/games/2026-05-17-coyote_star-mp/save.db` and the protocol source, 2026-05-18. **These are facts; later tasks reference them, not guesses.**
+
+### F1 — serialized `state_delta` key
+
+`NarrationEndPayload(state_delta=StateDelta(location='Cave')).model_dump_json(exclude={'seq'})` → `{"state_delta": {"location": "Cave"}}`. The key is the **literal `state_delta`**, at the **top level** of the payload dict (no alias generator, as the plan's confirmed-facts predicted). `forensic_fold` reads `payload.get("state_delta")` — unchanged from the Task 2 listing.
+
+### F2 — no round column; no round/turn key in event payloads
+
+`events` columns are exactly `seq, kind, payload_json, created_at` — **no `round` column** (DDL confirmed). Event payload top-level keys by kind in the real save: `NARRATION → [_visibility, footnotes, text]`, `SCRAPBOOK_ENTRY → [location, narrative_excerpt, npcs_present, render_status, scene_title, scene_type, turn_id, world_facts]`. The only round-ish key anywhere is `turn_id` on `SCRAPBOOK_ENTRY` payloads — already covered by the `scrapbook_entries.turn_id` join in Task 7; **not** usable as a general event→round join (NARRATION carries no round). The fold stays kind-agnostic per the plan.
+
+> Note (not a defect): in this real save, **NARRATION payloads carry no `state_delta`** — only `_visibility/footnotes/text`. The fold is kind-agnostic and future-proof by design (plan line 43); test fixtures legitimately inject `state_delta` to exercise it. A reviewer seeing "no state_delta in real data" should **not** conclude the fold is dead.
+
+### F3 — timestamp format mismatch (plan-invalidating; corrected here)
+
+The plan's Step 2 expectation that "both `events.created_at` and `narrative_log.created_at` are ISO-8601 strings" is **FALSE**. Census over the entire real save (100% regular, both directions):
+
+| Column | DDL | Real format | Example |
+|---|---|---|---|
+| `events.created_at` | `TEXT NOT NULL` (Python-set) | ISO-8601, `T` sep, microseconds, `+00:00` | `2026-05-17T18:06:48.217822+00:00` |
+| `narrative_log.created_at` | `TEXT NOT NULL DEFAULT (datetime('now'))` | space sep, **second** precision, **no tz** | `2026-05-17 18:06:48` |
+
+Both are **UTC, same instant** (event seq 1 ≙ round 1 first narrative, both 18:06:48). The divergence is purely lexical, caused by `datetime('now')` vs Python `.isoformat()`.
+
+**Why the plan's Task 6 join is broken as written:** at character index 10 every event string has `'T'` (0x54) where every narrative string has `' '` (0x20). `'T' > ' '`, so for same-day rows `events.created_at < narrative_log.created_at` is **always false** and `>=` **always true**. Raw string bucketing (`WHERE created_at >= lo AND < hi`) collapses *every* event into the *final* round and starves the first round of events. Tests in the plan's current Task 6/7 fixtures hide this because they seed **both** columns in ISO-`T` form — a sanitized fiction that passes against broken production code.
+
+### F4 — LOCKED JOIN STRATEGY: normalized-timestamp bucketing
+
+Round `r`'s event slice = events where
+`substr(replace(events.created_at,'T',' '),1,19)` is `>=` `min(narrative_log.created_at)` of round `r` **and** `<` that of round `r+1` (last round upper bound = +∞). The first round additionally sweeps any events whose normalized ts predates the first narrative row. The `substr(replace(...,'T',' '),1,19)` expression maps an event ts to byte-identical `YYYY-MM-DD HH:MM:SS` form — exactly what `narrative_log.created_at` already is (verified: event seq 1 → `2026-05-17 18:06:48` = round 1 min). Both sides UTC; comparison correct at **second** granularity. Same-second collisions across a round boundary are theoretically possible but practically absent (real round boundaries are minutes apart: 18:06 → 18:11 → 18:13 …) and never break `seq_start`/`seq_end` contiguity.
+
+### F5 — TWO MANDATORY CORRECTIONS to later tasks (binding)
+
+1. **Task 6 production `_events_for_round`** — every comparison of the events table's `created_at` against a narrative-derived bound MUST normalize the LHS: use `substr(replace(created_at,'T',' '),1,19)` in the `WHERE`, not raw `created_at`. The bounds (`lo_ts`/`hi_ts`) are raw `narrative_log.created_at` (already in normalized form). `_round_boundaries`, `build_timeline`, and the `seq <= seq_end` event/fold reads in Task 7 are seq-keyed and need no change.
+2. **Tasks 6, 7, 8 test fixtures** — seed the two columns in their **real production shapes**, not a uniform fiction:
+   - `narrative_log.created_at` → `'YYYY-MM-DD HH:MM:SS'` (space, second precision, **no `T`, no tz**), e.g. `'2026-05-18 00:01:00'`.
+   - `events.created_at` → ISO-`T` with microseconds + `+00:00`, e.g. `'2026-05-18T00:01:01.000000+00:00'`.
+   This makes the join tests exercise the actual format mismatch; with the uniform-ISO fixtures the tests would be vacuous w.r.t. F3/F4 and would pass against broken code.
+
+Other DDL confirmed against plan assumptions (all correct, no further change): `session_meta(id,genre_slug,world_slug,created_at,last_played,schema_version)`, `projection_cache` PK `(event_seq,player_id)`, `scrapbook_entries` column list and defaults as the plan's Task 7 fixture writes them.
