@@ -124,6 +124,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-075: 3D Dice Rendering — Three.js + Rapier Physics Overlay](075-3d-dice-rendering.md) | ✓ accepted | *partial* → ADR-087 |
 | [ADR-079: Genre Theme System Unification](079-genre-theme-unification.md) | ✓ accepted | live |
 | [ADR-094: Orrery Label Placement — Three-Strategy Taxonomy](094-orrery-label-placement-strategies.md) | ✓ accepted | live |
+| [ADR-107: Out-of-Band Aside Channel — Non-Turn-Consuming Player→GM Table-Talk](107-out-of-band-aside-channel.md) | ✓ accepted | live → docs/superpowers/specs/2026-05-17-aside-channel-design.md |
 
 ## Multiplayer
 

@@ -264,8 +264,8 @@ Rust code samples in pre-ADR-082 ADRs are historical; translation table in
 **Game Systems (014, 015, 016, 018, 020, 021, 022, 023, 024, 025, 074, 077, 078, 080, 081, 095, 096, 106)**
 - **014 Diamonds and Coal** · 015 Character Builder State Machine · 016 Three-Mode Character Creation · 018 Trope Engine · 020 NPC Disposition System *(partial)* · 021 Progression System · 022 WorldBuilder Maturity · 023 Session Persistence · 024 Dual-Track Tension Model · 025 Pacing Detection · 074 Dice Resolution Protocol — Player-Facing Rolls via WebSocket · 077 Dogfight Subsystem via StructuredEncounter Extension · 078 Edge / Composure Combat, Mechanical Advancement, and Push-Currency Rituals *(partial)* · 080 Unified Narrative Weight Trait · 081 Advancement Effect Variant Expansion (v1) *(deferred)* · 095 Class Mechanical Surface — One Signature Ability Per Non-Magical Class · 096 Cavern Renderer Revival — Pre-Rendered Cellular Caverns for Tactical Maps *(partial)* · 106 Runtime Procedural Jaquaysed Megadungeon — Contiguous Edge-Expansion, maze-maker Family Port + Complication Ledger *(partial)*
 
-**Frontend / Protocol (026, 027, 075, 079, 094)**
-- 026 Client-Side State Mirror · 027 Reactive State Messaging · 075 3D Dice Rendering — Three.js + Rapier Physics Overlay *(partial)* · 079 Genre Theme System Unification · 094 Orrery Label Placement — Three-Strategy Taxonomy
+**Frontend / Protocol (026, 027, 075, 079, 094, 107)**
+- 026 Client-Side State Mirror · 027 Reactive State Messaging · 075 3D Dice Rendering — Three.js + Rapier Physics Overlay *(partial)* · 079 Genre Theme System Unification · 094 Orrery Label Placement — Three-Strategy Taxonomy · 107 Out-of-Band Aside Channel — Non-Turn-Consuming Player→GM Table-Talk
 
 **Multiplayer (036, 037, 104, 105)**
 - 036 Multiplayer Turn Coordination · 037 Shared-World / Per-Player State Split · 104 Perception Filtering at the Tool Layer *(partial)* · 105 Broadcast-Layer Perception Firewall — Completing ADR-104 in the MP Fan-Out *(partial)*
