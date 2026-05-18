@@ -1368,3 +1368,7 @@ Code-quality review of the Task 2 commit surfaced two issues accepted as **inten
 - **D2 (serves "every test suite needs a wiring test"):** `tests/game/test_forensic_fold.py` gains `test_state_delta_fields_match_protocol_model` asserting `set(STATE_DELTA_FIELDS) == set(StateDelta.model_fields)` — a protocol-drift guard, since `STATE_DELTA_FIELDS` is a hand-copied mirror of `protocol/models.py` `StateDelta`.
 
 Declined: deep-immutable `derived` via `MappingProxyType` (no real consumer mutates it; plan deliberately locked the minimal frozen shape) and `value: object → Any` (plan-specified; `object` is defensible).
+
+## Task 3 Review Deviation (accepted during execution)
+
+- **D3 (pins load-bearing kind-agnosticism — Spike F2 / plan line 43):** In `test_last_write_wins_with_ordered_provenance`, the seq-9 event must set `EventRow.kind` to a non-default value via `_ev(9, {"state_delta": {"location": "Hall"}}, kind="TURN_STATUS")` rather than burying `"TURN_STATUS"` in the payload's `type` field with `EventRow.kind` defaulting to `"NARRATION"`. Same assertions, but the test now genuinely exercises a non-NARRATION event-kind contributing `state_delta` — proving the fold does not filter by kind (no other test covered this).
