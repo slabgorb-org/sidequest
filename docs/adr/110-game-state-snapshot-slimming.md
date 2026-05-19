@@ -9,15 +9,15 @@ superseded-by: null
 related: [49, 98, 101, 102]
 tags: [agent-system, prompt-engineering, observability]
 implementation-status: deferred
-implementation-pointer: sprint/current-sprint.yaml#56-5
+implementation-pointer: sprint/current-sprint.yaml#57-5
 ---
 
 # ADR-110: Game-State Snapshot Slimming — Compact Encoding + Allowlist Pruning, Diff-with-Anchor Deferred
 
 ## Status
 
-Accepted. Implementation tracked under epic 56 (Narrator Prompt Token Reduction),
-story 56-5. This ADR ratifies the two-phase reduction path and explicitly defers
+Accepted. Implementation tracked under epic 57 (Narrator Prompt Token Reduction),
+story 57-5. This ADR ratifies the two-phase reduction path and explicitly defers
 the diff-with-anchor and tool-fetch options to a follow-up if Phase A+B savings
 prove inadequate.
 
@@ -58,7 +58,7 @@ Four design options were on the table:
 
 The combined Phase A + Phase B target is a **≥50% reduction in `<game_state>`
 bytes per turn** with zero narrator-quality regression. This is a single story
-(56-5) executed in two phases under one PR.
+(57-5) executed in two phases under one PR.
 
 ### Phase A — Compact JSON encoding *(zero-risk baseline)*
 
@@ -129,7 +129,7 @@ log line at the same site (matching the existing
 
 ### Acceptance gate
 
-Story 56-5 is complete when, on a representative recorded playtest replay:
+Story 57-5 is complete when, on a representative recorded playtest replay:
 
 1. Per-turn `<game_state>` UTF-8 byte count is **≥ 50% smaller** than the pre-
    change baseline, measured via the new `narrator.state_summary_built` span.
@@ -155,7 +155,7 @@ Story 56-5 is complete when, on a representative recorded playtest replay:
 - **Direct cost reduction:** the largest uncached per-turn blob shrinks by
   ≥50%, paid on every narrator turn for the life of every save. Multiplied
   by playtest hours, this is the largest single recurring cost cut available
-  in epic 56 without an ADR-shaped redesign.
+  in epic 57 without an ADR-shaped redesign.
 - **Observability dividend:** the new span makes future state-summary
   regressions detectable on the GM panel. Today a future snapshot field can
   silently add 2 KB/turn; after this, it adds a visible delta in
@@ -233,7 +233,7 @@ Rejected for the current story for three reasons:
    to protect.
 3. **Larger blast radius:** Option D touches the tool registry, the
    perception-filter boundary (ADR-104/105), and the OTEL span taxonomy
-   simultaneously. It is a separate ADR's work, not a sub-step of 56-5.
+   simultaneously. It is a separate ADR's work, not a sub-step of 57-5.
 
 Option D remains a credible candidate for a future epic if Phase A + B
 prove inadequate AND a per-call latency budget is established.

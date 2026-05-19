@@ -9,15 +9,15 @@ superseded-by: null
 related: [9, 98, 101, 110, 111]
 tags: [agent-system, prompt-engineering, observability]
 implementation-status: deferred
-implementation-pointer: sprint/current-sprint.yaml#56-3
+implementation-pointer: sprint/current-sprint.yaml#57-3
 ---
 
 # ADR-112: Genre Prose Cache Promotion — Four Always-Fire Session-Static Sections Move to Stable, Conditional Sections Defer
 
 ## Status
 
-Accepted. Implementation tracked under epic 56 (Narrator Prompt Token
-Reduction), story 56-3. This ADR ratifies the mutability rubric used to
+Accepted. Implementation tracked under epic 57 (Narrator Prompt Token
+Reduction), story 57-3. This ADR ratifies the mutability rubric used to
 classify genre prose sections as Stable-cacheable, names the four sections
 that pass the rubric today, and explicitly defers the conditional genre
 sections (`genre_combat_voice`, `genre_chase_voice`) under a documented
@@ -135,7 +135,7 @@ either:
 3. Leaves them in User and accepts the per-combat-turn cost.
 
 This ADR does not pre-decide that choice; it documents the deferral so
-56-3 ships clean and the conditional question gets its own analysis.
+57-3 ships clean and the conditional question gets its own analysis.
 
 ### Mutability rubric (forward-applicable)
 
@@ -170,7 +170,7 @@ A potential follow-up is a runtime assertion that every section name in
 `STABLE_SECTION_NAMES` produced byte-identical content across the last
 N turns of a save. The OTEL surface for this is straightforward — hash
 each registered Stable section's content per turn and emit a span on
-mismatch — but is not in 56-3's scope. Flagging here so it does not get
+mismatch — but is not in 57-3's scope. Flagging here so it does not get
 lost.
 
 ### Observability discipline (mandatory per repo CLAUDE.md)
@@ -204,7 +204,7 @@ dynamic." `narrator_vocabulary` is on the current `STABLE_SECTION_NAMES`
 allowlist. Either the audit overstated dynamism (the section is keyed
 off a session-stable operator setting and its content is identical
 across turns) or the section is incorrectly classified and is silently
-thrashing the cache. This is **not** in 56-3's scope, but the new
+thrashing the cache. This is **not** in 57-3's scope, but the new
 `narrator.system_block_composition.stable_section_bytes` span will
 expose any per-turn mutation. **If the value oscillates, file a
 follow-up immediately** — silent cache thrash is the most expensive
@@ -213,7 +213,7 @@ amortization.
 
 ### Acceptance gate
 
-Story 56-3 is complete when, on a representative recorded playtest
+Story 57-3 is complete when, on a representative recorded playtest
 replay exercising the SDK backend:
 
 1. The four promoted section names appear in
@@ -304,7 +304,7 @@ boundary. On a save that crosses N combat boundaries, the rebate from
 caching the four unconditional sections is offset by 2N full Stable-block
 cache misses. The math is bad unless the conditional sections become
 unconditional first, which is a separate decision (genre-pack-prose
-audit for peace-safe framing) outside 56-3's scope.
+audit for peace-safe framing) outside 57-3's scope.
 
 ### B. Unconditional registration for combat / chase, then promote
 
@@ -338,7 +338,7 @@ Partially adopted. The mutability rubric's check 3 names the suspect
 behavior, and the new OTEL span will expose it on the next replay. But
 proactively *removing* `narrator_vocabulary` before evidence is the
 wrong direction — if it is genuinely stable, removal pays a per-turn
-cost for no benefit. The right pattern: ship 56-3 with the four
+cost for no benefit. The right pattern: ship 57-3 with the four
 promotions and the new span, then read the span's `stable_section_bytes`
 oscillation behavior on the first post-merge replay. If
 `narrator_vocabulary` is dynamic, the bytes value moves and a follow-up
@@ -380,9 +380,9 @@ no further action is needed.
   cache amortization operates within)
 - ADR-101 — Anthropic SDK as Narrator Backend (the three-zone caching
   split this ADR exploits)
-- ADR-110 — Game-State Snapshot Slimming (sibling story 56-5)
+- ADR-110 — Game-State Snapshot Slimming (sibling story 57-5)
 - ADR-111 — Recency-Zone Narrator Guardrails Migrate to Tool
-  Descriptions (sibling story 56-4)
+  Descriptions (sibling story 57-4)
 - `sidequest-server/sidequest/agents/prompt_framework/bucket.py` — the
   allowlist this ADR edits
 - `docs/superpowers/specs/2026-05-10-stateless-narrator-design.md` —

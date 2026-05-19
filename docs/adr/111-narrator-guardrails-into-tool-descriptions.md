@@ -9,15 +9,15 @@ superseded-by: null
 related: [9, 98, 101, 102, 110]
 tags: [agent-system, prompt-engineering, observability]
 implementation-status: deferred
-implementation-pointer: sprint/current-sprint.yaml#56-4
+implementation-pointer: sprint/current-sprint.yaml#57-4
 ---
 
 # ADR-111: Recency-Zone Narrator Guardrails Migrate to Tool Descriptions and Primacy-Cached Output Prose
 
 ## Status
 
-Accepted. Implementation tracked under epic 56 (Narrator Prompt Token
-Reduction), story 56-4. This ADR ratifies the migration shape — which
+Accepted. Implementation tracked under epic 57 (Narrator Prompt Token
+Reduction), story 57-4. This ADR ratifies the migration shape — which
 guardrails move where — and the backend-gated dual-path discipline. The
 per-tool mapping is finalized at implementation time against the live tool
 registry; this ADR locks the rule, not the row-by-row spreadsheet.
@@ -95,7 +95,7 @@ artifact the rule governs*:
 | The artifact is a sidecar field (no tool) | The slimmed-sidecar SDK prose (`narrator_prompts/output_only_sdk.md`) in the Primacy/Stable cached zone |
 | The artifact is multi-tool (the rule governs choosing the right one) | The system-block "tool selection" section, paired with concise per-tool reminders inside each candidate tool's description |
 
-The migration target for each guardrail is finalized in the 56-4
+The migration target for each guardrail is finalized in the 57-4
 implementation pass by reading the live tool registry
 (`sidequest-server/sidequest/agents/tools/`) and matching the governed
 artifact to its owner. The four current guardrails resolve to:
@@ -173,7 +173,7 @@ the GM panel rather than at PR review time.
 
 ### Acceptance gate
 
-Story 56-4 is complete when, on a representative recorded playtest replay
+Story 57-4 is complete when, on a representative recorded playtest replay
 exercising the SDK backend:
 
 1. The SDK-path per-turn Recency-zone byte count is **≥ 5 KB smaller** than
@@ -328,11 +328,11 @@ upside.
   asserts the legacy path still emits all four sections byte-identical
   to the pre-change baseline. A replay-based test asserts the four
   lie-detector spans fire at the same-or-lower rate.
-- This story coordinates with ADR-110 (story 56-5) only by ordering. They
+- This story coordinates with ADR-110 (story 57-5) only by ordering. They
   touch the same prompt-assembly module but different sections; either
   may merge first. The `narrator.recency_guardrails_skipped` span name
   must not collide with `narrator.state_summary_built` introduced by
-  56-5 — both are net-new spans in separate categories.
+  57-5 — both are net-new spans in separate categories.
 
 ## References
 
@@ -344,7 +344,7 @@ upside.
   ADR exploits)
 - ADR-102 — Tool-Use Protocol for Structured Output (the tool-description
   surface this ADR targets; the slimmed-sidecar contract)
-- ADR-110 — Game-State Snapshot Slimming (sibling story 56-5; same epic)
+- ADR-110 — Game-State Snapshot Slimming (sibling story 57-5; same epic)
 - Stories 45-1, 45-8, 45-13, 49-1 — the prior load-bearing edits
   whose contracts are preserved
 - Playtest bug reports: Pingpong 2026-05-03 (confrontation trigger),
