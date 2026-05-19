@@ -134,3 +134,51 @@ epics:
         status: backlog
         repos: orchestrator
         workflow: trivial
+  - id: '56'
+    type: epic
+    title: Narrator Prompt Token Reduction
+    description: Audit identified 15-40k uncached tokens/turn in narrator prompts. Five cuts ranging from a one-line constant to ADR-shaped designs (game_state diffing, guardrail-to-tool-description migration). Cost savings scale linearly with playtest hours.
+    priority: p2
+    status: backlog
+    repos: server
+    stories:
+      - id: 56-1
+        title: Recency narrative window K=4→K=2
+        points: 1
+        priority: p1
+        status: backlog
+        repos: server
+        workflow: trivial
+        type: chore
+      - id: 56-2
+        title: Audit five empty narrator_prompts/*.md stubs (load-bearing bug check)
+        points: 1
+        priority: p2
+        status: backlog
+        repos: server
+        workflow: trivial
+        type: chore
+      - id: 56-3
+        title: Promote static genre prose into Stable cached zone
+        points: 2
+        priority: p2
+        status: backlog
+        repos: server
+        workflow: tdd
+        type: refactor
+      - id: 56-4
+        title: Migrate recency guardrail prose into tool-use descriptions
+        points: 5
+        priority: p2
+        status: backlog
+        repos: server
+        workflow: tdd
+        type: refactor
+      - id: 56-5
+        title: game_state snapshot slimming (diff-with-anchor or field pruning)
+        points: 5
+        priority: p2
+        status: backlog
+        repos: server
+        workflow: tdd
+        type: refactor
