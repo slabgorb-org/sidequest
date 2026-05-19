@@ -1,7 +1,3 @@
-# Sprint TO Sprint 2621 - Completed Stories
-# Jira Sprint ID: 0
-# Archived: 2026-05-18
-
 sprint:
   name: "TO Sprint 2621"
   number: 2621
@@ -9,5 +5,11 @@ sprint:
   jira_sprint_name: "TO Sprint 2621"
   goal: Post-Playtest-3 development — scope TBD pending epic promotion
 
-completed:
-  # Completed stories will be appended here by pf sprint archive
+completed_epics:
+  - '55'
+completed_stories:
+  - id: 55-1
+    epic: '55'
+    title: 'Cookbook extension: compose_room_prose(rng, look_def, special_rooms, room_id) → (prose, entities[]); RegionContentManifest.room_descriptions[]; deterministic seeded from (campaign_seed, expansion_id, room_id); materializer persists <world>/rooms/<id>.yaml; validator post-check'
+    points: 5
+    completed: '2026-05-19'

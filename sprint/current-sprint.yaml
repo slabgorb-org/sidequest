@@ -238,21 +238,6 @@ epics:
         status: backlog
         repos: ui
         workflow: tdd
-  - id: '55'
-    type: epic
-    title: Procedural Cavern Description+Manifest Emit at Materialize Time
-    description: 'Stitch story tying Epic 52 (megadungeon materializer + mask emit) to Epic 54 (manifest types + validator). Cookbook gains compose_room_prose; RegionContentManifest gains room_descriptions[]; materializer writes <world>/rooms/<id>.yaml per region after the mask emit. Single materializer rewrite (Approach C). Depends on 52-2, 52-3, 54-2, 54-3.'
-    priority: p1
-    status: ready
-    repos: server
-    stories:
-      - id: 55-1
-        title: 'Cookbook extension: compose_room_prose(rng, look_def, special_rooms, room_id) → (prose, entities[]); RegionContentManifest.room_descriptions[]; deterministic seeded from (campaign_seed, expansion_id, room_id); materializer persists <world>/rooms/<id>.yaml; validator post-check'
-        points: 5
-        priority: p1
-        status: backlog
-        repos: server
-        workflow: tdd
   - id: '56'
     type: epic
     title: Playgroup QoL Wave 1

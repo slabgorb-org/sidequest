@@ -6,4 +6,6 @@ epic:
   priority: p1
   status: ready
   repos: server
-  jira_key: null
+  jira_key:
+status: done
+completed: '2026-05-19'
