@@ -186,10 +186,14 @@ epics:
         title: 'Content backfill: tea_and_murder/glenross — convert 12 region landmarks[] to typed entities[], add bindings, validator-clean'
         points: 2
         priority: p1
-        status: backlog
+        status: done
+        started: '2026-05-19'
         repos: content
         workflow: trivial
+        completed: '2026-05-19'
         type: chore
+        review_findings: 'Four content-quality fixes needed (green rework): (1) examining_couch ref convention; (2) village_notice_board ref convention or shared-feature comment; (3) drop or rename receive affordance on manse parlour; (4) standardize duplicate read tokens on chapel. No test changes; no schema break; suite stayed 6586/0 green throughout.'
+        review_verdict: approved
       - id: 54-5
         title: 'Content backfill: caverns_and_claudes/beneath_sunden settlement rooms — add entities[] to existing descriptions, validator-clean'
         points: 2
