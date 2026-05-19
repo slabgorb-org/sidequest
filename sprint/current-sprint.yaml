@@ -184,9 +184,12 @@ epics:
         title: 'pf validate locations validator — well-formedness + binding resolution (hard) + prose-manifest coherence (warning); CI integration; per-pack/per-world reporting'
         points: 3
         priority: p1
-        status: backlog
+        status: done
+        started: '2026-05-19'
         repos: orchestrator,server
         workflow: tdd
+        completed: '2026-05-19'
+        review_verdict: approved
       - id: 54-4
         title: 'Content backfill: tea_and_murder/glenross — convert 12 region landmarks[] to typed entities[], add bindings, validator-clean'
         points: 2
