@@ -110,7 +110,8 @@ epics:
         title: 'Materializer: instantiate rig vessel item → bind RigComposurePool to character'
         points: 3
         priority: p1
-        status: backlog
+        status: in_progress
+        started: '2026-05-19'
         repos: sidequest-server
         workflow: tdd
       - id: 53-3
