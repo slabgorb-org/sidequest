@@ -363,7 +363,7 @@ epics:
         priority: p1
         status: backlog
         repos: sidequest-ui
-        workflow: tdd
+        workflow: trivial
         acceptance_criteria:
           - toneAxes.ts removes hardcoded label/glyph lookup
           - any axis with v≤0.33 renders as 'low {axis_name}'
