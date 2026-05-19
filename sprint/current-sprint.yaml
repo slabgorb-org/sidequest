@@ -383,11 +383,12 @@ epics:
         title: Define YAML schemas for weather, demographics, calendar, economy, establishments, quest shapes, NPC schedules
         points: 3
         priority: p0
-        status: in_review
+        status: done
         started: '2026-05-19'
         repos: content,orchestrator
         workflow: trivial
         acceptance_criteria: []
+        completed: '2026-05-19'
         type: chore
         branch: feat/24-1-world-grounding-schemas
         assignee: slabgorb
