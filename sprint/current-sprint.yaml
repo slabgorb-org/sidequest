@@ -340,3 +340,30 @@ epics:
         workflow: trivial
         completed: '2026-05-19'
         type: chore
+      - id: 58-3
+        title: "Generalize tone chip renderer: 'high {axis}' / 'low {axis}' for any axis name"
+        description: |-
+          Current toneAxes.ts (sidequest-ui/src/screens/lobby/toneAxes.ts) hardcodes a 5-axis lookup table (comedy/gravity/outlook/mythic/loyalty) with curated labels (serious, gritty, bleak, etc.) and glyphs. Worlds whose axis_snapshot uses other names (cosy/gossip/swagger/chrome/weirdness/balance/etc.) get ZERO chips because the renderer doesn't recognize them — implementation-order artifact.
+
+          Per Keith 2026-05-19: switch the pattern to 'high {axis_name}' / 'low {axis_name}' for any axis in the snapshot, applying the same polarity thresholds (≤0.33, ≥0.67). Drop the labels lookup table. Drop the per-axis glyphs (or keep one generic chip glyph).
+
+          Verify lobby chip rendering for each live world's axis_snapshot:
+            - beneath_sunden (comedy/gravity/outlook) → 'low comedy', 'high gravity', 'low outlook'
+            - burning_peace (balance/mysticism/conflict) → 'low balance'
+            - flickering_reach (hope/tech_level/weirdness) → 'high weirdness'
+            - the_circuit (stakes/law/chrome) → no chips (all neutral) — Keith may want to retune
+            - coyote_star (scale/tone/swagger) → 'low scale'
+            - glenross (cosy/puzzle/gossip/gothic) → 'high cosy', 'high puzzle', 'high gossip', 'low gothic'
+
+          Out of scope: changing world.yaml axis values themselves. Worlds that produce zero chips after this fix are content-tuning issues, separately.
+        points: 2
+        priority: p1
+        status: backlog
+        repos: sidequest-ui
+        workflow: tdd
+        acceptance_criteria:
+          - toneAxes.ts no longer references a hardcoded label/glyph lookup
+          - any axis with v≤0.33 renders as 'low {axis_name}'
+          - any axis with v≥0.67 renders as 'high {axis_name}'
+          - lobby snapshot test updated; all 6 live worlds render their chips correctly
+        type: chore
