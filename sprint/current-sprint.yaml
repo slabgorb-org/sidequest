@@ -345,10 +345,13 @@ epics:
         title: Author tea_and_murder/glenross weather rules (climate zones, seasonal conditions, special events)
         points: 2
         priority: p0
-        status: backlog
+        status: in_progress
+        started: '2026-05-20'
         repos: content
         workflow: trivial
         acceptance_criteria: []
+        branch: feat/24-2-glenross-weather-rules
+        assignee: slabgorb
       - id: 24-3
         title: Author tea_and_murder/glenross demographics (settlement profiles, population, services)
         points: 2
