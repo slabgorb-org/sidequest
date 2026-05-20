@@ -287,13 +287,15 @@ epics:
         title: Audit five empty narrator_prompts/*.md stubs (load-bearing bug check)
         points: 1
         priority: p2
-        status: in_progress
+        status: done
         started: '2026-05-19'
         repos: server
         workflow: trivial
+        completed: '2026-05-19'
         type: chore
         assignee: slabgorb
         branch: feat/57-2-audit-empty-narrator-prompt-stubs
+        review_verdict: approved
       - id: 57-3
         title: Promote static genre prose into Stable cached zone
         points: 2
