@@ -8,6 +8,7 @@ sprint:
 completed_epics:
   - '55'
   - '52'
+  - '56'
 completed_stories:
   - id: 55-1
     epic: '55'
@@ -37,5 +38,10 @@ completed_stories:
   - id: 52-5
     epic: '52'
     title: 'UI end-to-end wiring test: TacticalGridRenderer renders runtime-sourced cavern_image_url + OTEL assert'
+    points: 2
+    completed: '2026-05-20'
+  - id: 56-1
+    epic: '56'
+    title: Show controlling player's name on character displays (multiplayer only)
     points: 2
     completed: '2026-05-20'

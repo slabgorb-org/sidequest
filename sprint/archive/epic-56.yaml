@@ -1,0 +1,20 @@
+id: '56'
+type: epic
+title: Playgroup QoL Wave 1
+description: 'Small-scope quality-of-life papercuts surfaced by the play table (Sebastien/Alex/James). Each story should be cheap, ship-shaped, and tightly scoped — these are not roadmap epics, they are the channel for playgroup-direct feedback. (Renumbered from epic 53 on rebase: road_warrior epic 53 landed first on origin/main, so this epic moved to 56 per the OQ-1/OQ-2 story-ID collision resolution rule.)'
+priority: p1
+status: done
+repos: ui
+stories:
+  - id: 56-1
+    title: Show controlling player's name on character displays (multiplayer only)
+    points: 2
+    priority: p1
+    status: done
+    started: '2026-05-20'
+    repos: ui
+    workflow: tdd
+    completed: '2026-05-20'
+    assignee: slabgorb
+    branch: feat/56-1-show-controlling-player-name-mp
+completed: '2026-05-20'
