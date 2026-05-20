@@ -31,21 +31,28 @@ Total rows: **29**
 | space_opera | `rules.yaml` | `confrontations.[N].interaction_table.starting_state` | missing | `{'_from': 'dogfight/interactions_mvp.yaml'}` |   |   |   |
 | space_opera | `rules.yaml` | `confrontations.[N].interaction_table._from` | extra_forbidden | `dogfight/interactions_mvp.yaml` |   |   |   |
 | space_opera | `inventory.yaml` | `philosophy.notes` | extra_forbidden | `Inventory is not the point of space opera. The ship carri…` |   |   |   |
-| spaghetti_western | `rules.yaml` | `standoff_rules` | extra_forbidden | `{'sizing_up': {'description': "Before violence erupts, co…` |   | x |   |
-| spaghetti_western | `rules.yaml` | `reputation_factions` | extra_forbidden | `[{'id': 'outlaws', 'name': 'Outlaws & Bandits', 'descript…` |   | x |   |
-| spaghetti_western | `rules.yaml` | `reputation_effects` | extra_forbidden | `{'high': ['NPCs of this faction offer jobs, shelter, and …` |   | x |   |
-| spaghetti_western | `rules.yaml` | `luck_rules` | extra_forbidden | `{'starting_luck': 3, 'max_luck': 5, 'spend_effects': [{'n…` |   | x |   |
-| spaghetti_western | `char_creation.yaml` | `[N].choices.[N].mechanical_effects.reputation_bonus` | extra_forbidden | `intimidation` |   | x |   |
-| spaghetti_western | `progression.yaml` | `affinities.[N].unlocks.novice` | extra_forbidden | `{'name': 'Steady Hand', 'description': 'The basics — you …` |   | x |   |
-| spaghetti_western | `progression.yaml` | `affinities.[N].unlocks.journeyman` | extra_forbidden | `{'name': 'Dead Eye', 'description': 'You see the fight be…` |   | x |   |
-| spaghetti_western | `progression.yaml` | `affinities.[N].unlocks.expert` | extra_forbidden | `{'name': 'Legendary Shot', 'description': 'Your reputatio…` |   | x |   |
-| spaghetti_western | `progression.yaml` | `affinities.[N].unlocks.master` | extra_forbidden | `{'name': 'The Fastest', 'description': 'There is no one f…` |   | x |   |
-| spaghetti_western | `prompts.yaml` | `session_opener_template` | extra_forbidden | `The sun sits high and white in a sky that has forgotten w…` |   |   | x |
+| spaghetti_western | `rules.yaml` | `standoff_rules` | extra_forbidden | `{'sizing_up': {'description': "Before violence erupts, co…` |   | ✅ |   |
+| spaghetti_western | `rules.yaml` | `reputation_factions` | extra_forbidden | `[{'id': 'outlaws', 'name': 'Outlaws & Bandits', 'descript…` |   | ✅ |   |
+| spaghetti_western | `rules.yaml` | `reputation_effects` | extra_forbidden | `{'high': ['NPCs of this faction offer jobs, shelter, and …` |   | ✅ |   |
+| spaghetti_western | `rules.yaml` | `luck_rules` | extra_forbidden | `{'starting_luck': 3, 'max_luck': 5, 'spend_effects': [{'n…` |   | ✅ |   |
+| spaghetti_western | `char_creation.yaml` | `[N].choices.[N].mechanical_effects.reputation_bonus` | extra_forbidden | `intimidation` |   | ✅ |   |
+| spaghetti_western | `progression.yaml` | `affinities.[N].unlocks.novice` | extra_forbidden | `{'name': 'Steady Hand', 'description': 'The basics — you …` |   | ✅ |   |
+| spaghetti_western | `progression.yaml` | `affinities.[N].unlocks.journeyman` | extra_forbidden | `{'name': 'Dead Eye', 'description': 'You see the fight be…` |   | ✅ |   |
+| spaghetti_western | `progression.yaml` | `affinities.[N].unlocks.expert` | extra_forbidden | `{'name': 'Legendary Shot', 'description': 'Your reputatio…` |   | ✅ |   |
+| spaghetti_western | `progression.yaml` | `affinities.[N].unlocks.master` | extra_forbidden | `{'name': 'The Fastest', 'description': 'There is no one f…` |   | ✅ |   |
+| spaghetti_western | `prompts.yaml` | `session_opener_template` | extra_forbidden | `The sun sits high and white in a sky that has forgotten w…` |   |   | ✅ |
 
-## Triage notes — spaghetti_western (2026-05-19, promotion blocker)
+## Triage notes — spaghetti_western (2026-05-19 triage / 2026-05-20 wired)
 
-All 10 rows triaged on promotion of `spaghetti_western` from `genre_workshopping/`
-to `genre_packs/`. Routed to Dev — pack will fail server load until wired:
+**Status: RESOLVED 2026-05-20.** All 10 rows wired in
+`sidequest-server feat/sw-drift-wiring` (typed pydantic submodels +
+loader contract + cross-pack `ProgressionUnlock` named/numbered tier
+shape). Pack now loads via the normal pack-discovery flow. Consumer
+wiring (standoff state machine, faction reputation effects on NPC
+disposition, luck-spend narrator tool, level-up unlock dispatch) is
+*not* in this story — every load site carries a TODO pointing back to
+this document. Original triage routing (recorded here for the
+follow-up consumer-wiring stories):
 
 - **standoff_rules** (rules.yaml) — wire as a confrontation kind. The standoff
   IS the genre's signature combat trope (sizing_up → first_move → resolution
