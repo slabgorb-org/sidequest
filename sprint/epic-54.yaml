@@ -74,9 +74,12 @@ stories:
     title: 'Action overlays: EncounterLocationOverlay model + read-time merge in get_location_manifest/get_location_prose + LOCATION_OVERLAY_CHANGED emit on encounter activate/deactivate'
     points: 3
     priority: p1
-    status: backlog
+    status: in_progress
+    started: '2026-05-20'
     repos: server
     workflow: tdd
+    branch: feat/54-7-encounter-location-overlay
+    assignee: slabgorb
   - id: 54-8
     title: 'OTEL: location.entity.resolve (both modes) + .minted + .promoted + .overlay.{activate,deactivate} spans; GM-panel surfacing distinguishing narrator-lie vs player-canon'
     points: 2
