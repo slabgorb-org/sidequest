@@ -219,10 +219,13 @@ epics:
         title: Wire world-grounding YAML loaders + ToolContext fields at session bootstrap (unblocks 24-8 playtest)
         points: 3
         priority: p1
-        status: backlog
+        status: done
+        started: '2026-05-21'
         repos: server
         workflow: tdd
         depends_on: 24-7
+        completed: '2026-05-21'
+        review_verdict: approved
   - id: '22'
     type: epic
     title: "Epic: Seed Tropes — Narrative Variety via Schrödinger's Gun"
