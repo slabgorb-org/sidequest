@@ -150,6 +150,20 @@ up *flags:
     fi
     export ANTHROPIC_API_KEY
 
+    # OTEL: by default export spans + mirror every watcher event as a synthetic
+    # span to local Jaeger (:4317). The GM panel / Jaeger is the lie-detector
+    # (CLAUDE.md OTEL principle) — without watcher-as-spans Jaeger only sees
+    # explicit start_as_current_span calls. Scrub inherited OTEL_EXPORTER_OTLP_*
+    # (they point at BikeRack/PF Frame's Claude Code telemetry) so only the
+    # SIDEQUEST_* vars drive the server's OTEL setup. Both are overridable; if
+    # Jaeger isn't running the exporter just warns (non-fatal). `just up-traced`
+    # is the same plus a hard precheck that Jaeger is reachable first.
+    unset OTEL_EXPORTER_OTLP_ENDPOINT OTEL_EXPORTER_OTLP_HEADERS \
+          OTEL_EXPORTER_OTLP_PROTOCOL OTEL_EXPORTER_OTLP_TRACES_ENDPOINT \
+          OTEL_EXPORTER_OTLP_METRICS_ENDPOINT OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+    export SIDEQUEST_OTLP_ENDPOINT="${SIDEQUEST_OTLP_ENDPOINT:-localhost:4317}"
+    export SIDEQUEST_WATCHER_AS_SPANS="${SIDEQUEST_WATCHER_AS_SPANS:-1}"
+
     srv={{logdir}}/sidequest-server.log
     cli={{logdir}}/sidequest-client.log
     dmn={{logdir}}/sidequest-daemon.log
