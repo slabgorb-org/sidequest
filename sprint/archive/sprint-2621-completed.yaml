@@ -12,6 +12,7 @@ completed_epics:
   - '57'
   - '54'
   - '58'
+  - '50'
 completed_stories:
   - id: 55-1
     epic: '55'
@@ -133,3 +134,138 @@ completed_stories:
     title: "Generalize tone chip renderer: 'high {axis}' / 'low {axis}' for any axis name"
     points: 2
     completed: '2026-05-19'
+  - id: 50-1
+    epic: '50'
+    title: Pingpong-archive triage — re-test 8 carryover items, split confirmed-broken into stories
+    points: 2
+    completed: '2026-05-13'
+  - id: 50-2
+    epic: '50'
+    title: Narrator confrontation-trigger detection — instantiate the encounter, not just an OTEL warning
+    points: 5
+    completed: '2026-05-13'
+  - id: 50-3
+    epic: '50'
+    title: PartyPanel renders recruited companions section — server roster correct, UI was silent
+    points: 3
+    completed: '2026-05-13'
+  - id: 50-4
+    epic: '50'
+    title: Trope rate_per_day between-session advancement
+    points: 8
+    completed: '2026-05-13'
+  - id: 50-5
+    epic: '50'
+    title: 'Scenario: wire discover_clue to narration consumption (call site + SPAN_SCENARIO_ADVANCE fires in play)'
+    points: 3
+    completed: '2026-05-13'
+  - id: 50-6
+    epic: '50'
+    title: 'Scenario: ClueGraph DAG prerequisite enforcement in discover_clue (reject orphan discoveries)'
+    points: 2
+    completed: '2026-05-13'
+  - id: 50-7
+    epic: '50'
+    title: 'Scenario: GossipEngine — two-phase belief propagation, contradiction detection, credibility decay'
+    points: 8
+    completed: '2026-05-13'
+  - id: 50-8
+    epic: '50'
+    title: 'Scenario: AccusationEvaluator — EvidenceSummary, Circumstantial/Strong/Airtight verdict, SPAN_SCENARIO_ACCUSATION emit'
+    points: 8
+    completed: '2026-05-13'
+  - id: 50-9
+    epic: '50'
+    title: 'Mood: implement mood_aliases alias-chain fallback in music director track selection (ADR-033 Pillar 3 Steps 1-3)'
+    points: 3
+    completed: '2026-05-21'
+  - id: 50-10
+    epic: '50'
+    title: 'Disposition: central Attitude enum + Disposition.attitude() derivation (replace dispatch/opening helper)'
+    points: 3
+    completed: '2026-05-13'
+  - id: 50-11
+    epic: '50'
+    title: 'Disposition: SPAN_DISPOSITION_SHIFT threshold-crossing fields (before_attitude, after_attitude, crossed)'
+    points: 2
+    completed: '2026-05-13'
+  - id: 50-12
+    epic: '50'
+    title: 'Disposition: narrator NPC serialization emits attitude string (close the agents-see-only-attitude gap)'
+    points: 3
+    completed: '2026-05-18'
+  - id: 50-13
+    epic: '50'
+    title: 'Disposition: genre-configurable thresholds (pack model field + load-time wiring, +/-10 default)'
+    points: 3
+    completed: '2026-05-18'
+  - id: 50-14
+    epic: '50'
+    title: 'Journal: JOURNAL_REQUEST handler — server replies from character.known_facts (seam C server-side per ADR-100)'
+    points: 3
+    completed: '2026-05-13'
+  - id: 50-15
+    epic: '50'
+    title: 'Journal: UI fact_id respect — drop synthetic id, consume narrator-supplied Footnote.fact_id (seam C UI part 1 per ADR-100)'
+    points: 2
+    completed: '2026-05-14'
+  - id: 50-16
+    epic: '50'
+    title: "Journal: UI confidence propagation — drop hardcoded 'Suspected' in useStateMirror, source from JOURNAL_RESPONSE (seam C UI part 2 per ADR-100)"
+    points: 2
+    completed: '2026-05-14'
+  - id: 50-17
+    epic: '50'
+    title: 'Journal: KnownFact.confidence enum promotion — Literal[Certain|Suspected|Rumored|Discovered] (J-4 per ADR-100)'
+    points: 1
+    completed: '2026-05-14'
+  - id: 50-18
+    epic: '50'
+    title: ADR-092 scene harness — Python POST /dev/scene/{name} hydrator
+    points: 5
+    completed: '2026-05-13'
+  - id: 50-19
+    epic: '50'
+    title: 'Scene harness: hydrate Character.known_facts (ADR-092 follow-on)'
+    points: 2
+    completed: '2026-05-15'
+  - id: 50-20
+    epic: '50'
+    title: 'Scene harness: hydrate top-level scenario_state (ADR-092 follow-on)'
+    points: 5
+    completed: '2026-05-15'
+  - id: 50-21
+    epic: '50'
+    title: 'Scene harness: hydrate StructuredEncounter (ADR-092 follow-on)'
+    points: 3
+    completed: '2026-05-18'
+  - id: 50-22
+    epic: '50'
+    title: 'Scene harness: hydrate magic_state + Character.abilities (ADR-092 follow-on)'
+    points: 5
+    completed: '2026-05-18'
+  - id: 50-23
+    epic: '50'
+    title: 'Scene harness: hydrate multi-PC characters list (ADR-092 follow-on)'
+    points: 3
+    completed: '2026-05-15'
+  - id: 50-24
+    epic: '50'
+    title: Restore dice authority severed by the ADR-101/102 SDK migration
+    points: 8
+    completed: '2026-05-17'
+  - id: 50-25
+    epic: '50'
+    title: Out-of-band aside channel — finish half-wired player→GM table-talk (ADR-107)
+    points: 8
+    completed: '2026-05-18'
+  - id: 50-26
+    epic: '50'
+    title: Harden ADR-106 curate stage against truncated JSON — no frozen turn, loud degrade-to-uncurated
+    points: 5
+    completed: '2026-05-18'
+  - id: 50-27
+    epic: '50'
+    title: Parallelize pytest with pytest-xdist — isolate global-state fixtures, 5-6 min suite → ~1 min
+    points: 5
+    completed: '2026-05-21'

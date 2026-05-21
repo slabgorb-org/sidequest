@@ -35,7 +35,7 @@ description: |-
   re-test step before declaring `verified`. The protocol step exists
   (sq-playtest §3e), the archive ratio shows it isn't being followed.
 priority: p2
-status: active
+status: done
 repos: orchestrator,sidequest-server,sidequest-ui
 stories:
   - id: 50-1
@@ -468,3 +468,4 @@ stories:
     completed: '2026-05-18'
     type: bug
     review_verdict: approved
+completed: '2026-05-21'
