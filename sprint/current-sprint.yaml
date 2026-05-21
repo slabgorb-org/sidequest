@@ -235,10 +235,13 @@ epics:
         title: Seed trope schema + deck engine in sidequest-server — SeedTrope sibling type, lifespan, flavor tags, draw-without-replacement, ghost retention persisted in ADR-023 session DB
         points: 5
         priority: p1
-        status: backlog
+        status: done
+        started: '2026-05-21'
         repos: server
         workflow: tdd
         acceptance_criteria: []
+        completed: '2026-05-21'
+        review_verdict: approved
       - id: 22-2
         title: Seed trope content — author 20-30 seeds for tea_and_murder (dogfood pack) with flavor tags and NPC delivery hints; other-pack expansion follows as separate stories
         points: 3
