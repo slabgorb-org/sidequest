@@ -128,7 +128,7 @@ daemon *flags:
 # Ctrl-C tears them down.
 # ---------------------------------------------------------------------------
 
-up:
+up *flags:
     #!/usr/bin/env bash
     set -euo pipefail
     : "${R2_S3_ENDPOINT:?R2_S3_ENDPOINT must be set in shell}"
@@ -137,6 +137,49 @@ up:
     srv={{logdir}}/sidequest-server.log
     cli={{logdir}}/sidequest-client.log
     dmn={{logdir}}/sidequest-daemon.log
+
+    # ---- Machine-global singleton lock (spans every clone) ------------------
+    # Prevents the 2026-05-21 duplicate-stack cost runaway: two `just up` from
+    # oq-1 + oq-2 racing port 8765 with cold prompt caches burned 41.6M tokens.
+    # macOS ships no flock(1), so use an atomic `mkdir` lock dir in /tmp guarded
+    # by a PID liveness check — a crashed `just up` leaves a STALE (reclaimable)
+    # lock, never a permanent one. Acquired BEFORE log truncation below so a
+    # refusal can't clobber the running stack's logs.
+    lockdir=/tmp/sidequest-stack.lock.d
+    holder="$lockdir/holder"
+    force=0
+    [[ "{{flags}}" == *--force* || "{{flags}}" == *-f* ]] && force=1
+
+    if ! mkdir "$lockdir" 2>/dev/null; then
+        hpid=""; hroot="?"; hsince="?"
+        [[ -f "$holder" ]] && source "$holder" 2>/dev/null || true
+        hpid="${HOLDER_PID:-}"; hroot="${HOLDER_ROOT:-?}"; hsince="${HOLDER_SINCE:-?}"
+        if [[ -n "$hpid" ]] && kill -0 "$hpid" 2>/dev/null; then
+            if [[ "$force" -eq 1 ]]; then
+                echo "▶ --force: tearing down existing stack (${hroot}, pid $hpid)…"
+                kill "$hpid" 2>/dev/null || true   # victim's own EXIT trap reaps its services
+                sleep 1
+                rm -rf "$lockdir"
+            else
+                echo "ERROR: a sidequest stack is already running" >&2
+                echo "  holder: ${hroot}  (just up, pid $hpid, since ${hsince})" >&2
+                echo "  ports 8765 + 5173 are owned by that stack." >&2
+                echo "  Run \`just down\` there first, or \`just up --force\` to take over." >&2
+                echo "Aborting." >&2
+                exit 1
+            fi
+        else
+            echo "▶ clearing stale stack lock (holder pid ${hpid:-?} not running)"
+            rm -rf "$lockdir"
+        fi
+        mkdir "$lockdir" 2>/dev/null || { echo "ERROR: could not claim stack lock at $lockdir" >&2; exit 1; }
+    fi
+    {
+        echo "HOLDER_PID=$$"
+        echo "HOLDER_ROOT={{root}}"
+        echo "HOLDER_SINCE=\"$(date '+%Y-%m-%d %H:%M:%S')\""
+    } > "$holder"
+
     : > "$srv"; : > "$cli"; : > "$dmn"
 
     # Kill any leftover services from a previous run.
@@ -198,6 +241,12 @@ up:
                 rm -f "$pidfile"
             fi
         done
+        # Release the singleton lock only if we still hold it. A `just up
+        # --force` from another clone reassigns the holder to its own PID;
+        # in that case we must NOT delete the lock out from under it.
+        if [[ -f "$holder" ]] && grep -q "^HOLDER_PID=$$\$" "$holder" 2>/dev/null; then
+            rm -rf "$lockdir"
+        fi
     }
     trap cleanup EXIT INT TERM
 
@@ -240,6 +289,10 @@ down:
             fi
         fi
     done
+
+    # Release the machine-global singleton lock (see `up`). `just down` always
+    # clears it so a crashed holder can't wedge the next `just up`.
+    rm -rf /tmp/sidequest-stack.lock.d
 
 # Tail one or all service logs.  `just logs`, `just logs server`, etc.
 logs service="all":
