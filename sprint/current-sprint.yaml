@@ -332,7 +332,8 @@ epics:
         title: 'OTEL: per-system-block prompt-prefix digest + cache TTL in watcher spans'
         points: 3
         priority: p2
-        status: backlog
+        status: done
+        started: '2026-05-22'
         repos: server
         workflow: tdd
         depends_on: 60-1
@@ -343,6 +344,8 @@ epics:
           - Sections whose category is 'state' (volatile) that land in a cached zone (Primacy/Early) are visibly flagged as mis-zoned — the specific lie-detector for the block-0 churn bug.
           - "Accuracy guarantee (test): the event's cached/uncached partition matches the actual system_blocks the SDK client received on the same turn; the display cannot claim 'stable' while the real prompt drifts."
           - 'Wiring test: new fields are emitted on the live prompt_assembled (or successor) path on a real narrator turn AND consumed by PromptTab.tsx — server+ui end to end.'
+        completed: '2026-05-22'
+        review_verdict: approved
       - id: 60-3
         title: Diagnose narrator block-0 cache_write churn — prefix drift vs TTL/cadence (spike)
         points: 1
