@@ -26,7 +26,13 @@ what you cannot see drift).
 
 ## Background
 
-### The corrected root cause
+> **⚠️ ROOT CAUSE CORRECTED BY STORY 60-3 (2026-05-22).** The hypothesis below
+> ("three mis-zoned `state` sections churn cached block 0") was **disproved** by
+> measurement. Keep this section for history, but the **authoritative** root
+> cause and fix are in *Corrected root cause (60-3)* immediately after it, and in
+> `sprint/archive/60-3-session.md` → "Dev Diagnosis (60-3 — FINAL)".
+
+### The ORIGINAL hypothesis (disproved — kept for history)
 
 The narrator prompt is assembled into Anthropic `system` blocks. Per ADR-101
 Phase D (`orchestrator.py:3199-3222`):
@@ -38,20 +44,36 @@ Phase D (`orchestrator.py:3199-3222`):
 - `system_blocks[2]` = Late + Recency, `cache=False`.
 - tools array — byte-stable ~11k, separately cache-marked → healthy `cache_read`.
 
-Anthropic caches the longest matching prefix up to a breakpoint. Block 0 has ONE
-marker at its end, so the **entire 11.7k block must be byte-identical** to hit the
-cache. The 2026-05-22 OTEL zone-breakdown shows three `state`-category
-(volatile) sections sitting in the **Early** zone — therefore inside cached block 0:
+The original hypothesis: the 2026-05-22 OTEL zone-breakdown showed three
+`state`-category sections (`narrator_available_confrontations`,
+`trope_beat_directives`, `npc_roster`) in the **Early** zone, and assumed their
+per-turn changes invalidated cached block 0 every turn.
 
-- `narrator_available_confrontations` (~56–80 tok) — changes as confrontations open/close
-- `trope_beat_directives` (~20 tok) — changes per beat
-- `npc_roster` (~80 tok) — changes as NPCs enter/leave the scene
+### Corrected root cause (60-3, MEASURED — authoritative)
 
-Any per-turn change to these invalidates the whole cached prefix → block 0
-re-writes every turn (`cache_write≈12281`), while the byte-stable tools array
-reads fine (`cache_read≈11168`). The snapshot was never the cost.
+The three suspected sections are **User-bucket** (not in `STABLE_SECTION_NAMES`),
+so `compose_split_by_zone` routes them into the **uncached** user message — they
+never touch `system_blocks[0]`. The cached prefix (block 0 + tools) is **byte-stable**
+across turns (digest constant; `mis_zoned` was a bucket-blind false positive).
 
-### Why observability comes first
+The real cause: the narrator runs a **tool-use loop**. The first call of a turn
+caches the prefix at **1h** correctly, but every **continuation call** (iter 2+,
+carrying `tool_use`/`tool_result`) **re-mints the whole ~11.7k prefix at the default
+5m TTL** — because the growing tool-use conversation carries no `cache_control`
+breakpoint. At submit-and-wait cadence the 5m copy expires between turns, so the
+prefix is re-paid every turn. The snapshot was never the cost, and neither was
+zoning.
+
+**Cost (measured, Sonnet 4.6):** current **~$0.116/turn**, of which **~$0.089 (76%)
+is wasted `cache_write`** — and it fires **twice per turn** (iter 1 + iter 2 both
+write), so the epic's original "~$0.046/call" under-counted by ~2×. Post-fix
+estimate **~$0.035/turn** (continuations read the 1h prefix) → **~70% / ~$0.08/turn
+saved**; an ~85-turn session drops **~$9.88 → ~$3.01**. (Secondary: `anthropic_cost.py`
+prices 1h writes at the 5m rate, so the GM-panel cost_usd understates real 1h
+billing — track in 60-4.) See the 60-3 session for the full evidence chain and
+ruled-out alternatives.
+
+### Why observability came first
 
 Today's Prompt-tab display is built from a **separate** per-zone, char/4
 *estimate* path (`orchestrator.py:2228` `prompt_assembled`), decoupled from the
@@ -71,15 +93,22 @@ The bug hid for exactly this reason. So: build the eyes (60-2), confirm with the
   turn, and flag `state`-category sections that landed in a cached zone. The display
   must be sourced from the **actual assembled blocks** sent to Anthropic — no
   divergent recomputation. Repos: **server + ui**.
-- **60-3 (Diagnose/confirm — spike).** Using 60-2's eyes, run an instrumented
-  multi-turn `tea_and_murder` session and confirm the churn is the three mis-zoned
-  `state` sections in Early (drift), not 5m-TTL expiry across slow cadence. Produce
-  the finding that scopes 60-4. Repos: server.
-- **60-4 (Fix).** Re-zone the offending `state` sections out of the cached zone
-  (Early → Valley/uncached) so `system_blocks[0]` is byte-stable; also audit the
-  conditional `genre_combat_voice`/`genre_chase_voice` (ADR-112 says conditionals
-  must not ride Stable). Success: steady-state `cache_write≈0`, `cache_read>0`,
-  per-call cost down ~40-50%, verified in the 60-2 display. Repos: server.
+- **60-3 (Diagnose/confirm — spike). ✅ DONE.** Using 60-2's eyes + isolated SDK
+  replays, **disproved** the mis-zoned-sections hypothesis and found the real cause:
+  the tool-use loop continuation re-mints the byte-stable prefix at 5m (no cache
+  breakpoint on the growing conversation). Full evidence + the fix in
+  `sprint/archive/60-3-session.md`. Repos: server.
+- **60-4 (Fix) — RE-SCOPED by 60-3.** Do **not** re-zone state sections (they're
+  User-bucket / already uncached — a no-op for cost). Instead, in
+  `agents/anthropic_sdk_client.py::complete_with_tools`, add a moving
+  `cache_control={"ttl":"1h"}` breakpoint on the **last continuation message**
+  (the freshly-appended `tool_result`) and clear stale message-level markers so
+  total breakpoints stay ≤ 4. Also fix the bucket-blind `mis_zoned` flag
+  (`orchestrator.py` `_compute_zones_payload`) to AND with bucket. Success:
+  continuation `cache_creation` lands in `ephemeral_1h_input_tokens` (not 5m),
+  steady-state `cache_write≈0` after warmup, `cache_read>0`, per-turn cost down
+  from ~$0.116 to ≤~$0.04 (~70%, measured), verified in the 60-2 display + a
+  regression test. Repos: server.
 
 **Key files:** `agents/orchestrator.py` (zone registration 1320-1460; `system_blocks`
 assembly 3199-3222; `prompt_assembled` emission 2228-2306), `agents/anthropic_sdk_client.py`

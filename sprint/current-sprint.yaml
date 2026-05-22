@@ -311,7 +311,7 @@ epics:
   - id: '60'
     type: epic
     title: Narrator Token & Cost Budget — Cache-Write Efficiency
-    description: 'Continuation of archived epic 57 (Narrator Prompt Token Reduction). CORRECTED root cause (2026-05-22, confirmed via OTEL Prompt zone-breakdown at T5): the ~$0.046/call wasted cache_write is NOT the game_state snapshot — that sits in the uncached Valley block (703 tok) and is innocent. The cost is system_blocks[0] (Primacy+Early, ~11.7k tok) being re-written EVERY turn because three volatile state-category sections — narrator_available_confrontations, trope_beat_directives, npc_roster — are mis-zoned into the cached Early zone. Block 0 carries one cache_control marker at its end, so any per-turn change to those state sections invalidates the entire cached prefix and forces a full re-write. cache_read~11168 is the byte-stable tools array (healthy). Three-story arc: 60-2 OTEL eyes (per-block cache attribution + prefix digest + mis-zoned-state warning) -> 60-3 diagnose/confirm with the new eyes -> 60-4 re-zone the state sections Early->Valley so block 0 becomes byte-stable. The original 60-1 ''reposition snapshot breakpoint'' framing was wrong (no breakpoint sits on the snapshot) and is dropped; 60-1 split into 60-2/60-3/60-4.'
+    description: 'Continuation of archived epic 57 (Narrator Prompt Token Reduction). A 2026-05-21 tea_and_murder/glenross playtest surfaced ~$0.046/call of wasted cache_write. ROOT CAUSE — CORRECTED by story 60-3 (measured 2026-05-22; the earlier "mis-zoned state sections" hypothesis was DISPROVED): the cached prefix (system_blocks[0] Primacy+Early + the tools array) is byte-stable and does NOT drift, and the three suspected state sections (narrator_available_confrontations, trope_beat_directives, npc_roster) are User-bucket -> ride the uncached user message -> never touch block 0. The real cost is the narrator tool-use LOOP: the first call of a turn caches the prefix at 1h, but every continuation call (iter 2+, carrying tool_use/tool_result) re-mints the whole ~11.7k prefix at the default 5m TTL, because the growing conversation has no cache_control breakpoint (markers sit only on system+tools). At submit-and-wait cadence the 5m copy expires between turns, so the prefix is re-paid every turn. The game_state snapshot was always innocent (uncached Valley block). Three-story arc: 60-2 OTEL eyes (per-block cache attribution + prefix digest + cache usage) -> 60-3 diagnose/confirm (DONE; disproved the zoning hypothesis, found the tool-loop cause; see sprint/archive/60-3-session.md) -> 60-4 add a moving 1h cache_control breakpoint on the tool-loop continuation (NOT re-zoning) + fix the bucket-blind mis_zoned flag. The original 60-1 framing was wrong and dropped; 60-1 split into 60-2/60-3/60-4.'
     priority: p2
     status: backlog
     repos: server
@@ -350,15 +350,30 @@ epics:
         title: Diagnose narrator block-0 cache_write churn — prefix drift vs TTL/cadence (spike)
         points: 1
         priority: p2
-        status: backlog
+        status: done
+        started: '2026-05-22'
         repos: server
         workflow: tdd
         depends_on: 60-1
+        completed: '2026-05-22'
+        branch: feat/60-3-diagnose-block0-cache-write-churn
+        assignee: slabgorb
+        review_verdict: approved
       - id: 60-4
-        title: Eliminate narrator block-0 cache_write churn (fix per 60-3 diagnosis)
+        title: 'Fix narrator cache_write churn: 1h cache breakpoint on tool-loop continuation (per 60-3)'
+        description: 'Fix the ~$0.046/turn wasted cache_write per the 60-3 diagnosis. ROOT CAUSE (measured 2026-05-22 — the original "re-zone three mis-zoned state sections" hypothesis was DISPROVED): the cached prefix (system_blocks[0] + tools array) is byte-stable and does NOT drift. The narrator runs a tool-use loop; the FIRST call of a turn caches the prefix at 1h correctly, but every CONTINUATION call (iter 2+, carrying tool_use/tool_result) re-mints the whole ~11.7k prefix at the default 5m TTL — because the growing tool-use conversation carries no cache_control breakpoint (markers sit only on system+tools, which precede the messages in cache-prefix order). At submit-and-wait cadence the 5m copy expires between turns, so the prefix is re-paid every turn. FIX: in sidequest-server/sidequest/agents/anthropic_sdk_client.py::complete_with_tools, add a moving cache_control={type:ephemeral, ttl:self.cache_ttl} breakpoint on the LAST content block of the newest continuation message, and clear stale message-level markers so total breakpoints stay <=4 (system+tools already use 2). Do NOT re-zone the state sections — they are User-bucket/uncached; re-zoning is a no-op for cost. Also fix the bucket-blind mis_zoned flag in orchestrator.py::_compute_zones_payload (AND it with bucket / _section_rides_cache so it only flags sections that actually ride system_blocks[0]). Full evidence chain + isolated reproduction: sprint/archive/60-3-session.md -> "Dev Diagnosis (60-3 — FINAL)".'
         points: 3
         priority: p2
         status: backlog
         repos: server
         workflow: tdd
-        depends_on: 60-1
+        depends_on: 60-3
+        acceptance_criteria:
+          - 'On a tool-use turn, the continuation calls (iter 2+) write the cached prefix at 1h, not 5m: narration.turn cache_creation reports ephemeral_1h_input_tokens>0 and ephemeral_5m_input_tokens==0 for the prefix.'
+          - 'Steady-state across consecutive turns of one session: cache_write approximately 0 after warmup and cache_read>0, verified in the 60-2 Prompt-tab display / narration.turn span.'
+          - Total cache_control breakpoints per request stays <=4 (no API rejection); a moving breakpoint on the newest continuation message replaces stale message-level markers.
+          - 'mis_zoned is bucket-aware: a User-bucket state section sitting in a cached zone reports mis_zoned=false (the flag only fires for sections that actually ride system_blocks[0]).'
+          - Do NOT re-zone narrator_available_confrontations / trope_beat_directives / npc_roster — they stay User-bucket (re-zoning is a measured no-op for cost).
+          - 'Regression test (integration, through run_narration_turn per "Every Test Suite Needs a Wiring Test"): a tool-use turn asserts the continuation cache_creation lands in ephemeral_1h_input_tokens, not 5m.'
+          - 'Per-turn cost drops from the measured ~$0.116/turn baseline to <=~$0.04/turn at steady state (Sonnet; ~70% / ~$0.08/turn saved — the wasted cache_write is ~$0.089/turn = ~76% of current cost, firing 2x/turn across iter1+iter2). Verified in the 60-2 display / narration.turn cost span. NOTE: the epic''s "~$0.046/call" under-counted by ~2x (assumed one write/turn; the tool loop writes twice).'
+          - 'Note (not necessarily fixed here): anthropic_cost.py prices 1h cache_write at the 5m rate ($3.75/Mtok) rather than the real 2x ($6/Mtok), so the GM-panel cost_usd understates real 1h-write billing. Flag/track for accurate cost reporting.'
