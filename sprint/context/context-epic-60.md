@@ -2,91 +2,97 @@
 
 ## Overview
 
-Continuation of archived epic 57 (Narrator Prompt Token Reduction). A live
-`tea_and_murder/glenross` playtest on 2026-05-21 surfaced that the dominant
-component of per-narrator-call cost is **cache_write, not actual work**: a
-~12k-token cache breakpoint is re-written to the 5-minute prompt cache on every
-turn (and every tool-loop iteration) for the volatile `game_state` snapshot,
-which mutates each turn and is therefore never read back. This epic eliminates
-that wasted cache-write premium so cost tracks narrative weight (SOUL: *Cost
-Scales with Drama*) instead of bleeding on cache churn.
+Continuation of archived epic 57 (Narrator Prompt Token Reduction). A 2026-05-21
+`tea_and_murder/glenross` playtest surfaced ~$0.046/call of wasted `cache_write`.
+The original framing blamed the `game_state` snapshot; reading the code (and the
+OTEL Prompt zone-breakdown at T5 on 2026-05-22) **disproved that** and pinned the
+real cause. This epic builds the observability to *see* the cost, confirms the
+root cause with those eyes, then fixes it — in that order (you cannot reposition
+what you cannot see drift).
 
 **Priority:** P2
-**Repo:** server
-**Stories:** 1 (3 points)
+**Repo:** server (60-2 also touches ui)
+**Stories:** 3 active (60-2, 60-3, 60-4), split from the original 60-1 (status: split)
 
 ## Planning Documents
 
 | Document | Relevant Sections |
 |----------|-------------------|
-| **ADR-110 Game-State Snapshot Slimming** (`docs/adr/110-game-state-snapshot-slimming.md`) | Snapshot size reduction — complementary lever (reduces *what* is written) |
-| **ADR-112 Genre Prose Cache Promotion** (`docs/adr/112-genre-prose-stable-cache-promotion.md`) | Stable-zone `cache_control` placement; mutability rubric (always-fire+static promotes, conditional/volatile defers) |
-| **ADR-101 Anthropic SDK as Narrator Backend** (`docs/adr/101-*.md`) | Phase D stable-zone caching; `system=` array assembly with `cache_control` |
-| **ADR-098 Stateless Narrator Turns** (`docs/adr/098-*.md`) | Bounded per-turn prompts — the volatile snapshot is the per-turn payload |
-| **Archived epic 57** (`sprint/archive/epic-57.yaml`) | Parent effort; 57-3 (cache promotion) and 57-5 (snapshot slimming) overlap but target size, not breakpoint placement |
+| **ADR-101 Anthropic SDK Narrator Backend** (`docs/adr/101-*.md`) | Phase D three-zone cacheable layout; `system_blocks[0]` cache marker; four-region cache amendment |
+| **ADR-112 Genre Prose Cache Promotion** (`docs/adr/112-*.md`) | Mutability rubric: always-fire+static promotes to Stable; **conditional/volatile must NOT** ride the cached zone (combat/chase) |
+| **ADR-110 Snapshot Slimming** (`docs/adr/110-*.md`) | Snapshot size — *complementary, not this epic* |
+| **ADR-090 / ADR-103 OTEL** | Watcher events + GM panel; `prompt_assembled` event powering the Prompt tab |
+| **Archived epic 57** (`sprint/archive/epic-57.yaml`) | 57-3 promoted static prose to Early; that re-zoning is adjacent to the bug |
 
 ## Background
 
-Epic 57 ("Narrator Prompt Token Reduction") was archived `done` on 2026-05-20,
-but its cost-reduction stories 57-3 (promote static genre prose into the Stable
-cached zone, ADR-112) and 57-5 (game_state snapshot slimming, ADR-110) remained
-unfinished. The 2026-05-21 playtest gave concrete numbers that re-open the cost
-question from a different angle.
+### The corrected root cause
 
-**Observed signature (7 calls, single clean stack):**
-- Total ~$0.41; **~$0.059 per call**, of which **~$0.046 is cache-write premium**.
-- `cache_read` stays flat at the stable genre prefix (~11,168 tokens) — that
-  segment caches correctly and is read on every call.
-- `cache_write` churns **12,281–12,456 tokens on every call**, all to the 5-minute
-  TTL, all attributable to a *second* breakpoint covering the volatile snapshot.
-- Because the snapshot differs next turn, that write is never read back: you pay
-  the 1.25× cache-write premium ($3.75/Mtok on Sonnet) for a guaranteed miss.
+The narrator prompt is assembled into Anthropic `system` blocks. Per ADR-101
+Phase D (`orchestrator.py:3199-3222`):
 
-This is distinct from 57-3/57-5. Those reduce the *size* of cached/written
-content. This epic is about **breakpoint placement**: a `cache_control` marker
-should only sit on content that will be *read* again within the TTL. Putting one
-after the mutating snapshot converts cheap plain input ($3/Mtok) into a more
-expensive wasted write ($3.75/Mtok) with zero downstream benefit. Cost savings
-scale linearly with playtest hours, so the lever grows as the group plays more.
+- **`system_blocks[0]` = Primacy + Early zones, `cache=True`** — one `cache_control`
+  marker at its end. ~11.7k tokens.
+- `system_blocks[1]` = Valley, `cache=False`. Contains `game_state` (703 tok) and
+  `world_context` — **uncached, innocent.**
+- `system_blocks[2]` = Late + Recency, `cache=False`.
+- tools array — byte-stable ~11k, separately cache-marked → healthy `cache_read`.
+
+Anthropic caches the longest matching prefix up to a breakpoint. Block 0 has ONE
+marker at its end, so the **entire 11.7k block must be byte-identical** to hit the
+cache. The 2026-05-22 OTEL zone-breakdown shows three `state`-category
+(volatile) sections sitting in the **Early** zone — therefore inside cached block 0:
+
+- `narrator_available_confrontations` (~56–80 tok) — changes as confrontations open/close
+- `trope_beat_directives` (~20 tok) — changes per beat
+- `npc_roster` (~80 tok) — changes as NPCs enter/leave the scene
+
+Any per-turn change to these invalidates the whole cached prefix → block 0
+re-writes every turn (`cache_write≈12281`), while the byte-stable tools array
+reads fine (`cache_read≈11168`). The snapshot was never the cost.
+
+### Why observability comes first
+
+Today's Prompt-tab display is built from a **separate** per-zone, char/4
+*estimate* path (`orchestrator.py:2228` `prompt_assembled`), decoupled from the
+real `system_blocks` and from the real API `cache_read/cache_write`
+(`narrator.sdk.usage`). It can show "looks fine" while the cached prefix churns.
+The bug hid for exactly this reason. So: build the eyes (60-2), confirm with them
+(60-3), then fix (60-4).
 
 ## Technical Architecture
 
-The narrator prompt is assembled into an Anthropic SDK `system=` block array
-where selected segments carry `cache_control: {type: ephemeral}` markers. Each
-marker defines a cache breakpoint; the API caches the prefix up to that point.
+**Three-story arc:**
 
-**Key files (server):**
+- **60-2 (OTEL eyes — START HERE).** Extend the existing Prompt-tab Zone Breakdown
+  so it makes caching legible: mark the cache boundary (which sections ride cached
+  block 0 vs uncached blocks vs tools), join the **real** API `cache_read/cache_write`
+  (not estimates), emit a per-block content **digest** and show drift vs the prior
+  turn, and flag `state`-category sections that landed in a cached zone. The display
+  must be sourced from the **actual assembled blocks** sent to Anthropic — no
+  divergent recomputation. Repos: **server + ui**.
+- **60-3 (Diagnose/confirm — spike).** Using 60-2's eyes, run an instrumented
+  multi-turn `tea_and_murder` session and confirm the churn is the three mis-zoned
+  `state` sections in Early (drift), not 5m-TTL expiry across slow cadence. Produce
+  the finding that scopes 60-4. Repos: server.
+- **60-4 (Fix).** Re-zone the offending `state` sections out of the cached zone
+  (Early → Valley/uncached) so `system_blocks[0]` is byte-stable; also audit the
+  conditional `genre_combat_voice`/`genre_chase_voice` (ADR-112 says conditionals
+  must not ride Stable). Success: steady-state `cache_write≈0`, `cache_read>0`,
+  per-call cost down ~40-50%, verified in the 60-2 display. Repos: server.
 
-| File | Role |
-|------|------|
-| `sidequest/agents/anthropic_sdk_client.py` | SDK call site; emits `narrator.sdk.usage` (input/output/cache_read/cache_write/cost) — the OTEL lie-detector for this work |
-| `sidequest/agents/tooling_protocol.py` | Tool-use protocol; builds system blocks + `cache_control` placement |
-| `sidequest/agents/prompt_framework/bucket.py` | Section bucketing (Stable / Valley / Recency zones) that decides which segments are cacheable |
-| `sidequest/agents/orchestrator.py` | Per-turn prompt construction; injects the volatile `game_state` snapshot |
-
-**Target behaviour:** the stable genre/system prefix keeps its breakpoint
-(written once per session, read every turn). The volatile `game_state` snapshot
-moves *after* the last cache breakpoint so it rides as plain input — no per-turn
-write. Steady-state `cache_write` should drop toward ~0 (only the once-per-session
-stable write remains), while `cache_read` continues to hit the stable prefix.
-
-**Verification (OTEL, per CLAUDE.md OTEL principle):** `narrator.sdk.usage` already
-logs `cache_read` / `cache_write` per call. Success is measurable directly: after
-the fix, steady-state turns show `cache_write≈0` and `cache_read>0`, and per-call
-cost drops materially. The GM panel / Jaeger stream is the lie-detector — no
-"winging it" claim of savings without the span delta.
+**Key files:** `agents/orchestrator.py` (zone registration 1320-1460; `system_blocks`
+assembly 3199-3222; `prompt_assembled` emission 2228-2306), `agents/anthropic_sdk_client.py`
+(`narrator.sdk.usage`, real cache usage), `agents/prompt_framework/bucket.py`
+(`STABLE_SECTION_NAMES`, zone→bucket), `sidequest-ui/src/components/Dashboard/tabs/PromptTab.tsx`.
 
 ## Cross-Epic Dependencies
 
-**Depends on:**
-- None hard. ADR-101 Phase D stable-zone caching is live; the `cache_control`
-  plumbing it provides is what this epic re-targets.
+**Depends on:** None hard. ADR-101 Phase D caching is live.
 
-**Depended on by:**
-- None. Pure cost optimization — no downstream story consumes its output.
+**Depended on by:** None.
 
-**Related (not blocking):**
-- Archived epic 57, stories 57-3 (ADR-112 cache promotion) and 57-5 (ADR-110
-  snapshot slimming) — complementary size-reduction levers. If those resume,
-  coordinate breakpoint placement so the two efforts don't re-introduce a
-  volatile-segment write.
+**Related (not blocking):** Archived epic 57 (57-3 promoted prose into Early — the
+adjacent re-zoning; 57-5 snapshot slimming — orthogonal size lever). 60-4 should
+coordinate so re-zoning state OUT of Early doesn't fight 57-3's promotion of static
+prose INTO Early — they are compatible (static stays, volatile leaves).
