@@ -22,11 +22,12 @@ stories:
     title: 'Extend snapshot drop-list to cover the seven growing fields (per-field: drop / bounded-projection / RAG)'
     points: 5
     priority: p0
-    status: in_progress
+    status: done
     assigned_to: slabgorb
     started: '2026-05-23'
     repos: server
     workflow: tdd
+    completed: '2026-05-23'
     type: refactor
   - id: 61-3
     title: Convert oversized-prompt canary from soft warn to hard refuse-or-truncate + loud OTEL emit
