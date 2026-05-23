@@ -101,7 +101,9 @@ stories:
     description: "The 61-4 fingerprint detector's rolling baseline lives on the AnthropicSdkClient instance, not on a session key. Multiplayer session URLs are deterministic (memory: project_session_id_dropin — /play/{date}-{world}-mp rejoins existing session) and the client instance survives across rejoins, so the baseline from the prior session pollutes the new one. Key the baseline on session_id (or equivalent stable identifier) so a fresh rejoin starts with a fresh baseline window, and a slug-reuse rejoin inherits the prior session's baseline correctly."
     points: 2
     priority: p2
-    status: backlog
+    status: in_progress
+    assigned_to: slabgorb
+    started: '2026-05-23'
     repos: server
     workflow: tdd
     type: refactor
@@ -131,13 +133,8 @@ stories:
     status: done
     assigned_to: slabgorb
     started: '2026-05-23'
-    completed: '2026-05-23'
     repos: server
     workflow: tdd
-    branch: feat/61-followup-D-session-cumulative-hard-kill
-    pr: 'https://github.com/slabgorb/sidequest-server/pull/394'
-    closure_pending: 'Code merged; story body requires live $10 hard-kill integration test + manual playtest with SIDEQUEST_SESSION_COST_CEILING_USD=0.50 before operator-side closure. Mirrors 60-7 discipline.'
-    type: refactor
     acceptance_criteria:
       - 'Rolling-baseline ceiling (A): the per-session rolling baseline used by 61-4''s fingerprint detector is clamped at <=3x the ~$0.03/turn target ($0.09/turn). A 60-7-style 4x-sustained runaway can no longer train the comparator into silence — the 5x-over-baseline rule fires against the clamp, not against the drifted baseline.'
       - 'Absolute input_tokens alarm floor (B): a single Sonnet call where input_tokens > N (spec: 40000, halfway between the ~20K healthy steady-state and the 60K runaway fingerprint) emits a loud watcher event AND logs at ERROR level, regardless of rolling baseline. Catches single-turn spikes that haven''t had time to move the baseline.'
@@ -148,6 +145,11 @@ stories:
       - 'Regression test (integration, live SDK path through `run_narration_turn`): drive a synthesized over-cap scenario through the real narrator dispatch path and assert the hard kill terminates the session at the threshold, not in a unit-test mock. Mirror the 60-7 closure discipline — no kwargs-only assertions.'
       - 'Wiring test: cumulative-cost tracker emits a watcher event on every narrator turn (not just at threshold-cross), so the GM panel has continuous data. The 60-7 `narrator.cache.both_writes_fired` span and this counter together form the dual lie-detector for cost regressions.'
       - 'Story closes only on a live integration test exercising the hard kill, plus a documented manual playtest of one short session where the $10.00 ceiling is artificially lowered (e.g. $0.50 via config) and the session is observed to terminate cleanly with the operator-facing error. Mirror 60-7''s "no closure on unit tests alone" discipline.'
+    completed: '2026-05-23'
+    pr: 'https://github.com/slabgorb/sidequest-server/pull/394'
+    branch: feat/61-followup-D-session-cumulative-hard-kill
+    closure_pending: 'Code merged; story body requires live $10 hard-kill integration test + manual playtest with SIDEQUEST_SESSION_COST_CEILING_USD=0.50 before operator-side closure. Mirrors 60-7 discipline.'
+    type: refactor
   - id: 61-8
     title: 'Epic 61 cleanup: scope-deferred items from 61-1/61-2/61-3/61-7'
     description: |-

@@ -105,7 +105,6 @@ stories:
     repos: server
     workflow: tdd
     depends_on: 60-5
-    type: bug
     acceptance_criteria:
       - 'Diagnostic step 1 (wire-capture, do this BEFORE fixing): capture the raw kwargs of every `messages.create` call inside `complete_with_tools` for at least one tool-use turn (iter 1 + iter 2+). Dump to disk per-iteration as JSON. Diff iter 1 vs iter 2 with attention to (i) presence of the `anthropic-beta: extended-cache-ttl-...` header, (ii) presence and ttl of `cache_control` on the newest user message''s last content block. Record findings in the session file as the audit-trail for which theory (A/B/C) is correct.'
       - 'Fix is theory-driven, not speculative: do not change the marker placement until the diagnostic above names the bug. If A: pin the beta header on every internal `messages.create` call, not just the outer one. If B: move the marker placement or restructure the cached prefix to keep all cached segments under marker scopes that the API honors. If C: both.'
@@ -116,3 +115,4 @@ stories:
       - 'Wiring test: the new diagnostic capture + `both_writes_fired` span emit on the live `prompt_assembled` / continuation path on a real narrator turn. Capture is on by default in dev/playtest builds; can be opt-in for prod (see runtime config).'
       - 'Document Anthropic''s cache_control semantics under the extended-TTL beta header inside a tool-use loop in `docs/adr/` or `sidequest-server/docs/` — what was observed empirically, with the captured payload diffs as evidence. Replace folklore with a referenced spec; future cache work consults this doc, not the previous fix''s commit message.'
       - 'Do NOT close as verified on unit tests alone. 60-7 closes only on a live >=10-turn session showing steady-state <=$0.04/turn AND `both_writes_fired` span never fires after turn 1. Mirror the 60-5 closure discipline.'
+    type: bug
