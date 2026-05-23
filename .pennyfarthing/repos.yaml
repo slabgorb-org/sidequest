@@ -36,7 +36,7 @@ repos:
     build_command: tsc -b && vite build
     lint_command: eslint .
     dev_command: vite
-    branch_strategy: trunk-based
+    branch_strategy: github-flow
     default_branch: develop
     notes: |
       React 19 + Vite + TypeScript + Tailwind CSS + shadcn/ui.
@@ -47,7 +47,7 @@ repos:
     path: sidequest-content
     type: content
     description: Genre packs, world data, and shared game content (single source of truth)
-    branch_strategy: trunk-based
+    branch_strategy: github-flow
     default_branch: develop
     notes: |
       Genre packs and game content extracted from the orchestrator.
@@ -63,7 +63,7 @@ repos:
     build_command: "true"
     lint_command: ruff check .
     dev_command: python -m sidequest_daemon
-    branch_strategy: trunk-based
+    branch_strategy: github-flow
     default_branch: develop
     notes: |
       Python media services extracted from sq-2.
@@ -84,7 +84,7 @@ repos:
     build_command: "true"
     lint_command: ruff check .
     dev_command: uvicorn sidequest.server.app:app --reload
-    branch_strategy: trunk-based
+    branch_strategy: github-flow
     default_branch: develop
     notes: |
       FastAPI + uvicorn + pydantic v2. Port target of the former
