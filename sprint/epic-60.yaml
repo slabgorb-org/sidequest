@@ -1,0 +1,89 @@
+id: '60'
+type: epic
+title: Narrator Token & Cost Budget — Cache-Write Efficiency
+description: 'Continuation of archived epic 57 (Narrator Prompt Token Reduction). A 2026-05-21 tea_and_murder/glenross playtest surfaced ~$0.046/call of wasted cache_write. ROOT CAUSE — CORRECTED by story 60-3 (measured 2026-05-22; the earlier "mis-zoned state sections" hypothesis was DISPROVED): the cached prefix (system_blocks[0] Primacy+Early + the tools array) is byte-stable and does NOT drift, and the three suspected state sections (narrator_available_confrontations, trope_beat_directives, npc_roster) are User-bucket -> ride the uncached user message -> never touch block 0. The real cost is the narrator tool-use LOOP: the first call of a turn caches the prefix at 1h, but every continuation call (iter 2+, carrying tool_use/tool_result) re-mints the whole ~11.7k prefix at the default 5m TTL, because the growing conversation has no cache_control breakpoint (markers sit only on system+tools). At submit-and-wait cadence the 5m copy expires between turns, so the prefix is re-paid every turn. The game_state snapshot was always innocent (uncached Valley block). Three-story arc: 60-2 OTEL eyes (per-block cache attribution + prefix digest + cache usage) -> 60-3 diagnose/confirm (DONE; disproved the zoning hypothesis, found the tool-loop cause; see sprint/archive/60-3-session.md) -> 60-4 add a moving 1h cache_control breakpoint on the tool-loop continuation (NOT re-zoning) + fix the bucket-blind mis_zoned flag. The original 60-1 framing was wrong and dropped; 60-1 split into 60-2/60-3/60-4.'
+priority: p2
+status: backlog
+repos: server
+stories:
+  - id: 60-1
+    title: Stop cache-writing the volatile game_state snapshot segment — reposition cache_control breakpoint
+    points: 3
+    priority: p2
+    status: split
+    repos: server
+    workflow: tdd
+    split_into:
+      - 60-2
+      - 60-3
+      - 60-4
+    type: refactor
+  - id: 60-2
+    title: 'OTEL: per-system-block prompt-prefix digest + cache TTL in watcher spans'
+    points: 3
+    priority: p2
+    status: done
+    started: '2026-05-22'
+    repos: server
+    workflow: tdd
+    depends_on: 60-1
+    acceptance_criteria:
+      - 'Prompt-tab Zone Breakdown marks the CACHE BOUNDARY: each zone/section labeled cached (rides system_blocks[0]) vs uncached (Valley/Late/Recency) vs tools-array, derived from the SAME zone→CacheableBlock mapping the SDK path uses — not a separate recomputation.'
+      - Real per-turn API cache usage (cache_read, cache_write, 5m/1h split, cost_usd) from the SDK response is joined onto the turn and shown alongside the breakdown — actuals from narrator.sdk.usage, not char/4 estimates.
+      - Per-cacheable-block content digest (e.g. sha256[:8]) is emitted; the display shows DRIFT — whether each cached block's digest changed vs the previous turn (a cached block that changed = a wasted write).
+      - Sections whose category is 'state' (volatile) that land in a cached zone (Primacy/Early) are visibly flagged as mis-zoned — the specific lie-detector for the block-0 churn bug.
+      - "Accuracy guarantee (test): the event's cached/uncached partition matches the actual system_blocks the SDK client received on the same turn; the display cannot claim 'stable' while the real prompt drifts."
+      - 'Wiring test: new fields are emitted on the live prompt_assembled (or successor) path on a real narrator turn AND consumed by PromptTab.tsx — server+ui end to end.'
+    completed: '2026-05-22'
+    review_verdict: approved
+  - id: 60-3
+    title: Diagnose narrator block-0 cache_write churn — prefix drift vs TTL/cadence (spike)
+    points: 1
+    priority: p2
+    status: done
+    started: '2026-05-22'
+    repos: server
+    workflow: tdd
+    depends_on: 60-1
+    completed: '2026-05-22'
+    branch: feat/60-3-diagnose-block0-cache-write-churn
+    assignee: slabgorb
+    review_verdict: approved
+  - id: 60-4
+    title: 'Fix narrator cache_write churn: 1h cache breakpoint on tool-loop continuation (per 60-3)'
+    description: 'Fix the ~$0.046/turn wasted cache_write per the 60-3 diagnosis. ROOT CAUSE (measured 2026-05-22 — the original "re-zone three mis-zoned state sections" hypothesis was DISPROVED): the cached prefix (system_blocks[0] + tools array) is byte-stable and does NOT drift. The narrator runs a tool-use loop; the FIRST call of a turn caches the prefix at 1h correctly, but every CONTINUATION call (iter 2+, carrying tool_use/tool_result) re-mints the whole ~11.7k prefix at the default 5m TTL — because the growing tool-use conversation carries no cache_control breakpoint (markers sit only on system+tools, which precede the messages in cache-prefix order). At submit-and-wait cadence the 5m copy expires between turns, so the prefix is re-paid every turn. FIX: in sidequest-server/sidequest/agents/anthropic_sdk_client.py::complete_with_tools, add a moving cache_control={type:ephemeral, ttl:self.cache_ttl} breakpoint on the LAST content block of the newest continuation message, and clear stale message-level markers so total breakpoints stay <=4 (system+tools already use 2). Do NOT re-zone the state sections — they are User-bucket/uncached; re-zoning is a no-op for cost. Also fix the bucket-blind mis_zoned flag in orchestrator.py::_compute_zones_payload (AND it with bucket / _section_rides_cache so it only flags sections that actually ride system_blocks[0]). Full evidence chain + isolated reproduction: sprint/archive/60-3-session.md -> "Dev Diagnosis (60-3 — FINAL)".'
+    points: 3
+    priority: p2
+    status: done
+    started: '2026-05-23'
+    repos: server
+    workflow: tdd
+    depends_on: 60-3
+    acceptance_criteria:
+      - 'On a tool-use turn, the continuation calls (iter 2+) write the cached prefix at 1h, not 5m: narration.turn cache_creation reports ephemeral_1h_input_tokens>0 and ephemeral_5m_input_tokens==0 for the prefix.'
+      - 'Steady-state across consecutive turns of one session: cache_write approximately 0 after warmup and cache_read>0, verified in the 60-2 Prompt-tab display / narration.turn span.'
+      - Total cache_control breakpoints per request stays <=4 (no API rejection); a moving breakpoint on the newest continuation message replaces stale message-level markers.
+      - 'mis_zoned is bucket-aware: a User-bucket state section sitting in a cached zone reports mis_zoned=false (the flag only fires for sections that actually ride system_blocks[0]).'
+      - Do NOT re-zone narrator_available_confrontations / trope_beat_directives / npc_roster — they stay User-bucket (re-zoning is a measured no-op for cost).
+      - 'Regression test (integration, through run_narration_turn per "Every Test Suite Needs a Wiring Test"): a tool-use turn asserts the continuation cache_creation lands in ephemeral_1h_input_tokens, not 5m.'
+      - 'Per-turn cost drops from the measured ~$0.116/turn baseline to <=~$0.04/turn at steady state (Sonnet; ~70% / ~$0.08/turn saved — the wasted cache_write is ~$0.089/turn = ~76% of current cost, firing 2x/turn across iter1+iter2). Verified in the 60-2 display / narration.turn cost span. NOTE: the epic''s "~$0.046/call" under-counted by ~2x (assumed one write/turn; the tool loop writes twice).'
+      - 'Note (not necessarily fixed here): anthropic_cost.py prices 1h cache_write at the 5m rate ($3.75/Mtok) rather than the real 2x ($6/Mtok), so the GM-panel cost_usd understates real 1h-write billing. Flag/track for accurate cost reporting.'
+    completed: '2026-05-23'
+    review_verdict: approved
+  - id: 60-5
+    title: 'Playtest validation: 60-4 cache_write rebate materializes on live tea_and_murder/glenross'
+    description: "Close Epic 60's evidence loop. The 60-4 unit tests pin the *client-side contract* (marker on the LAST content block of the newest continuation message, ttl mirrors self.cache_ttl, breakpoints stay <=4, mis_zoned ANDs with bucket, 1h-write priced at 2x base). The *behavioral proof* — that Anthropic actually rebates at 1h on live API calls and per-turn cost drops to the measured ~$0.035/turn — was established by 60-3 against captured request bodies replayed in isolation, NOT against a live playtest. This story closes the gap: drive a real tea_and_murder/glenross session through the live SDK path and confirm the rebate materializes. Mirrors the 24-8 'Playtest validation: narrator uses weather/demographics grounding' pattern for Epic 24."
+    points: 2
+    priority: p1
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    depends_on: 60-4
+    acceptance_criteria:
+      - Run a >=10-turn solo session of tea_and_murder/glenross on a fresh build (post-60-4 merge to develop). The session must exercise the narrator tool-use loop on at least 5 turns (i.e., iter-2+ continuations actually happen — the 60-4 fix is a no-op on single-iter turns).
+      - GM-panel `narration.turn.cache_write_1h_tokens` > 0 on iter-2+ calls (the rebate path is engaged). Pre-60-4, this value was 0 for every turn — only `cache_write_5m_tokens` fired.
+      - Steady-state per-turn cost <= ~$0.04 (averaged across turns 3-N after warmup; matches 60-3's post-fix estimate of ~$0.035/turn). The cold first turn may still be ~$0.07 (1h prefix warmup write) — that's expected and not a regression.
+      - 'Capture before/after delta: log the actual `narration.turn.total_cost_usd` per turn alongside the 60-3 baseline (~$0.116/turn) and the measured 60-4 reduction. Record in the session file as evidence; this is the audit-trail closure for Epic 60.'
+      - If the rebate does NOT materialize (cache_write_1h stays 0, or per-turn cost stays ~$0.116), file a bug story against 60-4 with the OTEL evidence. Do NOT silently accept under-performance — Epic 60 is closed only when the playtest confirms the savings.
+      - "Secondary validation: confirm Reviewer's deferred items don't degrade the savings in practice — specifically, the old-SDK fallback (anthropic >= 0.51 is the live version; the fallback shouldn't fire) and the 'no silent under-billing' phrasing in the cost call site."
+    type: chore

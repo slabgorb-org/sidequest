@@ -1,66 +1,128 @@
 id: '24'
 type: epic
-title: Procedural World-Grounding Systems
-description: 'Anti-mode-collapse infrastructure: weather, demographics, NPC schedules, economy, establishments, calendar — following Monster Manual pattern (ADR-059). Phase 1: schemas + low_fantasy proof of concept.'
+title: 'Epic: Procedural World-Grounding Systems'
+description: 'Anti-mode-collapse infrastructure: weather, demographics, NPC schedules, economy, establishments, calendar — following Monster Manual pattern (ADR-059; note drift, successor pointer ADR-087 — implementer reads both). Phase 1: schemas + tea_and_murder/glenross proof of concept. Generator lives in sidequest-server (Python; ADR-082 retired the Rust backend). Packs remain monolithic — ADR-072 (system/milieu split) is retired (historical 2026-05-02), so weather/demographics/calendar YAML go in sidequest-content/genre_packs/<pack>/ alongside existing top-level pack files, NOT in a layered system/ folder. Existing seam: genre/models/scenario.py:132 SceneSetting.weather is a free-form str — the new system populates it from typed state. Genre fit note (tea_and_murder): cozy mystery benefits hard from grounding — Scottish-village weather/seasons drive scene framing, glenross demographics give the narrator a stable cast for "who is in the post office today", calendar gates festivals and tea-room hours.'
 priority: p1
-status: ready
-repos: api,content,orchestrator
+status: backlog
+repos: server,content,orchestrator
 stories:
   - id: 24-1
     title: Define YAML schemas for weather, demographics, calendar, economy, establishments, quest shapes, NPC schedules
     points: 3
     priority: p0
-    status: backlog
+    status: done
+    started: '2026-05-19'
     repos: content,orchestrator
     workflow: trivial
+    acceptance_criteria: []
+    completed: '2026-05-19'
     type: chore
+    branch: feat/24-1-world-grounding-schemas
+    assignee: slabgorb
+    review_verdict: approved
   - id: 24-2
-    title: Author low_fantasy weather rules (climate zones, seasonal conditions, special events)
+    title: Author tea_and_murder/glenross weather rules (climate zones, seasonal conditions, special events)
     points: 2
     priority: p0
-    status: backlog
+    status: done
+    started: '2026-05-20'
     repos: content
     workflow: trivial
+    acceptance_criteria: []
+    completed: '2026-05-20'
+    branch: feat/24-2-glenross-weather-rules
+    assignee: slabgorb
+    review_verdict: approved
   - id: 24-3
     title: Author tea_and_murder/glenross demographics (settlement profiles, population, services)
     points: 2
     priority: p0
-    status: in-progress
+    status: done
+    started: '2026-05-20'
     repos: content
     workflow: trivial
+    acceptance_criteria: []
+    completed: '2026-05-20'
+    review_findings: 'Round 2 APPROVED. All 4 round-1 reject-causes verified fixed: recurring_cast_count 12→13, header comment 12-strong→13-strong, castle_ross.total_approx 13→12, castle_ross.size 14→15_in_residence. No collateral changes. Non-blocking carry-forward findings (6 dangling supporting-cast IDs, npcs.yaml:3 pre-existing comment, schema-pending polish) documented as Delivery Findings for follow-up stories.'
+    review_verdict: approved
   - id: 24-4
     title: Author tea_and_murder/glenross calendar (months, days, moons, festivals, time precision)
     points: 2
     priority: p0
-    status: in-progress
+    status: done
+    started: '2026-05-20'
     repos: content
     workflow: trivial
+    acceptance_criteria: []
+    completed: '2026-05-20'
+    review_findings: "3 HIGH content errors: (1) Roman Catholic minority + Marymas at St Margaret's contradicts established world canon — demographics.yaml has only Church of Scotland / Scottish Episcopal / Wee Free, and St Margaret's is Episcopal not Catholic; (2) Bank Holidays 1908 list contains historical anachronisms — Christmas + Boxing Day were not Scottish statutory bank holidays until 1974; (3) starting_date math internally inconsistent — harvest_home 14 days ago (Oct 3) is outside its own declared typical_window (10-25 Sep). Plus 2 MEDIUM (fourth-wall '(per ADR sensibility)' meta-text leak in narrator-visible Nov texture; Old Year's Day drift math frozen-not-derived) and 1 LOW (Nov 11 1908 was Wednesday not Tuesday — Martinmas 'Tuesday-evening' line). All six are textual fixes, no schema/test/code changes."
+    review_verdict: approved
   - id: 24-5
-    title: 'Rust: weather generator (read climate YAML + RNG seed → weather state, following namegen pattern)'
+    title: 'Python: weather generator in sidequest-server (climate YAML + RNG seed → typed weather state, following namegen module + CLI pattern)'
     points: 3
     priority: p0
-    status: backlog
-    repos: api
+    status: done
+    started: '2026-05-20'
+    repos: server
     workflow: tdd
+    acceptance_criteria: []
+    completed: '2026-05-20'
   - id: 24-6
-    title: Prompt zone injection for weather + demographics + calendar (extend narrator template, verify with preview-prompt.py)
+    title: Narrator tool call for weather + demographics + calendar grounding (extend tool registry per ADR-102/103, verify via OTEL)
+    description: 'Replace always-on VALLEY-zone prompt injection (original 24-6 design) with a narrator-callable tool that returns weather + demographics + calendar grounding on demand. Aligns with ADR-102 (native tool-use for structured output) and ADR-103 (OTEL via tool registry — spans free for 24-7). Narrator calls when scene needs the grounding, not every turn — saves tokens, makes use observable. Acceptance: tool registered in narrator tool registry; returns current weather (from 24-5 generator), glenross calendar (from 24-4), and pack demographics; narrator invokes during tea_and_murder/glenross playtest (verifiable in 24-8); OTEL span emitted per call (free win for 24-7). Out of scope: forcing narrator to call it (we trust the model + tool description).'
     points: 3
     priority: p0
-    status: backlog
-    repos: api
+    status: done
+    started: '2026-05-20'
+    repos: server
     workflow: tdd
+    acceptance_criteria: []
+    completed: '2026-05-20'
+    branch: feat/24-6-narrator-grounding-tool
+    assignee: slabgorb
+    review_verdict: approved
   - id: 24-7
     title: OTEL spans for weather generation (proposed vs used) and demographics injection
     points: 2
     priority: p1
-    status: backlog
-    repos: api
+    status: done
+    started: '2026-05-21'
+    repos: server
     workflow: tdd
+    acceptance_criteria: []
+    completed: '2026-05-21'
+    branch: feat/24-7-otel-weather-demographics
+    assignee: slabgorb
   - id: 24-8
-    title: 'Playtest validation: narrator uses weather/demographics grounding in low_fantasy/pinwheel_coast'
+    title: 'Playtest validation: narrator uses weather/demographics grounding in tea_and_murder/glenross'
     points: 2
     priority: p1
     status: backlog
     repos: orchestrator
     workflow: trivial
+    acceptance_criteria: []
     type: chore
+  - id: 24-9
+    title: Author spaghetti_western calendar for dust_and_lead + the_real_mccoy (1878 Gregorian; months, days, festivals, time precision)
+    points: 2
+    priority: p0
+    status: done
+    started: '2026-05-21'
+    repos: content
+    workflow: trivial
+    completed: '2026-05-21'
+    type: chore
+    branch: feat/24-9-spaghetti-western-calendar
+    assignee: slabgorb
+    review_verdict: approved
+  - id: 24-10
+    title: Wire world-grounding YAML loaders + ToolContext fields at session bootstrap (unblocks 24-8 playtest)
+    points: 3
+    priority: p1
+    status: done
+    started: '2026-05-21'
+    repos: server
+    workflow: tdd
+    depends_on: 24-7
+    completed: '2026-05-21'
+    review_verdict: approved

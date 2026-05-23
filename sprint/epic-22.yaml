@@ -1,43 +1,51 @@
 id: '22'
 type: epic
-title: Seed Tropes — Narrative Variety via Schrödinger's Gun
-description: Expand the trope engine with short-arc 'seed' tropes — deliberately vague narrative events (a sealed letter, a missing item, an uneasy innkeeper) randomly dealt each session from a per-genre deck. Seeds inject as background context; the LLM narrator retroactively connects them to macro-trope escalations, creating emergent foreshadowing. Expired seeds linger as ghosts for cross-session callbacks. The player experiences a world with narrative memory and variety.
+title: "Epic: Seed Tropes — Narrative Variety via Schrödinger's Gun"
+description: "Expand the trope engine with short-arc 'seed' tropes — deliberately vague narrative events (a sealed letter, a missing item, an uneasy innkeeper) randomly dealt each session from a per-pack deck. Seeds inject as background context; the LLM narrator retroactively connects them to macro-trope escalations, creating emergent foreshadowing. Expired seeds linger as ghosts for cross-session callbacks. The player experiences a world with narrative memory and variety. ARCHITECTURE POINTERS: (a) Backend is Python post-ADR-082 — no Rust. (b) ADR-018 Trope Engine is live — existing TropeDefinition at sidequest-server/sidequest/genre/models/tropes.py:42 has escalation/passive_progression/tags; seed tropes likely want a sibling SeedTrope type, not field extension (different lifecycle: short-arc + deck draw + ghost retention). (c) ADR-009 VALLEY zone is live — 22-3 injection target is real. Note ADR-111/112 are deferred work that may migrate guardrail prose; seeds belong in VALLEY (context), not Recency, so unaffected. (d) Persistence: ghost retention extends ADR-023 session DB (~/.sidequest/saves/*.db) — new table or trope-state column. (e) Phase 1: dogfood one pack (tea_and_murder) to align with epic 24 grounding playtest; other-pack seeds follow as separate stories once the loop is proven. Doctrine note: 'sealed letter' here is a thematic seed example, NOT the multiplayer submit-and-wait barrier — see memory project_sealed_letter_doctrine."
 priority: p1
 status: backlog
-repos: api,content,orchestrator
+repos: server,content,orchestrator
 stories:
   - id: 22-1
-    title: Seed trope schema + deck engine — lifespan, flavor tags, draw-without-replacement, ghost retention
+    title: Seed trope schema + deck engine in sidequest-server — SeedTrope sibling type, lifespan, flavor tags, draw-without-replacement, ghost retention persisted in ADR-023 session DB
     points: 5
     priority: p1
-    status: backlog
-    repos: api
+    status: done
+    started: '2026-05-21'
+    repos: server
     workflow: tdd
+    acceptance_criteria: []
+    completed: '2026-05-21'
+    review_verdict: approved
   - id: 22-2
-    title: Seed trope content — author 20-30 seeds per genre pack with flavor tags and NPC delivery hints
-    points: 5
+    title: Seed trope content — author 20-30 seeds for tea_and_murder (dogfood pack) with flavor tags and NPC delivery hints; other-pack expansion follows as separate stories
+    points: 3
     priority: p1
     status: backlog
     repos: content
     workflow: trivial
+    acceptance_criteria: []
   - id: 22-3
-    title: Seed trope narrator injection — Valley-zone context for active seeds, Faded tag for expired ghosts
+    title: Seed trope narrator injection — VALLEY-zone context for active seeds (ADR-009), Faded tag for expired ghosts
     points: 3
     priority: p1
     status: backlog
-    repos: api
+    repos: server
     workflow: tdd
+    acceptance_criteria: []
   - id: 22-4
     title: Seed trope OTEL + GM panel — seed_fired, seed_expired, seed_promoted spans
     points: 2
     priority: p2
     status: backlog
-    repos: api
+    repos: server
     workflow: tdd
+    acceptance_criteria: []
   - id: 22-5
     title: Engagement-triggered seed drops — passive player pacing, mid-session seed injection
     points: 3
     priority: p2
     status: backlog
-    repos: api
+    repos: server
     workflow: tdd
+    acceptance_criteria: []
