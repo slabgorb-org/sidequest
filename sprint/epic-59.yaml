@@ -35,9 +35,10 @@ stories:
     description: Revive sidequest/agents/local_dm.py as sidequest/agents/intent_router.py (IntentRouter class). Wire an SDK-Haiku LlmClient adapter mirroring the AsideResolver / _ASIDE_MODEL pattern in agents/llm_factory.py. Emit DispatchPackage per (action, state_summary). Remove DispatchPackage.degraded and degraded_reason fields per ADR-113 no-fallbacks discipline. Implement fail-loud router failure path (ERROR span, bounded retry, explicit surface). Not yet called from the live pipeline — that lands in 59-4. Foundation story for the reframed Epic 59 Intent Router spine.
     points: 5
     priority: p1
-    status: backlog
+    status: in_progress
     repos: sidequest-server
     workflow: tdd
+    branch: feat/59-2-intent-router-skeleton
     acceptance_criteria:
       - IntentRouter class exists (renamed from LocalDM); IntentRouter.decompose(action, state_summary) returns schema-valid DispatchPackage on synthetic input fixture test
       - DispatchPackage.degraded and degraded_reason fields REMOVED from protocol/dispatch.py; _degraded_requires_reason validator REMOVED; all existing references (tests, callers) updated; tests for the old degraded path migrated to assert fail-loud retry semantics instead
