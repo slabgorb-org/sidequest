@@ -420,3 +420,75 @@ def test_write_meta_sidecar_removed_per_architect_e() -> None:
         "as a stub (no producer of /tmp/real_req_*.json, no consumer). "
         "Re-introduce only alongside a real capture path (its own story)."
     )
+
+
+# ============================================================================
+# 5. TEA verify (adversarial D-attack) — REAL scenarios/smoke_test.yaml on disk
+# ============================================================================
+#
+# test_smoke_test_projection_stays_under_default_cap above reproduces the
+# 7-action shape synthetically. That decouples the test from the file's
+# evolution — fine for unit-purity, but it means nothing about whether the
+# ACTUAL canonical scenario on disk still projects under the cap. If
+# someone adds 5 more actions to smoke_test.yaml (or any other canonical
+# small scenario gets enlarged), the synthetic test stays green while the
+# real file silently flips to refused-by-default. This probe closes that
+# gap by binding the contract to the real disk content.
+# ============================================================================
+
+
+def test_tea_adversarial_d_attack_real_smoke_test_yaml_under_cap() -> None:
+    """Adversarial D-attack probe (TEA verify, 2026-05-23).
+
+    Ratifies Dev's spec-fix D claim — "smoke_test.yaml projects ~$0.33,
+    under the $0.50 default cap" — against the REAL file on disk, not a
+    synthetic reproduction. If smoke_test.yaml grows past the cap, this
+    test fires before operators learn about it the hard way (a refused
+    ``just playtest-scenario smoke_test``).
+
+    Asserts two things:
+      1. The on-disk ``scenarios/smoke_test.yaml`` projects strictly under
+         the $0.50 default cap with cache-aware math.
+      2. ``preflight_cost_check`` proceeds (returns truthy) without
+         ``--confirm-cost`` when handed the loaded scenario dict.
+
+    Bind-to-disk by design: the WHOLE POINT is to detect drift between
+    the synthetic 7-action test and the real file.
+    """
+    playtest = _import_playtest()
+    repo_root = SCRIPTS_DIR.parent
+    smoke_test_path = repo_root / "scenarios" / "smoke_test.yaml"
+    assert smoke_test_path.exists(), (
+        f"Canonical scenarios/smoke_test.yaml must exist at {smoke_test_path}; "
+        "TEA D-attack probe is bound to the real disk content by design."
+    )
+
+    scenario = playtest.load_scenario(smoke_test_path)
+    actions = scenario.get("actions") or []
+    n_actions = len(actions)
+    assert n_actions > 0, (
+        "smoke_test.yaml must declare at least one action for the projection "
+        f"contract to mean anything. Got {n_actions}."
+    )
+
+    projected = playtest._project_preflight_cost_usd(n_actions)
+    assert projected < 0.50, (
+        "TEA D-attack: REAL scenarios/smoke_test.yaml MUST project "
+        f"under the $0.50 default cap (got ${projected:.4f} for "
+        f"{n_actions} actions). If this fires, smoke_test has grown "
+        "past the cap and operators will start being refused by default "
+        "— either trim smoke_test or raise the cap with eyes open. "
+        "(The synthetic test above will stay green and won't catch this.)"
+    )
+
+    # Full preflight must accept it without --confirm-cost.
+    result = playtest.preflight_cost_check(
+        scenario,
+        max_projected_cost_usd=0.50,
+        confirm_cost=False,
+    )
+    assert result is not False, (
+        f"REAL smoke_test.yaml ({n_actions} actions, projected "
+        f"${projected:.4f}) MUST proceed under the default cap without "
+        f"--confirm-cost. Got {result!r}."
+    )
