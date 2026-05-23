@@ -191,7 +191,11 @@ stories:
       Suggested order: §A → §C1 (rename) → §C2 → §B (audit) → §D1+D2 (OTEL) → §D3+D4 (tests) → §D5+D6 (noise + pyright) → §F (justfile, separate repo) → §E/§G (separate stories if taken). Each sub-item is independently testable. §C3 is sidequest-ui — split if it lands separately.
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-23'
     repos: server
-    workflow: tdd
+    workflow: trivial
+    completed: '2026-05-23'
     type: refactor
+    review_findings: 'Round 3 APPROVED. Round-1 found 3 MUST-FIX + 8 SHOULD-FIX via 9-specialist fan-out. Round-2 addressed all 11 (with the reviewer-audit umbrella context_missing_ids OTEL gap folded in). Round-3 cleared the round-2 unused-json-import lint regression. Tests 7327 passed, ruff clean, pyright clean on session_helpers.py. Ready for SM finish.'
+    review_verdict: approved
