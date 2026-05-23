@@ -1,0 +1,36 @@
+id: '59'
+type: epic
+title: Confrontation Engagement Regression — Narrator Stops Firing advance_confrontation
+description: "Post-Epic-50 regression found in the 2026-05-21 Glenross playtest: the SDK narrator never calls advance_confrontation, so social confrontations (negotiation/trial/auction/social_duel/scandal) never engage in tea_and_murder. The narrator writes full standoff/negotiation prose with zero engine state (every turn logs confrontation=None, beat_selections=0; advance_confrontation invoked 0 times despite tool_calls=1-4/turn). Epic 50 moved from keyword auto-trigger to a narrator-declared-intent model (79cea7a, 60027da, ad9381b) and deleted the _CONFRONTATION_TRIGGER_PATTERNS lie-detector (93c7659) that used to catch exactly this non-engagement — so the regression ships silently. Tool is registered and output_only_sdk.md has strong trigger criteria, so it's a behavior/wiring gap, not a missing tool. Scope: get the narrator to actually declare social confrontations in tea_and_murder, and restore a non-keyword OTEL lie-detector for narrated-confrontation-without-engine-state."
+priority: p1
+status: done
+repos: sidequest-server
+stories:
+  - id: 59-1
+    title: Narrator never calls advance_confrontation in tea_and_murder — social confrontations never engage
+    description: |-
+      Found in 2026-05-21 Glenross (tea_and_murder) solo playtest: social confrontations (negotiation/trial/auction/social_duel/scandal) never engage — every turn logs confrontation=None, beat_selections=0. A SOUL/OTEL "winging it" violation: the narrator writes full standoff prose with no engine state behind it.
+
+      ARCHITECT RE-FRAME (2026-05-22, Houlihan): The original premise ("narrator never calls advance_confrontation") mis-identifies the mechanism. Engagement = the narrator setting the structured `confrontation` FIELD, which the server consumes at narration_apply.py:2531 to create the StructuredEncounter. advance_confrontation only ADVANCES an already-active encounter (errors if none active) — so "advance_confrontation invoked 0 times" is expected, not the bug.
+
+      ROOT CAUSE (architecture-level): The `confrontation` field is populated only on the legacy claude -p JSON-sidecar extraction path (orchestrator.py:841/880/2643+, patch.get("confrontation")). On the DEFAULT anthropic_sdk backend (ADR-101/102, tool-use) NO tool writes result.confrontation: apply_world_patch omits it; advance_confrontation can't start; generate_encounter — where the ADR-111/57-4 migration stranded the social trigger criteria — is a hard stub that always returns a fatal error. Meanwhile output_only_sdk.md §4 tells the narrator to START via advance_confrontation (the wrong tool). The Epic 50 → SDK migration left confrontation ENGAGEMENT (vs ADVANCEMENT) without a tool path.
+
+      SCOPE: give the SDK narrator a working engagement-field writer (reuse-first: extend apply_world_patch to carry `confrontation`), move the social trigger criteria onto that LIVE tool's description, fix the prompt to route STARTING there, and restore a non-keyword OTEL lie-detector that covers the no-emission case the intent-validator misses. See sprint/context/context-story-59-1.md (Architecture Decision) for the full design.
+    points: 5
+    priority: p1
+    status: done
+    started: '2026-05-22'
+    repos: sidequest-server
+    workflow: tdd
+    acceptance_criteria:
+      - "ENGAGEMENT PATH (behavioral, deterministic): In a fixture social-confrontation pack with no active encounter, when the narrator's structured output sets result.confrontation to a social type (negotiation/social_duel/trial/auction/scandal), the server creates a StructuredEncounter of that type (narration_apply.py:2531). Verify via OTEL: encounter created, type matches. NOTE: this pins the deterministic field->encounter substrate, NOT the LLM's free tool-choice (that is playtest-verified)."
+      - 'SDK WRITER EXISTS: There must be an SDK tool path through which the narrator sets the result.confrontation engagement field. Today NONE exists on the default anthropic_sdk backend - apply_world_patch omits the field, advance_confrontation cannot start (errors if no active encounter), and generate_encounter is a hard stub that always returns a fatal error. Assert the engagement tool is offered in the per-turn SDK tool list for a social pack and that invoking it populates result.confrontation. (Reuse-first recommendation: extend apply_world_patch to carry confrontation, sibling to its existing location/scene_mood fields.)'
+      - 'TRIGGER CRITERIA ON A LIVE TOOL: The social trigger criteria (negotiation/social_duel/trial/auction/scandal) must live in the DESCRIPTION of the LIVE engagement tool the SDK narrator actually uses - not stranded on generate_encounter, which returns a fatal error and can never engage. Assert the criteria are present on the live tool and that engagement does not depend on the dead generate_encounter stub.'
+      - 'PROMPT ROUTES TO THE RIGHT TOOL: output_only_sdk.md section 4 must route STARTING a confrontation to the tool that can actually create one (the engagement-field writer), not to advance_confrontation (which errors with no active encounter and whose own description is combat-only). Assert the prompt no longer instructs the narrator to START via advance_confrontation; advance_confrontation/advance_encounter_beat remain for advancing an ACTIVE encounter.'
+      - 'LIE-DETECTOR COVERS THE NO-EMISSION CASE: Restore/extend a NON-KEYWORD OTEL watcher that fires when a turn is confrontation-shaped but nothing engaged. The existing confrontation_intent_validator reprompt (narration_apply.py:2511) only fires when action_rewrite.intent is present to tokenize; the playtest failure was the narrator emitting no intent at all, which slips through. Close the blind spot WITHOUT reverting to prose keyword-scanning (do not resurrect _CONFRONTATION_TRIGGER_PATTERNS) - e.g. ensure a structured intent signal is always available to the validator. Fixture test: a confrontation-shaped, unengaged turn emits the watcher span; a properly-engaged turn does NOT (no false positive).'
+      - "FIXTURE REGRESSION TEST: A fixture-driven regression test drives the engagement path end-to-end (narrator sets confrontation field -> server creates encounter) for a social type and asserts encounter creation / non-None confrontation state. Synthetic fixtures only - never assert against live genre_packs/*. The LLM's free tool-choice is a playtest deliverable, not a unit test."
+    completed: '2026-05-22'
+    type: bug
+    review_findings: "FINAL pass (round 3): functional fix correct & proven; preflight/security/rule-checker clean; all R1 violations resolved. TWO trivial one-line fixes only: FIX-1 (HIGH/doc) residual lying comment at orchestrator.py:3343 (genre_pack=context.pack site still says begin_confrontation 'instantiates the encounter during dispatch' — third instance, fix to validates+signals). FIX-2 (HIGH/test) AC4 behavioral test test_advance_confrontation_call_does_not_set_result_confrontation is vacuous — add 'assert any(tc[name]==advance_confrontation for tc in result.tool_calls)' before the None assert (R4 template). Change ONLY these two lines; all else deferred/accepted (see session Reviewer Assessment R2)."
+    review_verdict: approved
+completed: '2026-05-22'
