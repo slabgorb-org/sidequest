@@ -68,6 +68,7 @@ import json
 import random
 import sys
 import time
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -724,6 +725,187 @@ class Playtest:
 # ── CLI ─────────────────────────────────────────────────────────────────────
 
 
+# ── Story 61-4 — Preflight cost guard + SDK-replay sidecar ──────────────────
+#
+# Defense against the 2026-05-23 $313 runaway. Two surfaces:
+#
+# 1. ``preflight_cost_check`` — runs BEFORE any scenario action fires, prints
+#    a worst-case projection ("N actions × 12_000 input × 4 iters × Sonnet
+#    rates, no cache rebate") and refuses to proceed past
+#    ``--max-projected-cost-usd`` (default $0.50 ≈ 16x the per-turn target)
+#    unless ``--confirm-cost`` is supplied. The May 23 incident happened
+#    because nothing was ever printed; loud is the point.
+#
+# 2. ``write_meta_sidecar`` — given a ``/tmp/real_req_*.json`` SDK-replay
+#    dump, writes a sibling ``.meta.json`` carrying ``input_tokens`` +
+#    ``projected_cost_per_replay_usd`` + per-iter projection. Sidecar
+#    projection assumes cache rebate from iter 2 onwards (replays run warm
+#    against the same prefix); preflight does NOT (operator-facing
+#    worst-case). See sprint/context/context-story-61-4.md decisions D & E.
+
+# Conservative defaults for the preflight worst-case projection. Hard-coded
+# rather than imported from sidequest_server.agents.anthropic_cost so this
+# script stays runnable without the server venv (matches the rest of
+# playtest.py's "no server imports" stance — scenarios load standalone).
+_PREFLIGHT_INPUT_TOKENS_PER_ACTION = 12_000
+_PREFLIGHT_OUTPUT_TOKENS_PER_ACTION = 200
+_PREFLIGHT_ITERS_ASSUMED = 4
+_SONNET_INPUT_PER_MTOK_USD = 3.0
+_SONNET_OUTPUT_PER_MTOK_USD = 15.0
+_SONNET_CACHED_READ_PER_MTOK_USD = 0.30
+
+# Sidecar replay projection: iter 1 pays full input rate, iters 2+ ride the
+# cache read rate for the prefix (replays warm the cache by construction).
+_SIDECAR_ITERS_ASSUMED = 4
+_SIDECAR_OUTPUT_TOKENS_PER_ITER = 200
+_SIDECAR_SCHEMA_VERSION = 1
+
+
+def _project_preflight_cost_usd(n_actions: int) -> float:
+    """Worst-case projection for ``n_actions`` scenario actions.
+
+    No cache rebate, ``_PREFLIGHT_ITERS_ASSUMED`` (4) tool-loop iters per
+    action, ``_PREFLIGHT_INPUT_TOKENS_PER_ACTION`` (12_000) input + 200
+    output per iter at Sonnet rates. Pessimistic on purpose — the operator
+    sees a worst-case envelope, not an optimistic guess.
+    """
+    if n_actions <= 0:
+        return 0.0
+    per_iter_input_usd = (
+        _PREFLIGHT_INPUT_TOKENS_PER_ACTION * _SONNET_INPUT_PER_MTOK_USD / 1_000_000
+    )
+    per_iter_output_usd = (
+        _PREFLIGHT_OUTPUT_TOKENS_PER_ACTION * _SONNET_OUTPUT_PER_MTOK_USD / 1_000_000
+    )
+    per_iter_usd = per_iter_input_usd + per_iter_output_usd
+    return n_actions * _PREFLIGHT_ITERS_ASSUMED * per_iter_usd
+
+
+def preflight_cost_check(
+    scenario: dict[str, Any],
+    *,
+    max_projected_cost_usd: float,
+    confirm_cost: bool,
+) -> bool:
+    """Print projected cost; refuse if projection > cap without confirm.
+
+    AC4 + AC7: operator-facing cost guard. Returns ``True`` when the run
+    should proceed; returns ``False`` (after printing the loud refusal)
+    when the projection exceeds the cap and ``confirm_cost`` is False.
+
+    The projection is ALWAYS printed (even when under cap and even when
+    bypassed via ``confirm_cost``) so every run has an audit trail.
+
+    :param scenario: Loaded scenario dict (output of ``load_scenario``).
+    :param max_projected_cost_usd: Refuse threshold; the run halts when
+        the worst-case projection exceeds this.
+    :param confirm_cost: When True, bypasses the cap (still prints the
+        projection for the audit trail).
+    """
+    actions = scenario.get("actions") or []
+    n_actions = len(actions)
+    projected = _project_preflight_cost_usd(n_actions)
+
+    # Loud: top + bottom rule so a tailed log can't miss it.
+    rule = "=" * 68
+    print(rule, file=sys.stderr)
+    print(
+        f"[61-4 preflight] worst-case projected cost: ${projected:.2f} USD "
+        f"(N={n_actions} actions × "
+        f"{_PREFLIGHT_INPUT_TOKENS_PER_ACTION:,} input × "
+        f"{_PREFLIGHT_ITERS_ASSUMED} iters @ Sonnet rates, no cache rebate)",
+        file=sys.stderr,
+    )
+    print(
+        f"[61-4 preflight] cap: ${max_projected_cost_usd:.2f} USD "
+        f"(--max-projected-cost-usd; bypass with --confirm-cost)",
+        file=sys.stderr,
+    )
+
+    over_cap = projected > max_projected_cost_usd
+    if over_cap and not confirm_cost:
+        print(
+            f"[61-4 preflight] REFUSED — projected ${projected:.2f} USD "
+            f"exceeds cap ${max_projected_cost_usd:.2f} USD. "
+            "Re-run with --confirm-cost to override, or shrink the scenario.",
+            file=sys.stderr,
+        )
+        print(rule, file=sys.stderr)
+        return False
+
+    if over_cap and confirm_cost:
+        print(
+            f"[61-4 preflight] OVER CAP — proceeding (--confirm-cost supplied). "
+            f"projected ${projected:.2f} USD > cap ${max_projected_cost_usd:.2f} USD",
+            file=sys.stderr,
+        )
+    else:
+        print(
+            f"[61-4 preflight] OK — projected ${projected:.2f} USD ≤ cap "
+            f"${max_projected_cost_usd:.2f} USD",
+            file=sys.stderr,
+        )
+    print(rule, file=sys.stderr)
+    return True
+
+
+def write_meta_sidecar(dump_path: Path) -> Path:
+    """Write a sibling ``.meta.json`` annotating a ``real_req_*.json`` dump.
+
+    AC5: any SDK-replay dump gets a sibling describing what a replay would
+    cost. Sidecar schema v1 (decision E):
+
+    - ``request_file`` — dump filename for cross-reference
+    - ``input_tokens`` — propagated from the dump (load-bearing field)
+    - ``iters_assumed`` — tool-loop iters assumed for the projection
+    - ``per_iter_projection_usd`` — list of per-iter USD costs (cold iter 1,
+      cache-warm iters 2+)
+    - ``projected_cost_per_replay_usd`` — sum of ``per_iter_projection_usd``
+    - ``model`` — propagated from the dump
+    - ``captured_at`` — ISO-8601 UTC timestamp
+    - ``schema_version`` — 1
+
+    Replay projection ASSUMES cache rebate from iter 2 onwards (replays run
+    warm against the same prefix); iter 1 pays the full Sonnet input rate.
+    Distinct from preflight, which is worst-case (no rebate, operator-
+    facing). Sibling name pattern: ``{dump.stem}.meta.json`` (e.g.
+    ``real_req_001.json`` → ``real_req_001.meta.json``).
+    """
+    dump = json.loads(dump_path.read_text())
+    input_tokens = int(dump.get("input_tokens", 0))
+    model = str(dump.get("model", "claude-sonnet-4-6"))
+
+    per_iter: list[float] = []
+    for iter_idx in range(_SIDECAR_ITERS_ASSUMED):
+        if iter_idx == 0:
+            # Cold first iter: full input rate.
+            in_usd = input_tokens * _SONNET_INPUT_PER_MTOK_USD / 1_000_000
+        else:
+            # Warm subsequent iters: cached read rate (replay warms the
+            # cache by construction).
+            in_usd = input_tokens * _SONNET_CACHED_READ_PER_MTOK_USD / 1_000_000
+        out_usd = (
+            _SIDECAR_OUTPUT_TOKENS_PER_ITER
+            * _SONNET_OUTPUT_PER_MTOK_USD
+            / 1_000_000
+        )
+        per_iter.append(in_usd + out_usd)
+
+    meta = {
+        "schema_version": _SIDECAR_SCHEMA_VERSION,
+        "request_file": dump_path.name,
+        "input_tokens": input_tokens,
+        "iters_assumed": _SIDECAR_ITERS_ASSUMED,
+        "per_iter_projection_usd": per_iter,
+        "projected_cost_per_replay_usd": sum(per_iter),
+        "model": model,
+        "captured_at": datetime.now(UTC).isoformat(),
+    }
+    sidecar_path = dump_path.with_name(f"{dump_path.stem}.meta.json")
+    sidecar_path.write_text(json.dumps(meta, indent=2))
+    return sidecar_path
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="playtest",
@@ -805,6 +987,30 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
             "(default: %(default)s)."
         ),
     )
+    # Story 61-4 — Preflight cost guard (defense against the 2026-05-23
+    # $313 runaway). Prints worst-case projected cost before the scenario
+    # runs and refuses to proceed past the cap unless --confirm-cost is
+    # supplied. See sprint/context/context-story-61-4.md decision D.
+    parser.add_argument(
+        "--max-projected-cost-usd",
+        type=float,
+        default=0.50,
+        help=(
+            "Refuse scenarios whose worst-case projected cost exceeds this "
+            "USD cap (default: %(default)s ≈ 16x the per-turn target). "
+            "Bypass with --confirm-cost. Story 61-4 defense against the "
+            "2026-05-23 runaway."
+        ),
+    )
+    parser.add_argument(
+        "--confirm-cost",
+        action="store_true",
+        help=(
+            "Bypass the --max-projected-cost-usd cap for this run. The "
+            "projection is still printed for the audit trail. Use when "
+            "you've eyeballed the cost and accept it."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -827,6 +1033,17 @@ async def amain(args: argparse.Namespace) -> int:
             scenario = load_scenario(args.scenario)
         except ScenarioError as exc:
             console.print(f"[bold red]Scenario error: {exc}[/bold red]")
+            return 2
+
+        # Story 61-4 preflight cost guard: refuse to spin up the WS
+        # session if the worst-case projection exceeds the cap. Skipped in
+        # fixture mode because fixtures don't carry a scripted action list
+        # (their cost shape is driven by the harness, not by --scenario).
+        if not preflight_cost_check(
+            scenario,
+            max_projected_cost_usd=args.max_projected_cost_usd,
+            confirm_cost=args.confirm_cost,
+        ):
             return 2
 
     pt = Playtest(
