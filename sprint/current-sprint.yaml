@@ -380,3 +380,20 @@ epics:
           - 'Note (not necessarily fixed here): anthropic_cost.py prices 1h cache_write at the 5m rate ($3.75/Mtok) rather than the real 2x ($6/Mtok), so the GM-panel cost_usd understates real 1h-write billing. Flag/track for accurate cost reporting.'
         completed: '2026-05-23'
         review_verdict: approved
+      - id: 60-5
+        title: 'Playtest validation: 60-4 cache_write rebate materializes on live tea_and_murder/glenross'
+        description: "Close Epic 60's evidence loop. The 60-4 unit tests pin the *client-side contract* (marker on the LAST content block of the newest continuation message, ttl mirrors self.cache_ttl, breakpoints stay <=4, mis_zoned ANDs with bucket, 1h-write priced at 2x base). The *behavioral proof* — that Anthropic actually rebates at 1h on live API calls and per-turn cost drops to the measured ~$0.035/turn — was established by 60-3 against captured request bodies replayed in isolation, NOT against a live playtest. This story closes the gap: drive a real tea_and_murder/glenross session through the live SDK path and confirm the rebate materializes. Mirrors the 24-8 'Playtest validation: narrator uses weather/demographics grounding' pattern for Epic 24."
+        points: 2
+        priority: p1
+        status: backlog
+        repos: orchestrator
+        workflow: trivial
+        depends_on: 60-4
+        acceptance_criteria:
+          - Run a >=10-turn solo session of tea_and_murder/glenross on a fresh build (post-60-4 merge to develop). The session must exercise the narrator tool-use loop on at least 5 turns (i.e., iter-2+ continuations actually happen — the 60-4 fix is a no-op on single-iter turns).
+          - GM-panel `narration.turn.cache_write_1h_tokens` > 0 on iter-2+ calls (the rebate path is engaged). Pre-60-4, this value was 0 for every turn — only `cache_write_5m_tokens` fired.
+          - Steady-state per-turn cost <= ~$0.04 (averaged across turns 3-N after warmup; matches 60-3's post-fix estimate of ~$0.035/turn). The cold first turn may still be ~$0.07 (1h prefix warmup write) — that's expected and not a regression.
+          - 'Capture before/after delta: log the actual `narration.turn.total_cost_usd` per turn alongside the 60-3 baseline (~$0.116/turn) and the measured 60-4 reduction. Record in the session file as evidence; this is the audit-trail closure for Epic 60.'
+          - If the rebate does NOT materialize (cache_write_1h stays 0, or per-turn cost stays ~$0.116), file a bug story against 60-4 with the OTEL evidence. Do NOT silently accept under-performance — Epic 60 is closed only when the playtest confirms the savings.
+          - "Secondary validation: confirm Reviewer's deferred items don't degrade the savings in practice — specifically, the old-SDK fallback (anthropic >= 0.51 is the live version; the fallback shouldn't fire) and the 'no silent under-billing' phrasing in the cost call site."
+        type: chore
