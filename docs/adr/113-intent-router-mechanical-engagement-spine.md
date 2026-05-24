@@ -8,8 +8,8 @@ supersedes: []
 superseded-by: null
 related: [2, 13, 31, 33, 53, 67, 73, 93, 98, 101, 102, 111]
 tags: [agent-system, narrator, narrator-migration, observability]
-implementation-status: deferred
-implementation-pointer: sprint/current-sprint.yaml#59-2
+implementation-status: partial
+implementation-pointer: sprint/epic-59.yaml#59-4
 ---
 
 # ADR-113: Intent Router — Mechanical-Engagement Spine

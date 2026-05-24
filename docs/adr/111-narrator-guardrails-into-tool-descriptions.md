@@ -340,6 +340,28 @@ upside.
 
 ## Implementation Notes
 
+- **Story 59-4 / ADR-113 implementation pointer (2026-05-24).** The
+  `confrontation_trigger_constraint` guardrail has completed its second
+  migration: from the `begin_confrontation` tool description (Story
+  59-1) onto the IntentRouter's Haiku system prompt at
+  `sidequest/agents/intent_router.py::_SYSTEM_PROMPT`. The
+  `begin_confrontation` tool itself is retired — file relocated to
+  `sidequest/agents/tools/_retired/begin_confrontation.py` with a
+  breadcrumb docstring, original-path import raises ImportError
+  (CLAUDE.md "No Silent Fallbacks"). The narrator no longer reads
+  confrontation engagement criteria at all because the narrator no
+  longer decides engagement — the router does, pre-narrator. The
+  `narrator_guardrails.CONFRONTATION_TRIGGER_CONSTRAINT` constant still
+  exists for the legacy `claude -p` backend path (which is retired in
+  practice per ADR-101 but remains the contract surface). Updated
+  caching tier: the criterion now lives on the system block of the
+  agent that decides engagement (the router), preserving the cached-home
+  intent of this ADR. The
+  `npc_intro_visual_constraint`, `npc_extraction_constraint`, and
+  `location_patch_constraint` guardrails are unaffected — they govern
+  narrator emission of presentation fields, not engagement, and remain
+  on their narrator-tool descriptions.
+
 - The four prose constants are extracted to a single source-of-truth
   module (working name: `sidequest/agents/narrator_guardrails.py`)
   housing one named constant per guardrail. Both the legacy Recency
