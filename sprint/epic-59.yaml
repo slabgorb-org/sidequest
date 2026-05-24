@@ -54,10 +54,11 @@ stories:
     description: Change confrontation_intent_validator trigger from narrator-action_rewrite vs engaged-encounter mismatch to router-dispatched-subsystem vs engine-engaged-on-snapshot mismatch. Broaden semantics across the full dispatch vocabulary (confrontation, magic_working, scenario_clue). Watcher is a pure function (package, post_turn_snapshot) → optional[mismatch_span] running post-turn. Replaces both the deleted _CONFRONTATION_TRIGGER_PATTERNS keyword scanner (93c7659) and the 59-1-shipped confrontation_intent_mismatch_reprompt_failed_span self-report-reprompt flow. One mechanism per project memory feedback_one_mechanism_per_problem.
     points: 3
     priority: p1
-    status: backlog
+    status: in_progress
     repos: sidequest-server
     workflow: tdd
     depends_on: 59-2
+    branch: feat/59-3-router-vs-engine-watcher
     acceptance_criteria:
       - Router dispatched confrontation:negotiation + snapshot has no encounter → mismatch span fires (reuse existing confrontation_unengaged_turn_span)
       - Router dispatched confrontation:negotiation + snapshot has matching encounter → no span (no false positive)
