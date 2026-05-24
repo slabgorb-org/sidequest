@@ -101,12 +101,15 @@ stories:
     description: "The 61-4 fingerprint detector's rolling baseline lives on the AnthropicSdkClient instance, not on a session key. Multiplayer session URLs are deterministic (memory: project_session_id_dropin — /play/{date}-{world}-mp rejoins existing session) and the client instance survives across rejoins, so the baseline from the prior session pollutes the new one. Key the baseline on session_id (or equivalent stable identifier) so a fresh rejoin starts with a fresh baseline window, and a slug-reuse rejoin inherits the prior session's baseline correctly."
     points: 2
     priority: p2
-    status: in_progress
+    status: done
     assigned_to: slabgorb
     started: '2026-05-23'
     repos: server
     workflow: tdd
+    completed: '2026-05-23'
     type: refactor
+    review_findings: '[HIGH] session_room.py:357 reset() called with zero args after signature change; TypeError silently swallowed by except Exception at line 358. Fix: reset() -> reset(self.slug). Plus 2 LOW (docstring + stale test line refs).'
+    review_verdict: approved
   - id: 61-followup-B
     title: 'Promote narrator.sdk.usage log line to a watcher INFO event for continuous cost-trend on GM panel'
     description: "Today narrator.sdk.usage cost_usd=... fires only as a log line at INFO level. The GM panel cannot show a per-turn cost trend without a stable watcher event. Promote the log line to a watcher event with severity=info carrying (input_tokens, output_tokens, cost_usd, model, cache_read_tokens, cache_write_tokens). The 61-4 alarm fires at warn/error; this is the continuous baseline signal it implicitly compares against. Sebastien-grade lie-detector for cost. (Note: per CLAUDE.md, this is a Keith/dev observability concern, not a Sebastien player-facing feature — the framing is OTEL-side, not player-UI-side.)"
