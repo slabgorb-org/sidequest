@@ -101,7 +101,8 @@ stories:
     description: '60-4 shipped with passing unit tests and a measured-in-isolation rebate, but the first live tea_and_murder/glenross session (2026-05-23, 11 turns, save ~/.sidequest/saves/games/2026-05-23-annees_folles/save.db) shows the fix is NOT holding. Per-turn evidence pulled from `turn_telemetry` prompt_assembled.cache_usage: avg $0.165/turn vs 60-4''s $0.04 target (4x over). Cold turn 1: $0.218 (3x over the predicted $0.07). Every turn after T1 fires BOTH a ~14k cache_write_5m AND a ~15k cache_write_1h — 60-4 AC-1 explicitly required `ephemeral_5m_input_tokens == 0`. Total session spend: $1.82 over 11 turns. Cached blocks ARE byte-stable across all 11 turns (stable=8e44bca5, recency=02eaadf1, tools=7f235376 — identical every turn), so the 60-3 diagnosis (prefix doesn''t drift) holds; the bug is in the 1h marker not suppressing the default 5m write. Party-mode generated three live hypotheses to test (in order of likely cost): (A) the `anthropic-beta: extended-cache-ttl-...` header is set once at the top of `complete_with_tools` but the SDK may not propagate it to every internal `messages.create` during the tool-use loop, causing the API to silently downgrade message-level 1h markers to 5m on iter 2+; (B) `cache_control` on a user-message content block has different API semantics than on system/tools (it creates a separate cached segment whose TTL may default to 5m without the beta header in scope on that exact call); (C) A+B compound. Sensitization context: Keith recently took a $300 runaway-credits hit and is acutely cost-sensitive — this story is p0 because the cost-control system shipped, claimed verified, and is silently failing. Sibling 60-5 (playtest validation) is the parent dependency — this story IS the bug-file 60-5 AC-5 said to create if the rebate did not materialize.'
     points: 5
     priority: p0
-    status: backlog
+    status: done
+    started: '2026-05-24'
     repos: server
     workflow: tdd
     depends_on: 60-5
@@ -115,4 +116,7 @@ stories:
       - 'Wiring test: the new diagnostic capture + `both_writes_fired` span emit on the live `prompt_assembled` / continuation path on a real narrator turn. Capture is on by default in dev/playtest builds; can be opt-in for prod (see runtime config).'
       - 'Document Anthropic''s cache_control semantics under the extended-TTL beta header inside a tool-use loop in `docs/adr/` or `sidequest-server/docs/` — what was observed empirically, with the captured payload diffs as evidence. Replace folklore with a referenced spec; future cache work consults this doc, not the previous fix''s commit message.'
       - 'Do NOT close as verified on unit tests alone. 60-7 closes only on a live >=10-turn session showing steady-state <=$0.04/turn AND `both_writes_fired` span never fires after turn 1. Mirror the 60-5 closure discipline.'
+    completed: '2026-05-24'
     type: bug
+    review_findings: '5 high-confidence findings (non-blocking, bounded): 1 silent-fallback rule violation in _build_messages_payload non-dict path, 4 stale comments (production + test files), 2 test coverage gaps (iter=2 marker count, 5m bare-string promotion). Rework sequence: TEA adds 2 tests + fixes 3 test comments; Dev adds logger.warning else-branch + fixes 1 production comment + optional 1 doc-path fix. ~30 minutes total.'
+    review_verdict: approved
