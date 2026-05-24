@@ -48,9 +48,11 @@ stories:
     title: 'UI: surface RigComposure + Edge + injury tags on CharacterSheet'
     points: 2
     priority: p2
-    status: backlog
+    status: in_progress
     repos: sidequest-ui
     workflow: tdd
+    started: '2026-05-24'
+    branch: feat/53-5-ui-surface-rig-composure-edge-injury-tags
   - id: 53-6
     title: scripts/render_common.slugify prefers item.slug over slugify(name)
     points: 1
