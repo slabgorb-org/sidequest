@@ -435,3 +435,8 @@ completed_stories:
     title: Wave-1 12-fixture hydration sweep + CHANGELOG; assert no caverns_sunden slug remains
     points: 1
     completed: '2026-05-25'
+  - id: 51-4
+    epic: '51'
+    title: Remove DEV_SCENES gate + add fixture picker to connect screen
+    points: 3
+    completed: '2026-05-25'

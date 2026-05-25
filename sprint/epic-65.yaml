@@ -40,12 +40,6 @@ stories:
     type: feature
   - id: 65-2
     title: Per-session asset ledger — track runtime-generated images per save file
-    points: 3
-    priority: p1
-    status: backlog
-    repos: server,content
-    workflow: tdd
-    type: feature
     description: |
       Runtime-generated images (portraits, scene illustrations, POI
       renders triggered during play) are uploaded to R2 by the daemon
@@ -79,3 +73,9 @@ stories:
 
       Respects durable-retention-by-default (memory: feedback):
       never reap save-referenced R2 assets on a timer.
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: feature

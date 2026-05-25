@@ -165,3 +165,12 @@ stories:
     repos: sidequest-server
     workflow: trivial
     type: bug
+  - id: 59-10
+    title: Feed genre confrontation types to Intent Router user prompt + clean 15 stale tests
+    points: 3
+    priority: p1
+    status: in_progress
+    started: '2026-05-25'
+    repos: server
+    workflow: tdd
+    type: bug

@@ -85,3 +85,36 @@ stories:
     workflow: tdd
     completed: '2026-05-24'
     type: bug
+  - id: 63-8
+    title: Lore page POI images — render location landscape from R2 with cartography anchor
+    description: |
+      The /reference/lore/<pack>/<world> pages render location text from
+      cartography.yaml but show no images. Every world now has POI
+      landscape PNGs in R2 at genre_packs/<pack>/worlds/<world>/assets/
+      poi/<slug>.png — wire them into the lore page.
+
+      Server (reference_renderer.py):
+      - For each region in cartography.yaml, look up the matching POI
+        slug from history.yaml points_of_interest[].slug
+      - Emit an <img> tag with src=cdn.slabgorb.com/genre_packs/...
+        inside the location-<slug> anchor section
+      - Graceful: if no POI image exists for a region, render text only
+        (no broken image, no placeholder)
+
+      Content:
+      - Verify slug consistency: cartography region keys must match
+        history.yaml POI slugs for the image lookup to resolve
+      - Add to pf-validate-locations (story 54-3) a check that every
+        cartography region with a matching POI slug has an R2 image
+
+      Visual:
+      - Image renders at content width inside the location section,
+        below the region name, above the description text
+      - Respect the per-world visual_style.yaml palette (border/shadow
+        tint from the world's accent color)
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: feature
