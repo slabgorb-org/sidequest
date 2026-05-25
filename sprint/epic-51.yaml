@@ -1,0 +1,71 @@
+id: '51'
+type: epic
+title: Scenario Fixture Library Wave 1 — Retarget Caverns Fixtures to beneath_sunden
+description: 'Wave 1 shipped 7/12 fixtures; the 5 unshipped targeted the deprecated caverns_sunden. Re-author them against the live beneath_sunden world for caverns combat-tier and social coverage. (ADR-092 scene harness; per Architect: retarget, do not de-scope.)'
+priority: p2
+status: done
+repos: orchestrator
+stories:
+  - id: 51-1
+    title: Retarget combat-tier caverns fixtures (low/mid/high) to beneath_sunden
+    points: 3
+    priority: p2
+    status: done
+    repos: content,server
+    workflow: trivial
+    completed: '2026-05-25'
+    type: chore
+    review_verdict: approved
+  - id: 51-2
+    title: Retarget social_tavern + veteran_drop caverns fixtures to beneath_sunden
+    points: 2
+    priority: p2
+    status: done
+    repos: orchestrator
+    workflow: trivial
+    completed: '2026-05-25'
+    type: chore
+    branch: feat/51-2-retarget-social-fixtures-beneath-sunden
+    review_verdict: approved
+  - id: 51-3
+    title: Wave-1 12-fixture hydration sweep + CHANGELOG; assert no caverns_sunden slug remains
+    points: 1
+    priority: p2
+    status: done
+    repos: orchestrator,content,server
+    workflow: trivial
+    completed: '2026-05-25'
+    type: chore
+    branch: feat/51-3-fixture-hydration-sweep
+    review_verdict: approved
+  - id: 51-4
+    title: Remove DEV_SCENES gate + add fixture picker to connect screen
+    description: |
+      Remove the DEV_SCENES=1 env var gate from scene_harness_router
+      registration in app.py — always register the route. The Cloudflare
+      Zero Trust tunnel already gates access; the env var adds nothing.
+
+      Server:
+      - Remove the `if DEV_SCENES == "1"` conditional in create_app()
+      - Always register create_scene_harness_router()
+      - Add GET /dev/scenes listing endpoint returning
+        [{name, description, genre, world}] for each YAML in fixtures/
+      - Drop SIDEQUEST_FIXTURES_DIR env var indirection
+
+      UI:
+      - Add "Scene Library" section to ConnectScreen
+      - Fetch GET /dev/scenes on mount
+      - Display fixture cards (name + description + genre badge)
+      - Click loads ?scene={name} and connects
+
+      Cleanup:
+      - Update playtest-cookbook.md to remove DEV_SCENES references
+      - Update justfile recipes that set DEV_SCENES
+    points: 3
+    priority: p2
+    status: in_progress
+    repos: server,ui
+    workflow: tdd
+    type: feature
+    branch: feat/51-4-scene-fixture-picker
+completed: '2026-05-25'
