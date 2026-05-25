@@ -405,13 +405,13 @@ daemon-stop:
     cd {{root}}/sidequest-daemon && uv run sidequest-renderer --shutdown
 
 daemon-test:
-    cd {{root}}/sidequest-daemon && SIDEQUEST_GENRE_PACKS={{content}} pytest
+    cd {{root}}/sidequest-daemon && SIDEQUEST_GENRE_PACKS={{content}} uv run pytest
 
 daemon-lint:
-    cd {{root}}/sidequest-daemon && ruff check .
+    cd {{root}}/sidequest-daemon && uv run ruff check .
 
 daemon-install:
-    cd {{root}}/sidequest-daemon && pip install -e ".[dev]"
+    cd {{root}}/sidequest-daemon && uv sync --all-extras
 
 # Style-only prompt preview — show GENRE/WORLD/CULTURE styling for a world
 preview-style genre world:
@@ -423,7 +423,10 @@ preview-style genre world:
 # Cross-repo + utilities
 # ---------------------------------------------------------------------------
 
-check-all: server-check client-lint client-typecheck client-test daemon-lint
+check-all: server-check client-lint client-typecheck client-test daemon-lint daemon-test
+
+# Content validation — reference visibility across all live packs
+content-validate: reference-validate-all
 
 # OTEL dashboard — opens the browser-friendly /ws/watcher viewer
 # served by sidequest-server itself. Server must already be running
@@ -515,10 +518,10 @@ up-traced:
 
 # Headless playtest driver (uses the running server)
 playtest *flags:
-    python3 {{root}}/scripts/playtest.py {{flags}}
+    cd {{root}}/sidequest-server && uv run python3 {{root}}/scripts/playtest.py {{flags}}
 
 playtest-scenario file:
-    python3 {{root}}/scripts/playtest.py --scenario {{root}}/scenarios/{{file}}.yaml
+    cd {{root}}/sidequest-server && uv run python3 {{root}}/scripts/playtest.py --scenario {{root}}/scenarios/{{file}}.yaml
 
 # tmuxinator session — server, client, daemon, otel in four panes
 tmux:
