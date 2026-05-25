@@ -1,0 +1,81 @@
+id: '65'
+type: epic
+title: Content Infrastructure — R2 asset tracking and audit
+description: Checked-in R2 manifest, YAML-derived gap audit, and cross-clone asset pull. Replaces git-LFS pointer tracking for the dual-repo (OQ-1/OQ-2) workflow.
+priority: p1
+status: backlog
+repos: content
+stories:
+  - id: 65-1
+    title: R2 asset manifest — checked-in tracking + YAML-derived gap audit
+    description: |
+      The dual-repo workflow (OQ-1 renders portraits, OQ-2 renders POIs)
+      has no way to know what the other clone generated — PNGs are
+      gitignored, and git pull local only syncs YAML.
+
+      Part A — r2_manifest.json (committed artifact):
+      - After r2_sync_packs.py uploads, write/update
+        sidequest-content/r2_manifest.json with one entry per R2 key:
+        {key, md5, size_bytes, uploaded_at, source}
+      - Committed to git. git pull local syncs between clones.
+      - r2_sync_packs.py writes it atomically after successful upload.
+
+      Part B — r2_audit.py (YAML-derived gap report):
+      - Walk history.yaml (POI slugs), portrait_manifest.yaml (NPC slugs),
+        audio/*_input_params.json (music tracks)
+      - Build "should exist" key set from YAML definitions
+      - Compare against r2_manifest.json
+      - Report: authored-but-not-rendered, rendered-but-not-uploaded,
+        in-R2-but-not-in-YAML (orphans)
+      - Exit non-zero on any gap.
+
+      Part C — r2_pull.py (nice-to-have):
+      - Read r2_manifest.json, download missing local files from
+        cdn.slabgorb.com into the correct workspace paths
+    points: 3
+    priority: p1
+    status: backlog
+    repos: content
+    workflow: tdd
+    type: feature
+  - id: 65-2
+    title: Per-session asset ledger — track runtime-generated images per save file
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: feature
+    description: |
+      Runtime-generated images (portraits, scene illustrations, POI
+      renders triggered during play) are uploaded to R2 by the daemon
+      but never recorded against the save file that caused them. When
+      a player resumes a session, those images are orphaned — the UI
+      can't find them because nothing links the save to its R2 keys.
+
+      Add an asset_ledger table to the save SQLite schema:
+      - Columns: r2_key, asset_type (portrait|illustration|poi),
+        entity_ref (npc slug, scene id, poi slug), created_turn,
+        md5, size_bytes
+      - Written by the daemon_client after successful R2 upload
+      - Read by the UI's image bus on session resume to preload
+        the correct CDN URLs
+
+      Server:
+      - Add asset_ledger table to SqliteStore schema migration
+      - daemon_client.upload_complete() writes the ledger row
+      - GET /api/session/{slug}/assets returns the ledger for the UI
+
+      UI:
+      - ImageBus reads /api/session/{slug}/assets on reconnect
+      - Preloads CDN URLs for portraits and illustrations from
+        previous turns — no re-rendering needed
+
+      Audit:
+      - r2_audit.py (65-1) cross-references the asset_ledger tables
+        across all saves to find orphaned R2 keys (uploaded but
+        no save references them) and dangling ledger rows (save
+        references an R2 key that no longer exists).
+
+      Respects durable-retention-by-default (memory: feedback):
+      never reap save-referenced R2 assets on a timer.
