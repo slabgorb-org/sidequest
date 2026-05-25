@@ -44,10 +44,13 @@ stories:
     title: Seed trope OTEL + GM panel — seed_fired, seed_expired, seed_promoted spans
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-25'
     repos: server
     workflow: tdd
     acceptance_criteria: []
+    completed: '2026-05-25'
+    branch: feat/22-4-seed-trope-otel
   - id: 22-5
     title: Engagement-triggered seed drops — passive player pacing, mid-session seed injection
     points: 3

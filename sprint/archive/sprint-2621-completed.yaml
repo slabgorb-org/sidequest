@@ -15,6 +15,8 @@ completed_epics:
   - '50'
   - '62'
   - '53'
+  - '24'
+  - '60'
 completed_stories:
   - id: 55-1
     epic: '55'
@@ -305,4 +307,89 @@ completed_stories:
     epic: '53'
     title: scripts/render_common.slugify prefers item.slug over slugify(name)
     points: 1
+    completed: '2026-05-24'
+  - id: 24-1
+    epic: '24'
+    title: Define YAML schemas for weather, demographics, calendar, economy, establishments, quest shapes, NPC schedules
+    points: 3
+    completed: '2026-05-19'
+  - id: 24-2
+    epic: '24'
+    title: Author tea_and_murder/glenross weather rules (climate zones, seasonal conditions, special events)
+    points: 2
+    completed: '2026-05-20'
+  - id: 24-3
+    epic: '24'
+    title: Author tea_and_murder/glenross demographics (settlement profiles, population, services)
+    points: 2
+    completed: '2026-05-20'
+  - id: 24-4
+    epic: '24'
+    title: Author tea_and_murder/glenross calendar (months, days, moons, festivals, time precision)
+    points: 2
+    completed: '2026-05-20'
+  - id: 24-5
+    epic: '24'
+    title: 'Python: weather generator in sidequest-server (climate YAML + RNG seed → typed weather state, following namegen module + CLI pattern)'
+    points: 3
+    completed: '2026-05-20'
+  - id: 24-6
+    epic: '24'
+    title: Narrator tool call for weather + demographics + calendar grounding (extend tool registry per ADR-102/103, verify via OTEL)
+    points: 3
+    completed: '2026-05-20'
+  - id: 24-7
+    epic: '24'
+    title: OTEL spans for weather generation (proposed vs used) and demographics injection
+    points: 2
+    completed: '2026-05-21'
+  - id: 24-8
+    epic: '24'
+    title: 'Playtest validation: narrator uses weather/demographics grounding in tea_and_murder/glenross'
+    points: 2
+    completed: '2026-05-25'
+  - id: 24-9
+    epic: '24'
+    title: Author spaghetti_western calendar for dust_and_lead + the_real_mccoy (1878 Gregorian; months, days, festivals, time precision)
+    points: 2
+    completed: '2026-05-21'
+  - id: 24-10
+    epic: '24'
+    title: Wire world-grounding YAML loaders + ToolContext fields at session bootstrap (unblocks 24-8 playtest)
+    points: 3
+    completed: '2026-05-21'
+  - id: 60-1
+    epic: '60'
+    title: Stop cache-writing the volatile game_state snapshot segment — reposition cache_control breakpoint
+    points: 3
+    completed: '2026-05-25'
+  - id: 60-2
+    epic: '60'
+    title: 'OTEL: per-system-block prompt-prefix digest + cache TTL in watcher spans'
+    points: 3
+    completed: '2026-05-22'
+  - id: 60-3
+    epic: '60'
+    title: Diagnose narrator block-0 cache_write churn — prefix drift vs TTL/cadence (spike)
+    points: 1
+    completed: '2026-05-22'
+  - id: 60-4
+    epic: '60'
+    title: 'Fix narrator cache_write churn: 1h cache breakpoint on tool-loop continuation (per 60-3)'
+    points: 3
+    completed: '2026-05-23'
+  - id: 60-5
+    epic: '60'
+    title: 'Playtest validation: 60-4 cache_write rebate materializes on live tea_and_murder/glenross'
+    points: 2
+    completed: '2026-05-25'
+  - id: 60-6
+    epic: '60'
+    title: Stable-prefix byte-drift — re-open 60-1's original hypothesis with live-session evidence
+    points: 3
+    completed: '2026-05-24'
+  - id: 60-7
+    epic: '60'
+    title: Diagnose + fix 60-4 cache fix that fails on live playtest (5m writes still firing per turn)
+    points: 5
     completed: '2026-05-24'
