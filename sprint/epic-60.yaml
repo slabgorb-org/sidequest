@@ -75,7 +75,7 @@ stories:
     description: "Close Epic 60's evidence loop. The 60-4 unit tests pin the *client-side contract* (marker on the LAST content block of the newest continuation message, ttl mirrors self.cache_ttl, breakpoints stay <=4, mis_zoned ANDs with bucket, 1h-write priced at 2x base). The *behavioral proof* — that Anthropic actually rebates at 1h on live API calls and per-turn cost drops to the measured ~$0.035/turn — was established by 60-3 against captured request bodies replayed in isolation, NOT against a live playtest. This story closes the gap: drive a real tea_and_murder/glenross session through the live SDK path and confirm the rebate materializes. Mirrors the 24-8 'Playtest validation: narrator uses weather/demographics grounding' pattern for Epic 24."
     points: 2
     priority: p1
-    status: backlog
+    status: done
     repos: orchestrator
     workflow: trivial
     depends_on: 60-4
@@ -86,6 +86,7 @@ stories:
       - 'Capture before/after delta: log the actual `narration.turn.total_cost_usd` per turn alongside the 60-3 baseline (~$0.116/turn) and the measured 60-4 reduction. Record in the session file as evidence; this is the audit-trail closure for Epic 60.'
       - If the rebate does NOT materialize (cache_write_1h stays 0, or per-turn cost stays ~$0.116), file a bug story against 60-4 with the OTEL evidence. Do NOT silently accept under-performance — Epic 60 is closed only when the playtest confirms the savings.
       - "Secondary validation: confirm Reviewer's deferred items don't degrade the savings in practice — specifically, the old-SDK fallback (anthropic >= 0.51 is the live version; the fallback shouldn't fire) and the 'no silent under-billing' phrasing in the cost call site."
+    completed: '2026-05-25'
     type: chore
   - id: 60-6
     title: Stable-prefix byte-drift — re-open 60-1's original hypothesis with live-session evidence
