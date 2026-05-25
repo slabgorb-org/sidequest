@@ -97,10 +97,11 @@ stories:
     title: 'Playtest validation: narrator uses weather/demographics grounding in tea_and_murder/glenross'
     points: 2
     priority: p1
-    status: backlog
+    status: done
     repos: orchestrator
     workflow: trivial
     acceptance_criteria: []
+    completed: '2026-05-25'
     type: chore
   - id: 24-9
     title: Author spaghetti_western calendar for dust_and_lead + the_real_mccoy (1878 Gregorian; months, days, festivals, time precision)
