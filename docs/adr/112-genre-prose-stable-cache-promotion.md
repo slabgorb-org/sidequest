@@ -396,6 +396,44 @@ no further action is needed.
   `narrator_prompts/`) but not overlapping lines. Any merge order is
   safe; conflicts are mechanical if they occur.
 
+## Amendments
+
+### 2026-05-25 — `genre_chargen` demoted; `genre_extraction` / `genre_keeper_monologue` deferred
+
+Story 61-11 (sidequest-server PR #403, commit `476c3bd` on develop)
+partially reversed the four-section promotion from Story 57-3:
+
+1. **`genre_chargen` demoted to User bucket.** Removed from
+   `STABLE_SECTION_NAMES`; registration gated on
+   `TurnContext.opening_directive` (the sole existing runtime signal
+   that distinguishes character-creation turns from normal play).
+   Chargen prose was firing on every turn despite being relevant only
+   during character creation — unconditional registration satisfied the
+   mutability rubric (check 1) but violated its *spirit*: always-fire
+   is wasteful when the section's content is irrelevant 95% of the
+   time. The predicate gate fixes the waste; demotion from Stable
+   follows because conditional registration fails check 1.
+
+2. **`genre_extraction` and `genre_keeper_monologue` deferred — no
+   runtime signal.** These sections remain unconditionally registered
+   (they pass the mutability rubric) but their scene-scoped content
+   fires on every turn regardless of whether the scene type matches.
+   No existing runtime signal expresses "this is an extraction scene"
+   or "keeper monologue is relevant." Future stories must either build
+   runtime signals (analogous to `context.in_combat`) or migrate these
+   sections to ADR-113's tool-attached scope model. Until then they
+   stay in `STABLE_SECTION_NAMES` — the cache math is still correct
+   even if the attention budget is suboptimal.
+
+3. **`genre_town` unchanged — deferred per original §Defer.** High
+   firing rate; needs profiling before any reclassification. No action
+   taken by 61-11.
+
+4. **Net state of `STABLE_SECTION_NAMES` after 61-11:** the four
+   sections promoted by 57-3 are now three (`genre_extraction`,
+   `genre_keeper_monologue`, `genre_town`). `genre_chargen` is
+   conditionally registered and User-bucketed.
+
 ## References
 
 - ADR-009 — Attention-Aware Prompt Zones (the zone model the
