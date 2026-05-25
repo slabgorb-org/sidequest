@@ -593,6 +593,15 @@ adr-regen:
     set -euo pipefail
     python3 {{root}}/scripts/regenerate_adr_indexes.py
 
+# Validate a single genre pack directory structure against pack_schema.yaml.
+# Usage: just content-validate <genre>  (e.g. just content-validate caverns_and_claudes)
+content-validate genre:
+    cd {{root}}/sidequest-server && uv run python -m sidequest.cli.validate pack {{root}}/sidequest-content/genre_packs/{{genre}}
+
+# Validate all genre pack directories against pack_schema.yaml.
+content-validate-all:
+    cd {{root}}/sidequest-server && uv run python -m sidequest.cli.validate pack {{root}}/sidequest-content/genre_packs
+
 # Validate reference-page visibility across every live pack.
 # Fails fast if any pack has YAML fields not classified in
 # reference_visibility.PUBLIC ∪ KEEPER for renderer-reachable stems.
