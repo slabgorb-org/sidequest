@@ -20,3 +20,16 @@ stories:
       - Thin load-time validator warns LOUD when a point_buy genre ships chargen choices with no differentiating stat_bonuses
       - No change to _allocate_point_buy or the builder.py:2419 presence-keyed guard; standard_array parity tests stay green
       - 'OTEL: chargen emits a stat-assignment span (method + per-stat final + which modifiers applied) so the GM panel confirms differentiation fired'
+  - id: 66-2
+    title: Author ADR-095 signature abilities + class moves for mutant_wasteland classes
+    description: "Playtest 2026-05-25: a Lv1 Scavenger's Abilities tab is completely empty. Root cause (confirmed by reading content): mutant_wasteland's 5 classes (Scavenger/Mutant/Beastkin/Pureblood/Wirewalker — defined as class_hint in char_creation.yaml) have NO signature abilities or class moves authored anywhere in the pack (archetypes.yaml has flavor archetypes with no ability/signature/class_move keys). ADR-095 ('one signature ability per non-magical class') + #274 (class-move pills) imply each non-magical class should surface at least a signature move. The server has nothing to materialize because the content doesn't define it. This is balance-laden, Sebastien-facing class mechanical surface — Keith authors the abilities (what each class's signature does, costs, beats). Per feedback_no_content_coupled_tests, the 'live pack has signature abilities' gap should be surfaced by a load-time VALIDATOR (warn when a non-magical class ships with no signature ability/class moves), NOT a content-coupled pytest. UI floor already shipped: sidequest-ui PR #280 adds a 'No special abilities yet.' empty-state so the tab is never blank — but that does NOT make the Scavenger mechanically complete; this story does."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-content,sidequest-server
+    workflow: tdd
+    acceptance_criteria:
+      - Author an ADR-095 signature ability (Keith's mechanics) for each non-magical mutant_wasteland class; author class moves (confrontation beats) where appropriate
+      - A Lv1 character of each class surfaces its signature ability / class moves in the Abilities tab (verified via a world validator, not a content-coupled unit test)
+      - Load-time validator warns LOUD when a non-magical class ships with no signature ability / class moves
+      - 'OTEL: chargen ability-materialization emits a span (class + abilities materialized) so the GM panel confirms surfacing fired'
