@@ -187,6 +187,7 @@ See [`docs/architecture.md`](docs/architecture.md) for the full system design.
 ### Game Design
 - [`docs/adr/`](docs/adr/) — Architecture Decision Records (see [`docs/adr/README.md`](docs/adr/README.md) for the index)
 - [`docs/gm-handbook.md`](docs/gm-handbook.md) — GM handbook (Forge theory applied to SideQuest)
+- [`JARGONFILE.md`](JARGONFILE.md) — Glossary of project jargon (Forge theory terms, engine nouns, narrator doctrine, subsystem names)
 
 ### Project Status
 - [`docs/feature-inventory.md`](docs/feature-inventory.md) — Feature inventory: done, wired, planned

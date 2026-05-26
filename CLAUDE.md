@@ -48,6 +48,7 @@ orc-quest/                    # This repo (orchestrator, also cloned as oq-1 / o
 │   └── adr/                  # Architecture Decision Records
 ├── scripts/                  # Cross-repo scripts (playtest, music gen, etc.)
 ├── scenarios/                # Test/playtest scenarios
+├── JARGONFILE.md             # Glossary of project jargon (Forge terms, engine nouns, doctrine)
 └── justfile                  # Cross-repo task runner
 
 sidequest-content/            # Genre packs — single source of truth (subrepo)
