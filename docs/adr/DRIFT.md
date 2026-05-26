@@ -34,6 +34,7 @@
 | [ADR-112: Genre Prose Cache Promotion — Four Always-Fire Session-Static Sections Move to Stable, Conditional Sections Defer](112-genre-prose-stable-cache-promotion.md) | ✓ accepted | sprint/current-sprint.yaml#57-3 |
 | [ADR-113: Intent Router — Mechanical-Engagement Spine](113-intent-router-mechanical-engagement-spine.md) | ✓ accepted | sprint/epic-59.yaml#59-4 |
 | [ADR-114: Ablative HP Substrate — HP Reclaims the Lethality Track Beneath the Dials](114-ablative-hp-substrate.md) | ✓ accepted | docs/superpowers/plans/2026-05-25-swn-hp-substrate.md |
+| [ADR-116: A Confrontation Requires an Other — Participant Membership Invariant, Single Opponent-Seater, End-on-No-Other](116-confrontation-requires-an-other.md) | ✓ accepted | sprint/context/context-story-59-13.md |
 
 ## Deferred — accepted/proposed, not yet implemented
 
