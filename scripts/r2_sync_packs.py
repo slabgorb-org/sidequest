@@ -87,18 +87,47 @@ def _build_client() -> BaseClient:
     )
 
 
-def sync(content_root: Path, bucket: str = "sidequest", dry_run: bool = False) -> dict[str, int]:
-    """Walk content_root and upload every LFS-tracked file. Returns counts."""
+def sync(
+    content_root: Path,
+    bucket: str = "sidequest",
+    dry_run: bool = False,
+    files: list[Path] | None = None,
+) -> dict[str, int]:
+    """Upload LFS-tracked media to R2. Returns counts.
+
+    By default walks ``content_root/genre_packs`` and uploads every tracked
+    file. If ``files`` is given, only those paths are uploaded (still keyed by
+    their location relative to ``content_root``) — every file must be a real,
+    LFS-tracked media file under ``content_root`` or the run aborts (no silent
+    skip, per CLAUDE.md).
+    """
+    content_root = content_root.resolve()
     if not (content_root / "genre_packs").is_dir():
         raise FileNotFoundError(f"genre_packs/ not found under {content_root}")
+
+    if files is None:
+        candidates: list[Path] = list(iter_media_files(content_root / "genre_packs"))
+    else:
+        candidates = []
+        for raw in files:
+            path = (raw if raw.is_absolute() else content_root / raw).resolve()
+            if not path.is_file():
+                raise FileNotFoundError(f"--files entry not found: {raw}")
+            if path.suffix.lower() not in LFS_EXTENSIONS:
+                raise ValueError(f"--files entry is not a tracked media type: {raw}")
+            try:
+                path.relative_to(content_root.resolve())
+            except ValueError as exc:
+                raise ValueError(f"--files entry is outside content-root: {raw}") from exc
+            candidates.append(path)
 
     client = None if dry_run else _build_client()
     skipped = 0
     uploaded = 0
     bytes_uploaded = 0
 
-    for path in iter_media_files(content_root / "genre_packs"):
-        rel = path.relative_to(content_root).as_posix()
+    for path in candidates:
+        rel = path.relative_to(content_root.resolve()).as_posix()
         key = rel  # 1:1 mirror, e.g. genre_packs/<genre>/audio/<f>.ogg
         size = path.stat().st_size
         local_md5 = _md5_of(path)
@@ -144,6 +173,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--bucket", default="sidequest")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--files",
+        type=Path,
+        nargs="+",
+        default=None,
+        help=(
+            "Upload only these files instead of walking the whole tree. "
+            "Paths may be absolute or relative to --content-root; each must be "
+            "a tracked media type under --content-root."
+        ),
+    )
     parser.add_argument("--log-file", type=Path, default=Path("/tmp/r2-sync.log"))
     args = parser.parse_args(argv)
 
@@ -156,7 +196,9 @@ def main(argv: list[str] | None = None) -> int:
         ],
     )
 
-    counts = sync(args.content_root, bucket=args.bucket, dry_run=args.dry_run)
+    counts = sync(
+        args.content_root, bucket=args.bucket, dry_run=args.dry_run, files=args.files
+    )
     logger.info(
         "DONE uploaded=%d skipped=%d bytes=%d",
         counts["uploaded"], counts["skipped"], counts["bytes_uploaded"],
