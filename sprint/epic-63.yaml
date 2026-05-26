@@ -172,3 +172,18 @@ stories:
       - Both terminal emphasis two-channel identity tests pass
       - em and strong resolve to distinct channels (accent != primary) with the authoritative source documented
     type: bug
+  - id: 63-13
+    title: Location validator reports malformed world YAML as a clean Issue, never a traceback (+ runtime degrade)
+    description: "Root cause surfaced by 63-6 Reviewer finding R1. The location validator (sidequest/cli/validate/locations.py) parses world YAML files with yaml.safe_load() UNGUARDED in several helpers — _history_poi_slugs (line ~420), _location_card_slugs (~398), plus cartography.yaml (~518) and room/*.yaml (~534) loads. A malformed history.yaml (a realistic content-author typo — Jade authors content per CLAUDE.md) makes 'pf validate locations' itself CRASH with a raw YAMLError traceback instead of reporting a clean validation Issue. The tool meant to catch authoring errors dies on the exact error it should report. Catching it in the validator (Keith's directive 2026-05-26) surfaces malformed YAML to the author at validation time with a clear message — the right primary fix. The runtime guard (R1: websocket_session_handler._maybe_emit_location_description calls load_poi_image_slugs unguarded in a graceful path) becomes defense-in-depth so a malformed file can't crash a live room-change emit either. Both layers, one root cause."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - "Validator: every yaml.safe_load() in cli/validate/locations.py that reads a world file (history.yaml, locations.yaml, cartography.yaml, room/*.yaml, npcs, scenario, allowlist) catches yaml.YAMLError and emits a clean Issue(severity=error, file=<path>, message='malformed YAML: <detail>') — never a traceback. 'pf validate locations' exits nonzero with the Issue listed."
+      - 'Validator test: a world fixture with a deliberately malformed history.yaml → validate_locations_in_world returns a ValidationResult containing the malformed-YAML Issue and does NOT raise. Same coverage for a malformed cartography.yaml.'
+      - 'Runtime defense-in-depth (R1): websocket_session_handler._maybe_emit_location_description wraps the load_poi_image_slugs + reference_url_for_region resolution; on ValueError (malformed history.yaml) it emits reference_url_failed_span (ERROR — loud, GM-panel-visible, not silent) and degrades reference_url to None so the location description still emits. A live room-change is never crashed by a content typo.'
+      - 'Runtime test: _maybe_emit_location_description with a malformed history.yaml fixture still emits LocationDescriptionMessage (reference_url=None) and fires reference_url_failed_span; does not raise.'
+      - 'No silent fallback: the degrade path is LOUD — failed_span at ERROR severity in runtime, explicit Issue in the validator. Neither swallows the malformed YAML silently.'
+    type: bug
