@@ -81,8 +81,8 @@ Runtime-generated images (portraits, scene illustrations, POI renders triggered 
 ## Workflow Tracking
 
 **Workflow:** tdd
-**Phase:** spec-check
-**Phase Started:** 2026-05-27T17:42:44Z
+**Phase:** verify
+**Phase Started:** 2026-05-27T17:43:43Z
 
 ### Phase History
 | Phase | Started | Ended | Duration |
@@ -90,7 +90,8 @@ Runtime-generated images (portraits, scene illustrations, POI renders triggered 
 | setup | 2026-05-27 | 2026-05-27T15:44:33Z | 15h 44m |
 | red | 2026-05-27T15:44:33Z | 2026-05-27T17:26:45Z | 1h 42m |
 | green | 2026-05-27T17:26:45Z | 2026-05-27T17:42:44Z | 15m 59s |
-| spec-check | 2026-05-27T17:42:44Z | - | - |
+| spec-check | 2026-05-27T17:42:44Z | 2026-05-27T17:43:43Z | 59s |
+| verify | 2026-05-27T17:43:43Z | - | - |
 
 ## Delivery Findings
 
@@ -164,7 +165,7 @@ No upstream findings (setup phase).
 ## TEA Assessment
 
 **Tests Required:** Yes
-**Phase:** spec-check — RED confirmed (failing, ready for Dev)
+**Phase:** verify — RED confirmed (failing, ready for Dev)
 
 **Earlier blocking findings:** RESOLVED by the Architect reconciliation (2026-05-27) —
 md5/sha256, disjoint-namespace AC6, and the daemon mid-refactor are all dispositioned in
@@ -347,3 +348,49 @@ level (disjoint-namespace audit).
 
 **Decision:** Proceed to verify. No hand-back to Dev — both mismatches are
 already-decided deferrals/improvements, not unaddressed drift.
+## TEA Assessment (verify)
+
+**Phase:** verify
+**Status:** GREEN confirmed (21/21 new tests; 36 render/rest/save-repo regression tests pass)
+
+### Simplify Report
+
+**Teammates:** reuse, quality, efficiency
+**Files Analyzed:** 7 impl/test files (both repos)
+
+| Teammate | Status | Findings |
+|----------|--------|----------|
+| simplify-reuse | 3 findings | 1 high (CDN url resolution) applied; 1 high (extract resolve_session_id_or_404) flagged-scope; 1 medium (asset_type helper) flagged |
+| simplify-quality | 3 findings | 1 high (CDN url, same as reuse) applied; 1 medium (hasattr silent-skip guard) applied; 1 low (unused `request` param) flagged |
+| simplify-efficiency | clean | only low-confidence observations on the render-hook guard/key-parse — superseded by the applied guard removal |
+
+**Applied:** 2 fixes
+- `rest.py` `get_session_assets`: resolve each `r2_key` → absolute `url` via
+  `resolve_asset_url` (two teammates flagged high; closes the cross-repo contract gap
+  with `SessionAsset.url`). REST test extended to assert `url`.
+- `websocket_session_handler.py` `_run_render_inner`: removed the
+  `hasattr(sd.repository, "append_asset_ledger")` guard — a silent-skip fallback the
+  `<critical>` No-Silent-Fallbacks rule forbids; the Protocol guarantees the method.
+
+**Flagged for Review (not applied):**
+- **Extract `resolve_session_id_or_404(pool, slug)`** (reuse, high) — genuine DRY across
+  5 REST endpoints, but 4 are pre-existing and out of this story's scope. Good
+  standalone cleanup chore. *Not applied — scope.*
+- **Unused `request: Request` param** on `get_session_assets` (quality, low) — matches
+  the sibling `get_encounter_events`/`get_game_endpoint` convention; left for consistency.
+- **`asset_type` extraction helper** (reuse, medium) — single call site today; extract
+  only if a second consumer appears.
+
+**Reverted:** 0
+
+**Overall:** simplify: applied 2 fixes
+
+**Quality Checks:** ruff clean; pyright adds 0 new errors (rest.py's 11 are pre-existing
+at unrelated lines); eslint clean; render/rest/save-repo regression 36/36 green.
+
+### Delivery Findings (verify)
+- **Improvement** (non-blocking): `resolve_session_id_or_404` helper would dedupe the
+  slug→404 pattern across 5 REST endpoints. Affects `sidequest/server/rest.py`
+  (good standalone chore). *Found by TEA during test verification.*
+
+**Handoff:** To Reviewer for code review.
