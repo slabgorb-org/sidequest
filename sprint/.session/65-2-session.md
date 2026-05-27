@@ -143,3 +143,83 @@ No upstream findings (setup phase).
   - Rationale: consequence of the two deviations above
   - Severity: minor
   - Forward impact: fewer branches to finish/merge at story close
+
+### TEA (test design)
+- **AC6 has no RED test (descoped)**
+  - Spec source: context-story-65-2.md, AC6 (current rev)
+  - Spec text: "AC6 — DEFERRED, not in this story. … No RED test is written for AC6 here; it moves to a follow-up story"
+  - Implementation: no test authored for the ledger↔manifest audit; tracked as a DESCOPED AC, not a coverage gap
+  - Rationale: the audit is incoherent against disjoint R2 namespaces and depends on a non-existent R2-listing capability (see Architect reconcile)
+  - Severity: minor
+  - Forward impact: follow-up story "Runtime-artifact R2 audit" owns it
+- **Two RED tests pass vacuously (non-discriminating until GREEN)**
+  - Spec source: context-story-65-2.md, AC3 + AC4
+  - Spec text: "Unknown slug → 404 (loud)" / "The legacy local-tmpdir branch (`r2_key` falsy) writes no ledger row"
+  - Implementation: `test_get_assets_404_for_unknown_slug` passes in RED because the route is absent (all paths 404); `test_render_without_r2_key_writes_no_ledger_row` passes because the hook is absent (MagicMock `.called` is False). Both remain valid, meaningful assertions once GREEN lands.
+  - Rationale: kept deliberately — they guard the GREEN behavior; a RED-only failure isn't required for every assertion
+  - Severity: trivial
+  - Forward impact: none
+## TEA Assessment
+
+**Tests Required:** Yes
+**Phase:** red — RED confirmed (failing, ready for Dev)
+
+**Earlier blocking findings:** RESOLVED by the Architect reconciliation (2026-05-27) —
+md5/sha256, disjoint-namespace AC6, and the daemon mid-refactor are all dispositioned in
+the context + Design Deviations. RED was written against the reconciled context (scope:
+server + ui).
+
+**Test Files:**
+- `sidequest-server/tests/persistence/test_pg_asset_ledger.py` — AC1 (table shape via
+  migration; no md5/size; r2_key PK; FK) + AC2 (`PgAssetLedgerStore` upsert, isolation,
+  injection-safety)
+- `sidequest-server/tests/server/test_rest_session_assets.py` — AC4
+  (`GET /api/sessions/{slug}/assets` round-trip, 404-on-unknown-slug, empty-list)
+- `sidequest-server/tests/server/test_asset_ledger_write_wiring.py` — AC3 (mandatory
+  wiring: ledger write fires from `_run_render_inner` on an r2_key reply + OTEL watcher
+  event; local-only render writes nothing)
+- `sidequest-ui/src/hooks/__tests__/useAssetPreload.test.ts` — AC5 (reconnect-edge fetch
+  of the asset endpoint → preload callback; no fetch w/o slug; no double-fetch)
+
+**Tests Written:** 20 (15 server + 5 ui) covering AC1–AC5. AC6 descoped (deferred).
+**Status:** RED — 9 failed, 5 errors (missing-module fixtures), 2 vacuous-pass (noted as
+deviations), UI collection error (missing hook). All trace to missing implementation.
+**Env note:** the pg suite requires `SIDEQUEST_TEST_DATABASE_URL` (e.g.
+`postgresql://$USER@localhost:5432/sidequest_test`, provisioned by `just pg-up`) — same
+precondition as every existing `tests/persistence/*` test.
+
+### Rule Coverage (lang-review)
+
+| Rule (python.md / ts) | Test(s) | Status |
+|------|---------|--------|
+| #6 test quality — meaningful assertions | all assert specific values; 2 non-discriminating-in-RED flagged as deviations | satisfied |
+| #11 parameterized SQL (no f-string injection) | `test_injection_safe_entity_ref_roundtrips_literally` | failing (RED) |
+| #11 boundary validation — unknown input loud | `test_get_assets_404_for_unknown_slug` (404, not silent-empty) | green-vacuous in RED |
+| #1 no silent fallback — local render writes nothing | `test_render_without_r2_key_writes_no_ledger_row` | green-vacuous in RED |
+| OTEL principle — subsystem decision emits span | `test_render_ledger_write_emits_watcher_event` | failing (RED) |
+| Wiring (CLAUDE.md) — fires from production path, no source-grep | `test_render_with_r2_key_writes_asset_ledger` (drives `_run_render_inner`) | failing (RED) |
+| FK / PK integrity | `test_r2_key_is_primary_key`, `test_dangling_session_id_rejected` | failing (RED) |
+| cross-session isolation | `test_cross_session_isolation` | error (missing module) |
+
+**Rules checked:** Python #1, #6, #11 + OTEL + wiring + integrity have coverage.
+**Self-check:** no `assert True` / `let _ =` / always-None assertions; the two
+non-discriminating-in-RED tests are intentional GREEN guards, logged as trivial deviations.
+
+### Contract defined for Dev (GREEN)
+- `sidequest.game.pg.asset_ledger.PgAssetLedgerStore(pool, *, session_id)` with
+  `.append(r2_key, asset_type, entity_ref, created_turn)` (upsert on r2_key) and
+  `.list_assets()`.
+- `PgSaveRepository.append_asset_ledger(...)` composing the store (mirrors
+  `append_scrapbook_entry`).
+- New Alembic revision (down_revision `0001`) creating `asset_ledger`.
+- `GET /api/sessions/{slug}/assets` in `rest.py` (resolve slug→session_id; 404 on miss).
+- Ledger write + `state_transition field=asset_ledger op=write` watcher event in
+  `_run_render_inner` when the reply carries `r2_key`.
+- `sidequest-ui` `@/hooks/useAssetPreload` ({slug, connected, onAssets}) fetching the
+  endpoint on the (re)connect edge.
+
+### Delivery Findings (red phase)
+- No new upstream findings during test design (the three blocking findings were resolved
+  pre-RED by the Architect reconciliation).
+
+**Handoff:** To Dev for implementation.
