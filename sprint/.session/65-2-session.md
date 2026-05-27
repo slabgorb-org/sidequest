@@ -81,8 +81,8 @@ Runtime-generated images (portraits, scene illustrations, POI renders triggered 
 ## Workflow Tracking
 
 **Workflow:** tdd
-**Phase:** review
-**Phase Started:** 2026-05-27T17:48:53Z
+**Phase:** spec-reconcile
+**Phase Started:** 2026-05-27T17:56:36Z
 
 ### Phase History
 | Phase | Started | Ended | Duration |
@@ -92,7 +92,8 @@ Runtime-generated images (portraits, scene illustrations, POI renders triggered 
 | green | 2026-05-27T17:26:45Z | 2026-05-27T17:42:44Z | 15m 59s |
 | spec-check | 2026-05-27T17:42:44Z | 2026-05-27T17:43:43Z | 59s |
 | verify | 2026-05-27T17:43:43Z | 2026-05-27T17:48:53Z | 5m 10s |
-| review | 2026-05-27T17:48:53Z | - | - |
+| review | 2026-05-27T17:48:53Z | 2026-05-27T17:56:36Z | 7m 43s |
+| spec-reconcile | 2026-05-27T17:56:36Z | - | - |
 
 ## Delivery Findings
 
@@ -166,7 +167,7 @@ No upstream findings (setup phase).
 ## TEA Assessment
 
 **Tests Required:** Yes
-**Phase:** review — RED confirmed (failing, ready for Dev)
+**Phase:** spec-reconcile — RED confirmed (failing, ready for Dev)
 
 **Earlier blocking findings:** RESOLVED by the Architect reconciliation (2026-05-27) —
 md5/sha256, disjoint-namespace AC6, and the daemon mid-refactor are all dispositioned in
@@ -351,7 +352,7 @@ level (disjoint-namespace audit).
 already-decided deferrals/improvements, not unaddressed drift.
 ## TEA Assessment (verify)
 
-**Phase:** review
+**Phase:** spec-reconcile
 **Status:** GREEN confirmed (21/21 new tests; 36 render/rest/save-repo regression tests pass)
 
 ### Simplify Report
@@ -472,3 +473,11 @@ All logged deviations reviewed and stamped:
 - **Improvement** (non-blocking): Add `encodeURIComponent(slug)` + an `onError` callback to `useAssetPreload`; fold into the AC5 app-wiring follow-up. Affects `sidequest-ui/src/hooks/useAssetPreload.ts`. *Found by Reviewer during code review.*
 - **Gap** (non-blocking): `epic-65.yaml` 65-2 *description* still carries pre-reconciliation prose (SqliteStore/daemon_client/md5/AC6); the context-story doc + deviations are authoritative, but the stale epic text could mislead. Affects `sprint/epic-65.yaml`. *Found by Reviewer during code review.*
 - **Reminder** (non-blocking): SM to file the AC5 app-wiring follow-up story ("Mount useAssetPreload in App + ImageBus preload feed, with wiring test; include encodeURIComponent + onError"). *Found by Reviewer during code review.*
+### Architect (reconcile) — spec-reconcile pass
+Definitive deviation manifest verified for SM finish:
+- **Entry accuracy:** all spec sources resolve to real artifacts — `context-story-65-2.md` (authoritative spec), `epic-65.yaml`, `r2_writer.py:91`/`:196`, `daemon.py`. Spec text quotes and implementation descriptions match the merged code. All TEA/Architect/Dev entries carry the full 6 fields; Reviewer stamped every one ACCEPTED.
+- **AC deferral justifications verified:**
+  - **AC6** (ledger↔manifest audit) — DESCOPED, sound: disjoint R2 namespaces (`artifacts/…` vs `genre_packs/…`) + no R2-listing capability. Follow-up: "Runtime-artifact R2 audit."
+  - **AC5 app-integration** — DESCOPED (Doctor-approved 2026-05-27): the `useAssetPreload` hook ships + is tested; mount-in-App + ImageBus feed is a follow-up. Backend (AC1–AC4) fully delivered and wired.
+- **Authoritative-spec note:** the `epic-65.yaml` 65-2 *description* still contains pre-reconciliation prose (SqliteStore/daemon_client/md5/AC6). For audit purposes the governing spec is `context-story-65-2.md` + this deviation manifest, NOT the stale epic description (Reviewer-flagged, non-blocking).
+- **No additional deviations found.**
