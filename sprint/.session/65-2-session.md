@@ -81,15 +81,16 @@ Runtime-generated images (portraits, scene illustrations, POI renders triggered 
 ## Workflow Tracking
 
 **Workflow:** tdd
-**Phase:** green
-**Phase Started:** 2026-05-27T17:26:45Z
+**Phase:** spec-check
+**Phase Started:** 2026-05-27T17:42:44Z
 
 ### Phase History
 | Phase | Started | Ended | Duration |
 |-------|---------|-------|----------|
 | setup | 2026-05-27 | 2026-05-27T15:44:33Z | 15h 44m |
 | red | 2026-05-27T15:44:33Z | 2026-05-27T17:26:45Z | 1h 42m |
-| green | 2026-05-27T17:26:45Z | - | - |
+| green | 2026-05-27T17:26:45Z | 2026-05-27T17:42:44Z | 15m 59s |
+| spec-check | 2026-05-27T17:42:44Z | - | - |
 
 ## Delivery Findings
 
@@ -163,7 +164,7 @@ No upstream findings (setup phase).
 ## TEA Assessment
 
 **Tests Required:** Yes
-**Phase:** green — RED confirmed (failing, ready for Dev)
+**Phase:** spec-check — RED confirmed (failing, ready for Dev)
 
 **Earlier blocking findings:** RESOLVED by the Architect reconciliation (2026-05-27) —
 md5/sha256, disjoint-namespace AC6, and the daemon mid-refactor are all dispositioned in
@@ -319,3 +320,30 @@ rest.py's 11 are pre-existing at unrelated lines).
 **Status update:** the AC5 app-wiring finding above is **resolved as a planned descope**,
 not a blocker. 65-2 delivers: backend ledger fully wired+tested (migration→store→repo→
 REST→render-write, incl. the production-path wiring test) + the tested preload hook.
+## Architect Assessment (spec-check)
+
+**Spec Alignment:** Aligned (with one Doctor-approved deferral)
+**Mismatches Found:** 2 (both already dispositioned — no drift to chase)
+
+- **AC5 app-integration not in code** (Missing in code — Behavioral, Major)
+  - Spec: reconnect fetches the asset endpoint and feeds CDN URLs into the image pipeline
+  - Code: `useAssetPreload` hook delivered + unit-tested; not mounted in App, no ImageBus feed
+  - Recommendation: **D — Defer.** Already approved by the Doctor (2026-05-27) as a UI
+    follow-up; logged under Dev deviations. The ImageBus feed is a genuine design decision
+    (pure-reducer constraint). Not drift — a planned scope split. SM files the follow-up.
+
+- **asset_type derived from r2_key `<kind>` segment, not from `params`** (Different
+  behavior — Cosmetic, Trivial)
+  - Spec: "asset_type derived from params/turn state"
+  - Code: derived from the `<kind>` path segment of the r2_key (ground truth of what R2
+    stored), with `params["tier"]` fallback
+  - Recommendation: **A — Update spec.** The key segment is more reliable than the tier;
+    the context already reflects this. Logged under Dev deviations. No action.
+
+**Backend alignment:** AC1–AC4 fully aligned — migration, store, REST, and the
+production-path render-write (with OTEL event) all match the reconciled context and are
+covered by passing tests, including the mandatory wiring test. AC6 deferred at context
+level (disjoint-namespace audit).
+
+**Decision:** Proceed to verify. No hand-back to Dev — both mismatches are
+already-decided deferrals/improvements, not unaddressed drift.
