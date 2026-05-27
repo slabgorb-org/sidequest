@@ -58,3 +58,34 @@
 - **Story 15-2 wiring-hole pattern.** SM setup didn't include server call site in ACs; TEA wrote game-crate-only tests; Dev declared GREEN without wiring the server; Reviewer caught it only after Keith pointed at CLAUDE.md. Read feedback_no_half_wired.md.
 - **Session file location.** sm-setup has written to `sprint/` instead of `.session/`, breaking handoff CLI. Always verify session file path before handoff.
 - **Finish-flow partial success.** After `pf sprint story finish`, verify both the archive move AND the YAML status update landed. One can succeed while the other fails silently.
+
+## Migrated from auto-memory (2026-05-26)
+
+- **`sprint/current-sprint.yaml` MUST be sharded** — `epics:` is a list of string refs (`['51','53',...]`), each epic in its own `sprint/epic-<id>.yaml`. Inline-dict epics are SILENTLY dropped by the Frame TUI (`pf/frame/ws_push.py:fetch_sprint()` is shard-only) while the CLI tolerates them — the two paths disagree. When adding an epic, write the full shard file + append a string ref; never embed inline. If `pf sprint status` shows more epics than the Frame TUI, suspect inline-dict drift. (Upstream bug pennyfarthing#50.)
+- **oq-1 and oq-2 can claim the same story id in parallel** — the next-id picker is local with no cross-clone registry. Before `sm-setup` in any clone, `git fetch origin && git status` and pull if behind. A non-fast-forward push at finish is a tracker-collision smell — inspect `git log HEAD..origin/main` for a duplicate `chore(sprint): complete <id>`. Resolution: renumber the second-to-merge story (subrepo branch/PR labels can't be retroactively renamed — note the drift in YAML).
+- **SideQuest never uses Jira — permanently.** Omit `--jira` from every `pf sprint story add`, never run `pf jira *`, never propose a Jira key or ask to attach one. Work is tracked entirely through pf sprint YAML.
+- **Verify which plan tasks already shipped before creating stories from a plan** — plans can be days behind the repo. Probe `git -C <repo> log --oneline -20 -- <target-paths>`; skip or shrink stories whose scope is already on develop (2026-05-24 reference-v3: 3 of 5 stories ~95% already shipped, costing a full coordination cycle).
+- **Scope `theme.yaml`/validated-YAML field-add stories `--repos content,server`** — genre-pack models use pydantic `extra="forbid"`, so a content-only field add takes the server down at startup with `ValidationError`. The paired server-model update must land in the same PR.
+- **`pf sprint story finish` can mark a story `done` + archive the session WITHOUT actually merging the PR** (2026-05-27, 69-2). The finish script printed step `2. merge_pr` but PR #288 stayed OPEN (MERGEABLE/CLEAN, no blocking checks) — develop never advanced. Bookkeeping (status→done, session removed, YAML/epic update, push) all completed, leaving the code stranded off `develop`. ALWAYS verify the merge after finish: `gh pr view <n> --json state,mergedAt` must show `MERGED`. If still OPEN and mergeable, complete it manually: `gh pr merge <n> --merge --delete-branch` (repo uses gitflow merge-commits off `develop`), then `git checkout develop && git pull`. Don't trust the step list printing as proof the step ran.
+- **`pf handoff complete-phase setup→red` does NOT block on missing context files** (2026-05-27, 69-2). sm-setup created the session but never wrote `sprint/context/context-story-<id>.md` / `context-epic-<id>.md`; the `sm-setup-exit` resolve-gate returned `status: ready` (it found the SM assessment) and complete-phase succeeded — then TEA's RED context gate hard-blocked because the context didn't exist. The gate's `create_context` recovery did not fire/persist. Mitigation: after sm-setup, explicitly `pf validate context-story <id>` and `context-epic <id>` BEFORE handing to RED; if missing, author them (or run /pf-context) during setup rather than letting RED stall. Architect authored them as recovery this run.
+
+## `pf sprint story finish` breaks on `N-followup-X` story IDs (2026-05-27)
+
+`pf sprint story finish 61-followup-B` fails at the yaml-update step with
+`Invalid story ID format: 61-followup-B` — pf's story-ID parser expects `N-N`
+and rejects the `followup` suffix. Partial state on failure: session is COPIED
+to `sprint/archive/` (original not removed), `review_verdict: approved` gets
+added to the story in the epic YAML, but `status` is NOT transitioned and the
+session file is NOT removed. Also observed: status transitions never fired into
+`epic-61.yaml` during claim/in-progress either — the sprint-YAML integration is
+non-functional for followup-suffixed IDs throughout the pipeline, not just at finish.
+
+Also note: `finish` does NOT create a PR — its dry-run shows "No PR to merge" when
+none exists. It only merges a pre-existing PR. For a story where Dev pushed a branch
+but no PR was opened, you must `gh pr create` + merge separately to integrate.
+
+Recovery when finish breaks on a followup ID: complete by hand matching the sibling
+precedent in the same epic file (`status: done`, `completed: <date>`, `pr:`, `branch:`
+— see 61-followup-A / 61-followup-D), remove the `.session/` file (archive copy already
+exists), commit to main (orchestrator targets main, not develop). FIX: pf story-ID
+parser should accept `N-followup-[A-Z]` and `N-N` alike.

@@ -124,10 +124,14 @@ stories:
     description: "Today narrator.sdk.usage cost_usd=... fires only as a log line at INFO level. The GM panel cannot show a per-turn cost trend without a stable watcher event. Promote the log line to a watcher event with severity=info carrying (input_tokens, output_tokens, cost_usd, model, cache_read_tokens, cache_write_tokens). The 61-4 alarm fires at warn/error; this is the continuous baseline signal it implicitly compares against. Sebastien-grade lie-detector for cost. (Note: per CLAUDE.md, this is a Keith/dev observability concern, not a Sebastien player-facing feature — the framing is OTEL-side, not player-UI-side.)"
     points: 2
     priority: p2
-    status: backlog
+    status: done
     repos: server
     workflow: tdd
+    completed: '2026-05-27'
+    pr: 'https://github.com/slabgorb/sidequest-server/pull/470'
     type: feature
+    review_verdict: approved
+    branch: feat/61-followup-B-promote-sdk-usage-watcher-event
   - id: 61-followup-C
     title: 'Wire SessionRoom.close_store() into a real teardown path so reset_baselines() stops being dormant infrastructure'
     description: "61-4 added reset_baselines() on the SDK client and wired it to a SessionRoom teardown hook. There is no production caller of SessionRoom.close_store() today, so the baseline-reset never fires in practice. Identify or introduce the teardown path (websocket disconnect aggregation? game finish? session reap?) and wire close_store() into it. Until then, the rolling baseline behavior under session reuse is the bug-shaped infrastructure described in 61-followup-A — these two follow-ups are sibling fixes for the same cross-session-state hazard."
@@ -346,4 +350,12 @@ stories:
       - test_zones_carry_cache_boundary_flag passes
       - narrator_constraints guardrail rides the uncached User zone, not cached system_blocks[0]
       - OTEL cache-attribution span confirms cached=False for the constraint zone
+    type: bug
+  - id: 61-16
+    title: Narrator output-format compaction drops required rule tokens for 8 scene types — tests/agents/test_61_12_output_format_compaction.py (scandal/trial/auction/dogfight/social_duel/negotiation/chase/ship_combat)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
     type: bug

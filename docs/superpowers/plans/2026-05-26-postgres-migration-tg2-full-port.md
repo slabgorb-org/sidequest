@@ -802,6 +802,18 @@ This is the one-direction flip. By the end, `_SessionData` carries Postgres repo
 
 ## TASK-GROUP E — The importer (lands before cutover so it can be dry-run)
 
+> **DESCOPED 2026-05-26 — superseded by the as-built one-shot.** Tasks E1–E3
+> below describe a versioned-JSON-bundle exporter (`export_bundle`/`import_bundle`),
+> a whole-corpus `python -m sidequest.cli.import_saves --save-dir … --database-url …`
+> CLI, and a multi-save dry-run loop. **None of that was built.** The shipped
+> importer is a single-save, no-CLI, no-bundle one-shot: `sidequest/game/importer.py`
+> exposes `import_sqlite_save(sqlite_path, pool) -> ImportSummary`, which opens the
+> SQLite save RO+IMMUTABLE and does a direct FK-ordered INSERT (NO intermediate
+> JSON, raw rows, `created_at`/`last_played` normalized to T-isoformat) inside one
+> transaction. The entry point is `python -m sidequest.game.importer`, hardcoded to
+> the single `coyote_star-mp` save. Read the E1–E3 steps as historical design intent;
+> the module docstring is authoritative. `sidequest/cli/import_saves.py` does not exist.
+
 ### Task E1: SQLite-RO reader → versioned JSON bundle
 
 **Files:** Create `sidequest/game/importer.py`; Test `tests/persistence/test_importer_bundle.py`.
@@ -851,7 +863,7 @@ This is the one-direction flip. By the end, `_SessionData` carries Postgres repo
 
 ### Task F3: Run the importer on the live saves (operator gate)
 
-- [ ] **Step 1 (manual, documented):** With the dev server stopped, `just pg-up` confirmed, and `SIDEQUEST_DATABASE_URL` pointed at the real `sidequest` DB, run `python -m sidequest.cli.import_saves --save-dir ~/.sidequest/saves` on the live saves (`beneath_sunden-mp`, `coyote_star`, `glenross`). The CLI copies-first; verify the per-save summary row counts match. This is a HARD GATE — do not proceed to F4 if any save fails to import. Record results in the PR.
+- [ ] **Step 1 (manual, documented) — descoped to the single coyote_star-mp save:** With the dev server stopped, `just pg-up` confirmed, the real `sidequest` DB migrated (`alembic upgrade head`), and `SIDEQUEST_DATABASE_URL` pointed at the real `sidequest` DB (not `sidequest_test`), run the one-shot `python -m sidequest.game.importer` (hardcoded to `~/.sidequest/saves/games/2026-05-17-coyote_star-mp/save.db`; the `import_saves` CLI and `--save-dir`/`beneath_sunden-mp`/`glenross` multi-save loop were descoped 2026-05-26). It reads the save RO+IMMUTABLE (original preserved — verify mtime/WAL unchanged after) and prints the per-table `ImportSummary`; verify the counts match (sessions 1, game_state 1, events 236, narrative_log 234, scrapbook_entries 118, turn_telemetry 59, projection_cache 706). This is a HARD GATE — do not proceed to F4 if the import fails. Record results in the PR.
 
 ### Task F4: Cutover verification + ADR/docs update
 

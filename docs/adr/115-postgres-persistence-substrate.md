@@ -8,11 +8,26 @@ supersedes: []
 superseded-by: null
 related: [23, 36, 37, 82, 103]
 tags: [core-architecture, transport-infrastructure, project-lifecycle]
-implementation-status: in-progress
+implementation-status: complete
 implementation-pointer: "docs/superpowers/specs/2026-05-26-postgres-persistence-migration-design.md"
 ---
 
 # ADR-115: Persistence Substrate Migration — SQLite-Per-Session to PostgreSQL
+
+> **Amendment 2026-05-27 (direct port complete; SQLite retired to importer source).**
+> The `psycopg3`-pooled Postgres backend is live and the engine is fully cut
+> over. The single shared `sqlite3.Connection` and all of its scar tissue are
+> **deleted**: `SqliteStore`, `SqliteSaveRepository`, the process-wide
+> `SAVE_WRITE_LOCK` and its acquisition sites, `_configure_connection`'s
+> WAL/`busy_timeout` tuning, and the load-path `wal_checkpoint(TRUNCATE)`/`.bak`
+> machinery are gone. SQLite survives **only** as a read-only import *source*:
+> `sidequest/game/importer.py` (`import_sqlite_save`) reads a legacy save
+> RO-immutable and FK-ordered-inserts it into Postgres in one transaction. The
+> whole-corpus argparse CLI (`python -m sidequest.cli.import_saves`, `--save-dir`,
+> `--dry-run`, the intermediate JSON bundle) described in the original migration
+> plan was **descoped 2026-05-26**: the real entry point is the
+> `python -m sidequest.game.importer` one-shot, scoped to the single
+> `coyote_star-mp` save.
 
 > **Amendment 2026-05-26 (sequencing reversal).** This ADR originally locked
 > an incremental strangler (Phase 0 SQLite seam → Phase 1 Postgres → Phase 3

@@ -170,6 +170,14 @@ up *flags:
     : "${R2_ACCESS_KEY_ID:?R2_ACCESS_KEY_ID must be set in shell}"
     : "${R2_SECRET_ACCESS_KEY:?R2_SECRET_ACCESS_KEY must be set in shell}"
 
+    # Postgres substrate (ADR-115): the server opens + waits on the connection
+    # pool at startup and fails loud if it can't (db_config.database_url() has
+    # no silent localhost default). Pre-flight the URL here so `up` refuses
+    # before backgrounding subprocesses rather than crashing mid-boot. Provision
+    # the local DBs with `just pg-up`; e.g.
+    #   export SIDEQUEST_DATABASE_URL=postgresql://$USER@localhost:5432/sidequest
+    : "${SIDEQUEST_DATABASE_URL:?SIDEQUEST_DATABASE_URL must be set in shell (see 'just pg-up')}"
+
     # Anthropic SDK narrator (ADR-101) hard-requires ANTHROPIC_API_KEY — the SDK
     # client raises at first WebSocket connect without it. Fail-fast at boot
     # rather than mid-session. _server-cmd resolves it again internally, but
