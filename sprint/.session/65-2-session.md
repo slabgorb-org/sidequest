@@ -81,14 +81,15 @@ Runtime-generated images (portraits, scene illustrations, POI renders triggered 
 ## Workflow Tracking
 
 **Workflow:** tdd
-**Phase:** red
-**Phase Started:** 2026-05-27T15:44:33Z
+**Phase:** green
+**Phase Started:** 2026-05-27T17:26:45Z
 
 ### Phase History
 | Phase | Started | Ended | Duration |
 |-------|---------|-------|----------|
 | setup | 2026-05-27 | 2026-05-27T15:44:33Z | 15h 44m |
-| red | 2026-05-27T15:44:33Z | - | - |
+| red | 2026-05-27T15:44:33Z | 2026-05-27T17:26:45Z | 1h 42m |
+| green | 2026-05-27T17:26:45Z | - | - |
 
 ## Delivery Findings
 
@@ -162,7 +163,7 @@ No upstream findings (setup phase).
 ## TEA Assessment
 
 **Tests Required:** Yes
-**Phase:** red — RED confirmed (failing, ready for Dev)
+**Phase:** green — RED confirmed (failing, ready for Dev)
 
 **Earlier blocking findings:** RESOLVED by the Architect reconciliation (2026-05-27) —
 md5/sha256, disjoint-namespace AC6, and the daemon mid-refactor are all dispositioned in
@@ -223,3 +224,79 @@ non-discriminating-in-RED tests are intentional GREEN guards, logged as trivial 
   pre-RED by the Architect reconciliation).
 
 **Handoff:** To Dev for implementation.
+## Dev Assessment
+
+**Implementation Complete:** Yes for the RED suite (21/21 green); **AC5 app-wiring is NOT
+done — see blocking finding below.**
+
+**Files Changed (server):**
+- `alembic/versions/0002_asset_ledger.py` (new) — asset_ledger table migration
+- `sidequest/game/pg/asset_ledger.py` (new) — `PgAssetLedgerStore` (upsert + list)
+- `sidequest/game/pg/save_repository.py` — compose store + `append_asset_ledger`/`list_asset_ledger`
+- `sidequest/game/repository.py` — `SaveRepository` Protocol: `session_id`, asset-ledger methods
+- `sidequest/server/rest.py` — `GET /api/sessions/{slug}/assets`
+- `sidequest/server/websocket_session_handler.py` — ledger write + OTEL event in `_run_render_inner`
+- `tests/persistence/test_pg_asset_ledger.py` — fixture fix (per-test-unique r2_keys)
+
+**Files Changed (ui):**
+- `sidequest-ui/src/hooks/useAssetPreload.ts` (new) — reconnect-edge fetch hook
+
+**Tests:** 21/21 new GREEN (16 server + 5 ui). Regression: render + save_repo + rest
+suites 36/36 pass. ruff + eslint clean; pyright adds 0 new errors (asset_ledger.py 0;
+rest.py's 11 are pre-existing at unrelated lines).
+**Branches:** `feat/65-2-per-session-asset-ledger` pushed (sidequest-server, sidequest-ui).
+**Env:** pg suite needs `SIDEQUEST_TEST_DATABASE_URL` (provisioned by `just pg-up`).
+
+### Delivery Findings
+
+#### Dev (implementation)
+- **Gap** (blocking): `useAssetPreload` has **no production consumer** — it is built and
+  unit-tested (AC5) but not mounted in `App.tsx`, and there is no defined path to feed
+  fetched CDN URLs into the image pipeline. `ImageBusProvider` is a pure reducer over a
+  `messages` array (Architect constraint) with no imperative input, so "feed the preload
+  into the gallery" needs a design decision (synthetic IMAGE messages vs. a new ImageBus
+  input seam). The AC5 RED test exercises the hook in isolation only — there is no
+  app-integration/wiring test. Affects `sidequest-ui/src/App.tsx` +
+  `providers/ImageBusProvider.tsx`. **This is a half-wired feature** per CLAUDE.md; it
+  needs either an in-story wiring task (mount + ImageBus feed + a wiring test) or an
+  explicit split to a UI follow-up. *Found by Dev during implementation.*
+- **Improvement** (non-blocking): the `asset_ledger.r2_key` global PK is correct only
+  because production keys embed the session (`artifacts/<world>/<session>/...`). If a
+  future change ever content-addresses runtime artifacts session-independently, the same
+  asset reused across two saves would `ON CONFLICT`-collapse to one row under whichever
+  session wrote first, losing the second reference. Affects
+  `sidequest/game/pg/asset_ledger.py`. *Found by Dev during implementation.*
+
+## Design Deviations (Dev)
+
+### Dev (implementation)
+- **asset_type derived from the r2_key `<kind>` segment**
+  - Spec source: context-story-65-2.md, AC3
+  - Spec text: "`asset_type` … derived from `params`/turn state"
+  - Implementation: derived from the `<kind>` path segment of
+    `artifacts/<world>/<session>/<kind>/<sha>.<ext>` (the segment R2 actually used),
+    falling back to `params["tier"]` only if the key has too few segments
+  - Rationale: the key segment is ground truth (what R2 stored) and matches the RED
+    fixtures; more reliable than re-deriving from the render tier
+  - Severity: minor
+  - Forward impact: none
+- **Test-fixture fix: per-test-unique r2_keys**
+  - Spec source: tests/persistence/test_pg_asset_ledger.py (TEA RED)
+  - Spec text: reused hardcoded `r2_key` strings across distinct test sessions
+  - Implementation: gave colliding tests (idempotent, injection, cross-session,
+    append_then_list) distinct r2_keys; assertions unchanged
+  - Rationale: `r2_key` is a GLOBAL PK; the session-scoped test DB is shared across
+    tests, so reused keys hit `ON CONFLICT` on a prior test's row and the new session
+    saw zero rows. Production keys embed the session, so this matches reality.
+  - Severity: minor (test hygiene; no assertion weakened)
+  - Forward impact: none
+- **SaveRepository Protocol gained `session_id` + asset-ledger methods**
+  - Spec source: sidequest/game/repository.py
+  - Spec text: Protocol declared scrapbook methods but not `session_id`
+  - Implementation: added `session_id` property + `append_asset_ledger`/`list_asset_ledger`
+  - Rationale: the render hook accesses both via the Protocol-typed `sd.repository`;
+    PgSaveRepository already satisfies them
+  - Severity: trivial
+  - Forward impact: none
+
+**Handoff:** To next phase — but flag the blocking AC5 wiring gap above.
