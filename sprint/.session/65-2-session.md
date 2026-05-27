@@ -300,3 +300,22 @@ rest.py's 11 are pre-existing at unrelated lines).
   - Forward impact: none
 
 **Handoff:** To next phase — but flag the blocking AC5 wiring gap above.
+
+### Dev (implementation) — AC5 app-wiring descope (Doctor decision 2026-05-27)
+- **AC5 app-integration split to a follow-up story**
+  - Spec source: context-story-65-2.md, AC5
+  - Spec text: "A reconnect at the WebSocket-owning level fetches `/api/sessions/{slug}/assets` … feeds the returned CDN URLs into the image pipeline"
+  - Implementation: the `useAssetPreload` hook (fetch-on-reconnect-edge) is delivered and
+    unit-tested; mounting it in `App.tsx` and defining how preloaded CDN URLs enter the
+    (pure-reducer) ImageBus pipeline is split to a UI follow-up per the Doctor's decision
+  - Rationale: the ImageBus feed needs a design decision (synthetic IMAGE messages vs. a
+    new input seam) that touches the Architect's "keep ImageBus pure" constraint; doing it
+    untested under this story would be a half-wired hack
+  - Severity: major (an AC's app-integration leaves this story)
+  - Forward impact: **SM to file follow-up** "Mount useAssetPreload in App + ImageBus
+    preload feed (with wiring test)"; the prior blocking Dev finding is thereby downgraded
+    to this planned descope (no longer blocks 65-2)
+
+**Status update:** the AC5 app-wiring finding above is **resolved as a planned descope**,
+not a blocker. 65-2 delivers: backend ledger fully wired+tested (migration→store→repo→
+REST→render-write, incl. the production-path wiring test) + the tested preload hook.
