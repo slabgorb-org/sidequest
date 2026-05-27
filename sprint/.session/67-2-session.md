@@ -33,8 +33,8 @@ Full context available at: `sprint/context/context-story-67-2.md`
 
 ## Workflow Tracking
 **Workflow:** tdd
-**Phase:** review
-**Phase Started:** 2026-05-27T20:42:04Z
+**Phase:** spec-reconcile
+**Phase Started:** 2026-05-27T20:48:50Z
 
 ### Phase History
 | Phase | Started | Ended | Duration |
@@ -44,7 +44,8 @@ Full context available at: `sprint/context/context-story-67-2.md`
 | green | 2026-05-27T20:23:07Z | 2026-05-27T20:32:47Z | 9m 40s |
 | spec-check | 2026-05-27T20:32:47Z | 2026-05-27T20:34:32Z | 1m 45s |
 | verify | 2026-05-27T20:34:32Z | 2026-05-27T20:42:04Z | 7m 32s |
-| review | 2026-05-27T20:42:04Z | - | - |
+| review | 2026-05-27T20:42:04Z | 2026-05-27T20:48:50Z | 6m 46s |
+| spec-reconcile | 2026-05-27T20:48:50Z | - | - |
 
 ## SM Assessment
 
@@ -79,6 +80,9 @@ Each finding is one list item. Use "No upstream findings" if none.
 
 ### Reviewer (code review)
 - **Improvement** (non-blocking): The `broadcast.recipient_dropped` watcher emits `socket_id` (internal asyncio-queue routing handle) onto the unauthenticated dev-side `/ws/watcher` channel. Not a credential and not exploitable (expires on disconnect), and `socket_id` is genuinely useful for correlating a drop to the connect/disconnect that share it (diagnostic value for the exact socket-churn class 67-2 targets). Non-blocking; flagged only for awareness. Affects `sidequest-server/sidequest/server/session_room.py`. *Found by Reviewer during code review.*
+
+### Architect (reconcile)
+- **Gap** (non-blocking): The `_send_message` send-exception path (`ws.send_failed`, websocket.py:248-252) — the seam that produced the literal 2026-05-27 `ws.send_failed type=ACTION_REVEAL` repro — still drops with a WARNING log but NO watcher event. 67-2 instrumented the separate `SessionRoom.broadcast` no-queue seam (per the in-scope wording) and the AC2 reconcile heals the strand regardless, so this is observability parity only, not a recovery gap. Recommend a small epic-67 follow-up to emit a watcher at websocket.py:252. Affects `sidequest-server/sidequest/server/websocket.py`. *Found by Architect during spec-reconcile.*
 
 ## TEA Assessment
 
@@ -240,6 +244,18 @@ All logged deviations reviewed and stamped:
 
 **Undocumented spec deviations found:** None. The code matches the context's recommended approach and all 6 ACs.
 
+### Architect (reconcile)
+
+Verified every TEA and Dev deviation entry: all spec-source paths exist, quoted spec text is accurate, implementation descriptions match the committed code, and forward-impact statements are correct. No AC was deferred (all 6 DONE per the Reviewer assessment), so AC-deferral verification is a no-op. One deviation the prior phases did not surface explicitly:
+
+- **AC4 observability lands on the broadcast no-queue seam, NOT the `_send_message` send-exception seam that produced the literal repro**
+  - Spec source: context-story-67-2.md, Root Cause fact #2 + AC4
+  - Spec text: "The actual delivery failure is at the socket-write layer. `_send_message` (websocket.py:226-252) … on exception it logs `ws.send_failed type=ACTION_REVEAL error=` and **drops the frame** (no requeue, no recipient-drop watcher event)" / AC4: "drive a broadcast where one included recipient's queue/socket is gone; assert a watcher event fires"
+  - Implementation: Dev instrumented `SessionRoom.broadcast` (connected-but-no-queue detection → `broadcast.recipient_dropped`). The `_send_message` exception path (websocket.py:248-252) is unchanged — it still logs `ws.send_failed` at WARNING and drops with **no watcher event**. The 2026-05-27 repro line (`ws.send_failed type=ACTION_REVEAL error=`) originates at *this* `_send_message` seam (frame was enqueued, then `send_text` raised), so the new `broadcast.recipient_dropped` watcher would NOT have fired for that exact incident.
+  - Rationale: The context's **in-scope** wording explicitly narrows the observability fix to "the `SessionRoom.broadcast` path," and AC4's test wording is "queue/socket is gone" — both of which Dev satisfied. More importantly, the story's PRIMARY fix (AC1/AC2 connect-time reconcile) heals the strand regardless of which seam dropped the frame: the reconnecting peer re-derives the seal roster either way. So the observed bug (stranded at "Composing") is fully resolved; only the *telemetry* for the `_send_message` send-exception drop remains a log-without-watcher.
+  - Severity: minor
+  - Forward impact: A follow-up (epic-67 sibling or a small chore) should add a watcher emit at websocket.py:252 so the GM panel also sees send-exception drops (the literal `ws.send_failed` class), completing the OTEL lie-detector coverage. Not required for 67-2's acceptance — recovery is complete; this is observability parity.
+
 ## Dev Assessment
 
 **Implementation Complete:** Yes
@@ -266,7 +282,7 @@ All logged deviations reviewed and stamped:
 
 ## TEA Assessment (verify)
 
-**Phase:** review
+**Phase:** spec-reconcile
 **Status:** GREEN confirmed
 
 ### Simplify Report
