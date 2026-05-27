@@ -81,8 +81,8 @@ Runtime-generated images (portraits, scene illustrations, POI renders triggered 
 ## Workflow Tracking
 
 **Workflow:** tdd
-**Phase:** spec-reconcile
-**Phase Started:** 2026-05-27T17:56:36Z
+**Phase:** finish
+**Phase Started:** 2026-05-27T17:57:30Z
 
 ### Phase History
 | Phase | Started | Ended | Duration |
@@ -93,7 +93,8 @@ Runtime-generated images (portraits, scene illustrations, POI renders triggered 
 | spec-check | 2026-05-27T17:42:44Z | 2026-05-27T17:43:43Z | 59s |
 | verify | 2026-05-27T17:43:43Z | 2026-05-27T17:48:53Z | 5m 10s |
 | review | 2026-05-27T17:48:53Z | 2026-05-27T17:56:36Z | 7m 43s |
-| spec-reconcile | 2026-05-27T17:56:36Z | - | - |
+| spec-reconcile | 2026-05-27T17:56:36Z | 2026-05-27T17:57:30Z | 54s |
+| finish | 2026-05-27T17:57:30Z | - | - |
 
 ## Delivery Findings
 
@@ -167,7 +168,7 @@ No upstream findings (setup phase).
 ## TEA Assessment
 
 **Tests Required:** Yes
-**Phase:** spec-reconcile — RED confirmed (failing, ready for Dev)
+**Phase:** finish — RED confirmed (failing, ready for Dev)
 
 **Earlier blocking findings:** RESOLVED by the Architect reconciliation (2026-05-27) —
 md5/sha256, disjoint-namespace AC6, and the daemon mid-refactor are all dispositioned in
@@ -352,7 +353,7 @@ level (disjoint-namespace audit).
 already-decided deferrals/improvements, not unaddressed drift.
 ## TEA Assessment (verify)
 
-**Phase:** spec-reconcile
+**Phase:** finish
 **Status:** GREEN confirmed (21/21 new tests; 36 render/rest/save-repo regression tests pass)
 
 ### Simplify Report
