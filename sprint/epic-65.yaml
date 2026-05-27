@@ -79,10 +79,12 @@ stories:
       never reap save-referenced R2 assets on a timer.
     points: 3
     priority: p1
-    status: backlog
+    status: in_progress
     repos: server,content
     workflow: tdd
     type: feature
+    branch: feat/65-2-per-session-asset-ledger
+    session_file: .session/65-2-session.md
   - id: 65-3
     title: Pulp-noir visual_style cleanup — strip incidental setting bleed, make rain a deliberate per-shot layer
     description: |
