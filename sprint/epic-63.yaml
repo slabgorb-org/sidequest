@@ -140,9 +140,11 @@ stories:
     title: Reference renderer humanization guard — never emit raw key/dict/snake_case/bool/dev-note prose; humanize section-key headings; + output-scan test
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-27'
     repos: server
     workflow: tdd
+    completed: '2026-05-27'
     type: bug
   - id: 63-10
     title: Lore surface renders WORLD lore only — stop rendering genre-level lore (Keepers/Maw) + banner intro; resolve genre/world contradiction
