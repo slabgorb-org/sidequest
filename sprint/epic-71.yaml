@@ -153,9 +153,13 @@ stories:
     title: ADR-113 — per-dispatch confidence scoring + threshold gating in the intent router
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-28T15:51:38Z'
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-05-28'
+    branch: feat/71-16-intent-router-confidence-gate
+    assignee: keith
   - id: 71-17
     title: ADR-092 — resolve scene-harness dev-gate doctrine (Cloudflare-only vs DEV_SCENES env gate)
     points: 2
