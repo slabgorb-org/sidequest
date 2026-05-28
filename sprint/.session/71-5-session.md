@@ -80,12 +80,12 @@ Per CLAUDE.md, every backend fix touching narration/POV must emit OTEL watcher e
 
 ## Acceptance Criteria
 
-1. **Functional:** The driving player's opening narration card (both cold-open seed and narrator prose) is POV-swapped to second person when the anchor_pc matches their character name.
+1. **Functional:** The driving player's opening narration **prose card** (which carries the driver-anchored `_visibility` sidecar) is POV-swapped to second person when `anchor_pc` matches their character name. The cold-open **seed** is a generic scene-hook with no sidecar/PC anchor → `_apply_pov_swap` naturally **no-ops** on it (stays unchanged); this is correct — do NOT stamp a synthetic anchor (Architect revised ruling, 2026-05-28). Both seed and prose are run through the swap path; only the anchored prose actually swaps.
 2. **Consistent:** The swap behavior is identical to how peer players receive their swapped cards — same `_apply_pov_swap()` logic, same visibility sidecar contract.
 3. **Observed:** A watcher event `opening.narration_pov_swapped` is emitted for the driving player's opening narration, with attributes: `driver_player_id`, `anchor_pc`, `anchor_pronouns`, `swap_count`, `original_text_length`, `swapped_text_length`.
 4. **Tested:** 
-   - Unit test: POV-swap fires on a cold-open NARRATION message when anchor_pc and driver PC match.
-   - Unit test: POV-swap is correctly skipped (no-op) when anchor_pc ≠ driver PC.
+   - Test: POV-swap fires on the driver-anchored PROSE card → "You…". Generic cold-open seed (no anchor) is a no-op → unchanged.
+   - Test: POV-swap is correctly skipped (no-op) on the driver's copy when anchor_pc ≠ driver PC (don't over-swap).
    - Integration test: Multiplayer opening narration with 2+ PCs (single shared blob anchored to the driver's PC). Verify the DRIVING player's own card is swapped to "You..." AND peers receive the card in THIRD person ("<anchor_pc name> steps...") — peers are non-anchor, so third person is CORRECT, not a regression. Assert peers' received bytes are byte-identical to today.
    - End-to-end: Manual playtest — open a 2-player MP session, confirm the opening narration reads "You..." on the DRIVING player's tab and "<driver PC name>..." (third person) on the peer's tab.
 
@@ -140,21 +140,32 @@ Branch `feat/71-5-mp-opening-narration-pov-swap` off sidequest-server develop (0
   - Forward impact: Reviewer should confirm the real `_run_opening_turn_narration` emits a single driver-anchored `_visibility` sidecar in MP (the test assumes this shape), and that the cold-open seed is stamped (Finding 2).
 - **Requires Postgres**: the connect path persists to PG (ADR-115); the test needs `SIDEQUEST_TEST_DATABASE_URL` and skips cleanly when unset. Environment note, not a spec deviation.
 
-## TEA Assessment
+## TEA Assessment (FINAL — reconciled to approved helper seam, commit 0c9cecd)
 
 **Tests Required:** Yes
-**Status:** RED — 3 failing (ready for Dev), 2 guards passing. Lint clean.
-**Test file:** `tests/server/test_opening_pov_swap_71_5.py` (commit 3916765)
-**Run:** `SIDEQUEST_TEST_DATABASE_URL=postgresql://$USER@localhost:5432/sidequest_test uv run pytest -n0 tests/server/test_opening_pov_swap_71_5.py`
+**Status:** RED — 6 failing, all for the right reason. Lint clean.
+**Run:** `SIDEQUEST_TEST_DATABASE_URL=postgresql://$USER@localhost:5432/sidequest_test uv run pytest -n0 tests/server/test_pov_swap_opening_helper_71_5.py tests/server/test_opening_pov_swap_71_5.py`
 
-| Test | AC | State | RED reason |
-|------|----|-------|-----------|
-| `test_driver_own_opening_card_is_pov_swapped` | AC1 | FAIL | driver's `out` is raw "Rux steps…", not "You step…" |
-| `test_opening_pov_swapped_watcher_event_emitted` | AC3 | FAIL | `opening.narration_pov_swapped` not emitted |
-| `test_peers_receive_raw_third_person_no_regression` | AC4 | FAIL | driver not swapped (peer-raw bytes guarded) |
-| `test_opening_swap_skipped_when_anchor_is_not_driver` | AC2 | PASS (guard) | non-anchor card unchanged — don't over-swap |
-| `test_no_pov_swapped_event_for_non_anchored_opening` | AC3-neg | PASS (guard) | no event when swap_count==0 |
+**Two files (per the approved Option-A helper seam):**
 
-**Pinned to Architect ruling:** single-anchor opening; driver-only bug; seam Option (a) — swap the driver's local copy at `chargen_mixin:1453`, peer `room.broadcast` untouched. Watcher `opening.narration_pov_swapped` with `driver_player_id, anchor_pc, anchor_pronouns, swap_count, original_text_length, swapped_text_length`, emitted only when swap_count>0.
+`tests/server/test_pov_swap_opening_helper_71_5.py` — pure-function unit tests on `_pov_swap_opening_for_driver(messages, *, driver_player_id, view, snapshot)` (no DB, no chargen; deferred import → per-test RED until Dev extracts the helper):
+
+| Test | AC | RED reason |
+|------|----|-----------|
+| `test_prose_card_swaps_and_generic_seed_is_noop` | AC1 | helper missing (asserts prose→"You", generic seed unchanged) |
+| `test_driver_card_strips_visibility_sidecar_on_egress` | AC1/consumed | helper missing (asserts `_visibility` stripped) |
+| `test_skip_when_anchor_is_not_driver` | AC2 | helper missing (asserts no-op for non-anchor) |
+| `test_watcher_event_emitted_with_attrs_when_swap_fires` | AC3 | helper missing (asserts event + 6 attrs, swap_count>0) |
+| `test_no_watcher_event_when_nothing_swaps` | AC3-neg | helper missing (asserts no event when swap_count==0) |
+
+`tests/server/test_opening_pov_swap_71_5.py` — end-to-end WIRING test driving the real `_chargen_confirmation` opening block (requires Postgres):
+
+| Test | AC | RED reason |
+|------|----|-----------|
+| `test_opening_block_swaps_driver_card_and_broadcasts_raw_to_peers` | AC4 + wiring | driver's prose card is raw "Rux steps…" (block doesn't call the helper yet); asserts driver→"You", generic seed unchanged, peers raw 3rd-person byte-identical |
+
+**Pinned to the FINAL ruling:** Option-A helper seam (peer broadcast byte-identical; emit_event refactor is follow-up 71-13, OUT of scope). Prose card swaps; generic cold-open seed is a NATURAL no-op (no synthetic stamping — supersedes the earlier seed-stamp instruction); driver's swapped card strips `_visibility` on egress; single-anchor, driver-live only (anchor-is-a-peer live case → 71-13); no private-segment leak test (debunked). Watcher `opening.narration_pov_swapped` with `driver_player_id, anchor_pc, anchor_pronouns, swap_count, original_text_length, swapped_text_length`, only when swap_count>0.
+
+**Findings 2 & 3 resolved:** Finding 2 (cold-open seed) RULED — seed is a natural no-op, no stamping (AC1 updated). Finding 3 (helper seam) APPROVED — tests pinned to the helper.
 
 **Handoff:** To Dev for GREEN.
