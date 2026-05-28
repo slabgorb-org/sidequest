@@ -388,6 +388,42 @@ async def check_daemon() -> bool:
         return False
 
 
+def existing_r2_keys(prefix: str = "genre_packs/", bucket: str = "sidequest") -> set[str]:
+    """Return the set of live R2 object keys under ``prefix`` (one paginated LIST).
+
+    Generated PNGs are gitignored, so a local-disk-only existence check
+    regenerates assets already on R2 on any clone that didn't render them
+    locally. Listing the bucket lets the batch loop skip what's already
+    uploaded. Reuses the boto3 client from r2_sync_packs — no second client.
+
+    Fails loud: a missing R2_S3_ENDPOINT/creds (KeyError) or a ClientError
+    propagates rather than silently returning an empty set, which would make
+    the caller regenerate every asset (No-Silent-Fallbacks).
+
+    The boto3 client config mirrors r2_sync_packs._build_client, but is inlined
+    rather than imported: the generators run as ``python3 scripts/x.py`` (this
+    module is imported top-level), whereas r2_sync_packs imports
+    ``scripts.r2_manifest`` and only resolves under the repo-root package
+    regime — importing it here would break the generators at runtime.
+    """
+    import os
+
+    import boto3
+
+    client = boto3.client(
+        "s3",
+        endpoint_url=os.environ["R2_S3_ENDPOINT"],
+        aws_access_key_id=os.environ["R2_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["R2_SECRET_ACCESS_KEY"],
+        region_name="auto",
+    )
+    keys: set[str] = set()
+    for page in client.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            keys.add(obj["Key"])
+    return keys
+
+
 async def render_batch(
     items: list[dict],
     compose_fn,
@@ -440,6 +476,13 @@ async def render_batch(
     log.info("Found %d items across %d genre packs",
              len(items), len(set(it["genre"] for it in items)))
 
+    content_root = GENRE_PACKS_DIR.parent
+    remote_keys: set[str] = set()
+    if not force and not dry_run:
+        remote_keys = existing_r2_keys()
+        log.info("R2 has %d objects under genre_packs/ — will skip those already uploaded",
+                 len(remote_keys))
+
     if not dry_run:
         if not await check_daemon():
             log.error("Daemon not running at %s — start with: sidequest-renderer", SOCKET_PATH)
@@ -457,19 +500,6 @@ async def render_batch(
 
         suffix = visual_style.get("positive_suffix", "")
         full_positive = f"{positive}, {suffix}" if suffix else positive
-
-        if catalog_compose:
-            catalog_subject = item.get("catalog_ref", "")
-            if not catalog_subject:
-                raise ValueError(
-                    f"render_batch: catalog_compose=True requires non-empty "
-                    f"catalog_ref on every item; got empty for "
-                    f"{item.get('genre')}/{item.get('world')}/{item.get('name')}"
-                )
-            use_catalog = True
-        else:
-            use_catalog = False
-            catalog_subject = ""
 
         if output_dir:
             out_dir = output_dir / item["genre"]
@@ -494,16 +524,49 @@ async def render_batch(
             )
         else:
             out_dir = GENRE_PACKS_DIR / item["genre"] / "images" / image_subdir
-        out_dir.mkdir(parents=True, exist_ok=True)
 
         slug = item.get("slug") or (item.get("id") and slugify(item["id"])) or slugify(item["name"])
         out_path = out_dir / f"{slug}.png"
 
-        # Skip if already generated (unless --force)
-        if out_path.exists() and not force and not dry_run:
-            log.info("[%d/%d] SKIP %s/%s (already exists)", i, total, item["genre"], item["name"])
+        # Skip if already generated locally OR already on R2 (unless --force).
+        # R2 key is the LOGICAL path relative to content_root (genre_packs/...),
+        # matching r2_sync_packs' 1:1 upload convention. Do NOT resolve() — a
+        # symlinked assets/poi would otherwise resolve to a different key than
+        # what was uploaded. output_dir dumps live outside content_root, so they
+        # have no R2 key and fall back to the disk-only check.
+        on_r2 = False
+        if remote_keys:
+            try:
+                r2_key = out_path.relative_to(content_root).as_posix()
+            except ValueError:
+                r2_key = None
+            on_r2 = r2_key is not None and r2_key in remote_keys
+
+        if (out_path.exists() or on_r2) and not force and not dry_run:
+            where = "local" if out_path.exists() else "R2"
+            log.info("[%d/%d] SKIP %s/%s (already exists: %s)",
+                     i, total, item["genre"], item["name"], where)
             success += 1
             continue
+
+        # catalog_compose validation runs AFTER the skip gate: an item already
+        # on R2 (or local) is skipped without needing a catalog_ref — only items
+        # we actually render must satisfy the catalog contract.
+        if catalog_compose:
+            catalog_subject = item.get("catalog_ref", "")
+            if not catalog_subject:
+                raise ValueError(
+                    f"render_batch: catalog_compose=True requires non-empty "
+                    f"catalog_ref on every item; got empty for "
+                    f"{item.get('genre')}/{item.get('world')}/{item.get('name')}"
+                )
+            use_catalog = True
+        else:
+            use_catalog = False
+            catalog_subject = ""
+
+        if not dry_run:
+            out_dir.mkdir(parents=True, exist_ok=True)
 
         label = item.get("role", item.get("chapter_label", ""))
         log.info("[%d/%d] %s / %s / %s%s", i, total, item["genre"], item["world"], item["name"],

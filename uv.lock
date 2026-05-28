@@ -482,6 +482,7 @@ name = "sidequest-orchestrator-scripts"
 version = "1.3.0"
 source = { editable = "." }
 dependencies = [
+    { name = "boto3" },
     { name = "httpx" },
     { name = "numpy" },
     { name = "pyyaml" },
@@ -492,7 +493,6 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
-    { name = "boto3" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
 ]
@@ -504,7 +504,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "boto3", marker = "extra == 'dev'", specifier = ">=1.34" },
+    { name = "boto3", specifier = ">=1.34" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "numpy", specifier = ">=1.24" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
