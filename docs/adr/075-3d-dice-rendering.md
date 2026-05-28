@@ -317,3 +317,28 @@ Not the §Overlay architecture diagram or §Interaction prose above.
 ADR text is the original 2026-04-09 design intent; the running
 implementation has diverged on the architecture sections while
 preserving the technology choice and protocol contract.
+
+## Amendment 2026-05-28 — Original §Architecture / §Interaction marked superseded
+
+Re-confirming the 2026-05-02 status against current code, and flagging the two
+upstream design sections as **superseded design** so a reader doesn't mistake
+them for the running shape:
+
+- **§Overlay architecture** (the fixed-position full-screen `<Canvas>` at
+  `z-index: 1000` with toggled `pointer-events`) is **superseded.** Dice now
+  render **inline inside the Confrontation panel** via `InlineDiceTray`. The
+  `App.tsx` header (`sidequest-ui/src/App.tsx:44-45`) records the overlay's
+  removal; `ConfrontationOverlay.tsx:325` is the live mount point.
+- **§Interaction: drag-and-throw** (the `pointerdown`/`pointermove`/`pointerup`
+  flick-gesture pipeline) is **superseded.** The current shape is a beat-button
+  click that triggers an **auto-roll** with random physics params — see the
+  `InlineDiceTray.tsx:1-11` docstring ("No gestures, no drag-to-throw ... the
+  die auto-rolls"). `useDiceThrowGesture.ts` exists but is not wired through
+  `InlineDiceTray`.
+
+No new code findings beyond the 2026-05-02 audit — this amendment only elevates
+the divergence note so the two original sections read as dead design.
+**Source of truth remains** `sidequest-ui/src/dice/InlineDiceTray.tsx`,
+`DiceScene.tsx`, and `components/ConfrontationOverlay.tsx`, per the
+§Implementation status section above. The technology stack (Three.js + Rapier
+via R3F) and the ADR-074 seed-based replay contract are unchanged and live.

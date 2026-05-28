@@ -114,3 +114,27 @@ malformed JSON returns `None`/empty dict and the caller decides what to do.
 > design that could not ship under ADR-001's transport constraint and has
 > been deprecated. The three-tier extraction this ADR describes is what
 > the system has used continuously since 2026-03-25.
+
+## Amendment 2026-05-28 — Implementation reconciliation
+
+The frontmatter `implementation-pointer: 102` overstates the supersession:
+ADR-102 (native tool-use) replaces this extractor **only on the default
+`anthropic_sdk` narrator path**, not everywhere. The supersession is
+**path-conditional, not total.**
+
+- The legacy `claude -p` (`claude` backend) path still drives the three-tier
+  extractor: `extract_structured_from_response` is defined at
+  `sidequest-server/sidequest/agents/orchestrator.py:1139` and invoked from
+  the Claude-CLI streaming narration path at `orchestrator.py:3034` (the
+  enclosing block logs "Claude CLI returned streaming narration",
+  `orchestrator.py:3024`), plus `:3289` and `:3508`.
+- Backend selection (`SIDEQUEST_LLM_BACKEND`, default `anthropic_sdk`) lives
+  in `sidequest-server/sidequest/agents/llm_factory.py:12,53`; valid backends
+  are `{"claude", "ollama", "anthropic_sdk"}` (`llm_factory.py:15`). The SDK
+  path uses native tool-use for structured fields and bypasses this extractor.
+
+Net: the lazy/three-tier extractor remains live, but **only** on the
+non-default `claude -p` backend. On the default SDK path it is dead code per
+ADR-102. (Note: `llm_factory.py:44-66` warns that `anthropic_sdk` is now the
+sole *viable* narrator backend, so the legacy path's extractor is reachable
+in code but not exercised by the default narrator configuration.)

@@ -8,8 +8,8 @@ supersedes: []
 superseded-by: null
 related: [37, 102, 36, 104, 14]
 tags: [multiplayer, agent-system, game-systems]
-implementation-status: deferred
-implementation-pointer: docs/adr/108-mp-item-attribution-recipient-tagging.md#implementation-guidance-for-dev
+implementation-status: live
+implementation-pointer: null
 ---
 
 # ADR-108: MP Item Attribution — Per-Recipient Tagging in the Narration Tool Contract

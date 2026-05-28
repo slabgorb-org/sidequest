@@ -257,3 +257,51 @@ to end.
 absent. Restoration tracked in [ADR-087](087-post-port-subsystem-restoration-plan.md)
 P0; ADR-069's row in 087's table is owed an update to point here instead of
 to the unresolved-pivot framing.
+
+## Amendment 2026-05-28 — Implementation reconciliation (server endpoint IS now wired)
+
+The 2026-05-02 status above ("server endpoint and hydrator absent") is
+**stale and corrected here.** Both the route and the hydrator now exist
+and the router **is mounted into the FastAPI app.** Re-verified against
+`sidequest-server/`:
+
+- **Hydrator:** `sidequest-server/sidequest/game/scene_harness.py`
+  (`hydrate_fixture`), exactly as ADR-092 §Decision item 2 specified.
+- **Route module:** `sidequest-server/sidequest/server/scene_harness_router.py`
+  — `create_scene_harness_router()` (`:52`) defines `POST /dev/scene/{name}`
+  (`:64`) and `GET /dev/scenes` (`:178`, an added fixture-list endpoint for
+  a UI picker, beyond the ADR's single-route scope).
+- **Mounted (the audit's "not mounted → 404 live" claim is FALSE):**
+  `sidequest-server/sidequest/server/app.py:301` imports
+  `create_scene_harness_router` and `app.py:305` calls
+  `app.include_router(create_scene_harness_router())`, logging
+  `scene_harness.route_registered` (`app.py:306-309`). The endpoint is
+  reachable in a running server.
+- **OTEL spans present** (§OTEL mandate): `scene_harness.intent.load`,
+  `scene_harness.hydrate.ok`, `scene_harness.hydrate.error`,
+  `scene_harness.persist.ok` all fire from the router
+  (`scene_harness_router.py:73,125,82/101,167`).
+- **Tests:** `tests/server/test_scene_harness.py`,
+  `tests/game/test_scene_harness_hydrator.py`.
+
+### Design evolution beyond the ADR: `DEV_SCENES` gate removed
+
+ADR-092 §Decision item 1 specifies the route is gated by `DEV_SCENES=1`
+and "not registered when the flag is unset." The running design **removed
+that gate** — `app.py:298-300` registers the route unconditionally with
+the comment: *"Always registered — Cloudflare Zero Trust gates access at
+the tunnel layer; the former DEV_SCENES env var added zero security
+value."* Access control moved from an env-var-gated route registration to
+the network tunnel layer. The ADR's "production carries zero scene-harness
+surface" property (item 1, §Consequences "Production behavior — zero
+impact") **no longer holds as written**; the route is always present and
+access is enforced upstream of the app. This is the one material divergence
+from the Decision body; the rest of §Decision (server-side hydrator,
+UI-as-is, fixture YAMLs unchanged, loud failure) is live as specified.
+
+### Net
+
+Endpoint + hydrator + OTEL + mount: **live and reachable.** The only
+deviation from the Decision is the `DEV_SCENES` gating mechanism (replaced
+by tunnel-layer access control). The `partial` status reflected an earlier
+code state; the server half is now built.

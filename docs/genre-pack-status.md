@@ -1,11 +1,30 @@
 # Genre Pack Status Guide
 
-> **Last updated:** 2026-05-19
+> **Last updated:** 2026-05-28 (pack-count reconciliation + space_opera SWN)
 > **Source:** `sidequest-content` — `genre_packs/` (production) + `genre_workshopping/` (staging)
 >
 > Two trees. `SIDEQUEST_GENRE_PACKS` always points at `genre_packs/`. The
 > `genre_workshopping/` tree is a staging area; the server never loads from it.
 > See `sidequest-content/genre_workshopping/README.md` for the promotion gate.
+
+> **2026-05-28 reconciliation note.** This guide's earlier snapshots described a
+> 5-production-pack world. That is stale. As of 2026-05-28 there are **10 pack
+> directories in `genre_packs/`**, and a filesystem check (`find
+> genre_packs/*/worlds/*/openings.yaml`) confirms **all 10 have at least one
+> world with an authored `openings.yaml`**: caverns_and_claudes (beneath_sunden),
+> elemental_harmony (burning_peace, shattered_accord), heavy_metal (evropi,
+> long_foundry), mutant_wasteland (flickering_reach), neon_dystopia
+> (franchise_nations), pulp_noir (annees_folles), road_warrior (the_circuit),
+> space_opera (aureate_span, coyote_star), spaghetti_western (dust_and_lead,
+> five_points, the_real_mccoy), tea_and_murder (glenross). This matches the root
+> `CLAUDE.md` framing: heavy_metal was re-promoted 2026-05-23 (loads clean);
+> neon_dystopia + pulp_noir were promoted 2026-05-23 and now have world-tier
+> openings authored — but the **asset gate** (portraits, POI landscapes,
+> generated OGG) is not yet met for those three. spaghetti_western recently
+> gained a third world, `five_points`. The older "production-shell" /
+> "parked-in-workshopping" narrative below predates this and is preserved as
+> dated history; treat the per-row counts as superseded by this note where they
+> conflict.
 
 ### Reshuffles since 2026-04-30
 
@@ -19,32 +38,60 @@ Four changes since the prior snapshot are load-bearing for reading the tables be
 
 ## Pack Overview
 
-### Production — `genre_packs/` (loadable by server)
+### Production — `genre_packs/` (10 pack dirs; all have world openings as of 2026-05-28)
 
-| Genre Pack | Worlds (lobby-selectable) | Genre YAMLs | Audio (in-repo) | Images (in-repo) | Tier | Notes |
-|-----------|---------------------------|-------------|-----------------|------------------|------|-------|
+> Counts/tiers in the original (2026-05-19) snapshot below are preserved where
+> still accurate. The **Worlds (filesystem)** column was refreshed 2026-05-28
+> against `find genre_packs/*/worlds/*/openings.yaml` and supersedes the stale
+> 2026-05-19 "Worlds (lobby-selectable)" claims for elemental_harmony,
+> heavy_metal, spaghetti_western, and the three newly-promoted packs.
+
+| Genre Pack | Worlds (filesystem, with openings.yaml) | Genre YAMLs | Audio (in-repo) | Images (in-repo) | Tier | Notes |
+|-----------|------------------------------------------|-------------|-----------------|------------------|------|-------|
 | caverns_and_claudes | 1 (**beneath_sunden** — single-shaft procedural megadungeon, ADR-106; surface anchor authored, deep is runtime) | 27 | 24 | 19 | 1 | Reference pack; only pack with portrait images committed locally. The prior `caverns_sunden` hamlet world is deprecated (PR #228) |
-| elemental_harmony | **0** (worlds parked in workshopping pending review) | 20 | 121 | LFS-only | 2 | Pack runtime present; no lobby-selectable world. Most ACE-Step params (121); gold-standard variation coverage |
+| elemental_harmony | 2 (**burning_peace**, **shattered_accord** — both have openings.yaml in genre_packs as of 2026-05-28; *2026-05 "parked" note below is stale*) | 20 | 121 | LFS-only | 2 | Most ACE-Step params (121); gold-standard variation coverage |
 | mutant_wasteland | 1 (flickering_reach — fully spoilable) | 22 | 96 | LFS-only | 1 | Mutation / flickering theme |
-| space_opera | 1 (coyote_star — flagship for magic + rig MVP; aureate_span parked) | 22 | 62 | LFS-only | 2 | coyote_star is the Epic 47 flagship; missing archetype/trope coverage |
-| tea_and_murder | 1 (`glenross` — Highland village Edwardian Scotland c. 1908; blackthorn_moor parked) | 22 | 1 | LFS-only | 1 | Public-domain classical music served from R2, no ACE-Step params; full world file set |
-| **spaghetti_western** ⚠️ | 0 (server load blocked by drift) | 26 | 54 params (OGG in flight) | 16 portraits + 28 POIs in flight | drift-blocked | **Promoted 2026-05-19** from workshopping. Worlds `dust_and_lead` (Mexican border town) + `the_real_mccoy` (1878 industrial Pittsburgh). Server load blocked by 9 wire-required drift fields (standoff, reputation, luck, per-tier unlocks) — see `docs/content-drift-triage.md`. |
-| **heavy_metal** ⚠️ | none in production | **0** | 0 | 0 | shell | **State inconsistency:** production directory is an empty shell. Actual content still in `genre_workshopping/heavy_metal/`. |
+| space_opera | 2 (**coyote_star** — Epic 47 magic+rig flagship, now **SWN ruleset** for combat; **aureate_span** also has openings.yaml as of 2026-05-28) | 22 | 62 | LFS-only | 2 | coyote_star binds `ruleset: swn` (combat live, e2e green 2026-05-27); see Per-Pack Notes for caveats |
+| tea_and_murder | 1 (`glenross` — Highland village Edwardian Scotland c. 1908; blackthorn_moor still workshop-parked) | 22 | 1 | LFS-only | 1 | Public-domain classical music served from R2, no ACE-Step params; full world file set |
+| spaghetti_western | 3 (**dust_and_lead** — Mexican border town; **the_real_mccoy** — 1878 industrial Pittsburgh; **five_points** — new world) | 26 | 54 params (OGG in flight) | 16 portraits + 28 POIs in flight | 2 | **Promoted 2026-05-19**; new `five_points` world added since. Earlier "drift-blocked / 0 worlds" status is superseded — all three worlds have openings.yaml. If standoff/reputation/luck engine wiring is still owed, that is an engine-enforcement gap, not a load blocker (see `docs/content-drift-triage.md`) |
+| heavy_metal | 2 (**evropi**, **long_foundry**) | — | varies | gate pending | 2 | **Re-promoted 2026-05-23** (loads clean per root CLAUDE.md). Earlier "empty shell" status is superseded. Asset gate (portraits, POIs, OGG) not yet met |
+| neon_dystopia | 1 (**franchise_nations**) | — | ~48 | gate pending | 3 | **Promoted 2026-05-23**; world-tier openings.yaml now authored. Asset gate (portraits, POIs, OGG) not yet met |
+| pulp_noir | 1 (**annees_folles**) | — | ~42 | gate pending | 3 | **Promoted 2026-05-23**; world-tier openings.yaml now authored. Asset gate (portraits, POIs, OGG) not yet met |
+| road_warrior | 1 (**the_circuit**) | — | ~147 | gate pending | 3 | In `genre_packs/` with world openings. Engine GAP: `chase_depth` (Rig HP, fuel, damage tiers) was Rust-only and did not port — ADR-087 RESTORE P2 |
 
-**Functionally loadable today.** Five packs have pack-level YAML and load cleanly; the lobby world picker shows **4 worlds** (`beneath_sunden`, `flickering_reach`, `coyote_star`, `glenross`). `elemental_harmony` has no lobby-selectable world (both worlds parked). `spaghetti_western` was promoted 2026-05-19 with full content but is server-load-blocked by 9 wire-required schema-drift fields. The `heavy_metal` production directory remains an empty shell.
+**Filesystem reality (verified 2026-05-28).** All **10** pack directories in
+`genre_packs/` have at least one world with an authored `openings.yaml`. The
+fullest production worlds remain `beneath_sunden`, `flickering_reach`,
+`coyote_star`, and `glenross` (tier-1/2 with assets); heavy_metal,
+neon_dystopia, pulp_noir, and road_warrior load but have not cleared the asset
+gate (portraits / POI landscapes / generated OGG — see each pack's README).
+spaghetti_western has three worlds with openings. The **distinction that still
+matters** is no longer "directory exists vs empty shell" — it is **"loads with
+world openings" (all 10) vs "cleared the full asset + playtest promotion gate"
+(the 4 flagship worlds)**.
 
 ### Workshopping — `genre_workshopping/` (NOT loaded at runtime)
 
+> **2026-05-28 update.** Most rows in this table have moved. As of 2026-05-28
+> the filesystem shows `burning_peace`, `shattered_accord` (elemental_harmony),
+> `aureate_span` (space_opera), `franchise_nations` (neon_dystopia),
+> `annees_folles` (pulp_noir), `the_circuit` (road_warrior), and `evropi` +
+> `long_foundry` (heavy_metal) all living in **`genre_packs/`** with authored
+> `openings.yaml` — i.e. they are no longer workshop-parked. The genuinely
+> still-workshop entries are `low_fantasy/shattered_reach` and
+> `tea_and_murder/blackthorn_moor`. The rows below are retained as M2-era
+> history; trust the `find` result over them where they conflict.
+
 | Pack | Worlds | Status |
 |------|--------|--------|
-| elemental_harmony | burning_peace, shattered_accord | **Parked from production 2026-05** (M2 reshuffle). Pack runtime still in production; worlds awaiting completeness review |
-| space_opera | aureate_span | **Parked from production 2026-05** (M2). coyote_star remains in production |
-| tea_and_murder | blackthorn_moor | **Parked from production 2026-05** (M2). Pack runtime still in production |
-| low_fantasy | shattered_reach | Active workshop — gritty medieval; substantive YAML, audio, images |
-| neon_dystopia | franchise_nations | Active workshop — cyberpunk |
-| pulp_noir | annees_folles | Active workshop — 1930s detective |
-| road_warrior | the_circuit | Active workshop — vehicular post-apocalypse |
-| heavy_metal | evropi, long_foundry | Full YAML set lives here; production shell exists but is empty |
+| low_fantasy | shattered_reach | **Still workshop** — gritty medieval; substantive YAML, audio, images. No `genre_packs/low_fantasy/` directory |
+| tea_and_murder | blackthorn_moor | **Still workshop** — parked 2026-05 (M2); pack runtime in production but this world not promoted. `glenross` is the live tea_and_murder world |
+| ~~elemental_harmony~~ | ~~burning_peace, shattered_accord~~ | **Moved to `genre_packs/`** — both worlds now have openings.yaml (was: parked 2026-05 M2) |
+| ~~space_opera~~ | ~~aureate_span~~ | **Moved to `genre_packs/`** — aureate_span now has openings.yaml (was: parked 2026-05 M2) |
+| ~~neon_dystopia~~ | ~~franchise_nations~~ | **Promoted to `genre_packs/` 2026-05-23** (asset gate pending) |
+| ~~pulp_noir~~ | ~~annees_folles~~ | **Promoted to `genre_packs/` 2026-05-23** (asset gate pending) |
+| ~~road_warrior~~ | ~~the_circuit~~ | **Moved to `genre_packs/`** — the_circuit has openings.yaml (chase engine still unported) |
+| ~~heavy_metal~~ | ~~evropi, long_foundry~~ | **Re-promoted to `genre_packs/` 2026-05-23** (loads clean; asset gate pending) |
 
 ### Tiers
 
@@ -55,18 +102,21 @@ Four changes since the prior snapshot are load-bearing for reading the tables be
 
 ### Pack churn since the port
 
-Four packs that appeared in earlier (Sprint 2-era) audits — `low_fantasy`,
-`neon_dystopia`, `pulp_noir`, `road_warrior` — were moved into
-`genre_workshopping/` during the port era. They are not removed; they simply
-do not meet the production gate yet (full YAML set, generated portraits +
-POI landscapes, indexed audio, end-to-end playtest). `heavy_metal` was added
-during the port era; promotion is incomplete.
+During the port era, four packs — `low_fantasy`, `neon_dystopia`, `pulp_noir`,
+`road_warrior` — were moved into `genre_workshopping/`, and `heavy_metal` was
+added there. **That has since reversed (2026-05-23):** `neon_dystopia`,
+`pulp_noir`, `road_warrior`, and `heavy_metal` are now back in `genre_packs/`
+with authored world `openings.yaml`. Only `low_fantasy` remains workshop-only.
+The four returned packs still owe the **asset gate** (generated portraits +
+POI landscapes + OGG) and an end-to-end playtest before they reach flagship
+tier, but they load.
 
-The **2026-05 M2 reshuffle** parked four formerly-production worlds back
-into workshopping — `aureate_span`, `burning_peace`, `shattered_accord`, and
-`blackthorn_moor`. The pack-level runtime YAML for `elemental_harmony`,
-`space_opera`, and `tea_and_murder` remains in production; only their worlds
-moved. `caverns_and_claudes` was subsequently restructured again on
+The **2026-05 M2 reshuffle** had parked four formerly-production worlds into
+workshopping — `aureate_span`, `burning_peace`, `shattered_accord`, and
+`blackthorn_moor`. **As of 2026-05-28 the first three are back in
+`genre_packs/`** with `openings.yaml` (only `blackthorn_moor` remains parked).
+The pack-level runtime YAML for `elemental_harmony`, `space_opera`, and
+`tea_and_murder` was always in production. `caverns_and_claudes` was subsequently restructured again on
 2026-05-17 by **ADR-106**: the briefly-consolidated `caverns_sunden` hamlet
 (commit `fe09971`) was deprecated (PR #228) in favor of `beneath_sunden`,
 a single-shaft procedural-megadungeon world whose deep is runtime-generated.
@@ -136,7 +186,7 @@ rules are LLM-interpreted at narration time unless noted.
 | caverns_and_claudes | Standard fantasy 6 | Dungeon crawl, room graph navigation, **procedural megadungeon (ADR-106)** | Room graph engine (`game/room_movement.py`, ADR-055) + Sünden Deep expansion engine + Complication Ledger (ADR-106, closed 2026-05-17) |
 | elemental_harmony | Harmony, Spirit + 4 | High magic, martial arts | LLM-interpreted |
 | mutant_wasteland | Brawn, Reflexes, Toughness, Wits, Instinct, Presence | Mutation system, no magic | LLM-interpreted |
-| space_opera | Physique, Reflex, Intellect, Cunning, Resolve, Influence | Ship Block, Ship Combat, Crew Bonds, Found Family | LLM-interpreted |
+| space_opera | Physique, Reflex, Intellect, Cunning, Resolve, Influence (SWN-mapped: Physique→STR, Resolve→CON, Reflex→DEX, Intellect→INT, Cunning→WIS, Influence→CHA; SWN modifier curve) | **SWN ruleset** (`ruleset: swn`): ablative HP (HpPool current/max/base_max), Firefight + Ship Combat both resolve d20 + attack_bonus + combat_skill + attr_mod vs Armor Class → damage ablates HP, 0 HP = `hp_depletion` victory. Crew Bonds (advantage on bond-protect actions), Found Family | **SWN engine for combat** (personal + ship; hull = HP, ship AC 14, flat armor soak). Caveats: SWN skill checks (2d6), saves, initiative (1d8) coded in the `swn` module but **not yet routed from the orchestrator**; chargen has no per-class HP tables yet (defaults to 10 HP); non-combat confrontations (negotiation, pursuit, dogfight) still use native dial rules |
 | tea_and_murder | **Angst, Pride, Humour, Nerve, Cunning, Passion** | Emotional ability scores, class-stratified society | LLM-interpreted |
 
 ### Workshop genres (mechanics designed but pack not in production)
@@ -192,7 +242,7 @@ and applies them narratively. Risk: LLM may forget or drift mid-session.
 | Luck resource pool | spaghetti_western (workshop) | Spendable resource with no engine tracking | Confrontation Engine restoration |
 | Humanity Tracker | neon_dystopia (workshop) | Degrades at thresholds (50/25/0) — engine could enforce | Confrontation Engine restoration |
 | Heat Tracker | pulp_noir (workshop) | 0-5 scale affecting faction behavior | Confrontation Engine restoration |
-| Ship Block (separate HP pool) | space_opera | Like Rig HP but for ships | RESTORE P2 (after chase engine pattern lands) |
+| ~~Ship Block (separate HP pool)~~ — superseded | space_opera | Ship Combat now resolves on the **SWN engine** (hull = ablative HP, AC 14, flat armor soak, `hp_depletion` victory) rather than an LLM-interpreted separate pool. The old "Ship Block" RESTORE-P2 item is closed for combat. Non-combat ship maneuvers (pursuit, dogfight) still use native dials | **Closed for combat** (SWN, e2e green 2026-05-27) |
 | Rig HP / damage tiers / Fuel | road_warrior (workshop) | All `chase_depth` mechanics | **RESTORE P2** per ADR-087 (ADR-017 still accepted) |
 
 ### Gaps where engine has data but UI doesn't show
@@ -266,7 +316,9 @@ Genre packs can declare any mood string and map it to tracks or core moods.
 ### space_opera (production)
 - **One lobby-selectable world** post-M2: `coyote_star` (renamed from coyote_reach 2026-05-01; flagship for Epic 47 magic + rig MVP). `aureate_span` is parked in workshopping.
 - Chapter→trope wiring engaged for coyote_star (content PR #209).
-- Ship Block mechanic mirrors road_warrior's Rig HP pattern. Both ride on the absent chase engine.
+- **Now binds the SWN (Stars Without Number) ruleset** (`ruleset: swn` in `rules.yaml`; e2e tests green 2026-05-27). The six native attributes survive but are SWN-mapped (Physique→STR, Resolve→CON, Reflex→DEX, Intellect→INT, Cunning→WIS, Influence→CHA) and use the SWN modifier curve. Combat — **both personal (Firefight) and Ship Combat** — resolves d20 + attack_bonus + combat_skill + attr_mod vs Armor Class; damage ablates first-class HP (HpPool current/max/base_max), 0 HP = `hp_depletion` victory. Ship hull is the HP pool (ship AC 14, flat `armor` soak). `stat_display_fields` exposes hp/max_hp/armor to players.
+  - **Honest caveats:** (a) SWN skill checks (2d6+skill+attr), the 3-category saves, and 1d8+DEX initiative are coded in the `swn` module but **not yet routed from the narrator orchestrator** (deferred). (b) Chargen does not yet author per-class HP tables (`base_max_by_class`), so characters currently default to **10 HP**. (c) Non-combat confrontations (negotiation, pursuit, dogfight) still use the **native dial rules**, not SWN resolution.
+  - Note: the descriptive `custom_rules.ship_combat` prose in `rules.yaml` ("Ships don't have HP") predates the SWN wiring; the live combat path is the `confrontations` block, where ship_combat resolves via attack-vs-AC + `hp_depletion`.
 - 62 in-repo ACE-Step params; OGGs in R2.
 
 ### tea_and_murder (production — `glenross` live; `blackthorn_moor` parked)
@@ -278,22 +330,28 @@ Genre packs can declare any mood string and map it to tracks or core moods.
 - Extra YAML files unique to tea_and_murder: achievements, beat_vocabulary, power_tiers, magic, classes, equipment_tables.
 - The `victoria` → `tea_and_murder` rename completed 2026-05; all references should use the new slug.
 
-### heavy_metal (production shell + workshop)
-- **Production state inconsistency.** `genre_packs/heavy_metal/` exists with empty `images/` and `worlds/` only — no `pack.yaml`, no rules. The actual content is in `genre_workshopping/heavy_metal/` with two worlds (evropi, long_foundry) and full YAML set.
-- Either complete the promotion or remove the empty production directory; current state is a footgun for the genre loader.
+### heavy_metal (production — re-promoted 2026-05-23)
+- **Re-promoted to `genre_packs/` 2026-05-23** (per root CLAUDE.md: loads clean). Two worlds, **evropi** and **long_foundry**, both with `openings.yaml`. The earlier "empty production shell" state is resolved.
+- **Asset gate not yet met** — portraits, POI landscapes, and generated OGG still owed before this counts as a flagship-tier playable world.
+- Push-currency / pact_working magic references live here.
 
-### spaghetti_western (production shell + workshop)
-- **Same inconsistency as heavy_metal.** Production directory empty; workshop has dust_and_lead and the_real_mccoy plus 16/16 genre files.
-- Standoff system is the signature mechanic — no engine enforcement; awaits Confrontation Engine restoration.
+### spaghetti_western (production — promoted 2026-05-19, +five_points since)
+- **Three worlds with openings.yaml:** `dust_and_lead` (Mexican border town), `the_real_mccoy` (1878 industrial Pittsburgh), and the newer `five_points`. The earlier "production shell / drift-blocked / 0 worlds" status is superseded.
+- Standoff system + Luck resource are the signature mechanics — engine enforcement is still owed (Confrontation Engine restoration); that is an enforcement gap, not a load blocker.
 
-### road_warrior (workshop)
-- the_circuit fully developed at world level.
+### road_warrior (production — has world openings; chase engine unported)
+- In `genre_packs/` with `the_circuit` world openings authored.
 - Was the **most engine-supported genre** pre-port (Rust `chase_depth` implemented Rig HP, fuel, damage tiers, chase beats). **Did not port.** ADR-087 verdict: RESTORE P2.
-- 10 faction music themes (Bosozoku through Dekotora) tracked in `audio.yaml`.
+- 10 faction music themes (Bosozoku through Dekotora) tracked in `audio.yaml`. Asset gate still pending.
 
-### low_fantasy / neon_dystopia / pulp_noir (workshop)
-- All have a full primary world but await production promotion (full YAML set + image/audio coverage + playtest).
-- Mechanics noted in the table above remain LLM-interpreted; engine restoration deferred to per-genre work after the Confrontation Engine port-drift verdict lands.
+### neon_dystopia / pulp_noir (production — promoted 2026-05-23, asset gate pending)
+- Both promoted to `genre_packs/` 2026-05-23; world-tier `openings.yaml` now authored (`franchise_nations` and `annees_folles` respectively), so both load.
+- **Asset gate not yet met** (portraits, POI landscapes, generated OGG) — not yet flagship-playable.
+- Genre mechanics (Humanity/Net Combat; Heat/Occult) remain LLM-interpreted pending Confrontation Engine restoration.
+
+### low_fantasy (workshop only)
+- Full primary world (`shattered_reach`) but no `genre_packs/low_fantasy/` directory — awaits promotion (full YAML set + image/audio coverage + playtest).
+- Mechanics remain LLM-interpreted (workshop only).
 
 ## Promotion Checklist
 
@@ -306,5 +364,9 @@ A pack is ready to move from `genre_workshopping/` to `genre_packs/` when:
 - A successful end-to-end playtest run exists in the session archive
 - `cd sidequest-server && uv run pytest tests/test_content_audit.py` passes with the pack on path
 
-The two production-shell packs (heavy_metal, spaghetti_western) violate this
-gate by being half-promoted. Decide per-pack: complete or roll back.
+As of 2026-05-28 the "empty production shell" problem is gone — all 10 packs in
+`genre_packs/` load with world openings. The remaining promotion work is the
+**asset + playtest gate** (portraits, POI landscapes, generated OGG, e2e run)
+for heavy_metal, neon_dystopia, pulp_noir, and road_warrior, plus the
+engine-enforcement debt (standoff/luck for spaghetti_western; chase engine for
+road_warrior). These are completeness gaps, not load blockers.

@@ -1,5 +1,5 @@
 ---
-id: 95
+id: 97
 title: "Class Mechanical Surface — One Signature Ability Per Non-Magical Class"
 status: accepted
 date: 2026-05-10

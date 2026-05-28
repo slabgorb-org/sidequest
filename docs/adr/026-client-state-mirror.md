@@ -46,3 +46,27 @@ WebSocket is reliable-ordered, so deltas arrive in order. Full state sync occurs
 - Server must compute and include state deltas with every narration
 - Slash commands are purely client-side (zero server cost)
 - Reconnect sends full state snapshot
+
+## Amendment 2026-05-28 — Implementation reconciliation
+
+The §Server Responsibility prose ("Every `NARRATION` and `TURN_STATUS`
+message includes an optional `state_delta` field") is correct on the word
+"optional" but the example and §Consequences ("include state deltas with
+*every* narration") read as if a delta is always populated. In code it is
+**nullable and frequently omitted** — a pure-narration turn with no state
+change carries `state_delta=None`, and that is a first-class valid wire shape.
+
+- The field is declared optional on all three payloads:
+  `state_delta: StateDelta | None = None` at
+  `sidequest-server/sidequest/protocol/messages.py:80`, `:318`, `:497`.
+- Wire parity: `NarrationEndPayload(state_delta=None)` is **omitted from the
+  serialized wire** (Rust `Option::is_none` parity) — see
+  `sidequest-server/tests/protocol/test_wire_parity.py:54`
+  (`test_narration_payload_omits_none_state_delta`) and the populated-case
+  counterpart at `:69`.
+- A populated `state_delta=None` payload is constructed and exercised in
+  tests (`sidequest-server/tests/protocol/test_messages.py:208`).
+
+Client implication: consumers must treat `state_delta` as possibly-absent and
+simply skip the mirror merge when it is null — they must not assume every
+NARRATION/TURN_STATUS carries one.
