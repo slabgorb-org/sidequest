@@ -140,7 +140,7 @@ stories:
     description: "Asset generation scripts gate regeneration on LOCAL disk existence only (render_common.py:503 'if out_path.exists() and not force'). PNGs are gitignored, so on any clone without locally-generated images the gate reports every asset 'missing' and regenerates assets already on R2 — wasting GPU/time/cost. generate_poi_images.py:167 is worse: hardcodes force=True and always regenerates. Fix: at run start list the live R2 bucket under the target genre_packs/ prefix once (boto3 list_objects_v2, reusing r2_sync_packs._build_client) and skip any render item whose expected R2 key is already uploaded — even when the local file is absent. Replaces the descoped 65-2 AC6 ledger/retention audit framing; the runtime asset_ledger is a separate concern and is NOT touched. Repo: orchestrator scripts/ only."
     points: 2
     priority: p2
-    status: in_progress
+    status: done
     repos: orchestrator
     workflow: tdd
     acceptance_criteria:
@@ -150,5 +150,6 @@ stories:
       - generate_poi_images.py no longer hardcodes force=True; POIs honor the same R2 skip and gain a --force flag matching generate_portrait_images.py.
       - Expected-key mapping uses the r2_sync 1:1 relative-path convention (genre_packs/...) so keys align with what r2_sync_packs actually uploads.
       - R2 listing failure (missing creds/endpoint or ClientError) aborts loudly with a clear error — no silent fallback to 'regenerate everything' (per CLAUDE.md no-silent-fallbacks).
+    completed: '2026-05-28'
     branch: feat/65-5-runtime-artifact-r2-audit
     session_file: .session/65-5-session.md
