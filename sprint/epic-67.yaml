@@ -34,10 +34,13 @@ stories:
     title: MP peer-visibility consolidation + slow-typist reassurance (one canonical surface, Composing/Sealed/Resolving)
     points: 3
     priority: p2
-    status: backlog
+    status: in_progress
+    assigned_to: slabgorb
+    started: '2026-05-28'
     repos: ui
     workflow: trivial
     type: bug
+    branch: feat/67-3-mp-peer-visibility-consolidation
   - id: 67-4
     title: MP identity mapping (player-vs-character) — stop rendering doubled 'X— X' header
     points: 3
