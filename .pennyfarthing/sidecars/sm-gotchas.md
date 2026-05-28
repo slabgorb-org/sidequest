@@ -123,3 +123,21 @@ but it's a live hazard: testing-runner treats the session path as a scratchpad.
 Mitigation: when a phase owner (Dev/TEA) will spawn testing-runner, constrain its write
 target in the spawn prompt (explicit output path that is NOT the session file), or have
 them snapshot the session before running tests. Watch for it at verify/green phases.
+
+## Peloton merge race: SM-flagged hazards land after the reviewed commit (2026-05-28)
+On 71-3 (peloton), Dev reported IMPLEMENT complete at commit A (549e33e). I then (a)
+relayed two new AC-4 hazards the Reviewer raised AND (b) advanced the phase to review in
+parallel. Dev acted on the hazards and committed the hardening as commit B (b1b8221)
+WHILE the Reviewer approved commit A and I merged commit A to develop (#292). Result:
+develop got the PARTIAL fix; the complete hardened version (commit B) was pushed but
+unreviewed and not on develop. Recovery: re-hand commit B's delta to the Reviewer, then
+a follow-up PR (feat-tip vs develop diff = exactly commit B since A was squash-merged),
+THEN finish.
+**Lesson:** When Dev reports implement complete, that commit is FROZEN for review. If you
+(SM) flag additional hazards after that report, do NOT advance to review in parallel —
+either wait for Dev to confirm "all hazards folded in, re-froze at commit X" before
+review, or make the hazard-fix an explicit separate follow-up cycle from the start.
+Never let review+merge run concurrently with Dev still acting on your feedback on the
+same branch. Symptom to watch: at finish, `git log develop..feat` shows MORE than the
+one reviewed commit, or the working tree has uncommitted source changes matching the
+story.
