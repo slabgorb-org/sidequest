@@ -35,9 +35,9 @@ SERVER_COVER_POI_REL_TEMPLATE = (
 )
 
 
-def _stub_compose(item: dict, visual_style: dict) -> tuple[str, str, str, int]:
+def _stub_compose(item: dict, visual_style: dict) -> tuple[str, str, int]:
     """Minimal compose_fn — render_batch only needs it to not raise in dry_run."""
-    return ("subject", "clip", "negative", 42)
+    return ("subject", "clip", 42)
 
 
 def _poi_item(*, genre: str, world: str, name: str = "Hakone Gate") -> dict:
@@ -52,7 +52,6 @@ def _poi_item(*, genre: str, world: str, name: str = "Hakone Gate") -> dict:
         "catalog_ref": f"where:{world}/{slugify(name)}",
         "_visual_style": {
             "positive_suffix": "",
-            "negative_prompt": "",
             "base_seed": 42,
         },
     }
@@ -70,7 +69,6 @@ def _portrait_item(*, genre: str, world: str, name: str = "Old Mayor") -> dict:
         "catalog_ref": "",
         "_visual_style": {
             "positive_suffix": "",
-            "negative_prompt": "",
             "base_seed": 42,
         },
     }
@@ -148,17 +146,18 @@ async def test_poi_render_does_not_write_to_legacy_images_poi(capsys):
 
 
 # ===========================================================================
-# Regression guard: portrait routing unchanged
+# AC (Story 65-6): portrait routing moves to worlds/<w>/assets/portraits/
 # ===========================================================================
 
 
-async def test_portrait_render_path_remains_in_images_portraits(capsys):
-    """Portraits keep their current home at `<genre>/images/portraits/`.
+async def test_portrait_render_writes_to_world_scoped_assets_portraits(capsys):
+    """Portraits are world-level FLAVOR (Story 65-6) and must write to
+    `genre_packs/<genre>/worlds/<world>/assets/portraits/<slug>.png` — parity
+    with POIs.
 
-    The POI fix must not accidentally drag portrait output into worlds/<w>/.
-    Portraits are bound to characters, not worlds, and the portrait_manifest
-    resolver expects them at `images/portraits/`. This test passes today and
-    must continue to pass after the POI fix.
+    Pre-65-6 they landed at the genre-flat `<genre>/images/portraits/` and were
+    never displayed. The display wiring (server emitters._resolve_npc_portrait_url)
+    resolves the URL from the world-scoped path, so the render output must match.
     """
     items = [_portrait_item(genre="elemental_harmony", world="burning_peace")]
 
@@ -173,12 +172,35 @@ async def test_portrait_render_path_remains_in_images_portraits(capsys):
 
     out_path = _parse_output_path(capsys.readouterr().out)
     posix = out_path.as_posix()
-    assert "/images/portraits/" in posix, (
-        f"Portrait output drifted from images/portraits/: {out_path}"
+    expected_suffix = (
+        "elemental_harmony/worlds/burning_peace/assets/portraits/old_mayor.png"
     )
-    assert "/worlds/" not in posix, (
-        f"Portrait output incorrectly bridged to a worlds/<w>/ path: {out_path}"
+    assert posix.endswith(expected_suffix), (
+        f"Portrait landed at {out_path}; expected suffix {expected_suffix}. "
+        f"The server's portrait resolver only finds files under "
+        f"worlds/<world>/assets/portraits/."
     )
+    assert "/images/portraits/" not in posix, (
+        f"Portrait output still routed through legacy /images/portraits/ "
+        f"path: {out_path}"
+    )
+
+
+async def test_portrait_render_requires_real_world(capsys):
+    """Story 65-6: a portrait item with no real world (empty or "default")
+    must raise — the world-scoped resolver cannot reach a genre-level entry,
+    so a silent fallback would orphan the file (No-Silent-Fallbacks)."""
+    items = [_portrait_item(genre="elemental_harmony", world="default")]
+
+    with pytest.raises(ValueError, match="must carry a real world"):
+        await render_batch(
+            items,
+            _stub_compose,
+            tier="portrait",
+            image_subdir="portraits",
+            dry_run=True,
+            catalog_compose=False,
+        )
 
 
 # ===========================================================================
