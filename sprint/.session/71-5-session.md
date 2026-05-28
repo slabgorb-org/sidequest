@@ -94,8 +94,8 @@ Per CLAUDE.md, every backend fix touching narration/POV must emit OTEL watcher e
 ## Workflow Tracking
 
 **Workflow:** tdd
-**Phase:** green
-**Phase Started:** 2026-05-28T03:50:53Z
+**Phase:** review
+**Phase Started:** 2026-05-28T04:15:03Z
 
 ### Phase History
 | Phase | Started | Ended | Duration |
@@ -139,6 +139,51 @@ Branch `feat/71-5-mp-opening-narration-pov-swap` off sidequest-server develop (0
   - Severity: minor
   - Forward impact: Reviewer should confirm the real `_run_opening_turn_narration` emits a single driver-anchored `_visibility` sidecar in MP (the test assumes this shape), and that the cold-open seed is stamped (Finding 2).
 - **Requires Postgres**: the connect path persists to PG (ADR-115); the test needs `SIDEQUEST_TEST_DATABASE_URL` and skips cleanly when unset. Environment note, not a spec deviation.
+
+### Dev (implementation)
+- **Driver identity = `sd.player_id`, not the handler `player_id` param**
+  - Spec source: Architect Option (a) seam; AC1 ("driving player's own card")
+  - Spec text: swap the driving player's local opening copy
+  - Implementation: call site passes `driver_player_id=(sd.player_id or player_id)` — the seated driver's session pid — to the helper.
+  - Rationale: the swap must anchor to the player whose seat/PC == the narration's `anchor_pc`; `sd.player_id` is that seated driver. The e2e exposed that its `player_id` literal ≠ the seated pid (gave `character_of(None)`). Flagged to Architect for anchor-identity validation.
+  - Severity: minor (production-correctness)
+  - Forward impact: none — in production `player_id` param == sd.player_id; the `or player_id` keeps the solo/legacy path intact.
+- **View pid→PC map sourced from `sd.snapshot.player_seats` only (no room-slot fallback)**
+  - Spec source: Architect invariant ruling (seat slot == character.core.name == anchor_pc)
+  - Implementation: `SessionGameStateView(player_id_to_character=dict(sd.snapshot.player_seats))`. I briefly added a `room.slot_to_player_id` fallback, then removed it — player_seats is authoritative at opening time and the fallback added 3 pyright errors (`_room`/`items` on mixin/object) for no behavioral gain.
+  - Rationale: simpler, pyright-clean, and correct under the confirmed invariant.
+  - Severity: trivial
+  - Forward impact: none.
+
+## Dev Assessment
+
+**Implementation Complete:** Yes
+**File Changed (commit 7477bb3, pushed):** `sidequest/server/websocket_handlers/chargen_mixin.py` — module helper `_pov_swap_opening_for_driver` (reuses `_apply_pov_swap` + `_pronouns_for_pc`; separate swapped driver copy; `_visibility` stripped on egress; `opening.narration_pov_swapped` OTEL only on swap_count>0) + call-site wiring at the opening block (driver copy via helper; peers get untouched originals).
+**Tests:** 71-5 **6/6 GREEN** (5 helper-unit + 1 e2e); e2e **RAN** (not skipped) with `SIDEQUEST_TEST_DATABASE_URL` set, `-n0`.
+**Lint/Typecheck:** ruff clean; pyright at baseline (17 pre-existing, **zero new**).
+**Full suite:** 8448 passed; the 21 failed/17 errors are pre-existing/environmental (verified `test_chargen_complete_no_hp_leak` fails identically on base — not a regression).
+**Findings:** broader emit_event refactor + peer live-swap → 71-13 (out of scope). No new upstream findings.
+**Handoff:** To review (Colonel Potter), pending Architect (Major Houlihan) firewall/POV spec-check (sd.player_id anchor-identity flagged for her).
+
+## Architect Assessment (spec-check)
+
+**Focus:** Firewall/POV integrity (ADR-104/105, 49-8) + the flagged `sd.player_id` anchor-identity. Verified against GREEN code at `7477bb3`, not the summary.
+
+**Spec Alignment:** Aligned. **Firewall: INTACT.** **No double-swap.** **Anchor identity: correct.**
+
+### Verified
+- **Driver swapped (AC1/AC2):** `_pov_swap_opening_for_driver` runs each opening message's payload through the EXISTING `_apply_pov_swap(recipient_player_id=driver, view, snapshot)` — no reimplemented POV logic. Driver-anchored prose → 2nd person. Generic cold-open seed (no `_visibility`) → natural no-op (the revised Finding-2 ruling — no synthetic stamping). ✓
+- **Peers byte-identical (AC4 / no-regression):** the peer broadcast loop (chargen_mixin.py:1593-1594) iterates the ORIGINAL `opening_messages`, NOT the driver copies. The helper appends the original object on the no-swap path and `msg.model_copy(update={...})` (a fresh object) on the swap path — it never mutates/aliases the originals. So peers receive untouched raw 3rd-person, correct for non-anchor recipients under the single-anchor model. ✓
+- **`sd.player_id` anchor identity (FLAGGED — VALIDATED):** the swap must anchor to the player whose seat/PC == the prose's `anchor_pc`. `sd.player_id` is the seated driver's session pid; the view maps pid→PC from `sd.snapshot.player_seats` (seat slot == `core.name` == `anchor_pc` invariant), so `character_of(sd.player_id) == anchor_pc` → swap fires for the driver. The handler `player_id` param was unreliable (e2e exposed `character_of(param) → None`). **Using `sd.player_id` is correct**; the `(sd.player_id or player_id)` fallback is a safe guard. ✓
+- **OTEL (AC3):** `opening.narration_pov_swapped` fires once (aggregate), only when `total_swap_count > 0`; generic-seed / non-anchor openings emit nothing (GM-panel reflects reality). Count re-derived deterministically via `swap_to_second_person(original, target_name=anchor_pc, pronouns)` — blessed Option-B sourcing, zero peer-path call-site changes. All required attrs present. ✓
+- **No double-swap / no double-delivery:** driver swapped exactly once in the helper; peers never swapped; nothing routes through `emit_event`. The opening's existing delivery is unchanged. ✓
+- **Firewall (Caveat 2, re-confirmed):** private `NARRATION_SEGMENT` messages are not in `opening_messages` (emitted separately via `_emit_event(author=owner)` with owner-only routing), so the raw broadcast carries only the shared `visible_to:"all"` blob + seed. No leak. ✓
+
+### Findings (non-blocking)
+1. **`_visibility` strip is swap-path only.** The driver's swapped card strips `_visibility` (consumed-not-leaked, unit-tested). The driver's NON-swapped cards and the peer broadcast cards still carry `_visibility` on the wire — but that is a PRE-EXISTING condition (peers already receive un-stripped `_visibility` via the raw broadcast today), NOT a 71-5 regression. Recommend folding universal egress-stripping into the **71-13** emit_event-routing follow-up. Note, not block.
+2. **0-replacement swap rebuilds the card.** When the driver IS the anchor but `swap_to_second_person` makes 0 replacements, `_apply_pov_swap` still returns a new dict, so the helper rebuilds the driver's card (identical text, `_visibility` stripped) and counts 0. Harmless — text unchanged, OTEL correctly suppressed. Acceptable.
+
+**Decision:** Proceed to review. Firewall intact, anchor identity correct, contract met, peers unregressed. Reviewer: confirm the e2e peer-bytes assertion and the OTEL event attrs; the anchor-is-a-peer live case remains tracked as 71-13.
 
 ## TEA Assessment (FINAL — reconciled to approved helper seam, commit 0c9cecd)
 

@@ -51,7 +51,7 @@ stories:
     title: MP opening narration — POV-swap the driving player's own card (not raw-bypass)
     points: 3
     priority: p2
-    status: in_progress
+    status: in_review
     started: '2026-05-27'
     repos: sidequest-server
     workflow: tdd
@@ -113,3 +113,11 @@ stories:
     repos: sidequest-ui
     workflow: trivial
     type: chore
+  - id: 71-13
+    title: MP opening live-broadcast bypasses emit_event — route opening through emit_event(author_player_id) for uniform per-recipient POV + perception fanout + event-sourcing (anchor-peer live-swap + visible_to private-segment leak)
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: bug
