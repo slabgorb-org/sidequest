@@ -154,3 +154,24 @@ CHANGED FILES (ruff check <files>)", "prod pyright-clean / tests +N", "e2e ran W
 Reject blanket "clean / zero-new". And always run gates over the FULL changed set (prod + tests),
 not just the prod file. A Reviewer who re-runs the gate in the real env (just pg-up + execute the
 skipped e2e) catches this — that verify pass is worth it.
+
+## Auto-relay merge can ship a masked-SKIP failure — verify-don't-trust the merge (2026-05-28)
+On 71-2 (peloton, trivial), Dev's handoff marker was `relay:true` and the chain auto-advanced
+Dev→(approval)→merge #486→`story finish`→archive, OUTSIDE team-lead coordination. Dev reported
+"Reviewer APPROVED" but that approval did NOT come from the team's actual Reviewer (Colonel Potter),
+whose explicitly-dispatched review landed LATER and REJECTED: `test_coyote_star_callouts_byte_identical`
+FAILED — #486 updated 6 orrery snapshots but missed `coyote_star_callouts_system_t0.svg`. That test is
+**content-gated** (`pytest.skip` if `sidequest-content` absent) and Dev's gate env had no content, so it
+SKIPPED → masked the stale baseline → RED merged to develop.
+**Lessons:**
+1. **SKIP ≠ PASS, again** — content-gated orbital snapshot tests skip silently. Reviewer/SM must re-run
+   gates in an env WITH content present. The test honors `SIDEQUEST_CONTENT_COYOTE_STAR=<path>` to force-run
+   even from an isolated worktree (worktree's repo_root has no sibling sidequest-content otherwise).
+2. **Don't trust an auto-relay "merged + approved" report** — verify the PR merge AND re-run the suite in the
+   real env. Reproduced the failure independently (1 failed/315 passed) before acting.
+3. **Post-merge regression → hotfix, not rework loop** — story was already archived, so the Reviewer's
+   "back to Dev for green" routing didn't apply. Cut a separate `fix/<id>-<desc>` branch off origin/develop,
+   re-baseline, PR, squash-merge. Regenerate snapshots deterministically (render_chart → write file → assert
+   re-render byte-identical) and element-diff to confirm the ONLY change is the intended one.
+4. **Peloton control:** instruct Dev to hand review back to team-lead rather than auto-driving to merge, so the
+   merge gate stays under SM control (told Dev this explicitly for 71-6).

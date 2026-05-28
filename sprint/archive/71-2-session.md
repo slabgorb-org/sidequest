@@ -178,17 +178,17 @@ Dev investigated then stopped at a clean boundary (context limit). Build to this
 
 | # | Specialist | Received | Status | Findings | Decision |
 |---|-----------|----------|--------|----------|----------|
-| 1 | reviewer-preflight | Yes | clean | none | N/A |
-| 2 | reviewer-edge-hunter | Yes | Skipped | disabled | N/A | Disabled via settings |
-| 3 | reviewer-silent-failure-hunter | Yes | Skipped | disabled | N/A | Disabled via settings |
-| 4 | reviewer-test-analyzer | Yes | Skipped | disabled | N/A | Disabled via settings |
-| 5 | reviewer-comment-analyzer | Yes | Skipped | disabled | N/A | Disabled via settings |
-| 6 | reviewer-type-design | Yes | Skipped | disabled | N/A | Disabled via settings |
+| 1 | reviewer-preflight | Yes | findings | 1 (failing snapshot test) | confirmed 1 — `test_coyote_star_callouts_byte_identical` FAILS |
+| 2 | reviewer-edge-hunter | No | Skipped | disabled | N/A — Disabled via settings |
+| 3 | reviewer-silent-failure-hunter | No | Skipped | disabled | N/A — Disabled via settings |
+| 4 | reviewer-test-analyzer | No | Skipped | disabled | N/A — Disabled via settings |
+| 5 | reviewer-comment-analyzer | No | Skipped | disabled | N/A — Disabled via settings |
+| 6 | reviewer-type-design | No | Skipped | disabled | N/A — Disabled via settings |
 | 7 | reviewer-security | Yes | clean | none | N/A |
-| 8 | reviewer-simplifier | Yes | Skipped | disabled | N/A | Disabled via settings |
-| 9 | reviewer-rule-checker | Yes | Skipped | disabled | N/A | Disabled via settings |
+| 8 | reviewer-simplifier | No | Skipped | disabled | N/A — Disabled via settings |
+| 9 | reviewer-rule-checker | No | Skipped | disabled | N/A — Disabled via settings |
 
-**All received:** Yes (2 ran, 0 findings; 7 skipped per settings)
+**All received:** Yes (2 enabled ran; 7 skipped per settings. 1 confirmed HIGH finding from preflight.)
 
 ## Dev Assessment
 
@@ -212,7 +212,7 @@ Dev investigated then stopped at a clean boundary (context limit). Build to this
 
 ## Reviewer Assessment
 
-**Verdict:** APPROVED
+**Verdict:** REJECTED
 
 ### Rule Compliance (Python lang-review checklist)
 
@@ -230,34 +230,40 @@ Checked all 14 rules against changed `.py` files (`render.py`, `chart.py`, `test
 10. **Import hygiene** — No new imports added. ✓
 11. **Input validation** — `center_x/center_y` are floats from internal math operations, not user input. ✓
 12. **Dependency hygiene** — No dependency changes. ✓
-13. **Fix-introduced regressions** — Checked. ✓
+13. **Fix-introduced regressions** — **FAIL.** `test_coyote_star_callouts_byte_identical` fails: `coyote_star_callouts_system_t0.svg` not re-baselined. Dev ran tests in an environment without coyote_star content (skip), missed the failure in the full dev environment. ✗
 14. **State cleanup ordering** — No lifecycle queues/buffers in changed code. ✓
 
 ### Data Flow Traced
 
-SVG text element for orbit ring label: `chart.annotations[engraved_label].curve_along` → `_resolve_curve_along()` → `midpoint=(cx, cy+ry)` where `cy=0.0, ry>0` → `needs_flip=True` → `_engraved_label_textpath(..., needs_upright_flip=True, center_x=cx, center_y=ry)` → `elem["transform"] = f"rotate(180 {cx} {ry})"` — the rotation center is the label's own geometric midpoint, derived from internally-validated `BodyDef` geometry. No user input in the chain.
+SVG text element for orbit ring label: `chart.annotations[engraved_label].curve_along` → `_resolve_curve_along()` → `midpoint=(cx, cy+ry)` where `cy=0.0, ry>0` → `needs_flip=True` → `_engraved_label_textpath(..., needs_upright_flip=True, center_x=cx, center_y=ry)` → `elem["transform"] = f"rotate(180 {cx} {ry})"` — the rotation center is the label's own geometric midpoint, derived from internally-validated `BodyDef` geometry. No user input in the chain. Safe.
 
 ### Observations
 
-[VERIFIED] **TRAP #1 — Rotation around label's own center:** Snapshots confirm `rotate(180 -0.0 333.33...)` pattern — `x=-0.0` is the eccentricity offset (zero for circular orbits), `y=333.33...` is `ry` (always > 0). Test `test_far_arc_flavor_label_rotates_around_own_center_not_origin` asserts `"rotate(180 0 0)"` and `"rotate(180 0.0 0.0)"` are absent. Evidence: `render.py:651 f"rotate(180 {center_x} {center_y})"` with `center_y = midpoint[1] = ry > 0`. Complies with TRAP #1 spec requirement. ✓
+[VERIFIED] **TRAP #1 — Rotation around label's own center:** Snapshots confirm `rotate(180 -0.0 333.33...)` pattern — `x=-0.0` is the eccentricity offset (zero for circular orbits), `y=333.33...` is `ry` (always > 0). Test `test_far_arc_flavor_label_rotates_around_own_center_not_origin` asserts `"rotate(180 0 0)"` and `"rotate(180 0.0 0.0)"` are absent. Evidence: `render.py:651 f"rotate(180 {center_x} {center_y})"` with `center_y = midpoint[1] = ry > 0`. No CSS `transform-origin` anywhere. Complies with TRAP #1. ✓
 
-[VERIFIED] **TRAP #2 — No upper-arc regression:** `test_upper_arc_arc_belt_label_has_no_transform` exercises an arc_belt with `epoch_phase_deg=75, arc_extent_deg=30` → `mid_deg=90` → `y = -r*sin(90°) = -r < 0` → `midpoint[1] < 0` → `needs_flip = False`. SVG contains no `rotate(180)`. Radial and callout code paths at lines 1912-1918 unchanged from base. ✓
+[VERIFIED] **TRAP #2 — No upper-arc regression:** `test_upper_arc_arc_belt_label_has_no_transform` exercises arc_belt at `epoch_phase_deg=75, arc_extent_deg=30` → `mid_deg=90` → `y = -r*sin(90°) = -r < 0` → `needs_flip = False`. `_polar_to_cartesian` confirmed at `render.py:174`: `y = -au * scale * math.sin(rad)` — 90° gives y < 0 (upper). Radial/callout at `render.py:1912-1918` unchanged. Behavioral test passes. ✓
 
-[VERIFIED] **OTEL attribute correctly gated:** `upright_flip_by_body` pre-computed at line 1858-1864; `emit_chart_label_strategy(..., textpath_upright_flip=upright_flip_by_body.get(d.body_id, False))` at line 1878. Non-textpath decisions default to `False`. TEXTPATH decisions use `tp_data[2][1] > 0` — same computation as rendering. Consistent. ✓
+[VERIFIED] **AC5 — `textpath_upright_flip` on existing span:** `emit_chart_label_strategy` in `chart.py:81` gains kwarg `textpath_upright_flip: bool = False`; emitted as `"textpath_upright_flip": bool(textpath_upright_flip)` in the EXISTING `chart.label_strategy` span attributes dict. NOT a new watcher event. Consistent between OTEL emit and SVG render (`tp_data[2][1] > 0` used in both). ✓
 
-[SEC][VERIFIED] **Security — no SVG injection:** `center_x` and `center_y` are Python `float` results of `math.cos`/`math.sin` on internally-validated `BodyDef.semi_major_au` values. No user-controlled input reaches these values. `textpath_upright_flip` OTEL attr is a pure bool (no sensitive data). Confirmed by security subagent: clean on all 6 rules checked. ✓
+[SEC][VERIFIED] **No SVG injection:** `center_x/center_y` are Python `float` from `math.cos`/`math.sin` on `BodyDef.semi_major_au` (YAML config, not user input). Floats cannot contain SVG metacharacters. Security subagent: clean on all rules. ✓
 
-[LOW] **Dead-code else branch** at `render.py:1910-1911`: `g.add(_emit_textpath_label(d, vp))` is unreachable — a body only gets TEXTPATH strategy when it's in `textpath_by_body`, so `tp_data is None` is impossible at that branch. Strictly speaking this is a silent no-flip fallback (soft violation of "No Silent Fallbacks"), but it replicates the pre-existing pre-fix behavior unconditionally. Non-blocking; does not introduce new behavior. Defer to a future cleanup chore.
+[HIGH] **[TEST] Failing snapshot regression — `test_coyote_star_callouts_byte_identical`:** Dev updated 6 snapshots but missed `tests/orbital/snapshots/coyote_star_callouts_system_t0.svg`. The coyote_star world's `last_drift` body has a far-arc orbit textpath label that now correctly gets `rotate(180 -0.0 333.33333333333337)` — but the snapshot wasn't re-baselined. Test fails: `1 failed, 315 passed`. Dev claims "313/313" — this is because dev ran in an environment where the coyote_star content pack was absent (skip, not fail). Blocking.
+
+[LOW] **Dead-code else branch** at `render.py:1910-1911`: `g.add(_emit_textpath_label(d, vp))` fallback fires when `tp_data is None` for a TEXTPATH decision. Arguably unreachable (strategy dispatch only assigns TEXTPATH when annotation resolution succeeded), but soft defensive. Replicates pre-fix behavior. Non-blocking.
 
 ### Devil's Advocate
 
-Could this break? Consider: (1) An author creates a highly eccentric orbit (e = 0.95). The ellipse center shifts to `cx = -a*e*scale` — a large negative value. The midpoint is `(cx, ry) = (-0.95*a*scale, ry)`. The rotation is `rotate(180 {-big_negative} {ry})`. The label rotates 180° around the left-shifted midpoint. Is this correct? Yes — the ellipse path still starts at `(cx, cy-ry)`, passes through the right half at the widest extent, and reaches the bottom at `(cx, cy+ry)`. The 50% point is geometrically correct regardless of eccentricity (proven: the minor-axis tips split the ellipse into two arc-length-equal halves). (2) An arc_belt wraps 360° starting at an unusual angle. mid_deg calculation handles full-circle arcs via trig periodicity. (3) What if `arc_extent_deg = 0.001`? Circumference is essentially 0, textpath circumference check fails, TEXTPATH strategy never chosen, flip never applied. No crash. (4) What if both the flavor layer AND the strategy dispatch apply the flip to the same non-arc_belt body? The label renders twice on top of itself (slightly bolder), both with the correct flip. Cosmetically different but not broken — this is the pre-existing double-render design documented in `_arc_belt_bodies_with_textpath_annotation`. None of these scenarios reveal a correctness issue.
+Could this break? (1) Highly eccentric orbit: `cx = -a*e*scale` shifts the center off the y-axis. `midpoint = (cx, cy+ry)`. Rotation is `rotate(180 {cx_neg} {ry})`. Correct — the ellipse's 50% point is always the geometric bottom regardless of eccentricity (the two arcs split the path evenly at top/bottom). (2) Arc_belt crossing 0°/360° boundary: `to_deg > 360` possible; `_polar_to_cartesian` uses `math.cos`/`math.sin` which are periodic, so `mid_deg = 382` is equivalent to `mid_deg = 22`. No wrapping bug. (3) `arc_extent_deg = 0.001`: circumference ≈ 0, TEXTPATH strategy never chosen, flip never applied. (4) The new code computed the flip twice — once for OTEL, once for SVG render. Both use `midpoint[1] > 0` on the same `tp_data[2]`. They can't diverge. (5) The coyote_star snapshot failure (already found): this IS what the devil would exploit — Dev ran tests in an environment without the content pack, masked the failure, and shipped. The gate would have caught it on merge CI. **Verdict: one real finding (the snapshot regression); no hidden correctness bugs.**
 
-**Pattern observed:** Geometric midpoint threading through `_resolve_curve_along` return tuple — clean, algebraically exact, no fragile string parsing. Evidence: `render.py:535` for orbit case, `render.py:570` for arc case.
+**Pattern observed:** Geometric midpoint threading through return tuple — algebraically exact, no fragile path_d string parsing. `render.py:535` for orbit_* case, `render.py:570` for arc_belt case.
 
-**Error handling:** Invalid `arc_extent_deg` (None) is guarded by existing `if body.arc_extent_deg is None: raise ValueError` at `render.py:548-556`. Malformed `curve_along` values raise `ValueError` that propagates up from `_resolve_curve_along`. Unchanged from pre-fix behavior.
+**Error handling:** `arc_extent_deg = None` guarded by `raise ValueError` at `render.py:548-556` (unchanged). `curve_along` failures raise `ValueError` that propagates cleanly. Unchanged from base.
 
-**Handoff:** To SM (Hawkeye Pierce) for finish-story
+| Severity | Issue | Location | Fix Required |
+|----------|-------|----------|--------------|
+| [HIGH] | Snapshot `coyote_star_callouts_system_t0.svg` not re-baselined; `test_coyote_star_callouts_byte_identical` fails | `tests/orbital/snapshots/coyote_star_callouts_system_t0.svg` | Re-generate snapshot from current render output (last_drift label now correctly has `rotate(180 -0.0 333.33...)`) and commit. Verify visually that the label is upright. |
+
+**Handoff:** Back to Dev (Major Winchester) — lint/format-only fix. Route to green phase.
 
 ## Delivery Findings
 
@@ -265,7 +271,8 @@ Could this break? Consider: (1) An author creates a highly eccentric orbit (e = 
 - No upstream findings during implementation.
 
 ### Reviewer (code review)
-- No upstream findings during code review.
+- **Gap** (blocking): `tests/orbital/snapshots/coyote_star_callouts_system_t0.svg` not re-baselined after upright-flip change. Affects `tests/orbital/snapshots/coyote_star_callouts_system_t0.svg` (must be re-generated to include `rotate(180 -0.0 333.33...)` on the `last_drift` label). *Found by Reviewer during code review.*
+- **Gap** (non-blocking): Dev ran test gates in an environment without `sidequest-content` installed (coyote_star skip, not fail), masking the snapshot regression. Affects dev testing discipline (run `just server-test` from the monorepo root where content is co-located). *Found by Reviewer during code review.*
 
 ## Next Steps
 
