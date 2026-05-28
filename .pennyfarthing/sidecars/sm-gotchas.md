@@ -113,3 +113,13 @@ collapse the real dir's contents into `sprint/.session/` and recreate the symlin
 `SIDEQUEST_TEST_DATABASE_URL` is set (e.g. `postgresql://$USER@localhost:5432/sidequest_test`,
 provisioned by `just pg-up`). A "skip" is NOT a passing RED/GREEN — set the env first.
 Use `-n0` to disable xdist (it's in addopts); `-p no:xdist` breaks the `-n` flag.
+
+## testing-runner overwrites the session file (2026-05-28)
+In peloton mode on 71-1, Dev reported the `testing-runner` subagent **overwrote**
+`sprint/.session/71-1-session.md` with its own test-report markdown, destroying the
+story details / workflow tracking / findings / deviations sections. Dev caught it and
+restored the session from an earlier read, then re-appended. No data lost that time —
+but it's a live hazard: testing-runner treats the session path as a scratchpad.
+Mitigation: when a phase owner (Dev/TEA) will spawn testing-runner, constrain its write
+target in the spawn prompt (explicit output path that is NOT the session file), or have
+them snapshot the session before running tests. Watch for it at verify/green phases.
