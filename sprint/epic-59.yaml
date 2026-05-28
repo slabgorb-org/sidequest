@@ -237,15 +237,19 @@ stories:
     description: "Solo Fighter is offered other classes' confrontation beats (Backstab/Cast Cantrip/Cast Spell/Turn Undead/Pray for Aid). Root cause (confirmed 2026-05-26): beats reach clients via TWO racing mechanisms (Story 49-7) — an unfiltered full-union CONFRONTATION broadcast + a per-PC class-filtered overlay queued behind it (UI is last-message-wins). Mechanical trigger: emitters.py project_emitter = author_player_id is not None; the CONFRONTATION emit passes no author, so the emitter raw-bypasses the ADR-105 projection firewall (Invariant 3) and out_to_self is the raw union. In solo the player IS the emitter -> always gets the union; the overlay loses the race after a flee/reconnect. handlers/connect.py:1474 (resume) filters in one clean call -> correct on first load. Locked design (Keith): ONE delivery path — beat/class logic stays in the encounter layer; canonical union -> EventLog only (never a client socket); one per-recipient class-filtered fan-out to EVERY connected socket including the emitter; delete both overlay loops (wssh:4614-4657, dice.py:667-704); fail LOUD (no silent union fallback) if a seated+connected PC won't resolve. Full plan: docs/superpowers/specs/2026-05-26-confrontation-single-filtered-delivery.md. Branch: feat/confrontation-single-filtered-delivery (sidequest-server). Adjacent firewall surface: 59-9."
     points: 5
     priority: p1
-    status: backlog
-    repos: server
+    status: done
+    started: '2026-05-28'
+    repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
       - Solo Fighter never receives non-Fighter beats on ANY emit path (confrontation start, mid-turn/flee, reconnect) — red-first fixture test on the emitter's own delivered frame
       - No CONFRONTATION full-union payload ever reaches a client socket; EventLog still persists the canonical union row for replay/audit
       - Both overlay loops deleted; emit_event gains a per-recipient payload supplier that also covers the emitter (Invariant 3 overridden for this emit only)
       - confrontation_beat_filter_span fires once per recipient on the single path; existing overlay tests (test_confrontation_per_pc_projection/_call_site_audit/_mp_broadcast) rewritten to the new shape (not reverted); full server suite green
+    completed: '2026-05-28'
+    branch: feat/confrontation-single-filtered-delivery
     type: bug
+    review_verdict: approved
   - id: 59-17
     title: Dogfight confrontation fails to instantiate via production path
     points: 3
@@ -279,3 +283,12 @@ stories:
     workflow: tdd
     completed: '2026-05-28'
     type: bug
+  - id: 59-20
+    title: Route dice mid-turn + connect resume through the single emit_event(per_recipient_payload) supplier; delete room_broadcast(union)
+    description: "Follow-up to 59-16 (single filtered CONFRONTATION delivery). 59-16 converted the post-narration START path + reconnect to the single emit_event(per_recipient_payload=...) supplier (union → EventLog only; one class-filtered frame per socket incl. emitter; fail-loud confrontation.recipient_unresolved span on seated-unresolvable; None→skip for unseated). DEFERRED from 59-16 (left AC2/AC3/AC5 partial): the dice mid-turn/flee path (sidequest/server/dispatch/dice.py:647-692) still does room_broadcast(union) + a separate per-recipient overlay (Story 49-7 mechanism) — in production the overlay wins last-message-wins so flee is common-case-correct, but the union still hits sockets (residual leak on a reconnect racing the mid-turn emit). SCOPE: (1) route dice mid-turn through the same emit_event supplier and DELETE room_broadcast(union) + the overlay loop (dice.py + its caller sidequest/handlers/dice_throw.py); reconcile tests/server/test_dice_throw_confrontation_emit.py (a momentum-sync test on a _StubRoom — needs seating + a class injected, or convert to the real-room harness). (2) dedupe handlers/connect.py:1515-1568 resume against the same supplier (already single-filtered; just share the helper). (3) LOW: in emitters.emit_event, the emitter-absent / legacy-no-EventLog fallbacks (emitters.py:391-397, 625-632) return the canonical union as out_to_self when the emitter can't be identified — return an empty/clear frame instead. (4) optional LOW: wrap confrontation_recipient_unresolved_span in try/except for defense-in-depth (currently convention-consistent unwrapped). Adjacent firewall surface: 59-9 (cross_player redaction). Full context in 59-16 session (sprint/archive/) + spec docs/superpowers/specs/2026-05-26-confrontation-single-filtered-delivery.md §Implementation step 3."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: refactor
