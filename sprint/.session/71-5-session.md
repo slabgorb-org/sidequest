@@ -94,8 +94,8 @@ Per CLAUDE.md, every backend fix touching narration/POV must emit OTEL watcher e
 ## Workflow Tracking
 
 **Workflow:** tdd
-**Phase:** red
-**Phase Started:** 2026-05-28T03:22:37Z
+**Phase:** green
+**Phase Started:** 2026-05-28T03:50:53Z
 
 ### Phase History
 | Phase | Started | Ended | Duration |
@@ -125,7 +125,7 @@ Branch `feat/71-5-mp-opening-narration-pov-swap` off sidequest-server develop (0
 
 ### TEA (test design)
 - **Finding 1 — Gap** (non-blocking, scope check): `room.broadcast()` (session_room.py:865) does NOT POV-swap — it `put_nowait`s the raw message onto every peer queue. So in a LIVE MP session peers receive the raw 3rd-person opening; the swap for peers only happens via event-log projection on RECONNECT (lazy_fill). For single-anchor this is CORRECT (peers are non-anchor → 3rd-person is right). Logged so it's tracked: if a future story wants per-PC openings, the peer live-broadcast path would need routing through `emit_event`. *Found by TEA during test design.*
-- **Finding 2 — Gap** (blocking for AC1 seed): the cold-open seed NARRATION is built as a bare `NarrationPayload(text=...)` with NO `_visibility` sidecar (websocket_session_handler.py:2476). `_apply_pov_swap` no-ops without `anchor_pc`/`pov_strategy`. AC1 wants the SEED swapped too — so Dev must stamp the driver anchor onto the cold-open seed (or the seed won't swap). My test's canned seed carries the sidecar to assert the intended behavior; Dev must make production stamp it. *Found by TEA during test design.*
+- **Finding 2 — RESOLVED (NO stamp)**: the cold-open seed NARRATION is a bare `NarrationPayload(text=...)` with NO `_visibility` sidecar (websocket_session_handler.py:2476). Architect REVISED ruling (2026-05-28) supersedes the earlier "stamp the seed" instruction: **Dev must NOT stamp a synthetic anchor.** Generic seeds are scene-hooks with no PC reference → `_apply_pov_swap` correctly NO-OPS. Tests (commit 0c9cecd) match production: the canned seed carries NO sidecar and asserts it is UNCHANGED; only the driver-anchored PROSE card swaps. *Found by TEA; resolved by Architect.*
 - **Finding 3 — Question** (non-blocking): I recommended a thin `_pov_swap_opening_for_driver(messages, *, driver_player_id, view, snapshot)` helper as the testable seam; team-lead directed the integration harness instead. The test now drives `_chargen_confirmation` end-to-end. If Dev extracts such a helper anyway, a faster unit test could supplement. *Found by TEA during test design.*
 
 ## Design Deviations
