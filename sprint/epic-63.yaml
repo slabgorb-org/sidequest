@@ -161,10 +161,14 @@ stories:
     title: Reference — suppress or author empty Beat-Vocabulary + Achievements sections (cross-pack)
     points: 1
     priority: p3
-    status: backlog
-    repos: server,content
+    status: done
+    started: '2026-05-27'
+    repos: server
     workflow: trivial
+    completed: '2026-05-27'
     type: bug
+    branch: feat/63-11-suppress-empty-reference-sections
+    assignee: slabgorb
   - id: 63-12
     title: Terminal em CSS renders --em-color instead of --accent (chrome archetype)
     description: '2 failures in src/__tests__/chrome-archetype-css.test.ts (terminal emphasis two-channel identity): .narr-text em renders color var(--em-color), test expects var(--accent); em and strong must be distinct channels (accent != primary). Resolve the drift — confirm whether the CSS or the test is authoritative for the two-channel em/strong identity, then align so em rides the accent channel.'
