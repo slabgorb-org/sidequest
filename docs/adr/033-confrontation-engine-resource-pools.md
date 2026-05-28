@@ -382,3 +382,26 @@ replacement for HP and HP is not a replacement for the dials; they are two layer
 resolved in one turn. The push-currency `ResourcePool` machinery (Pillar 2) is
 likewise untouched — ADR-078's `voice`/`flesh`/`ledger` rituals ride it and survive
 ADR-114's supersession of ADR-078. See ADR-114 §2 for the damage-channel design.
+
+## Amendment 2026-05-28 — This is no longer the only engine (ADR-117)
+
+§Alternatives Considered C rejected per-genre engine modules ("Build per-genre
+engine modules (standoff.rs, humanity.rs, etc.) ... Rejected. Violates the
+plugin principle."). [ADR-117](117-pluggable-ruleset-module-system.md) is a
+**scoped reversal** of that rejection: it introduces a pluggable `RulesetModule`
+seam selectable per pack via `ruleset:` in `rules.yaml`, with multiple engine
+modules side by side. ADR-117 is explicit that it does **not** supersede
+ADR-033 — this ADR's dial/confrontation engine survives intact *as the `native`
+module*, the default (ADR-117 §lines 27-28, 53, 57-58).
+
+In code, the ADR-033 engine is now the `native` ruleset module:
+`sidequest-server/sidequest/game/ruleset/native.py` defines
+`NativeRulesetModule` (`slug = "native"`, `native.py:40`) whose docstring states
+"This is ADR-033's confrontation engine, relocated" (`native.py:3`). Its
+`apply_beat` (`native.py:56`) delegates to the same engine entry point
+(`sidequest.game.beat_kinds.apply_beat`, `native.py:10,57`) the §Implementation
+status section above documents. The other shipped module is `swn.py` (Stars
+Without Number); modules resolve through `ruleset/registry.py`, and an unknown
+`ruleset:` name fails loud (`UnknownRulesetError`). Readers reconciling 033
+should treat the dial engine described here as the `native` module of a larger
+pluggable system, not the sole confrontation engine.

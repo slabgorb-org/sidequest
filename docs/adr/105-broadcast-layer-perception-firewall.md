@@ -294,3 +294,78 @@ contain the first's withheld content).
 - Coordination record: `sq-playtest-pingpong.md` HIGH bug entry
   "MP per-recipient perception pipeline runs TWICE…" — authoritative
   scope record (Track A / Track B split, 2026-05-16)
+
+## Amendment 2026-05-28 — Implementation reconciliation (both tracks now live)
+
+A re-audit flagged this ADR as "Track A partially done, Track B
+unimplemented," specifically claiming: (a) `private_prose_segments` does
+NOT exist on `NarrationTurnResult`; (b) per-recipient private-prose
+partitioning is not implemented; (c) `emitters.py` still reads the rotated
+`handler._session_data.player_id` rather than per-row authorship. **All
+three claims are now FALSE** — the code has advanced well past the audited
+state. Both tracks have landed. Re-verified against `sidequest-server/`:
+
+### Track A — per-row emitter authorship: IMPLEMENTED
+
+`emit_event` now takes an explicit `author_player_id` parameter
+(`sidequest-server/sidequest/server/emitters.py:246`) documented as the
+ADR-105 Track A fix (`emitters.py:255-261`). The emitter resolves the
+author per row: `emitter_player_id = author_player_id if author_player_id
+is not None else _rotated_session_player_id` (`emitters.py:300-306`), and
+`project_emitter = author_player_id is not None` (`:308`) drives the
+per-recipient projection pass. The rotated
+`handler._session_data.player_id` is now only the *fallback* for
+single-author turns, not the unconditional read the audit (and original D4)
+described. The NARRATION emit threads the real author:
+`websocket_session_handler.py:1370` passes
+`author_player_id=_mp_author`.
+
+### Track B — content firewall: IMPLEMENTED
+
+- **`private_prose_segments` EXISTS** on the narrator result —
+  `sidequest-server/sidequest/agents/orchestrator.py:470`
+  (`private_prose_segments: list[dict[str, Any]] = field(default_factory=list)`),
+  documented inline as the ADR-105 B3 per-PC private-prose field. It is
+  populated on both backends (`orchestrator.py:3105,3414`) from the
+  narrator's partitioned `game_patch.private_segments`
+  (`orchestrator.py:1194-1222`), with `_scrub_public_prose`
+  (`orchestrator.py:1030`) keeping the shared blob public-safe (B3
+  contract).
+- **D1 fixed — `visible_to` is derived, not hardcoded `"all"`.**
+  `classify_narration_visibility` now lives at
+  `sidequest-server/sidequest/server/visibility_classifier.py:85` (note:
+  moved from the audited `sidequest/agents/...` path) and reads
+  `result.secret_routes` to build per-route `private_segments`
+  (`visibility_classifier.py:163-193`), unioning via `union_visible_to`.
+  The shared NARRATION stays `"all"` *by contract* (public-safe), exactly
+  as B2/B3 specify.
+- **D2 fixed — secret routing is a CoreInvariant.**
+  `sidequest/game/projection/invariants.py` now has a visibility-gated
+  branch: `SECRET_NOTE` was *removed* from `TARGETED_KINDS`
+  (`invariants.py:49-53`) and both `SECRET_NOTE` and `NARRATION_SEGMENT`
+  are handled by reading `_visibility.visible_to`
+  (`invariants.py:59-67,145-176`), failing closed with a
+  `source="invariant:visibility_gated"` span (`:176,251`) — B1 done.
+- **B3 emission — NARRATION_SEGMENT is wired.** Each private segment is
+  emitted as its own `NARRATION_SEGMENT` event routed by `visible_to`:
+  `websocket_session_handler.py:1378` reads `result.private_prose_segments`,
+  `:1424-1426` emits `NARRATION_SEGMENT` with `author_player_id=_owner_pid`
+  (the owning PC), and unroutable segments are **dropped, not leaked**
+  (`:1393-1417`, fail-loud `narration.segment_unroutable` + watcher span).
+  `NarrationSegmentPayload` / `NarrationSegmentMessage` are registered in
+  `server/session_handler.py:34-35,69`.
+- **OTEL.** `narration.segment_routed` (`websocket_session_handler.py:1407`)
+  and the `narration.visibility_classified` extension carrying
+  `private_segment_count` / `private_visible_to`
+  (`visibility_classifier.py:216-219`) both fire, plus the
+  `invariant:visibility_gated` exclusion span.
+
+### Net
+
+ADR-104's tool-layer filtering is live (unchanged). ADR-105's
+broadcast-layer completion — Track A per-row authorship AND Track B content
+firewall (private prose segments, derived `visible_to`, visibility-gated
+CoreInvariant, NARRATION_SEGMENT routing, OTEL) — is **now implemented.**
+The `partial` framing reflected an earlier code state; the firewall the ADR
+specifies is built. (Residual `partial` scope, if any, would be playtest
+re-verification of the leak check, not missing implementation.)

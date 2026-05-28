@@ -8,8 +8,8 @@ supersedes: []
 superseded-by: null
 related: []
 tags: [game-systems]
-implementation-status: partial
-implementation-pointer: 87
+implementation-status: live
+implementation-pointer: null
 ---
 
 # ADR-020: NPC Disposition System

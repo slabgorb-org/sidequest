@@ -123,6 +123,15 @@ Add to `bucket.STABLE_SECTION_NAMES`:
 - `genre_town`
 - `genre_chargen`
 
+> **Superseded in part — see Amendment 2026-05-25 below.** Story 61-11
+> later **demoted `genre_chargen`** (removed from `STABLE_SECTION_NAMES`,
+> now conditionally registered + User-bucketed) and **deferred
+> `genre_extraction` / `genre_keeper_monologue`** (no runtime signal for
+> per-scene relevance; they remain in the allowlist but their attention
+> budget is suboptimal). Only `genre_town` carries forward as originally
+> promoted. The four-section list above is the *as-decided* state; read
+> the 2026-05-25 amendment for the *as-shipped* state.
+
 Each section's registration site at `orchestrator.py:1368–1411` keeps
 the same name, content, and `SectionCategory.Genre`. The attention zone
 is changed from `Valley → Early` so the System-bucket content actually

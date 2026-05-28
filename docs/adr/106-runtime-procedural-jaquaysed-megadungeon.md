@@ -296,3 +296,65 @@ Layer 2 (provably non-looping). AC-5 = exercised through the real
 `materialize → _stage_curate → _parse_curation_verdict` chain. The implemented
 behaviour MUST match this contract exactly; TEA writes RED against it, Dev makes it
 GREEN, no improvisation past what is written here.
+
+### Amendment B — Runtime materializer wiring + OTEL reconciliation (2026-05-28, Architect)
+
+**Status:** Reconciles the §Implementation Status snapshot (which is dated
+2026-05-16 and predates the keystone wiring) against current
+`sidequest-server/`. Does not change clause numbering, frontmatter, or any
+supersession relationship. The spec's §10 decomposition table remains the
+authoritative live tracker.
+
+A re-audit asserted two gaps: (1) the look-ahead materializer
+(`lookahead_worker.py`) is not imported/called from the session dispatch
+path, and (2) the mandated `dungeon.materialize.*` OTEL spans are absent.
+**Both claims are now FALSE** — the keystone (decomposition item 7 / clause
+10 / clause 12) has since landed. The §Implementation Status "Not yet
+designed: async look-ahead materializer + frontier-crossing promotion +
+wiring + OTEL" bullet is stale and is superseded by this amendment.
+
+**Materializer IS wired into the live session path.** `sidequest/dungeon/`
+now carries `lookahead_worker.py`, `session_integration.py`,
+`frontier_hook.py`, and `materializer.py`. The session integration is
+called from production handlers:
+
+- `sidequest-server/sidequest/handlers/connect.py:875` imports
+  `attach_dungeon_to_session`, and `connect.py:879` calls it on session
+  connect — `session._session_data.lookahead_handle =
+  await attach_dungeon_to_session(...)` (null-safe; returns `None` off
+  `beneath_sunden`, a no-op for every other pack). `attach_dungeon_to_session`
+  invokes `register_lookahead_worker` (`session_integration.py:22-24,216`).
+- `sidequest-server/sidequest/server/websocket_session_handler.py:433`
+  imports `detach_dungeon_from_session` and `:437` drains the worker handle
+  before the final save.
+- The movement subsystem consumes the same handle:
+  `sidequest/agents/subsystems/movement.py:40,84,211` thread
+  `lookahead_handle` through dispatch.
+
+This satisfies clause 12's "the materializer is invoked from the real
+session/frontier-crossing path, not only unit-tested." (Wiring tripwire
+test: `tests/dungeon/test_setpiece_attach_wiring.py`, per the server
+CLAUDE.md no-source-text-wiring-tests guidance.)
+
+**The `dungeon.materialize.*` span taxonomy EXISTS in the telemetry
+registry.** `sidequest-server/sidequest/telemetry/spans/dungeon_materialize.py`
+defines context-manager spans for every stage clause 12 mandates:
+`dungeon_materialize_span` (`:327`, the parent),
+`_design_span` (`:350`), `_fill_span` (`:373`), `_mask_span` (`:389`),
+`_curate_span` (`:419`), `_attach_span` (`:486`), `_commit_span` (`:511`),
+plus `frontier_expand_span` (`:527`), `frontier_lookahead_span` (`:548`),
+`frontier_region_transition_span` (`:571`), and the Amendment A spans
+`dungeon_curate_parse_failed_span` (`:435`) /
+`dungeon_curate_degraded_span` (`:460`). `materializer.py:172-181` imports
+and uses them.
+
+**Net status update to §Implementation Status:** the keystone bullet
+("async look-ahead materializer + frontier-crossing promotion + wiring +
+OTEL — the keystone that makes the stack reachable") has moved from "Not
+yet designed" to **shipped/wired.** The data + algorithm layer (already
+recorded as shipped) plus the runtime materializer wiring and OTEL
+instrumentation are now live. Remaining `partial` scope is what the §10
+spec tracker shows beyond this seam (e.g. `beneath_sunden` content
+authoring + `caverns_sunden` retirement, item 8); the runtime-reachability
+bottleneck the original status called "the project's real bottleneck" is
+resolved.

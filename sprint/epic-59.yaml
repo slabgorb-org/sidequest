@@ -200,9 +200,11 @@ stories:
       (3) BLOCKER for AC1: the binding primitive already exists — GameSnapshot.seed_pc_regions() (game/session.py:1085) + auto-seed of seated PCs on any current_region patch (_apply_world_patch_inner, session.py:1268-1270), and run_movement_dispatch already handles no_pc_region fail-loud (test_missing_pc_region_fail_loud passes). NEEDS a concrete production repro: which beneath_sunden surface→deep entry path bypasses seed_pc_regions so run_movement_dispatch fails to resolve? Origin: follow-up bug to PR #456 (movement subsystem). Full evidence: .session/59-12-session.md Delivery Findings (TEA). Movement Phase 1/2/3 just landed (fbe28ce, 407294a) so the bug may already be fixed — confirm repro or downscope to regression.
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-05-28'
     repos: server
     workflow: tdd
+    completed: '2026-05-28'
     type: bug
   - id: 59-13
     title: Chase confrontation write-back — apply beat metric delta, transition Setup->active, seat opponent (INERT-chase dual-dial frozen 0/7)
@@ -216,11 +218,13 @@ stories:
     type: bug
   - id: 59-14
     title: magic_working — load magic_state for worlds with caster classes (or degrade cleanly) so Mage casting isn't a no-op
+    description: 'CLOSED done-by-landed-work 2026-05-28 (reconciliation, no separate PR). magic_state loading is fully wired on develop via init_magic_state_for_session (magic_init.py:98), called from chargen host (chargen_mixin.py:935), MP joiner (chargen_mixin.py:1147), and resume backfill (connect.py:191). Loads learned_v1 seed gated on ClassDef.magic_config for caster-class worlds; degrades LOUDLY for non-caster worlds (magic.init_skipped/init_failed/no_actor_bars/no_catalog watcher events). Casting against None magic_state raises MagicWorkingParseError (narration_apply.py:655), so the no-op is impossible by design. OTEL: magic.init on load, magic.working per cast. Four test suites cover it. Mirrors the 59-18 close pattern. e2e proof folds into 59-15. Context: sprint/context/context-story-59-14.md.'
     points: 3
     priority: p2
-    status: backlog
+    status: done
     repos: server,content
     workflow: tdd
+    completed: '2026-05-28'
     type: bug
   - id: 59-15
     title: 'Engagement e2e validation — beneath_sunden + road_warrior: confrontation/movement/magic actually fire mechanically (OTEL span proof)'
@@ -235,15 +239,19 @@ stories:
     description: "Solo Fighter is offered other classes' confrontation beats (Backstab/Cast Cantrip/Cast Spell/Turn Undead/Pray for Aid). Root cause (confirmed 2026-05-26): beats reach clients via TWO racing mechanisms (Story 49-7) — an unfiltered full-union CONFRONTATION broadcast + a per-PC class-filtered overlay queued behind it (UI is last-message-wins). Mechanical trigger: emitters.py project_emitter = author_player_id is not None; the CONFRONTATION emit passes no author, so the emitter raw-bypasses the ADR-105 projection firewall (Invariant 3) and out_to_self is the raw union. In solo the player IS the emitter -> always gets the union; the overlay loses the race after a flee/reconnect. handlers/connect.py:1474 (resume) filters in one clean call -> correct on first load. Locked design (Keith): ONE delivery path — beat/class logic stays in the encounter layer; canonical union -> EventLog only (never a client socket); one per-recipient class-filtered fan-out to EVERY connected socket including the emitter; delete both overlay loops (wssh:4614-4657, dice.py:667-704); fail LOUD (no silent union fallback) if a seated+connected PC won't resolve. Full plan: docs/superpowers/specs/2026-05-26-confrontation-single-filtered-delivery.md. Branch: feat/confrontation-single-filtered-delivery (sidequest-server). Adjacent firewall surface: 59-9."
     points: 5
     priority: p1
-    status: backlog
-    repos: server
+    status: done
+    started: '2026-05-28'
+    repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
       - Solo Fighter never receives non-Fighter beats on ANY emit path (confrontation start, mid-turn/flee, reconnect) — red-first fixture test on the emitter's own delivered frame
       - No CONFRONTATION full-union payload ever reaches a client socket; EventLog still persists the canonical union row for replay/audit
       - Both overlay loops deleted; emit_event gains a per-recipient payload supplier that also covers the emitter (Invariant 3 overridden for this emit only)
       - confrontation_beat_filter_span fires once per recipient on the single path; existing overlay tests (test_confrontation_per_pc_projection/_call_site_audit/_mp_broadcast) rewritten to the new shape (not reverted); full server suite green
+    completed: '2026-05-28'
+    branch: feat/confrontation-single-filtered-delivery
     type: bug
+    review_verdict: approved
   - id: 59-17
     title: Dogfight confrontation fails to instantiate via production path
     points: 3
@@ -269,9 +277,38 @@ stories:
     type: bug
   - id: 59-19
     title: Dogfight smoke fails to resolve through production path — tests/integration/test_dogfight_playtest_smoke.py::test_three_turn_dogfight_resolves_through_production_path
+    description: 'CLOSED done-by-landed-work 2026-05-28 (reconciliation, no separate PR). The cited test tests/integration/test_dogfight_playtest_smoke.py::test_three_turn_dogfight_resolves_through_production_path PASSES on develop (verified 2026-05-28 with SIDEQUEST_DATABASE_URL + SIDEQUEST_GENRE_PACKS set: 1 passed in 0.41s). Overtaken by 59-17 dogfight-instantiation fix (4bb71a20, PR #475) and SWN shot resolution (3016177f, PR #478); the smoke fixture (tests/fixtures/dogfight_playtest_encounter.py:145-170) was rewritten by 59-17 to drive the live instantiate_encounter_from_trigger primitive, closing exactly the hole 59-19 named. Mirrors the 59-18 close pattern. Context: sprint/context/context-story-59-19.md.'
     points: 3
     priority: p2
-    status: backlog
+    status: done
     repos: server
     workflow: tdd
+    completed: '2026-05-28'
     type: bug
+  - id: 59-20
+    title: Route dice mid-turn + connect resume through the single emit_event(per_recipient_payload) supplier; delete room_broadcast(union)
+    description: "Follow-up to 59-16 (single filtered CONFRONTATION delivery). 59-16 converted the post-narration START path + reconnect to the single emit_event(per_recipient_payload=...) supplier (union → EventLog only; one class-filtered frame per socket incl. emitter; fail-loud confrontation.recipient_unresolved span on seated-unresolvable; None→skip for unseated). DEFERRED from 59-16 (left AC2/AC3/AC5 partial): the dice mid-turn/flee path (sidequest/server/dispatch/dice.py:647-692) still does room_broadcast(union) + a separate per-recipient overlay (Story 49-7 mechanism) — in production the overlay wins last-message-wins so flee is common-case-correct, but the union still hits sockets (residual leak on a reconnect racing the mid-turn emit). SCOPE: (1) route dice mid-turn through the same emit_event supplier and DELETE room_broadcast(union) + the overlay loop (dice.py + its caller sidequest/handlers/dice_throw.py); reconcile tests/server/test_dice_throw_confrontation_emit.py (a momentum-sync test on a _StubRoom — needs seating + a class injected, or convert to the real-room harness). (2) dedupe handlers/connect.py:1515-1568 resume against the same supplier (already single-filtered; just share the helper). (3) LOW: in emitters.emit_event, the emitter-absent / legacy-no-EventLog fallbacks (emitters.py:391-397, 625-632) return the canonical union as out_to_self when the emitter can't be identified — return an empty/clear frame instead. (4) optional LOW: wrap confrontation_recipient_unresolved_span in try/except for defense-in-depth (currently convention-consistent unwrapped). Adjacent firewall surface: 59-9 (cross_player redaction). Full context in 59-16 session (sprint/archive/) + spec docs/superpowers/specs/2026-05-26-confrontation-single-filtered-delivery.md §Implementation step 3."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: refactor
+  - id: 59-21
+    title: 'Decide unseated-spectator CONFRONTATION policy: empty-beats card vs no frame'
+    description: "Follow-up to 59-16. The single filtered CONFRONTATION delivery resolved unseated/lobby sockets as 'receive NOTHING' (supplier returns None → emit_event skips). Rationale: in real MP every player seats a PC, so unseated = spectator with no legal moves; an empty-beats card would be noise. OPEN QUESTION (Architect/Keith to decide): should a connected-but-unseated spectator instead receive an empty-beats active CONFRONTATION card so they see 'a fight is happening' (preserving the 2026-04-26 S2 'peers are notified' intent for non-combatant observers)? If yes: the wssh supplier _confrontation_frame_for should return a build_clear-style empty-beats payload (active=True, beats=[]) for the (None, None) unseated case instead of None, and add a test. If no (current behavior): close as decided. Either way the firm invariant (union never to a socket) is unaffected. Surface: sidequest/server/websocket_session_handler.py supplier."
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: chore
+  - id: 59-22
+    title: Extract shared _deliver_to_connected_recipients helper (dedupe emit_event supplier loop vs _deliver_fanout)
+    description: 'Follow-up to 59-16 (simplify-reuse medium finding, verify phase). The new per_recipient_payload delivery loop in emitters.emit_event (~lines 369-384: iterate connected_player_ids → socket_for_player → queue_for_socket → put_nowait, with _emit_recipient_dropped on socket/queue loss) duplicates the socket/queue dispatch pattern in _deliver_fanout (~lines 89-119). Extract a shared helper, e.g. _deliver_to_connected_recipients(room, recipients, *, message_builder, kind) that both call. The two differ in message construction (the supplier path returns a full message; _deliver_fanout rebuilds from a filtered dict under the C3 model_validate rule with its own try/except) and emitter tracking — so the helper needs a builder-callable abstraction. NOT auto-applied in 59-16 (medium confidence; ~6 lines of guard duplication). Refactor-only; behavior unchanged; covered by existing emit_event + confrontation delivery tests. Affects sidequest/server/emitters.py.'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: refactor

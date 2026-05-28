@@ -3,7 +3,7 @@
 > System design for the SideQuest AI Narrator engine.
 > Python package composition, narrator-primary agent model, three turn modes.
 >
-> **Last updated:** 2026-05-18
+> **Last updated:** 2026-05-28
 > - 2026-04-28: LocalDM preprocessor moved off live turn path
 > - 2026-05-02: Narrator streaming pipeline built end-to-end (dormant behind `SIDEQUEST_NARRATOR_STREAMING=0`, ADR-066)
 > - 2026-05-07: Magic prompt made plugin-aware proactive on innate-active worlds
@@ -12,7 +12,10 @@
 > - 2026-05-10: Class mechanical surface — Lv1 abilities tab + Fighter Taunt (ADR-095 class-side)
 > - 2026-05-15: Anthropic SDK cutover (ADR-101) — narrator default; native tool-use (ADR-102); native OTEL via tool registry (ADR-103)
 > - 2026-05-17: ADR-106 runtime procedural Jaquaysed megadungeon closed; `caverns_and_claudes/beneath_sunden` replaces `caverns_sunden` as the live caverns world
-> - 2026-05-18: Forensics telemetry substrate P1 + P2 merged (`turn_telemetry` + `mechanical_census` SQLite sinks); ADR-107 out-of-band aside channel accepted
+> - 2026-05-18: Forensics telemetry substrate P1 + P2 merged (`turn_telemetry` + `mechanical_census`); ADR-107 out-of-band aside channel accepted
+> - 2026-05-25: Pluggable ruleset module system (Spec 0) live — `native` + `swn` modules, one per pack via `ruleset:`
+> - 2026-05-26: Intent Router mechanical-engagement spine (ADR-113) wired end-to-end as a pre-narrator Haiku pass; ablative HP substrate (ADR-114 Part 1) live
+> - 2026-05-28: Persistence substrate migrated SQLite → PostgreSQL (ADR-115, complete); SQLite write layer deleted, forensics now reads Postgres tables
 
 ## Architectural Layers
 
@@ -63,9 +66,9 @@
          ▼                              ▼
 ┌──────────────────────┐ ┌────────────────────────────────────────────┐
 │  Genre Layer         │ │           Persistence Layer                 │
-│  (sidequest.genre)   │ │  sqlite3 (saves), PyYAML (genre packs)     │
-│  YAML pack loader    │ │  Narrative log, KnownFact accumulation     │
-│  5 live genre packs       │ │  sidequest.game.persistence                │
+│  (sidequest.genre)   │ │  PostgreSQL (saves, psycopg3 + pool),      │
+│  YAML pack loader    │ │  PyYAML (genre packs). Narrative log,       │
+│  5 live genre packs  │ │  KnownFact accum. sidequest.game.pg/        │
 └──────────────────────┘ └────────────────────────────────────────────┘
 
          ┌────────────────────────────────────────────────────────────┐
@@ -135,9 +138,17 @@ Each WebSocket connection runs as an asyncio task owning a `Session`. Single-pla
 
 Only the text narration response is on the critical path. Everything else runs as asyncio tasks: image generation, music cue selection, state delta computation, trope tick, lore accumulation. The player sees narration immediately; media arrives asynchronously.
 
-### ADR-006: Persistence via SQLite
+### ADR-115: Persistence via PostgreSQL (supersedes ADR-006's SQLite substrate)
 
-Standard-library `sqlite3` for structured persistence (game state, character data, saves). DB calls run on a worker thread via `asyncio.to_thread` at the async boundary. Narrative log is append-only. KnownFacts persist and accumulate across turns with provenance tracking.
+Structured persistence (game state, character data, saves) lives in a **single PostgreSQL database**, per **ADR-115** (complete). The earlier SQLite-per-session substrate (ADR-006) is fully retired: the SQLite write layer is **deleted** (not a dual path), and the one-`.db`-per-session model is gone.
+
+- **Config:** `SIDEQUEST_DATABASE_URL` is required — no silent default, fail-loud at startup if the database is unreachable.
+- **Driver / pooling:** psycopg3 with `psycopg_pool.ConnectionPool`. Concurrency is serialized via per-session row locks (`SELECT ... FOR UPDATE` on the `sessions` row) rather than per-file isolation.
+- **Schema:** Alembic owns all DDL via raw SQL (`op.execute`, no ORM models). One logical DB, ~17 tables spanning the save and dungeon domains. Migrations: `0001_initial_unified_schema`, `0002_asset_ledger`.
+- **Repositories:** `sidequest/game/pg/` holds `PgSaveRepository`, `PgDungeonRepository`, `PgTelemetrySink`, `PgForensicReader`, plus sub-stores `PgEventStore` / `PgSnapshotStore` / `PgNarrativeStore` / `PgScrapbookStore` / `PgAssetLedgerStore` / `PgPromotionStore`.
+- **Legacy import:** old SQLite saves are read-only-importable via `python -m sidequest.game.importer` (one `.db` per run). There is no live SQLite write path.
+
+Narrative log remains append-only. KnownFacts persist and accumulate across turns with provenance tracking.
 
 ### ADR-035: Unix Socket IPC
 Python ML sidecar communicates via Unix domain socket (`/tmp/sidequest-renderer.sock`) with newline-delimited JSON-RPC. Separate failure domain from the game engine. Models stay warm across sessions.
@@ -166,14 +177,46 @@ The narrator's tool registry emits OTEL spans natively — every tool call (mood
 ### ADR-107: Out-of-Band Aside Channel
 A non-turn-consuming channel for OOC player→GM table-talk. `PLAYER_ACTION` carries an `aside: true` bit; the asker still owes their normal turn. The server resolves asides through a separate Haiku call site (`AsideResolver`), broadcasts the answer as `ASIDE_ANSWER` to the whole room (table-visible), and bypasses the ADR-036 submit-and-wait barrier. `ACTION_REVEAL` mirrors composing/submitted aside text to peers as OOC table-talk; it never becomes narration.
 
+### Spec 0: Pluggable Ruleset Module System (live)
+
+Mechanical resolution is dispatched through a pluggable ruleset layer in `sidequest/game/ruleset/`: `registry.py` (module lookup), `base.py` (the `RulesetModule` ABC), and the concrete modules `native.py` and `swn.py`. The ABC defines the mechanical surface every module must implement: `find_confrontation`, `stat_modifier`, `compute_dc`, `apply_beat`, `resolve_damage`, `attack_params`, `ship_attack_params`, `check_params`, `save_params`, `roll_initiative`.
+
+Two modules are live:
+- **`native`** — wraps the existing dial/confrontation engine (ADR-033). Default for all packs.
+- **`swn`** — Stars Without Number.
+
+Each genre pack binds **exactly one** module via the `ruleset:` key in its `rules.yaml` (default `native`). An unknown value raises `UnknownRulesetError` at pack load — fail-loud, no silent degradation to a default.
+
+Additional modules (`bx`, `fate`, `pbta`, `5e`) are designed but **not implemented**; only `native` and `swn` exist today.
+
+### ADR-114: Ablative HP Substrate (partial — Part 1 live)
+
+HP is reclaimed as the lethality track beneath the dials. An `HpPool` (`current` / `max` / `base_max`) is a first-class field on `CreatureCore`, carried by both `Character` and `Npc`. It is seeded three ways: `hp_pool_from_hp` (B/X authored HP), `hp_pool_from_config` (chargen class base + CON modifier), or an explicit dict on load.
+
+Damage resolves through the strike-damage channel (`apply_beat_hp_channel`) minus flat armor mitigation; reaching 0 HP triggers the `hp_depletion` win condition. The `state_patch_hp` OTEL span fires on every HP delta so the GM panel can verify the engine actually moved the number.
+
+**ADR-114 is partial.** Part 1 — the engine reversal and HP substrate above — is **live**. Parts 2 and 3 — the gear/pharmacopeia catalog, the tech-level spine, and the `beneath_sunden` backport — are **deferred**.
+
+### ADR-113: Intent Router — Mechanical-Engagement Spine (live, under validation)
+
+A pre-narrator Haiku-via-SDK pass that decomposes each submitted action into mechanical engagement **before** the narrator runs, so the narrator sees already-real state rather than improvising it. The path: `sidequest/agents/intent_router.py` (`IntentRouter`) → `server/intent_router_pass.py` (`execute_intent_router_pre_narrator_pass`) → invoked in `server/websocket_session_handler.py` `_execute_narration_turn` ahead of the narrator. The router emits a `DispatchPackage`, then `run_dispatch_bank` engages the mechanical engines.
+
+Subsystems wired: `confrontation`, `magic_working`, `scenario_clue`, `npc_agency`, `distinctive_detail_hint`, `reflect_absence`, `movement`. Stealth, perception, and gossip are explicitly excluded.
+
+OTEL: `intent_router.decompose` / `.failed` / `.dispatch_bank` / `.subsystem` spans fire during the pass; `dispatch_engagement_watcher` emits `*.mismatch` spans post-narration as a lie-detector for "the router engaged an engine but the narration ignored it."
+
+Fail-loud: `IntentRouterFailure` is raised on failure. `SIDEQUEST_INTENT_ROUTER_DEGRADE_ON_FAIL` is an opt-in operator escape hatch that lets a failed router pass fall through to the narrator.
+
+**Honesty caveats.** Per-dispatch confidence scores are **not** implemented — only a package-level `confidence_global` exists. Confidence-**threshold gating is not built**: every emitted dispatch fires its engine unconditionally. Playtest validation (story 59-8) is still backlog, and 2026-05-26 playtests showed router degradation plus dispatch crashes. The spine is **structurally live end-to-end but operationally still under validation** — do not read it as a closed feature.
+
 ## Forensics Telemetry Substrate (live)
 
-Two SQLite sinks ship inside the save file itself so the GM panel can lie-detect against ground-truth mechanical state without depending on the live process:
+Two forensic telemetry tables live in PostgreSQL (alongside the save and dungeon domains) so the GM panel can lie-detect against ground-truth mechanical state without depending on the live process:
 
 - **`turn_telemetry`** (Phase 1, ADR-103-aligned) — one row per turn, written inside the same `NARRATION` transaction (`emit_event ... with conn`) so per-turn back-pressure metrics never desync from the event they describe. Model, latency, token counts (input/output/cache_read/cache_write), tool-call counts, cost USD, intent classification.
 - **`mechanical_census`** (Phase 2) — pure canonical-state projections per seated PC plus session-level trope state. Per-round mechanical diff lanes (baseline / static / moved / absent). Hot-path cost-guarded (a normal turn writes N=1 census rows). `mechanical_strip` / `fold_mechanical_strip` ship as annotated Phase-3 forward seams — emitted but not yet consumed by a viewer.
 
-The save-forensics viewer reads via the public `open_save_readonly` API. **Never** call `SqliteStore.open()` for forensic access — that path WAL-flips, schema-migrates, and commits on construction (see `project_sqlitestore_open_writes`).
+The save-forensics viewer reads through `PgForensicReader`, which opens read-only against the Postgres database. (This replaces the retired SQLite forensic path — there is no longer a `SqliteStore.open()` to avoid.)
 
 Edge / Composure (ADR-078) is the mechanical pool the census projects; the wire still ships `hp` / `max_hp` for backward compatibility (see `docs/api-contract.md`). The fold path treats them as Edge values reusing legacy field names.
 
@@ -182,7 +225,7 @@ Edge / Composure (ADR-078) is the mechanical pool the census projects; the wire 
 ### Core State
 - **GameState:** Central state composition — characters, NPCs, world, combat, chase
 - **State deltas:** JSON patches for incremental updates, broadcast to all clients
-- **Session persistence:** Save/load GameSnapshot via SQLite
+- **Session persistence:** Save/load GameSnapshot via PostgreSQL (`PgSaveRepository`, ADR-115)
 
 ### Combat & Chase
 - **Combat:** Turn-based with combatant tracking, HP management, ability resolution
