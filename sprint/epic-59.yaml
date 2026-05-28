@@ -216,11 +216,13 @@ stories:
     type: bug
   - id: 59-14
     title: magic_working — load magic_state for worlds with caster classes (or degrade cleanly) so Mage casting isn't a no-op
+    description: 'CLOSED done-by-landed-work 2026-05-28 (reconciliation, no separate PR). magic_state loading is fully wired on develop via init_magic_state_for_session (magic_init.py:98), called from chargen host (chargen_mixin.py:935), MP joiner (chargen_mixin.py:1147), and resume backfill (connect.py:191). Loads learned_v1 seed gated on ClassDef.magic_config for caster-class worlds; degrades LOUDLY for non-caster worlds (magic.init_skipped/init_failed/no_actor_bars/no_catalog watcher events). Casting against None magic_state raises MagicWorkingParseError (narration_apply.py:655), so the no-op is impossible by design. OTEL: magic.init on load, magic.working per cast. Four test suites cover it. Mirrors the 59-18 close pattern. e2e proof folds into 59-15. Context: sprint/context/context-story-59-14.md.'
     points: 3
     priority: p2
-    status: backlog
+    status: done
     repos: server,content
     workflow: tdd
+    completed: '2026-05-28'
     type: bug
   - id: 59-15
     title: 'Engagement e2e validation — beneath_sunden + road_warrior: confrontation/movement/magic actually fire mechanically (OTEL span proof)'
@@ -269,9 +271,11 @@ stories:
     type: bug
   - id: 59-19
     title: Dogfight smoke fails to resolve through production path — tests/integration/test_dogfight_playtest_smoke.py::test_three_turn_dogfight_resolves_through_production_path
+    description: 'CLOSED done-by-landed-work 2026-05-28 (reconciliation, no separate PR). The cited test tests/integration/test_dogfight_playtest_smoke.py::test_three_turn_dogfight_resolves_through_production_path PASSES on develop (verified 2026-05-28 with SIDEQUEST_DATABASE_URL + SIDEQUEST_GENRE_PACKS set: 1 passed in 0.41s). Overtaken by 59-17 dogfight-instantiation fix (4bb71a20, PR #475) and SWN shot resolution (3016177f, PR #478); the smoke fixture (tests/fixtures/dogfight_playtest_encounter.py:145-170) was rewritten by 59-17 to drive the live instantiate_encounter_from_trigger primitive, closing exactly the hole 59-19 named. Mirrors the 59-18 close pattern. Context: sprint/context/context-story-59-19.md.'
     points: 3
     priority: p2
-    status: backlog
+    status: done
     repos: server
     workflow: tdd
+    completed: '2026-05-28'
     type: bug
