@@ -114,6 +114,7 @@ async def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Preview prompts without rendering")
     parser.add_argument("--steps", type=int, default=DEFAULT_STEPS)
     parser.add_argument("--output-dir", type=Path, help="Override output directory")
+    parser.add_argument("--force", action="store_true", help="Regenerate even if image exists (local or on R2)")
     parser.add_argument(
         "--poi",
         help="Only process this POI slug (requires --world)",
@@ -164,7 +165,7 @@ async def main() -> None:
         image_subdir="poi",
         dry_run=args.dry_run,
         steps=args.steps,
-        force=True,  # POIs don't have --force flag, always regenerate
+        force=args.force,
         output_dir=args.output_dir,
         catalog_compose=True,
         fidelity="high_fidelity",
