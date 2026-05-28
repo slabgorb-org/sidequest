@@ -142,8 +142,13 @@ Genre packs are loaded via the `SIDEQUEST_GENRE_PACKS` env var. See
     Knowledge Journal supports keyword filtering, lore fragments seed from genre packs,
     conlang names generated from culture corpora via Markov
     ([ADR-091](docs/adr/091-culture-corpus-markov-naming.md))
-11. **Combat:** Edge / Composure on `CreatureCore` replaces HP across the codebase
-    (ADR-078); 3D dice (Three.js + Rapier) render inline in the confrontation overlay
+11. **Combat:** Ablative HP is the live personal survivability track on `CreatureCore`
+    (ADR-114, reversing ADR-078's HP removal). The bound ruleset module selects combat
+    resolution — SWN (attack-vs-AC, `hp_depletion`) is live for space_opera; B/X or 3.5
+    SRD (both HP-based) are planned for caverns_and_claudes. Edge / Composure dials
+    (ADR-078) are planned to return as the Fate SRD substrate — "for different engines,"
+    not yet co-resident. (Vessel rig-composure survives separately.) 3D dice (Three.js +
+    Rapier) render inline in the confrontation overlay
 12. **Multiplayer:** submit-and-wait turn barriers with adaptive timeout, Cinematic
     mode as the live default (FREE_PLAY available; STRUCTURED dead code), collaborative
     peer-action visibility with live teammate typing via `ACTION_REVEAL`, perception

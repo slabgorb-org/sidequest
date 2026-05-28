@@ -55,11 +55,12 @@ sidequest-content/            # Genre packs — single source of truth (subrepo)
 ├── genre_packs/              # Live, wired packs (10: caverns_and_claudes, elemental_harmony,
 │   │                         #   heavy_metal, mutant_wasteland, neon_dystopia, pulp_noir,
 │   │                         #   road_warrior, space_opera, spaghetti_western, tea_and_murder).
-│   │                         # heavy_metal re-promoted 2026-05-23 (loads clean, 2 worlds);
-│   │                         # neon_dystopia + pulp_noir promoted 2026-05-23 but still need
-│   │                         # world-tier openings.yaml authoring before they load.
-│   │                         # Asset gate (portraits, POI landscapes, generated OGG) not
-│   │                         # yet met for any of the three — see pack README.
+│   │                         # heavy_metal re-promoted 2026-05-23 (loads clean, 2 worlds:
+│   │                         #   evropi, long_foundry). neon_dystopia (franchise_nations)
+│   │                         #   + pulp_noir (annees_folles) promoted 2026-05-23; world-tier
+│   │                         #   openings.yaml now authored for both. Asset gate (portraits,
+│   │                         #   POI landscapes, generated OGG) not yet met for these — see
+│   │                         #   pack README.
 │   └── <genre>/worlds/<world>/   # World-specific overrides
 ├── genre_workshopping/       # Pre-wired packs in design (caverns_sunden — deprecated;
 │                             #   low_fantasy).
@@ -128,9 +129,9 @@ sidequest-daemon/             # Python media services (subrepo)
 - **Server communicates via WebSocket** for real-time game events (narration, state updates)
 - **Small REST surface** for save/load, character listing, genre pack metadata
 - **Anthropic Python SDK** is the default narrator LLM backend per **ADR-101** (supersedes ADR-001): prompt caching, native tool-use (replaces the ADR-039 JSON sidecar via ADR-102), per-call model routing (Haiku/Sonnet/Opus). Backend is selected by `SIDEQUEST_LLM_BACKEND` (default `anthropic_sdk`) — see `sidequest-server/sidequest/agents/llm_factory.py`. The `claude -p` CLI subprocess and Ollama remain opt-in non-default backends, and `claude -p` still serves some non-narrator jobs (e.g. dungeon "curate")
-- **Genre packs** live in `sidequest-content/genre_packs/` (single source of truth), loaded by the server from `SIDEQUEST_GENRE_PACKS`
+- **Genre packs** live in `sidequest-content/genre_packs/` (single source of truth), loaded by the server from `SIDEQUEST_GENRE_PACKS`. A pack can bind a pluggable ruleset module via `ruleset:` in its `rules.yaml` (`native` is the default; `swn` = Stars Without Number). `space_opera` binds `swn`
 - **Media daemon** is a Python sidecar for image generation (Flux / Z-Image) and music generation (ACE-Step). Music is generated on operator command via `python scripts/generate_music.py --genre <pack>` — per-track JSON params files in `sidequest-content/genre_packs/<pack>/audio/music/*_input_params.json` are the canonical spec; the daemon uploads OGG to R2 at `genre_packs/<pack>/audio/music/<track>.ogg`. See ADR-095
-- **Save files** live at `~/.sidequest/saves/` (SQLite `.db` files, one per genre/world session) — not in the repo. See `.pennyfarthing/guides/save-management.md` for cleanup, inspection, and migration procedures
+- **Save files** live in a single **PostgreSQL** database (one `sessions` table: integer `session_id` PK + `session_slug` TEXT UNIQUE), per **ADR-115** (complete). The per-file SQLite model is **retired** — the SQLite write layer (`SqliteStore`/`SqliteSaveRepository`) was deleted, not dual-pathed. Config requires `SIDEQUEST_DATABASE_URL`: there is **no silent default** — unset raises `MissingDatabaseUrlError`, and the app fails loud at startup if Postgres is unreachable (pool wait timeout 10s), honoring "No Silent Fallbacks". Connectivity is psycopg3 + `psycopg_pool.ConnectionPool`; concurrency uses per-session row locks (`SELECT ... FOR UPDATE`); Alembic owns all DDL (raw SQL via `op.execute`, no ORM). Old `~/.sidequest/saves/*.db` files are never written anymore — a read-only importer (`python -m sidequest.game.importer`) imports one legacy `.db` at a time. See `.pennyfarthing/guides/save-management.md` for cleanup, inspection, and migration procedures
 
 ### Port history
 
@@ -271,14 +272,14 @@ Rust code samples in pre-ADR-082 ADRs are historical; translation table in
 **Agent System (011, 012, 013, 067, 098, 100, 102, 110, 111, 112, 113)**
 - 011 World State JSON Patches · 012 Agent Session Management · 013 Lazy JSON Extraction *(drift)* · **067 Unified Narrator Agent — Collapse Multi-Agent into Single Narrator** · 098 Stateless Narrator Turns — Drop --resume, Bounded Per-Turn Prompts · 100 Journal Pipeline Coherence — Footnotes, KnownFacts, JOURNAL_RESPONSE, and the Scenario Clue Hook *(partial)* · 102 Tool-Use Protocol for Structured Output *(partial)* · 110 Game-State Snapshot Slimming — Compact Encoding + Allowlist Pruning, Diff-with-Anchor Deferred *(partial)* · 111 Recency-Zone Narrator Guardrails Migrate to Tool Descriptions and Primacy-Cached Output Prose *(deferred)* · 112 Genre Prose Cache Promotion — Four Always-Fire Session-Static Sections Move to Stable, Conditional Sections Defer *(partial)* · 113 Intent Router — Mechanical-Engagement Spine *(partial)*
 
-**Game Systems (014, 015, 016, 018, 020, 021, 022, 023, 024, 025, 074, 077, 080, 081, 095, 096, 106, 109, 114, 116)**
-- **014 Diamonds and Coal** · 015 Character Builder State Machine · 016 Three-Mode Character Creation · 018 Trope Engine · 020 NPC Disposition System *(partial)* · 021 Progression System · 022 WorldBuilder Maturity · 023 Session Persistence · 024 Dual-Track Tension Model · 025 Pacing Detection · 074 Dice Resolution Protocol — Player-Facing Rolls via WebSocket · 077 Dogfight Subsystem via StructuredEncounter Extension · 080 Unified Narrative Weight Trait · 081 Advancement Effect Variant Expansion (v1) *(deferred)* · 095 Class Mechanical Surface — One Signature Ability Per Non-Magical Class · 096 Cavern Renderer Revival — Pre-Rendered Cellular Caverns for Tactical Maps *(partial)* · 106 Runtime Procedural Jaquaysed Megadungeon — Contiguous Edge-Expansion, maze-maker Family Port + Complication Ledger *(partial)* · 109 Persistent Location Descriptions + Mechanical Manifest *(partial)* · 114 Ablative HP Substrate — HP Reclaims the Lethality Track Beneath the Dials *(partial)* · 116 A Confrontation Requires an Other — Participant Membership Invariant, Single Opponent-Seater, End-on-No-Other *(partial)*
+**Game Systems (014, 015, 016, 018, 020, 021, 022, 023, 024, 025, 074, 077, 080, 081, 096, 097, 106, 109, 114, 116, 117)**
+- **014 Diamonds and Coal** · 015 Character Builder State Machine · 016 Three-Mode Character Creation · 018 Trope Engine · 020 NPC Disposition System · 021 Progression System · 022 WorldBuilder Maturity · 023 Session Persistence · 024 Dual-Track Tension Model · 025 Pacing Detection · 074 Dice Resolution Protocol — Player-Facing Rolls via WebSocket · 077 Dogfight Subsystem via StructuredEncounter Extension · 080 Unified Narrative Weight Trait · 081 Advancement Effect Variant Expansion (v1) *(deferred)* · 096 Cavern Renderer Revival — Pre-Rendered Cellular Caverns for Tactical Maps *(partial)* · 097 Class Mechanical Surface — One Signature Ability Per Non-Magical Class · 106 Runtime Procedural Jaquaysed Megadungeon — Contiguous Edge-Expansion, maze-maker Family Port + Complication Ledger *(partial)* · 109 Persistent Location Descriptions + Mechanical Manifest *(partial)* · 114 Ablative HP Substrate — HP Reclaims the Lethality Track Beneath the Dials *(partial)* · 116 A Confrontation Requires an Other — Participant Membership Invariant, Single Opponent-Seater, End-on-No-Other *(partial)* · 117 Pluggable Ruleset Module System — Per-Genre Resolution Behind a RulesetModule Seam *(partial)*
 
 **Frontend / Protocol (026, 027, 075, 079, 094, 107)**
 - 026 Client-Side State Mirror · 027 Reactive State Messaging · 075 3D Dice Rendering — Three.js + Rapier Physics Overlay *(partial)* · 079 Genre Theme System Unification · 094 Orrery Label Placement — Three-Strategy Taxonomy · 107 Out-of-Band Aside Channel — Non-Turn-Consuming Player→GM Table-Talk
 
 **Multiplayer (036, 037, 104, 105, 108)**
-- 036 Multiplayer Turn Coordination · 037 Shared-World / Per-Player State Split · 104 Perception Filtering at the Tool Layer *(partial)* · 105 Broadcast-Layer Perception Firewall — Completing ADR-104 in the MP Fan-Out *(partial)* · 108 MP Item Attribution — Per-Recipient Tagging in the Narration Tool Contract *(deferred)*
+- 036 Multiplayer Turn Coordination · 037 Shared-World / Per-Player State Split · 104 Perception Filtering at the Tool Layer *(partial)* · 105 Broadcast-Layer Perception Firewall — Completing ADR-104 in the MP Fan-Out *(partial)* · 108 MP Item Attribution — Per-Recipient Tagging in the Narration Tool Contract
 
 **Transport / Infrastructure (035, 038, 046, 047)**
 - **035 Unix Socket IPC for Python Sidecar** · **038 WebSocket Transport Architecture** · 046 GPU Memory Budget Coordinator · 047 Prompt Injection Sanitization Layer
@@ -299,7 +300,7 @@ Rust code samples in pre-ADR-082 ADRs are historical; translation table in
 - 055 Room Graph Navigation *(partial)*
 
 **Code Generation / Tooling (059, 092)**
-- **059 Monster Manual — Server-Side Pre-Generation via Game-State Injection** *(drift)* · 092 Scene Harness — Dev-Gated HTTP Endpoint for Scenario Fixtures *(partial)*
+- **059 Monster Manual — Server-Side Pre-Generation via Game-State Injection** · 092 Scene Harness — Dev-Gated HTTP Endpoint for Scenario Fixtures *(partial)*
 
 **Observability (090, 103)**
 - 090 OTEL Dashboard Restoration after Python Port · 103 Native OTEL via Tool Registry *(partial)*

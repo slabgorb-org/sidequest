@@ -82,7 +82,7 @@ This is a structured checklist for exercising SideQuest features during a playte
   - Verify: Current location highlighted, fog of war on unexplored regions
   - Expected regions: Glass Flat, Przyå Dust, Bone Wind, Tood's Dome, Blind Reach, Blooming Tangle, Vault Echo, etc.
 - [ ] **Press P** — Party panel toggles
-  - Verify: Character portrait (with mutation visible), Edge bar (HP was removed in story 45-35; CreatureCore now tracks Edge per ADR-078), status effects
+  - Verify: Character portrait (with mutation visible), HP/vitality bar (HP is the live personal survivability track per ADR-114, reinstated after ADR-078's removal; some UI labels may still read "Edge" pending an incomplete rename), status effects
 - [ ] **Press Escape** — All overlays close
 
 ## 6. Travel & Navigation

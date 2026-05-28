@@ -178,3 +178,49 @@ and fixture-driven behavior, never by grepping source:
   wanted, now hung on the corrected seam).
 - End-on-no-Other: withdraw the last opponent → assert `resolved=True` and a
   `participant.left` span.
+
+## Amendment 2026-05-28 — Implementation reconciliation (live-vs-deferred split)
+
+Audited the four Decision sections against code. More is live than the
+`partial` status implies — the only deferred items are the §3 social/pre_combat
+staging extension and §2's bestiary/encounter-table sourcing (both explicitly
+staged/deferred by the ADR itself, not gaps).
+
+**Live:**
+- **§1 invariant + §2 single opponent-seater.** `NoOpponentAvailableError` is
+  defined at `sidequest-server/sidequest/server/dispatch/encounter_lifecycle.py:38`
+  and raised at `:591` when an adversarial encounter would instantiate with no
+  opponent after the room-scan fallback. The dispatch handler catches it and
+  renders prose — `sidequest-server/sidequest/agents/subsystems/confrontation.py:40,134`
+  (imports it; `except NoOpponentAvailableError` at `:134`) around the single
+  `instantiate_encounter_from_trigger` chokepoint (`confrontation.py:125`). The
+  room-sourced fallback seats opponents as `side="opponent"` for adversarial
+  confrontations (`encounter_lifecycle.py:431`, `default_side = "opponent" if
+  adversarial else "neutral"`), resolving the `EncounterActor.side` contract
+  concern from §Context.
+- **§2 OTEL membership spans.** `participant.joined` fires from the seater
+  (`encounter_lifecycle.py:686-692`, span at `telemetry/spans/encounter.py:82`,
+  `SPAN_PARTICIPANT_JOINED`).
+- **§4 End-on-no-Other.** Implemented and **wired into the production narration
+  path**: `_resolve_if_no_opponent_remains` at
+  `sidequest-server/sidequest/server/narration_apply.py:3155`, called from
+  `_apply_narration_result_to_snapshot` at `narration_apply.py:3150`. It sets
+  `resolved=True`, `outcome="opponent_withdrew"`, phase→Resolution, and emits a
+  `participant.left` span per departed opponent (`narration_apply.py:3174`;
+  span at `telemetry/spans/encounter.py`). So §4 is live, not staged.
+
+**Deferred (per the ADR's own staging):**
+- **§3 guard generalization is partial by design.** The empty-opponent guard
+  fires only on `combat` + `movement`:
+  `_ADVERSARIAL_CATEGORIES = frozenset({"combat", "movement"})` at
+  `encounter_lifecycle.py:330`, gated through `_is_adversarial` (`:344`). The
+  `social` / `pre_combat` extension the ADR flagged for "Follow-up" is **not yet
+  enforced** — confirmed by the inline note at `encounter_lifecycle.py:577`
+  ("`social` / `pre_combat` remain exempt for now (staged rollout)").
+- **§2 bestiary / encounter-table opponent sourcing** — Fork A; explicitly
+  deferred in the ADR, room-scan only. No new pursuer-arrival sourcing in code.
+
+Net: §1, §2 (room-only seating + spans), and §4 are live; §3's social/pre_combat
+stage and §2's bestiary pull remain deferred exactly as the ADR scoped them. The
+`partial` status is accurate, but the deferred surface is narrower than a reader
+might assume.

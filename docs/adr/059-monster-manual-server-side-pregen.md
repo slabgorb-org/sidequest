@@ -8,8 +8,8 @@ supersedes: [56]
 superseded-by: null
 related: [1, 3, 7, 20]
 tags: [code-generation, agent-system]
-implementation-status: drift
-implementation-pointer: 87
+implementation-status: live
+implementation-pointer: null
 ---
 
 # ADR-059: Monster Manual — Server-Side Pre-Generation via Game-State Injection

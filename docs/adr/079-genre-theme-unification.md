@@ -96,3 +96,27 @@ For each genre, derive Tailwind tokens from genre identity vars:
 | `--accent` | `--accent`, `--ring` | Accent = ring |
 | `--surface` | `--border`, `--input` | Border/input derive from surface |
 | (computed) | `--muted-foreground` | Midpoint between text and surface — genre-specific tuning |
+
+## Amendment 2026-05-28 — Implementation reconciliation (claims confirmed)
+
+Verified the §Decision claims against `sidequest-ui/src` and the content packs —
+all three hold:
+
+- **ThemeProvider is deleted.** No `ThemeProvider`/`ThemeContext` file exists
+  under `sidequest-ui/src/providers/` (only `GameStateProvider.tsx`,
+  `ImageBusProvider.tsx`, plus non-provider helpers), and a repo-wide search
+  finds **zero** `ThemeProvider`/`ThemeContext` references in `src/`. The
+  §Changes Required "Delete `providers/ThemeProvider.tsx`" action shipped.
+- **`useGenreTheme` is the sole consumer and sets the `data-genre` attribute.**
+  `sidequest-ui/src/hooks/useGenreTheme.ts:187` runs
+  `root.setAttribute("data-genre", "active")` (the comment at `:185` notes
+  "`:root[data-genre]` beats `.dark`"), and removes it on teardown at `:235`.
+  The JS-bridge middleman the §Decision set out to kill is gone.
+- **Genre CSS uses `:root[data-genre]` specificity.** All 10 live genre packs'
+  `client_theme.css` files (`caverns_and_claudes`, `elemental_harmony`,
+  `heavy_metal`, `mutant_wasteland`, `neon_dystopia`, `pulp_noir`,
+  `road_warrior`, `space_opera`, `spaghetti_western`, `tea_and_murder`) match
+  `:root[data-genre]`, confirming the §Specificity Solution / §Changes Required
+  selector migration landed pack-wide.
+
+No correction needed — the ADR body matches the running implementation.

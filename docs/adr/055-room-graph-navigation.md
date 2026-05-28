@@ -221,3 +221,74 @@ For the current room-graph contract, defer to:
 
 Not the prose body above. ADR text is the original 2026-04-01 intent;
 the running design has evolved.
+
+## Amendment 2026-05-28 — Implementation reconciliation
+
+Re-audited against `sidequest-server/`. Two of the three "dark/owed"
+items from the 2026-05-02 status note are **confirmed still unwired**;
+the third (the MAP_UPDATE deletion claim) was **inaccurately framed**
+and is corrected here.
+
+### Confirmed: per-transition trope tick is NOT wired
+
+`grep -rn "tick_on_room_transition" sidequest-server/` returns **zero
+hits**. No such function exists in the Python tree. The
+Keeper-awareness escalation the §Trope Integration section is shaped
+around is not driven by room movement. `keeper_awareness_modifier`
+remains a populated-but-unconsumed field (confirmed: `RoomDef` carries
+it, no tick logic reads it). **Still owed.**
+
+### Confirmed: per-transition resource depletion is NOT wired
+
+`uses_remaining` is populated at loadout/build time only —
+`sidequest-server/sidequest/server/dispatch/chargen_loadout.py:66`
+(`"uses_remaining": catalog_item.resource_ticks`),
+`chargen_loadout.py:122`, `narration_apply.py:2038`,
+`game/builder.py:1906,1979` — every one a *write* of the field. A
+search for any decrement (`-= 1`, depletion logic) returns nothing, and
+`game/room_movement.py` (the room-transition module) contains no
+reference to `uses_remaining` at all. The torch-burn / extraction-
+pressure loop is **still unwired.** (Note: ADR-106 clause 8 / §Relationship
+explicitly *deletes* this attrition loop for `beneath_sunden`; the owe
+here stands only for the legacy room-graph worlds.)
+
+### Correction: MAP_UPDATE is still emitted — and that is correct
+
+The 2026-05-02 note (§Dark, "Map-update wire message") states the
+MAP_UPDATE pipeline "was deleted server-side on 2026-04-28" and that "a
+*new* wire message — distinct from MAP_UPDATE — is owed." **That framing
+is inaccurate and is corrected.** What was deleted was the *ADR-019
+cartography* MAP_UPDATE pipeline. The **wire-type name `MAP_UPDATE` was
+reused** for the new ADR-055-era region-mode message, not retired:
+
+- `_emit_shared_world_frame(_cart_map, "MAP_UPDATE")` is live at
+  `sidequest-server/sidequest/server/websocket_session_handler.py:1988`,
+  fired on region change for region-mode worlds
+  (`websocket_session_handler.py:1979`, guarded `if _is_region_mode_world
+  and _region_changed`).
+- The payload is built by `_build_cartography_map_message`
+  (`server/session_helpers.py:1297`), which returns a
+  `CartographyMapMessage` and explicitly returns `None` for room_graph
+  worlds (`session_helpers.py:1320-1321`).
+- `protocol/messages.py:1376-1382` documents `type:
+  Literal["MAP_UPDATE"]` as **the NEW message** ("ADR-019 MAP_UPDATE
+  pipeline; this is the minimal region-mode replacement"), and
+  `protocol/enums.py:124-126` + `server/session_handler.py:83` +
+  `server/websocket_handlers/map_emit.py:860` all carry the same "this
+  is the NEW ADR-055 message; do NOT revive ADR-019 MAP_UPDATE"
+  convention.
+
+So no separate-named wire message is owed for region-mode cartography —
+the replacement ships under the reused `MAP_UPDATE` type. **Room_graph**
+worlds use a distinct `DUNGEON_MAP` message (`protocol/messages.py:1267`,
+the "Beneath Sünden" seam) rather than MAP_UPDATE. The §Dark note's
+claim that "the server never emits MAP_UPDATE" is false; remove that
+owe. (Whether stale UI ADR-019 consumer code still warrants cleanup is a
+UI-repo concern, out of scope for this server-side reconciliation.)
+
+### Net
+
+Data model + init + content: **live** (as the 2026-05-02 note already
+recorded). Per-transition trope tick and resource depletion:
+**still unwired.** MAP_UPDATE region-mode delivery: **live** (the
+deletion-and-owe framing was wrong).

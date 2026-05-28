@@ -448,6 +448,35 @@ the parts of 078 that survive (§4b, §4c).
 > beneath the dials without altering them. The dials are not a replacement for HP
 > and HP is not a replacement for the dials; they are two layers in one turn.
 
+## Amendment 2026-05-28 — composure scope clarification (personal Edge gone, vessel rig survives)
+
+Reconciling §1 and §7 against the shipped code, to prevent the reading
+"all composure is gone." **Personal-creature** Edge/Composure is fully
+removed: there is no `EdgePool` class anywhere in the server
+(`grep "class EdgePool"` → none; the name survives only as a history
+reference in the `HpPool` docstring at `creature_core.py:23`).
+`CreatureCore` now carries `hp: HpPool` (`creature_core.py:117`; `HpPool`
+defined at `creature_core.py:19`) as the sole personal vitality track —
+the §1 reversal, as shipped. **But the vessel `RigComposurePool` survives
+separately** (`creature_core.py:123`, `rig_pool: RigComposurePool | None`;
+class in `sidequest/game/rig_composure_pool.py`) — it is the ship/dogfight
+condition-track machinery of §7 (ADR-077), **not** part of the HP reversal.
+The HP↔Edge swap is a *personal-scale* change only; the rig composure pool
+is untouched and intentionally retained.
+
+**Per-genre survivability doctrine.** HP is the live personal lethality
+track now, and is genre-authored at the edges (`lethality_policy.yaml`
+verdicts on zero HP per §5; pluggable ruleset modules per ADR-117). The
+retired Edge/Composure substrate is *planned to return* as the **Fate SRD**
+ruleset module — ADR-117 names "the planned Fate module [as] the intended
+home for the retired Edge/Composure substrate" (ADR-117 §References, the
+"`bx`/Fate/PbtA/5e additional modules … not implemented" note). So
+composure is not erased from the design — it is relocated from a hardcoded
+personal track to (a) the still-live vessel rig pool and (b) a future Fate
+ruleset module. This ADR's reversal is scoped to the personal-creature
+vitality field; it does not claim to delete composure from the system
+wholesale.
+
 ## References
 
 - Umbrella design: `docs/superpowers/specs/2026-05-25-swn-crunch-ablative-hp-design.md`

@@ -472,6 +472,62 @@ record.
   before it realizes savings). The engagement-criteria migration is
   semantic, not cache-driven.
 
+## Amendment 2026-05-28 — confidence-gating is DEFERRED; the spine itself is live
+
+This amendment reconciles the Decision's **§Confidence gate** against the
+shipped code. It does **not** revise the original decision — it records
+what landed and what did not.
+
+**The router spine is live end-to-end.** The producer the Decision called
+for exists and runs on the default `anthropic_sdk` path before the
+narrator:
+
+- `IntentRouter` — `sidequest/agents/intent_router.py`.
+- `execute_intent_router_pre_narrator_pass` —
+  `sidequest/server/intent_router_pass.py:125`, invoked from
+  `sidequest/server/websocket_session_handler.py:746` (import at
+  `:87`) *before* the narrator turn.
+- `run_dispatch_bank` — `sidequest/agents/subsystems/__init__.py`
+  (topo-sorts and fires the matching handlers, per-dispatch OTEL).
+- Lie-detector — `sidequest/agents/dispatch_engagement_watcher.py`
+  (emits `dispatch_engagement.{subsystem}.mismatch` post-narration).
+
+So the structural decision (route intent into engines before the narrator,
+narrate already-real state, audit via the watcher) is **implemented and
+wired**.
+
+**The §Confidence gate is NOT implemented — it is deferred.** The Decision
+specified that a mechanical dispatch "engages its engine **only at or above
+a confidence threshold** (default proposed: 0.6 per subsystem, tunable in
+genre pack `rules.yaml`)." The shipped code does no such thing:
+
+- `run_dispatch_bank` executes **every** emitted dispatch
+  unconditionally. The execution loop at
+  `sidequest/agents/subsystems/__init__.py:231` iterates the topo-sorted
+  dispatches and calls each handler; there is **no confidence read and no
+  threshold comparison** anywhere in the bank. A dispatch is skipped only
+  if its subsystem is unregistered or its handler raises.
+- There is **no per-dispatch confidence field to gate on.**
+  `SubsystemDispatch` (`sidequest/protocol/dispatch.py:88`) carries
+  `subsystem`, `params`, `depends_on`, `idempotency_key`, and
+  `visibility` — **no `confidence`.** The only `confidence` floats in the
+  protocol are `Referent.confidence` (`dispatch.py:78`, referent-resolution
+  scoring — unrelated to engine gating) and the package-level
+  `DispatchPackage.confidence_global` (`dispatch.py:207`), which nothing
+  in the bank consults as a gate. No `rules.yaml` per-subsystem threshold
+  key is read.
+
+**Consequence to be explicit about:** today, **every dispatch the router
+emits fires its engine.** The "untaken bait" / below-threshold-degrades-to-
+narrator-hint behavior described in §Confidence gate does not exist yet.
+Per-dispatch confidence scoring and threshold-gating are **DEFERRED, not
+implemented.**
+
+Validation of the spine (the 59-8 Glenross playtest gate in §Implementation
+Notes) is also still **backlog** — the spine is structurally live but
+operationally unvalidated. The confidence-gate work and 59-8 are the two
+outstanding items against this ADR; everything else in the Decision shipped.
+
 ## References
 
 - ADR-002 — SOUL Principles (Illusionism, Zork Problem, Cost Scales
