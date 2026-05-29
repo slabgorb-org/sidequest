@@ -55,12 +55,14 @@ sidequest-content/            # Genre packs — single source of truth (subrepo)
 ├── genre_packs/              # Live, wired packs (10: caverns_and_claudes, elemental_harmony,
 │   │                         #   heavy_metal, mutant_wasteland, neon_dystopia, pulp_noir,
 │   │                         #   road_warrior, space_opera, spaghetti_western, tea_and_murder).
-│   │                         # heavy_metal re-promoted 2026-05-23 (loads clean, 2 worlds:
-│   │                         #   evropi, long_foundry). neon_dystopia (franchise_nations)
-│   │                         #   + pulp_noir (annees_folles) promoted 2026-05-23; world-tier
-│   │                         #   openings.yaml now authored for both. Asset gate (portraits,
-│   │                         #   POI landscapes, generated OGG) not yet met for these — see
-│   │                         #   pack README.
+│   │                         # neon_dystopia (franchise_nations) + pulp_noir (annees_folles)
+│   │                         #   asset gates now MET (portraits + POI landscapes rendered to
+│   │                         #   R2). heavy_metal: evropi complete, long_foundry portraits
+│   │                         #   pending. space_opera adds aureate_span (baroque corona
+│   │                         #   megastation, live) + perseus_cloud. spaghetti_western adds
+│   │                         #   five_points. tea_and_murder adds blackthorn_moor (draft,
+│   │                         #   assets pending). Remaining asset gaps: long_foundry portraits,
+│   │                         #   coyote_star POIs, blackthorn_moor (all). See pack README.
 │   └── <genre>/worlds/<world>/   # World-specific overrides
 ├── genre_workshopping/       # Pre-wired packs in design (caverns_sunden — deprecated;
 │                             #   low_fantasy).
