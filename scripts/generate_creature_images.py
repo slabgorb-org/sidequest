@@ -26,7 +26,7 @@ from render_common import (
     truncate_to_tokens,
 )
 
-DEFAULT_STEPS = 15
+DEFAULT_STEPS = 20
 log = logging.getLogger(__name__)
 
 
