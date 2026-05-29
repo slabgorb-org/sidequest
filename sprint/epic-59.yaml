@@ -363,3 +363,11 @@ stories:
     completed: '2026-05-29'
     type: bug
     review_verdict: approved
+  - id: 59-26
+    title: ship_combat confrontation edge bars render 0/1000000 hp — fix ablative-HP/edge-pool init for ship_combat (ADR-114); found during 67-8 live repro
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: bug
