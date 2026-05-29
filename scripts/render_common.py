@@ -301,6 +301,13 @@ async def send_render(
         "tier": tier,
         "seed": seed,
         "fidelity": fidelity,
+        # Caller-supplied inference-step override. The worker honors this over
+        # the (tier, fidelity) default from get_zimage_config; absent it, the
+        # tier default stands. Without this line the `--steps` flag was dead
+        # wiring — accepted by the CLI and threaded to send_render, then
+        # dropped on the floor here, so the daemon always used the tier default
+        # (15→30 produced identical ~125s renders). Validated worker-side.
+        "steps": steps,
     }
 
     if subject and genre and world:
