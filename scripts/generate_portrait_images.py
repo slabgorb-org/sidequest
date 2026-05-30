@@ -37,7 +37,7 @@ def _slugify_name(name: str) -> str:
     collapsed = re.sub(r"\s+", "_", lowered)
     return re.sub(r"[^a-z0-9_-]", "", collapsed)
 
-DEFAULT_STEPS = 15
+DEFAULT_STEPS = 20
 log = logging.getLogger(__name__)
 
 
