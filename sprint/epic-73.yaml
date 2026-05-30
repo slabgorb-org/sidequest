@@ -26,10 +26,13 @@ stories:
     title: advance_confrontation lost-update — route through canonical snapshot, not a fresh load/save that the end-of-turn save clobbers
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-30'
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-05-30'
     type: bug
+    review_verdict: approved
   - id: 73-4
     title: push/angle CritSuccess scores 0 — make beat-kind impact legible so a no-dial-move crit reads as intended, not broken (Sebastien/Jade)
     points: 2
