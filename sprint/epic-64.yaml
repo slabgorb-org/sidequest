@@ -157,3 +157,37 @@ stories:
     workflow: tdd
     completed: '2026-05-28'
     type: refactor
+  - id: 64-12
+    title: Make pack-level visual_style.yaml optional in loader when worlds are self-contained
+    description: 'Directive (Keith, 2026-05-29): ALL genre imagery is world-level color/flavor; NO genre/pack-level images and NO visual prompts at genre level. Each world already ships a self-contained visual_style.yaml. BLOCKER: loader.py:~1131 hard-requires a pack-level visual_style.yaml via _load_yaml (not optional) — deleting the pack-level file makes the pack unloadable, so it is currently restored to HEAD as a workaround. This story makes the pack-level visual_style.yaml OPTIONAL so the genre-level file can be removed, honoring the directive. Constraint: obey No Silent Fallbacks — if a pack omits pack-level visual_style AND a world also lacks its own, FAIL LOUD (do not silently substitute a default). Surfaced during the elemental_harmony image reorg + WWN Plan 3 work.'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - loader.py no longer hard-requires a pack-level visual_style.yaml; a pack loads when the pack-level file is absent but every world supplies its own visual_style.yaml
+      - 'Fail-loud preserved: a pack with neither a pack-level visual_style nor a world-level one raises a clear loader error (no silent default), per No Silent Fallbacks'
+      - elemental_harmony loads clean with its pack-level visual_style.yaml deleted (worlds burning_peace + shattered_accord carry their own)
+      - A loader test covers both the optional-present and the absent-but-worlds-covered paths
+  - id: 64-13
+    title: Migrate spaghetti_western poker + tea_and_murder auction confrontations to table_resolution schema (#522 follow-up)
+    description: "PR #522 (feat/table: free-for-all N-seat table model, server commit aab25c69) landed server-side table_resolution support PLUS content tests (tests/genre/test_poker_table_content.py, tests/genre/test_auction_table_content.py) that assert the real spaghetti_western poker and tea_and_murder auction confrontations use the NEW schema — but the matching CONTENT migration never shipped. Result: develop's server suite is RED by 12 (6 poker + 6 auction) on top of the 6-failure asset/corpus baseline. The content still carries the old dial-based player_metric/opponent_metric schema. Surfaced 2026-05-29 during WWN Plan 3 merge verification; the 12 are pre-existing develop debt independent of WWN, NOT WWN regressions."
+    points: 3
+    priority: p2
+    status: canceled
+    repos: content
+    workflow: tdd
+    acceptance_criteria:
+      - spaghetti_western poker confrontation migrated to resolution_mode=table_resolution, win_condition=table_showdown, table_game=poker, max_decision_points>=1, with no dial metrics (player_metric/opponent_metric removed); the 6 test_poker_table_content tests pass
+      - tea_and_murder auction confrontation migrated likewise (table_game=auction); the 6 test_auction_table_content tests pass
+      - Required beat_ids present per each test's has_required_beat_ids expectation
+      - Full server suite returns to the 6-failure asset/corpus baseline (no table failures remain)
+    type: refactor
+  - id: 64-14
+    title: EH narrative-chargen reach (Guardian/Wanderer class_hints) + POI cover slug wiring
+    points: 3
+    priority: p3
+    status: backlog
+    repos: content
+    workflow: trivial

@@ -254,3 +254,46 @@ char-creation); unit + binding + wiring + content-load tests.
   `test_wwn_effort.py`; do not fake it with per-turn decay.
 - **Magic-governing attribute ambiguity (Spirit vs Harmony).** Mitigation: decided during content
   authoring against the elemental_harmony class concepts; recorded in `classes.yaml`.
+
+---
+
+## Amendment — 2026-05-29: Faithful magic substrate (supersedes §3's ResourcePool choice)
+
+**Author:** The Man in Black (architect) · **Decision-driver:** Keith Avery · **Status:** approved, supersedes §3/§3.1/§3.2/§3.4 substrate language.
+
+§3 chose the generic session `ResourcePool` for Effort/spell-slots on the premise that the engine "already has" a per-character, chargen-seeded, auto-span pool. Investigation of the live engine + a read of the WWN SRD v1.0 (Crawford, Sine Nomine, CC0) showed both halves of that premise are wrong, and Keith's directive is unambiguous: **build the most-WWN-faithful model; the playgroup has zero attachment to current mechanics; reuse only the *interaction* plumbing (dice resolution, OTEL spans, beat dispatch, per-core pools, builder seeding) that the SWN and CWN ports already proved — not any existing magic *rules*.**
+
+### A. Why `ResourcePool` is rejected as the substrate
+- `ResourcePool` is **session-scoped** (`GameSnapshot.resources: dict[str, ResourcePool]`); `CreatureCore` has no resource-pool field. Effort is inherently **per-character** and even **per-class-source**.
+- `init_resource_pools` / `apply_pool_decay` have **zero production callers**; pool OTEL spans were deferred (story 42-4). So "seeded at chargen, mutated by patches that auto-emit spans" is aspirational.
+- The WWN SRD models Effort and spells far more richly than a scalar pool (below). Forcing them onto `ResourcePool` or the C&C `MagicState` ledger would be unfaithful.
+
+The faithful pattern is the one the SWN/CWN ports already use for per-character resources: a **bespoke per-`CreatureCore` pool model** (cf. `HpPool`, `SystemStrainPool`) seeded by the builder (cf. `seed_system_strain`), mutated by ruleset-module methods that **emit `wwn.*` spans explicitly**. New `CreatureCore` fields are authorized.
+
+### B. Effort — per-source commitment pools (SRD §1.4.4)
+Per character, `effort: dict[str, EffortPool]` keyed by class-source (High Mage / Vowed / Elementalist…); "points from one class cannot fuel another." Each `EffortPool` = `max: int` + `commitments: list[EffortCommitment]`, where `EffortCommitment = {points:int, duration: "maintained"|"scene"|"day", label:str}`; `available = max − sum(committed)`. `max = 1 + relevant_skill_level + governing_attr_mod` (Partial class: −1, min 1). Reclaim: **maintained** = explicit Instant action; **scene** = scene-end hook; **day** = night's-rest hook (comfort-gated — no recovery if hungry/cold/sick/sleeping rough).
+
+### C. Spells — prepared list + daily casts + max level (SRD §4.2), NOT per-level Vancian
+Per character, `SpellcastingState = {prepared: list[spell_id], casts_remaining:int, casts_per_day:int, max_spell_level:int}`. A cast spends **one** from the daily `casts_remaining` pool on **any** prepared spell of level ≤ `max_spell_level`; the same spell may be cast repeatedly while casts remain; refresh `casts_remaining → casts_per_day` on a night's rest. (The C&C `learned_v1` per-level slot ledger is the wrong shape and is **not** reused.)
+
+### D. Cast spine — `WwnRulesetModule.resolve_spellcast(...)` (Approach C upheld)
+1. Validate: spell is prepared, `casts_remaining > 0`, `spell.level ≤ max_spell_level` → else **fail loud / cast refused**, recorded on `wwn.spell.cast` (`refused=True`). 2. Spend one cast. 3. If the spell offers a save, the **defender** rolls their own save via inherited `save_params` (the spell names the category; Mental is the common default). 4. If a damage spell, roll `caster_level × die` via inherited `resolve_damage`, halved on a made save. 5. Bespoke non-damage effect → **narrator prose** (`mechanical_effect`). Engine guarantees economy + rolls are real; effect stays open-ended.
+
+### E. Warrior — Fray Die was an SWN mis-import; corrected to the real WWN abilities (SRD §1.5.18)
+WWN Warriors have **no Fray Die**. Replace with: **Killing Blow** — add `ceil(level/2)` to the damage of any attack/spell/ability **and** to Shock (a rider in `resolve_damage`; span `wwn.killing_blow`); and **Veteran's Luck** — once/scene, Instant action, turn one own miss into a hit *or* one enemy hit-on-you into a miss (scene-scoped used-flag reset at scene end; span `wwn.veterans_luck`). `resolve_fray_die` and the `wwn.fray_die` span are **struck from the design.**
+
+### F. Per-class magic data lives on the class-def model
+The Effort-max formula and the casts/prepared/max-level tables are **per-class** → carried on the class-def magic config (model extended in Plan 2, authored in Plan 3), consumed by the builder at seed time.
+
+**Skill-level gap (resolved):** WWN is skill-based but the engine has no per-character skill registry (skill level is a roll-time wire integer only). Resolution: the caster's *relevant magic skill* and its *chargen starting level* are authored on the class magic config and consumed by the builder for the Effort-max formula. A full per-character skill system is **out of scope / deferred**.
+
+### G. Spans (emitted explicitly by the module, per the port pattern)
+`wwn.spell.cast`, `wwn.effort.commit`, `wwn.effort.reclaim` (incl. scene/day reset), `wwn.killing_blow`, `wwn.veterans_luck`. (Pool-mutation auto-spans are deferred infra and are NOT relied upon.)
+
+### H. Reset hooks (wired for real, per CWN system-strain recovery precedent)
+Scene-end Effort reclaim at `Session.end_scene`; day/long-rest Effort reclaim + `casts_remaining` refresh at a fired rest boundary. Not faked with per-turn decay.
+
+### I. Plan split (revises §7/§8)
+- **Plan 2 (server magic engine, this plan):** `MagicConfig`; per-core `EffortPool`/`EffortCommitment`/`SpellcastingState`; class-def magic-config model extension; `WwnRulesetModule` methods (`commit_effort`, `reclaim_effort`, `resolve_spellcast`, Killing Blow rider, `veterans_luck`, scene/day reset); chargen seeding helper; `wwn.*` magic spans; **unit tests against synthetic fixtures** (mirroring Plan 1's lethality tests).
+- **Plan 3 (content + end-to-end):** the `elemental_harmony` binding (rules/inventory/classes/char-creation), the `cast_spell` dispatch-routing branch, and the end-to-end wiring tests against the real pack.
+- **Known deferral (flagged loudly):** like `resolve_downed` in Plan 1, the cast spine is **dead in production dispatch until Plan 3 wires the `cast_spell` beat**. Plan 2 builds + unit-tests the engine; Plan 3 wires + integration-tests it against the bound pack.
