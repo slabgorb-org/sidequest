@@ -1,0 +1,48 @@
+id: '73'
+type: epic
+title: Confrontation Engine Hardening
+description: Follow-ups flagged during the 59-8 social_duel opposed_check fix (sq-playtest-pingpong). social_duel was converted to opposed_check + made resolvable, but its siblings (negotiation/scandal/trial) still run beat_selection with frozen opponent dials, trial has no withdraw beat (soft-lock risk), the advance_confrontation tool has a live lost-update, and the resolution turn re-fires a cosmetic initiated span. Generalize the social_duel recipe across the confrontation family.
+priority: p2
+status: backlog
+repos: sidequest-server,sidequest-content
+stories:
+  - id: 73-1
+    title: Convert negotiation + scandal to opposed_check (+ per-confrontation ADR-093 balance pass)
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-content,sidequest-server
+    workflow: tdd
+    type: bug
+  - id: 73-2
+    title: 'trial: author withdraw/concede resolution beat + opposed_check — currently no mid-trial exit (soft-lock risk)'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-content,sidequest-server
+    workflow: tdd
+    type: bug
+  - id: 73-3
+    title: advance_confrontation lost-update — route through canonical snapshot, not a fresh load/save that the end-of-turn save clobbers
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: bug
+  - id: 73-4
+    title: push/angle CritSuccess scores 0 — make beat-kind impact legible so a no-dial-move crit reads as intended, not broken (Sebastien/Jade)
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server,sidequest-ui
+    workflow: tdd
+    type: bug
+  - id: 73-5
+    title: Suppress re-fired encounter.confrontation_initiated span on resolution turn (GM-panel noise)
+    points: 1
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: chore
