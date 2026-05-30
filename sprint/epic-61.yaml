@@ -396,7 +396,8 @@ stories:
       FIX DIRECTION (pick per measurement): either (a) move the per-turn volatile block AFTER the last stable cache breakpoint and send it UNCACHED (plain input $3/M — cheaper than a 2x write read once), or (b) split the breakpoint so only the genuinely-new tail (latest action + narration delta, ~1k tok) is written each turn while the stable session prefix is written ONCE (~25k) and read thereafter. Option (b) projects ~$0.04/turn (cache_write drops 190k→~42k): roughly 2x the current per-turn cost recovered. Confirm 5m-vs-1h TTL choice for whatever remains cached — a once-read-then-invalidated block should never use the 1h (2x) write tier.
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-05-30'
     repos: server
     workflow: tdd
     acceptance_criteria:
@@ -405,5 +406,16 @@ stories:
       - 'Epic-61 flat-cost AC holds: at 50 turns per-turn cost within 20% of warmup steady-state (no linear creep from re-written cache)'
       - No volatile (changes-every-turn) block is written to the 1h-TTL cache tier; either uncached-input or 5m tier, justified by a read-count assertion
       - 'OTEL: a per-turn span exposes cache_write_tokens split into stable-prefix-write vs tail-write so the GM panel can see churn regressions (ties OTEL-observability principle)'
+    completed: '2026-05-30'
+    branch: feat/61-19-stop-volatile-cache-writes
     type: bug
-completed: '2026-05-29'
+    review_findings: 'Round 2: degenerate bounded-arm loop (Rule #6, half-fixed) + third stale comment paragraph in _build_messages_payload docstring. Both trivial 2-line fixes.'
+    review_verdict: approved
+  - id: 61-20
+    title: "Reduce per-turn volatile-tail write volume (option b): amortize session-static Valley content into the cached 1h prefix, leaving only the ~1k delta in the 5m tail — closes 61-19 AC1 (<2k/turn), AC2 (<=$0.05/turn), AC3 (flat at 50 turns). Architect-confirmed feasible via ADR-112/61-10 zone-promotion of the 'persistent across turns' AVAILABLE CULTURES block, magic hard_limits, and monster_manual out of the volatile Valley zone. Includes a live-validation probe + fixing residual stale comment at anthropic_sdk_client.py:339-342."
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 61-19
