@@ -352,3 +352,11 @@ stories:
     assignee: keith
     review_findings: 'Quality-bar green-rework: stale module docstring contradicts behavior (scenario_bind.py:5-21), 10 stale type:ignore[attr-defined], inline import copy, stale RED-phase comments, OTEL reason/guilty_npc assertion gaps. No correctness/security defects.'
     review_verdict: approved
+  - id: 71-33
+    title: Migrate pulp_noir scenarios to world tier (worlds/annees_folles/scenarios/) — restore scenario binding after 71-32 made bind world-aware
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: bug
