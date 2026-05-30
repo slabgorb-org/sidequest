@@ -253,10 +253,13 @@ stories:
     title: perseus_cloud one-sided combat — beat_selection has no server-driven enemy-attack path (resolve_opponent_attack)
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-30'
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-05-30'
     type: bug
+    review_verdict: approved
   - id: 71-22
     title: Glenross router latency AC5 — measure + diagnose 4-12s vs <1.2s budget (env vs code)
     points: 3
