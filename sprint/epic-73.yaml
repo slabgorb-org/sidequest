@@ -10,7 +10,8 @@ stories:
     title: Convert negotiation + scandal to opposed_check (+ per-confrontation ADR-093 balance pass)
     points: 5
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-05-30'
     repos: sidequest-content,sidequest-server
     workflow: tdd
     type: bug
