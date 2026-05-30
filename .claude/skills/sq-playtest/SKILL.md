@@ -27,7 +27,7 @@ Read `sq-playtest/pingpong.md` in this skill directory for the full coordination
 
 ## Phase 1: Stack Launch (Full-Stack)
 
-Poll for services- if services are not up, ask the user to start them. Start the save forensics service.
+Poll for services- if services are not up, ask the user to start them. (There is no separate save-forensics service to start — save forensics is a set of REST endpoints on the server itself; see Phase 3c.)
 
 Launch Playwright browser
 
@@ -45,7 +45,7 @@ mcp__playwright__browser_navigate(url="player1.local:5173")
 Take an initial screenshot to confirm the UI loaded. **Always pass `filename` with an absolute path to the shared screenshots dir — never let Playwright drop into cwd:**
 
 Open a tab to the OTEL dashboard: http://localhost:8765/dashboard
-Open a tab to the save forensics: http://localhost:8799/forensics
+(Save forensics is not a webpage — it's REST endpoints under `localhost:8765/api/debug/save/*`. See Phase 3c.)
 
 ```
 mcp__playwright__browser_take_screenshot(filename="~Projects/sq-playtest-screenshots/000-initial-load.png")
@@ -114,9 +114,34 @@ mcp__playwright__browser_press_key(...)
 Describe what you're doing before each action ("Clicking 'New Game' button").
 
 
-### 3b. Check logs (in /tmp)
+### 3b. Check logs
 
-### 3c. Check OTEL and save forensics
+Services tee to `~/.sidequest/logs/sidequest-{server,client,daemon}.log` (NOT `/tmp` — that path is retired; some old code comments still reference it). Tail with `tail -F ~/.sidequest/logs/sidequest-server.log` or `just logs server`.
+
+### 3c. Check OTEL and save forensics — the lie detectors
+
+Use these every few turns, not just when something looks broken. The narrator writes convincing prose with **zero mechanical backing**; these surfaces are the only way to catch improvisation masquerading as engine state.
+
+**OTEL dashboard (`http://localhost:8765/dashboard`) — live state + per-turn spans:**
+
+- **② State tab** is the live save snapshot. Read it to check NPCs, location/region, HP, stats, and active tropes against what the narration *claimed*. Expand **Raw JSON ▸** for the full snapshot when a widget looks wrong or empty.
+  - **Gotcha:** the "NPC Registry" widget reads the runtime `npc_pool` (who is present in the *current scene*), NOT the authored `npcs` roster. It frequently shows "No NPCs in registry yet" even when the roster is full. Do not trust the widget — check `npcs` in Raw JSON or via the forensics endpoint below.
+  - **Gotcha:** the snapshot character block may show `HP: undefined/undefined` even when the in-game panel shows real HP (ADR-114 ablative-HP field mismatch in the dashboard reader). Cross-check the game UI.
+- **③ Subsystems**, **⑥ Prompt**, **⑦ Lore** tabs show what fired each turn.
+
+**Save forensics — post-hoc REST endpoints on the server (there is NO separate `:8799` service; that reference is stale):**
+
+```bash
+curl -s localhost:8765/api/debug/saves                       # list saves
+curl -s localhost:8765/api/debug/save/{slug}/timeline        # per-round event-kind counts + authors
+curl -s localhost:8765/api/debug/save/{slug}/snapshot        # full latest snapshot
+curl -s localhost:8765/api/debug/save/{slug}/turn/{round}    # one round's events
+curl -s localhost:8765/api/debug/state                       # live in-memory state
+```
+
+Pipe through `python3 -m json.tool` (or a small extractor) to inspect `npcs`, `npc_pool`, room/region state, footnotes, etc.
+
+**NPC roster signal:** to confirm authored crew / origin-screen NPCs seeded, check the `npcs` array in the snapshot — not the dashboard widget. In `coyote_star` solo, **Kanga Moana-Teru** (original Kestrel crew) is the clear signal: if she is in `npcs`, the roster seeded correctly. If the dashboard says "no NPCs" but Kanga is in `npcs`, that's the widget reading `npc_pool`, not a roster bug.
 
 ### 3d. Triage findings
 
