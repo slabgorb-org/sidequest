@@ -311,9 +311,11 @@ stories:
     title: OTEL-coverage split — encounter beats land in events table but emit no watcher spans (live GM panel half-blind)
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-05-30'
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-05-30'
     type: bug
   - id: 71-29
     title: intent_router degrade path doesn't persist decompose spans to turn_telemetry (GM-panel blind on degraded turns)
@@ -360,3 +362,11 @@ stories:
     repos: server,content
     workflow: tdd
     type: bug
+  - id: 71-34
+    title: Extract shared OTEL watcher-test harness (_setup/_Sock/_wait_for) into tests/integration/conftest — dedupe across combat + beat-advance wiring tests
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: refactor
