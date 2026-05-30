@@ -301,3 +301,35 @@ stories:
     repos: sidequest-server
     workflow: trivial
     type: bug
+  - id: 71-28
+    title: OTEL-coverage split — encounter beats land in events table but emit no watcher spans (live GM panel half-blind)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: bug
+  - id: 71-29
+    title: intent_router degrade path doesn't persist decompose spans to turn_telemetry (GM-panel blind on degraded turns)
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: bug
+  - id: 71-30
+    title: action_reveal.dropped_rate_limit also ephemeral — add to _EPHEMERAL_EVENT_TYPES (sibling of composing-storm fix)
+    points: 1
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: chore
+  - id: 71-31
+    title: space_opera doctrine — move named/backstoried cultures from genre to world layer, genre ships generic culture slots (Crunch in Genre, Flavor in World)
+    points: 3
+    priority: p3
+    status: backlog
+    repos: sidequest-content
+    workflow: tdd
+    type: refactor
