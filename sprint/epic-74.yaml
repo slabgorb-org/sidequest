@@ -1,0 +1,16 @@
+id: '74'
+type: epic
+title: Genre tier = mechanics only
+description: 'Genre packs hold MECHANICS ONLY; all flavor (lore, cultures, archetypes, theme, visual_style, audio, weather, tropes) lives in the WORLD, not the genre. Rationale (Keith, 2026-05-30): worlds diverge too hard for shared genre flavor to be meaningful or even correct — spaghetti_western genre tropes authored for the Mexican border are wrong for 1878 Pittsburgh (the_real_mccoy). Part 1 shipped in sidequest-content PR #299 (dead-file expunge + spaghetti calendar moved + slimmed to the world tier where the loader actually reads it). This epic covers the SERVER loader/consumer refactor that must land before the remaining MANDATORY genre-tier flavor files can be deleted (loader hard-requires lore/cultures/archetypes/theme/visual_style/audio today), the trope-engine change to read world tropes, and the per-world content migration. Spec + full audit: orc-quest/docs/genre-pack-content-audit.md'
+priority: p2
+status: backlog
+repos: pennyfarthing
+stories:
+  - id: 74-1
+    title: Loader refactor — genre-tier flavor becomes world-tier/optional (no genre flavor)
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server,sidequest-content
+    workflow: tdd
+    type: refactor
