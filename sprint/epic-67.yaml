@@ -79,11 +79,12 @@ stories:
       DELIVERABLES: (1) ADR 'Authenticated player identity via Cloudflare Access + player-vs-character identity split' under the ADR-037 umbrella (trust boundary + local-dev Host derivation). (2) Architect design pass FIRST (phase: spec/design). (3) Then resolver + wiring + peer-identity storage + UI suffix sourced from the real identity field.
     points: 5
     priority: p2
-    status: in_review
+    status: done
     assigned_to: Keith
     started: '2026-05-31'
     repos: server,ui
     workflow: tdd
+    completed: '2026-05-31'
   - id: 67-7
     title: Duplicate-socket reconnect loop strands solo session in AwaitingConnect — dice/action frames hard-rejected mid-confrontation
     description: "Playtest 2026-05-28 (coyote_star solo) finding #C5. Committing a dogfight beat fired DICE_THROW frames the server rejected with 'session.message_rejected_unbound type=DICE_THROW state=AwaitingConnect' (x4+); one ORBITAL_INTENT rejected the same way. A single beat took ~5 rejected attempts + a full page reload before one roll landed — chronic socket churn keeps the session unbound during the confrontation. Server log shows DUPLICATE sockets ('connection open' x2, two ws.connection_accepted/chargen_gate cycles per reconnect) and the AwaitingConnect->Playing handshake NOT completing before the dice frame is sent. After a deliberate page reload the handshake completed (slug_resumed turn=3, slug_resume_confrontation_emitted ship_combat) and the very next Broadside resolved (dice.throw_resolved total=22 CritSuccess). So the ENGINE is fine; the TRANSPORT/session-binding is the block. The rejection itself is CORRECT — every handler (dice_throw, check_throw, player_action, orbital_intent, yield, journal_request) guards on Playing state; the real bug is WHY the solo session keeps reconnecting and opening a second socket (the page appears to remount repeatedly). NEEDS LIVE REPRO to pin: UI reconnect-loop (remount) vs server session-binding race. Secondary angle: buffer/retry a beat's action frame across a reconnect instead of hard-rejecting (a cross-handler behavior change — same 'heavy-hammer WS teardown' class explicitly scoped OUT of #G3, so it wants a deliberate decision here, not a one-off). Observed SOLO so far; unknown if also MP. Adjacent: 59-20 (per-recipient delivery firewall — distinct), #G3/#G1 (WS teardown hardening), the window.WebSocket patch wiped mid-session. Repos: server + ui (the producer of the duplicate connect is likely UI mount/reconnect logic; the bind FSM is server)."
