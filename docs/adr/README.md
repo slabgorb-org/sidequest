@@ -100,6 +100,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-113: Intent Router — Mechanical-Engagement Spine](113-intent-router-mechanical-engagement-spine.md) | ✓ accepted | *partial* → sprint/epic-59.yaml#59-4 |
 | [ADR-118: Universal Retrieval Layer — Index + Per-Turn Floor-and-Fill Retrieval for NPCs, Locations, and Factions](118-universal-retrieval-layer.md) | ✓ accepted | deferred |
 | [ADR-123: Mechanical-Engagement Pipeline — Confidence-Gated Topological Dispatch Bank, Precondition/Unregistered Gates, and the LethalityArbiter](123-mechanical-engagement-pipeline.md) | ✓ accepted | live |
+| [ADR-134: Per-Session API Cost Runaway Detector and Hard-Kill Ceiling — Rolling-Baseline Triggers and Terminal Refusal](134-cost-runaway-ceiling.md) | ✓ accepted | live |
 
 ## Game Systems
 
@@ -128,6 +129,9 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-117: Pluggable Ruleset Module System — Per-Genre Resolution Behind a RulesetModule Seam](117-pluggable-ruleset-module-system.md) | ✓ accepted | *partial* → docs/superpowers/specs/2026-05-26-pluggable-srd-ruleset-modules-design.md |
 | [ADR-125: Chassis/Rig as a First-Class Entity — Bidirectional Bond Ledger, Seven-Tier Threshold Ladder, and Interior Render](125-chassis-rig-entity.md) | ✓ accepted | live |
 | [ADR-126: Pluggable Magic System — MagicPlugin Protocol, Import-Time Registry, and Validator Severity Model](126-pluggable-magic-system.md) | ✓ accepted | live |
+| [ADR-128: Trope Temporal Governor, Seed-Trope Deck, and NPC Development Ladder — Pile-Up Prevention and Resume-Safe Randomness](128-trope-governor-seed-deck.md) | ✓ accepted | live |
+| [ADR-129: N-Seat Table Engine — Generalized Sealed-Commit Loop for Poker/Auction with Cheat/Accuse Mechanics](129-table-game-engine.md) | ✓ accepted | live |
+| [ADR-130: Orbital Story-Time Clock and Course Model — Beat-Driven Time Advance and Approximate Hohmann Transit](130-orbital-clock-course.md) | ✓ accepted | live |
 
 ## Frontend / Protocol
 
@@ -139,6 +143,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-079: Genre Theme System Unification](079-genre-theme-unification.md) | ✓ accepted | live |
 | [ADR-094: Orrery Label Placement — Three-Strategy Taxonomy](094-orrery-label-placement-strategies.md) | ✓ accepted | live |
 | [ADR-107: Out-of-Band Aside Channel — Non-Turn-Consuming Player→GM Table-Talk](107-out-of-band-aside-channel.md) | ✓ accepted | live → docs/superpowers/specs/2026-05-17-aside-channel-design.md |
+| [ADR-133: Client State Reconciliation v2 — Full-Replay Mirror, Streaming-Narration Accumulator, and ImageBus Scrapbook Merge](133-client-state-reconciliation-v2.md) | ✓ accepted | live |
 
 ## Multiplayer
 
@@ -159,6 +164,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-038: WebSocket Transport Architecture](038-websocket-transport-architecture.md) | ✓ accepted | live |
 | [ADR-046: GPU Memory Budget Coordinator](046-gpu-memory-budget-coordinator.md) | ✓ accepted | — |
 | [ADR-047: Prompt Injection Sanitization Layer](047-prompt-injection-sanitization.md) | ✓ accepted | live |
+| [ADR-131: Daemon↔Server Out-of-Band Contracts — Liveness Heartbeat, OTEL HTTP Bridge, Output-Dir Handshake, R2 Artifact Layout](131-daemon-server-oob-contracts.md) | ✓ accepted | live |
 
 ## Narrator / Text
 
@@ -188,6 +194,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-070: MLX Image Renderer — Replace PyTorch/diffusers with Apple MLX](070-mlx-image-renderer.md) | ✓ accepted | live |
 | [ADR-086: Image-Composition Taxonomy — Portraits, POIs, Illustrations](086-image-composition-taxonomy.md) | ✓ accepted | live |
 | [ADR-095: Daemon Music Tier via ACE-Step](095-daemon-music-tier-via-ace-step.md) | ✓ accepted | live |
+| [ADR-127: Image Prompt-Composition Pipeline — Catalog Recipes, Token-Budget Eviction Ladder, and SceneInterpreter Rule Cascade](127-image-composition-pipeline.md) | ✓ accepted | live |
 
 ## Turn Management
 
@@ -215,6 +222,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-090: OTEL Dashboard Restoration after Python Port](090-otel-dashboard-restoration.md) | ✓ accepted | live |
 | [ADR-103: Native OTEL via Tool Registry](103-native-otel-via-tool-registry.md) | ✓ accepted | *partial* → ADR-101 |
 | [ADR-124: Save-Forensics Architecture — Read-Only Tiered Save Inspection, Loud-Skip Folds, and Per-Round Mechanical Census](124-save-forensics-architecture.md) | ✓ accepted | live |
+| [ADR-132: WatcherHub Infrastructure — builtins-Pinned Singleton, ContextVar Per-Session Isolation, and Ephemeral-Event Taxonomy](132-watcherhub-infrastructure.md) | ✓ accepted | live |
 
 ## Codebase Decomposition
 
