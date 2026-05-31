@@ -10,11 +10,13 @@ stories:
     title: Convert negotiation + scandal to opposed_check (+ per-confrontation ADR-093 balance pass)
     points: 5
     priority: p2
-    status: in_progress
+    status: done
     started: '2026-05-30'
     repos: sidequest-content,sidequest-server
     workflow: tdd
+    completed: '2026-05-30'
     type: bug
+    review_verdict: approved
   - id: 73-2
     title: 'trial: author withdraw/concede resolution beat + opposed_check — currently no mid-trial exit (soft-lock risk)'
     points: 3
