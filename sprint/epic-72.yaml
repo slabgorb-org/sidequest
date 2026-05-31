@@ -100,7 +100,11 @@ stories:
     title: observation_pending gate-ordering assert (gate must precede mint)
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-05-31'
     repos: sidequest-server
     workflow: trivial
+    completed: '2026-05-31'
     type: chore
+    review_findings: 'APPROVED. Format reflow applied (commit b8677ea4); tree now ruff-format clean. Code correct, 40/40 green, rule-compliant, no logic findings.'
+    review_verdict: approved
