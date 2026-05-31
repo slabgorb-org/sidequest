@@ -79,7 +79,9 @@ stories:
       DELIVERABLES: (1) ADR 'Authenticated player identity via Cloudflare Access + player-vs-character identity split' under the ADR-037 umbrella (trust boundary + local-dev Host derivation). (2) Architect design pass FIRST (phase: spec/design). (3) Then resolver + wiring + peer-identity storage + UI suffix sourced from the real identity field.
     points: 5
     priority: p2
-    status: backlog
+    status: in_review
+    assigned_to: Keith
+    started: '2026-05-31'
     repos: server,ui
     workflow: tdd
   - id: 67-7
