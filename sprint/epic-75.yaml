@@ -83,12 +83,14 @@ stories:
     title: 'Universal retrieval: card sync/reproject hook wired to 75-1 accretion trigger (ADR-118)'
     points: 3
     priority: p2
-    status: in_progress
+    status: done
+    started: '2026-06-01'
     repos: sidequest-server
     workflow: tdd
     depends_on: 75-4
-    started: '2026-06-01'
+    completed: '2026-06-01'
     branch: feat/75-6-universal-retrieval-card-sync
+    review_verdict: approved
   - id: 75-7
     title: 'Universal retrieval: OTEL retrieval.universal instrumentation + GM-panel surface (ADR-118)'
     points: 3
