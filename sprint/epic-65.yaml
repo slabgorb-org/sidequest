@@ -197,9 +197,13 @@ stories:
     title: Lore POI gallery — feed geography renderer from history.yaml, manifest-gated images
     points: 3
     priority: p1
-    status: backlog
+    status: done
     repos: server
     workflow: tdd
+    completed: '2026-06-01'
+    branch: feat/65-8-lore-poi-gallery
+    session_file: .session/65-8-session.md
+    review_verdict: approved
   - id: 65-9
     title: Lore Cast section — public NPC projection + manifest-gated portraits
     points: 3
