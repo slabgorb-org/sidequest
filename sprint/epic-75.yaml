@@ -106,3 +106,11 @@ stories:
     repos: sidequest-server
     workflow: tdd
     type: chore
+  - id: 75-10
+    title: Wire player-NPC reference signal into the budgeted working-set brief tier (75-2 carryover, ADR-118)
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    depends_on: 75-5
