@@ -1,9 +1,11 @@
-# `travelers_tales` Genre + Oz World — Design Spec
+# `wry_whimsy` ("Wry Whimsy") Genre + Oz World — Design Spec
 
 **Date:** 2026-06-01
 **Author:** GM
-**Status:** Draft — pending Keith review
-**Scope:** New genre pack `travelers_tales` (genre-level chassis) + the **Oz** world authored to full playable depth. Wonderland and Gulliver are named in the genre with one-paragraph identities each; they are authored deep in later passes.
+**Status:** Approved — decisions locked (genre name, era, workshop-first); proceeding to plan
+**Scope:** New genre pack **`wry_whimsy`** (genre-level chassis) + the **Oz** world authored to full playable depth. Wonderland and Gulliver are named in the genre with one-paragraph identities each; they are authored deep in later passes.
+
+**Locked decisions:** Genre name **Wry Whimsy** (`wry_whimsy`) · Oz era **Wizard-era, everything primed** (matriarchal/Ozma/Jinjur payload seeded latent) · Author in **`genre_workshopping/wry_whimsy/`** first.
 
 ---
 
@@ -27,7 +29,7 @@ All three source corpora are public domain:
 
 Same rulebook; **the world sets the lethality dial and tone axes.** This is the SOUL principle "Crunch in the Genre, Flavor in the World" doing exactly its job. Gender also runs as a live current across the gradient: **Oz is female-governed (male power is humbug)**, **Wonderland is ruled by a capricious Queen who out-tyrants her do-nothing King**, **Gulliver is savagely male court-politics**.
 
-**Working name:** `travelers_tales` (Swift's literal title; also what Alice and Dorothy *are*). Adjustable.
+**Genre name (locked):** **Wry Whimsy** (`wry_whimsy`) — dry wit riding with the whimsy; telegraphs the light→savage gradient.
 
 ---
 
@@ -88,9 +90,14 @@ You always play a visitor from the ordinary world. The archetype is *how you cop
 
 ### 4.1 Era
 
-**Recommended baseline: Wizard-era Oz** (the *Wonderful Wizard of Oz*, 1900, moment). Rationale: it makes the **gender pillar the central discovery**. The Wizard rules the Emerald City by pure illusion — the one man who claims power, and he's a fraud — while every entity with *real* power is a woman: Glinda (good, South), the Wicked Witch of the West (menace, West), the freshly-dead Witch of the East, the Good Witch of the North, Mombi (hedge-witch, North). The sandbox's structural truth, discoverable by play, is that **male authority in Oz is humbug or anxiety, and the women hold everything.** Live menace, iconic geography, the hottest seam (the curtain).
+**LOCKED: Wizard-era Oz, everything primed** (the *Wonderful Wizard of Oz*, 1900, moment). Rationale: it makes the **gender pillar the central discovery**. The Wizard rules the Emerald City by pure illusion — the one man who claims power, and he's a fraud — while every entity with *real* power is a woman: Glinda (good, South), the Wicked Witch of the West (menace, West), the freshly-dead Witch of the East, the Good Witch of the North, Mombi (hedge-witch, North). The sandbox's structural truth, discoverable by play, is that **male authority in Oz is humbug or anxiety, and the women hold everything.** Live menace, iconic geography, the hottest seam (the curtain).
 
-*Alternate (swappable): Ozma-era Oz* (post–*Marvelous Land*, 1904) — matriarchy fully realized, Ozma on the throne, Glinda dominant, more utopian/stable, the Tip→Ozma material live. Richer on the gender pillar as *established order* but lower on live menace and dilutes the humbug seam. **This is the one open era-decision for Keith.**
+**"Everything primed" means the post–*Marvelous Land* matriarchal payload is seeded *latent* in the Wizard-era baseline, loaded for Living-World advancement — not yet triggered:**
+- **Ozma** is alive but hidden as the boy **Tip** under Mombi's enchantment (the lost-princess hook, discoverable/promotable).
+- **Jinjur's Army of Revolt** is a coiled spring — suffragette unrest seeded in the Emerald City / Gillikin country, ready to rise.
+- **Glinda** already *holds the secret* of the rightful heir; her court is the legitimist engine waiting for its moment.
+
+This lets emergent play evolve Oz **toward** the Ozma-era reveal organically (the Wizard departs, the witches fall, the women fill the vacuum) without pre-baking it. *Ozma-era-as-baseline was considered and set aside — it dilutes the humbug seam and the live menace.*
 
 ### 4.2 Pillars
 
@@ -174,7 +181,7 @@ The Emerald City (throne room, palace, the green spectacles gate); the Yellow Br
 
 ## 6. Content file manifest
 
-### Genre level — `genre_packs/travelers_tales/` (or `genre_workshopping/` first)
+### Genre level — `genre_workshopping/wry_whimsy/` (workshop-first, per locked decision)
 
 | File | Contents |
 |------|----------|
@@ -194,7 +201,7 @@ The Emerald City (throne room, palace, the green spectacles gate); the Yellow Br
 | `audio.yaml`, `audio/` | Mood→track (assets deferred) |
 | `cartography.yaml` | Map config |
 
-### World level — `genre_packs/travelers_tales/worlds/oz/`
+### World level — `genre_workshopping/wry_whimsy/worlds/oz/`
 
 | File | Contents |
 |------|----------|
@@ -222,8 +229,8 @@ The Emerald City (throne room, palace, the green spectacles gate); the Yellow Br
 
 ---
 
-## 8. Open decisions for Keith
+## 8. Decisions (locked 2026-06-01)
 
-1. **Genre name** — `travelers_tales` vs. an alternative.
-2. **Oz era** — Wizard-era (recommended; gender-as-discovery, hot seam) vs. Ozma-era (matriarchy-as-established-order, Tip→Ozma live).
-3. **Workshop vs. live** — author in `genre_workshopping/` first (recommended; matches the pre-wired-pack convention) or straight into `genre_packs/`.
+1. **Genre name** — ✅ **Wry Whimsy** (`wry_whimsy`).
+2. **Oz era** — ✅ **Wizard-era, everything primed** (matriarchal/Ozma/Jinjur payload seeded latent for Living-World advancement).
+3. **Workshop vs. live** — ✅ **Workshop-first** (`genre_workshopping/wry_whimsy/`).
