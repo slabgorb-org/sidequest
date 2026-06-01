@@ -1,0 +1,62 @@
+id: '76'
+type: epic
+title: Universal Retrieval Follow-Ups — 75-6 Hardening + Source Coverage
+description: "Non-blocking follow-ups carried forward from Story 75-6 (ADR-118 §D2 entity card sync/reproject) review + finish. Two threads: (1) HARDENING — close the untested dispatch_worker entity_pending gate, tighten loose test assertions, mirror the lore worker's expected_dim guard, harden the embed log against future content leakage, and fix entity-only-turn telemetry. (2) SOURCE COVERAGE — the index is NPC-pool-only today (ADR-118-permitted NPC-first v1); extend sync_entity_cards to stateful snapshot.npcs, factions, and locations so the 'universal' retrieval index is actually universal. Blocks the full value of 75-7 (OTEL/GM-panel) and 75-8 (e2e)."
+priority: p2
+status: backlog
+repos: sidequest-server
+stories:
+  - id: 76-1
+    title: dispatch_worker entity_pending gate regression test — assert sd.embed_task spawns on an entity-only turn (seed pool member, no lore, call lore_embed.dispatch_worker). Guards the 75-6 silent-revert risk.
+    points: 1
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: chore
+  - id: 76-2
+    title: "Tighten 3 loose 75-6 test assertions (python.md #6): result.embedded >=1 -> ==1; over-broad failed_refs guard -> exact ['   ']; add assert op=='synced' on the skipped-path watcher event."
+    points: 1
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: chore
+  - id: 76-3
+    title: expected_dim parity for the entity embed worker — mirror lore's dimension guard in embed_pending_entity_cards + EntityStore.update_embedding so a mid-session daemon model-dim change cannot write a stale-dim vector (currently self-heals one turn later via requeue).
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: refactor
+  - id: 76-4
+    title: Harden embed text-too-large log against future content leakage — log type(exc).__name__ instead of the ValueError object in entity_embedding.py AND lore_embedding.py (defense-in-depth; safe today, fragile if a content-bearing ValueError is introduced).
+    points: 1
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: refactor
+  - id: 76-5
+    title: Entity-only-turn embed telemetry precision — surface entity_pending in the lore_embed dispatch 'completed' and 'dispatch_skipped' events so an entity-only turn no longer reports pending_at_dispatch=0 with no entity-queue signal.
+    points: 1
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: refactor
+  - id: 76-6
+    title: 'Source coverage: sync stateful snapshot.npcs into the entity index — add an Npc projector path (project_npc_card currently takes only NpcPoolMember) and extend sync_entity_cards so scene-stateful NPCs, not just pool members, are retrievable.'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 76-7
+    title: 'Source coverage: sync factions + locations into the entity index — wire faction (world lore) and location (diffuse: room graph / world_materialization / PG promotions) sources through project_faction_card/project_location_card so entity_sync.{faction,location}_count stop reading 0. Makes the universal index actually universal.'
+    points: 5
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
