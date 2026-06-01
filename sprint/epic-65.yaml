@@ -206,11 +206,24 @@ stories:
     review_verdict: approved
   - id: 65-9
     title: Lore Cast section — public NPC projection + manifest-gated portraits
+    description: |-
+      Lore Cast section: render the public NPC projection on the lore reference page with manifest-gated portrait <img>s — the portrait analog of 65-8's POI gate. REUSE 65-8's machinery: load_r2_manifest_keys(), the pack_dir.parent.parent/r2_manifest.json discovery rule, the gate-only-when-the-feature-is-present shape, and add a portrait-key analog to poi_image_key() (e.g. portrait_image_key()). Emit manifest_loaded (or a portrait-specific) OTEL span and reuse the existing portrait not_found span family.
+
+      CARRYOVER FROM 65-8 REVIEW (PR #573, all non-blocking on 65-8; fold in here because 65-9 touches the same gate code). See sprint/archive/65-8-session.md → Delivery Findings → Reviewer (review) and Design Deviations → Architect (reconcile) for full context.
     points: 3
     priority: p1
     status: backlog
     repos: server
     workflow: tdd
+    acceptance_criteria:
+      - "Cast section: render the public NPC projection with a portrait <img> gated on r2_manifest.json presence (portrait analog of 65-8's POI gate); authored-but-not-on-R2 NPCs render text-only, no broken image. Reuse load_r2_manifest_keys() + pack_dir.parent.parent discovery; add a portrait_image_key() analog to poi_image_key()."
+      - 'CARRYOVER 65-8 (No-Silent-Fallback e2e proof): add a route-level test that GET /reference/lore/{pack}/{world} for a feature-bearing world whose r2_manifest.json is ABSENT returns 500 (loud), not a silently image-free page. This closes the gap the 65-8 reviewer flagged for the shared gate.'
+      - "CARRYOVER 65-8 (loud-fail branch coverage): add test_load_manifest_entry_missing_key_raises_loudly — a manifest list whose entry is a dict missing 'key' must raise ValueError. Second loud-fail branch of load_r2_manifest_keys, currently uncovered."
+      - 'CARRYOVER 65-8 (assertion tightening): the manifest_loaded span test must assert the EXACT fixture entry_count (== N), not >= 1, so it also proves the gate read the fixture manifest rather than the production one (guards pack_dir.parent.parent resolution).'
+      - "CARRYOVER 65-8 (docstring accuracy): fix three 65-8 docstrings while editing those files — _gate_poi_slugs_on_manifest 'one span per render' (false for feature-less worlds), load_r2_manifest_keys 'once per process' (imprecise vs lru_cache), and poi_image_key (document that it returns a RAW R2 key compared directly to the manifest; the presenter must wrap it in resolve_asset_url, the gate must NOT)."
+      - 'CARRYOVER 65-8 (type annotations): annotate the two test helpers — _entry -> dict[str, object] and the gated_client fixture -> Iterator[TestClient] — in test_reference_poi_manifest_gate.py (and mirror in the new Cast test module).'
+      - 'CARRYOVER 65-8 (cache staleness): add a runbook note that load_r2_manifest_keys is lru_cached with no TTL/mtime — a manifest regenerated after an asset upload is not picked up until server restart (safe-failing: text-only, never broken). Optionally key the cache on the manifest file mtime so a regenerated manifest is picked up live.'
+      - "CARRYOVER 65-8 (optional observability): if a GM authoring-completeness view is wanted, add a distinct reference_poi_image_not_in_manifest span so 'authored but not on R2' is distinguishable from 'not authored' (today both collapse into poi_image_not_found). Defer unless the dashboard needs it."
   - id: 65-10
     title: Reference TOC/section-mapping repair + register POI and Cast sections
     points: 2
