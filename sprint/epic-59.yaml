@@ -435,13 +435,16 @@ stories:
     description: "Test-hygiene follow-up from Plan 2. The witnessed_act dispatch precondition (snapshot.political_state is None -> inert) is registered in sidequest-server/sidequest/agents/dispatch_precondition_gate.py (_INERT_PRECONDITIONS['witnessed_act']) and currently covered indirectly via tests/agents/test_witnessed_act_subsystem.py. Co-locate dedicated precondition coverage into tests/agents/test_dispatch_precondition_gate.py alongside the other subsystems' precondition tests (e.g. scenario_clue), so the gate's coverage lives in one place. Assert: inert (non-None reason) when political_state is None; not-inert (None) when hydrated. No production change."
     points: 1
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-02'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
       - 'test_dispatch_precondition_gate.py covers witnessed_act: inert when snapshot.political_state is None, not-inert when hydrated'
       - No production code change; existing test_witnessed_act_subsystem.py precondition assertion may remain or be removed once co-located
+    completed: '2026-06-02'
     type: chore
+    review_verdict: approved
   - id: 59-30
     title: _WITNESSES engagement witness for witnessed_act + movement (close political-spine lie-detector gap)
     description: "Wiring-audit residual (sq-wire-it, 2026-06-02). Plan 2b (#583) wired the witnessed_act PRODUCER (intent router prompt + intent_router.witnessed_act_classified span) and the engine emits its four premise/bloc dial spans. But the GENERIC engagement watcher (sidequest-server/sidequest/agents/dispatch_engagement_watcher.py:180) _WITNESSES dict still covers only 6 subsystems — no witnessed_act, no movement (movement is a pre-existing gap). Without a witness, the 'dispatched-but-didn't-engage' lie detector cannot flag the case where the router classifies witnessed_act but the political_state dials never move. Docstring at line ~221 still says 'all six live-path subsystems' though 8 are now registered. Add _check_witnessed_act_engaged (evidence = political_state dial moved this turn) and _check_movement_engaged (evidence = region relocation in snapshot), register both in _WITNESSES, and correct the stale docstring count. Note: 71-34 (shared OTEL watcher-test harness) is the natural test home if it lands first."
