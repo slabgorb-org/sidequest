@@ -41,3 +41,44 @@ stories:
     repos: server
     workflow: tdd
     type: bug
+  - id: 66-4
+    title: Author wry_whimsy classes.yaml — one signature ability per class (ADR-097), decision-gated
+    description: |-
+      Playtest GAP (wry_whimsy/oz, 2026-06-02, SM/GM). Create any wry_whimsy/oz PC → Character tab → Abilities → "No special abilities yet." Backend char abilities: []. wry_whimsy/rules.yaml defines 6 allowed_classes (Curious Child, Practical Servant, Earnest Scholar, Weary Soldier, Wayward Dreamer, Stubborn Skeptic) but the pack ships NO classes.yaml, and power_tiers.yaml only describes per-level VISUAL tiers ("SAVVY, not strength"), not abilities. Per ADR-097 (One Signature Ability Per Non-Magical Class) each class should grant one signature ability — even in a low-menace/whimsy genre, a signature ability gives mechanics-first players (Sebastien/Jade) something legible.
+
+      DECISION-GATED — this is a CONTENT-AUTHOR DECISION, not a confirmed code bug. First confirm whether the empty ability set is INTENTIONAL for this genre (whimsy = SAVVY-not-strength; maybe abilities are deliberately absent). The "...yet" copy in "No special abilities yet" implies abilities are coming, which misleads if none ever do — so even a "no abilities" decision has a copy fix.
+
+      IMPORTANT CONTEXT: the Dev classless-pack confrontation surfacing fix (PR slabgorb/sidequest-server#575) means authoring classes.yaml is NO LONGER a blocker for confrontation visibility — the crunch now surfaces for classless packs. So this is PURELY an optional content/legibility decision, not required for any engine path.
+
+      If the decision is YES (author abilities): model on spaghetti_western/classes.yaml (which just landed) and epic-66 sibling 66-2 (mutant_wasteland signature abilities). Author one signature ability per allowed_class. Content (pack YAML) — delegate to a gm agent per project convention (delegate-content-tasks-to-gm-background-agent); any engine wiring stays on the main thread. Sibling pattern: 66-2 "Author ADR-095 signature abilities + class moves for mutant_wasteland". ADRs: 097.
+    points: 3
+    priority: p3
+    status: backlog
+    repos: content,server
+    workflow: tdd
+    acceptance_criteria:
+      - "DECISION recorded: does wry_whimsy intend signature abilities at all (low-menace/SAVVY-not-strength genre)? If NO → close as wontfix AND fix the misleading 'No special abilities yet' copy so it doesn't imply abilities are coming"
+      - 'If YES: author wry_whimsy/classes.yaml with one signature ability per the 6 allowed_classes (Curious Child, Practical Servant, Earnest Scholar, Weary Soldier, Wayward Dreamer, Stubborn Skeptic), per ADR-097, modeled on spaghetti_western/classes.yaml'
+      - 'If authored: abilities surface in the Character tab Abilities list (backend char.abilities non-empty) for a fresh wry_whimsy/oz PC'
+      - Content authoring delegated to a gm agent per project convention; any engine/loader wiring kept on the main thread and covered by a wiring test
+  - id: 66-5
+    title: Creation confirmation sheet shows raw funnel labels not resolved race/class (+ per-genre field-label override)
+    description: |-
+      Playtest UX (wry_whimsy/oz, 2026-06-02, SM/GM). New solo game in wry_whimsy/oz → complete creation funnel → the "Your Character" confirmation sheet shows Race: "The plain ordinary world" and Class: "A curious child" — i.e. it renders the funnel PROMPT LABELS (step-i origin "The plain ordinary world", step-ii "A curious child") under generic field names. The backend actually RESOLVES these to nicer values — snapshot shows race = "Ordinary-Born", char_class = "Curious Child".
+
+      TWO PARTS:
+      1. The pre-create confirmation sheet should display the RESOLVED race/class (Ordinary-Born / Curious Child), not the raw funnel prompt labels.
+      2. For a portal-fantasy genre, "Race" reads oddly for a displaced human — consider a per-genre field-label override (e.g. "Race" → "Origin" for wry_whimsy).
+
+      Cosmetic / display-only: in-game state is CORRECT (snapshot already has the resolved values). Screenshot: .sq-playtest-screenshots/005-character-sheet.png. repos: sidequest-ui (confirmation sheet binding); sidequest-server only if the resolved values aren't already exposed to the client pre-commit (verify the snapshot/funnel payload carries resolved race/char_class at confirmation time).
+    points: 2
+    priority: p3
+    status: backlog
+    repos: ui,server
+    workflow: tdd
+    acceptance_criteria:
+      - The 'Your Character' confirmation sheet displays the RESOLVED race/class (e.g. Ordinary-Born / Curious Child) instead of the funnel prompt labels ('The plain ordinary world' / 'A curious child')
+      - "Per-genre field-label override is implemented OR explicitly deferred with rationale: for wry_whimsy (portal fantasy) 'Race' renders as 'Origin'"
+      - Verified the resolved race/char_class are available to the client at confirmation time (server payload carries them pre-commit); no server change needed if already present
+      - 'Regression test: a wry_whimsy/oz creation funnel renders resolved values (not prompt labels) on the confirmation sheet'
+    type: bug

@@ -268,3 +268,26 @@ stories:
       - 'CHROME: Resolve the ref-card__portrait undefined CSS class (allowlist with justification or add a CSS rule) AND extend the chrome-wiring fixture (test_reference_chrome_wiring.py:_seed_space_opera_world) to render a cast+POI-bearing world so the lore-page image classes (ref-card__poi, ref-card__portrait) are actually validated — closes a pre-existing blind spot.'
       - 'REFACTOR (optional): unify the POI + Cast manifest gates so a both-features world emits one reference_manifest_loaded span per render (load once, pass keys to both gates) instead of one-per-gate.'
     type: refactor
+  - id: 65-14
+    title: wry_whimsy classical_pd audio set 404s — source/upload PD tracks to R2 + reconcile audio.yaml against manifest
+    description: |-
+      Playtest GAP (wry_whimsy/oz, 2026-06-02, SM/GM). Start any wry_whimsy/oz session → browser console logs 404 Not Found for the classical_pd audio set, each followed by "Unable to decode audio data". The ENTIRE wry_whimsy/audio/classical_pd/ set 404s — confirmed three tracks:
+      - http://player1.local:5173/audio-cdn/genre_packs/wry_whimsy/audio/classical_pd/Satie%20-%20Gnossienne%20No.1.ogg
+      - Satie - Gymnopedie No.1.ogg
+      - Debussy - Clair de Lune.ogg
+
+      wry_whimsy/audio.yaml references classical public-domain tracks that were never uploaded to R2 / the audio CDN. wry_whimsy is a brand-new pack (/sq-music likely never run for it). NOTE: these are PUBLIC-DOMAIN classical works (Satie/Debussy) — likely expected to be sourced EXTERNALLY rather than ACE-Step generated, so /sq-music may not apply. Either upload the classical_pd set to R2 under genre_packs/wry_whimsy/audio/classical_pd/, or the manifest points at paths that don't exist and audio.yaml needs correcting.
+
+      Non-blocking: gameplay proceeds silently. Fits epic-65 (R2 asset tracking + YAML-derived gap audit + checked-in r2_manifest.json). repos: sidequest-content (audio.yaml + R2 upload). Render/publish scripts run under the orchestrator-root venv (uv run --project .) per project memory render-publish-scripts-use-root-venv.
+    points: 2
+    priority: p2
+    status: backlog
+    repos: content
+    workflow: trivial
+    acceptance_criteria:
+      - 'Audit wry_whimsy/audio.yaml against r2_manifest.json: every referenced track is listed with its R2 presence/absence (the classical_pd gap is enumerated, not just the 3 observed)'
+      - 'Decision recorded: classical_pd tracks are externally-sourced public-domain audio (Satie/Debussy) vs ACE-Step generated — and the sourcing path is documented'
+      - The classical_pd set is uploaded to R2 at genre_packs/wry_whimsy/audio/classical_pd/ (Gnossienne No.1, Gymnopedie No.1, Clair de Lune + any other audio.yaml entries), OR audio.yaml is corrected to reference tracks that exist
+      - Starting a wry_whimsy/oz session shows NO 404 / 'Unable to decode audio data' in the browser console and music plays
+      - r2_manifest.json updated to track the classical_pd set
+    type: chore

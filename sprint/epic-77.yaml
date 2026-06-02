@@ -1,0 +1,42 @@
+id: '77'
+type: epic
+title: Quest & Stakes Substrate
+description: "Playtest GAP (wry_whimsy/oz, 2026-06-02; Operator-deferred from the ping-pong pass to dedicated work). After 13 turns with an explicit campaign spine ('go home'), the snapshot showed quest_log: {}, quest_anchors: [], active_stakes: '', active_seeds: []. Dev root-cause (Agent Smith): this is a PARTIALLY-WIRED feature, four fields with distinct causes. (1) quest_anchors — ZERO write paths anywhere in the engine; read into narrator context (orchestrator.py:2413) + shipped to client (session_helpers.py:1230) but never assigned, not even a WorldStatePatch field → structurally dead read-only field. (2) quest_log — two write lanes both dormant: narrator quest_updates (narration_apply.py:2862) only UPDATES a quest by id, nothing CREATES one; trope-resolution handshake (narration_apply.py:5765) needs a resolved trope (total_beats_fired:0 → never fired). (3) active_stakes — written only by the trope handshake (didn't fire) or the DEPRECATED apply_world_patch escape hatch (narrator told NOT to use). (4) active_seeds — content gap (no seed_tropes authored for wry_whimsy; only tea_and_murder has them) — ADR-128, separate content task. UI: no client component renders quests/quest_log/quest_anchors/active_stakes today. Core engine gap: there is a lane to UPDATE a quest but no mechanism to CREATE/anchor one, and stakes only flow from tropes that never fire in a prose-only pack. Design options (per Dev): (A) seed-at-creation from the PC drive/calling; (B) typed narrator tool (ADR-102) set_stakes/record_quest; (C) both; (D) full-stack with a client quest panel. Design story first (ADR), then implementation per the chosen option."
+priority: p2
+status: backlog
+repos: server,ui
+stories:
+  - id: 77-1
+    title: '[DESIGN] Quest & stakes substrate — ADR for create/anchor lane + active_stakes source'
+    description: |-
+      DESIGN story for the epic-77 quest/stakes substrate. Output: an ADR (+ implementation-story breakdown), no production code. Operator-deferred from the 2026-06-02 wry_whimsy/oz ping-pong pass.
+
+      PROBLEM (Dev root-cause, Agent Smith): after 13 turns with an explicit campaign spine (the world premise is literally "the traveler arrives by accident, wants only to go home"), the snapshot showed quest_log: {}, quest_anchors: [], active_stakes: "", active_seeds: []. The objective was captured as KnownFacts/footnotes but never promoted to a quest anchor or active stake — so the player has no quest/objective surface and the engine has no stakes to drive pacing/escalation (ADR-024/025/128) against. The whole session ran on narrator improvisation with no mechanical pacing spine (the "no mechanical backing" risk the OTEL principle warns about).
+
+      FOUR FIELDS, DISTINCT CAUSES:
+      - quest_anchors: ZERO write paths anywhere in the engine. Read into narrator context (orchestrator.py:2413) + shipped to client (session_helpers.py:1230) but nothing ever assigns snapshot.quest_anchors; it is not even a WorldStatePatch field → structurally dead read-only field.
+      - quest_log: two live write lanes, both dormant this session — (a) narrator quest_updates (narration_apply.py:2862) only UPDATES a quest keyed by id, nothing CREATES one; (b) trope-resolution handshake (narration_apply.py:5765) writes quest_log["trope_{id}"] but needs a resolved trope (total_beats_fired:0 → never fired).
+      - active_stakes: written only by the trope handshake (didn't fire) or the DEPRECATED apply_world_patch escape hatch (narrator explicitly told NOT to use; deprecation criterion = zero uses). No first-class "set the current stakes" affordance in normal play.
+      - active_seeds: CONTENT gap, not engine — wry_whimsy authors no seed_tropes (only tea_and_murder does across live packs). ADR-128 seed deck simply not authored. Carved out as a separate content task, NOT solved here.
+
+      CORE ENGINE GAP: there is a lane to UPDATE a quest but no mechanism to CREATE/anchor one, and stakes only flow from tropes that never fire in a prose-only pack.
+
+      DESIGN OPTIONS TO WEIGH (Dev sketch):
+      (A) seed-at-creation — write one quest_anchor + active_stakes at session init from the PC's drive/calling (smallest, server-only, +OTEL span).
+      (B) typed narrator tool (ADR-102) — set_stakes / record_quest so the narrator creates+evolves quests in play, replacing the dead legacy lane + the discouraged escape hatch (one-mechanism-per-problem).
+      (C) both server fixes.
+      (D) full stack — C plus a client quest/objective panel (NO UI renders quests/quest_log/quest_anchors/active_stakes today, though the `quests` field exists in payloads.ts / GameStateProvider, displayed nowhere).
+
+      ADRs in scope: 102 (tool-use protocol), 024/025 (tension/pacing), 128 (seed deck). One-mechanism-per-problem applies (don't leave the dead legacy lane + escape hatch + new tool all live).
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server,ui
+    workflow: trivial
+    acceptance_criteria:
+      - 'ADR drafted: defines the CREATE/anchor lane for quest_log + quest_anchors and the first-class source for active_stakes, with a decision among options A (seed-at-creation) / B (typed narrator tool) / C (both) / D (full-stack + UI panel) and the rationale'
+      - 'ADR decides the fate of quest_anchors: promote to a first-class WorldStatePatch field with a write path, OR retire the dead read-only field (no structurally-dead fields left)'
+      - 'ADR resolves the one-mechanism question: the dead legacy quest_updates lane and the deprecated apply_world_patch escape hatch are reconciled (retired/replaced), not left coexisting with a new tool'
+      - ADR specifies the OTEL span(s) for quest-create + stakes-set (GM-panel lie-detector), per the OTEL Observability Principle
+      - ADR enumerates the implementation stories to spawn under epic 77 (engine, and optional UI quest/objective panel) with point estimates
+      - active_seeds is explicitly carved out as a SEPARATE content task (author a wry_whimsy seed_tropes deck, ADR-128; delegate to a gm agent) — referenced in the ADR, not solved here
