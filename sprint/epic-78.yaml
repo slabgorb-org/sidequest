@@ -1,0 +1,48 @@
+id: '78'
+type: epic
+title: Daemon Media-Pipeline Wiring Debt
+description: 'Wiring-audit findings (2026-06-02, sq-wire-it): daemon exports that exist but are not connected to the live socket/render path. Each is a wire-or-delete decision. Daemon was at origin/develop during the audit, so these are current, not stale-tree artifacts. Covers camera post-processing never invoked at render (apply_post), pure dead exports (NullRenderer/Renderer ABC, genre/models.py stubs, half-extracted dispatch_request image branch), and deferred-feature observability (start_periodic_heartbeat per ADR-131, detect_gpu/GpuInfo span per ADR-046).'
+priority: p3
+status: backlog
+repos: daemon
+stories:
+  - id: 78-1
+    title: Daemon camera post-processing unwired — apply_post never invoked at render (wire or delete)
+    description: "Wiring-audit finding (sq-wire-it, 2026-06-02; daemon at origin/develop, current). apply_post and required_render_size (sidequest-daemon/sidequest_daemon/media/post_processor.py:12,46) have NO non-test callers — only tests/test_post_processor.py. CameraLoader loads CameraSpec.post (PostDirective) but ZImageMLXWorker.render never invokes post-processing, so any camera spec relying on crop/rotate is silently dropped at render (LLM-compensation pattern in image form: output looks plausible, directive never applied). DECISION: either (a) wire apply_post + required_render_size into the render path (worker requests required size, applies post after generate), or (b) delete apply_post/required_render_size AND the CameraSpec.post field + its CameraLoader parsing (per 'delete dead code in same PR'). Verify whether any live camera spec actually sets post: before choosing."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: daemon
+    workflow: tdd
+    acceptance_criteria:
+      - 'Determined whether any in-use CameraSpec sets a post directive (evidence: grep of content camera specs)'
+      - 'If wired: ZImageMLXWorker.render calls required_render_size + apply_post; an integration test renders a spec with post and asserts the transform applied'
+      - 'If deleted: apply_post, required_render_size, CameraSpec.post field, and CameraLoader post-parsing all removed in one PR; no dangling references'
+    type: refactor
+  - id: 78-2
+    title: Daemon dead-export sweep — NullRenderer/Renderer ABC, dead genre/models.py stubs, half-extracted dispatch_request image branch
+    description: 'Wiring-audit finding (sq-wire-it, 2026-06-02). Pure dead exports in the daemon — zero non-test (often zero total) consumers: (1) NullRenderer + renderer.base.Renderer ABC (sidequest_daemon/renderer/null.py) — no importer anywhere, even tests; no factory, no daemon path. (2) Dead genre/models.py stubs — VisualStyle, AudioConfig, MixerSettings, AIGenerationConfig, ThemeFamily, MoodTrack, Variation, PackMeta have no non-definition references (daemon uses StyleCatalog/YAML directly; only GenrePack is referenced, and only under TYPE_CHECKING). (3) dispatch_request image-tier branch (daemon.py:246) raises NotImplementedError — half-extracted (music tier wired, image tier a trap for future callers). Default action: delete (1) and (2). For (3), either finish the image-tier extraction or collapse dispatch_request back so the NotImplementedError trap is removed. Confirm zero consumers immediately before deleting each.'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: daemon
+    workflow: trivial
+    acceptance_criteria:
+      - NullRenderer + Renderer ABC removed (confirmed zero importers first)
+      - Confirmed-dead genre/models.py stubs removed; GenrePack retained if still TYPE_CHECKING-referenced
+      - dispatch_request image-tier NotImplementedError trap resolved (extraction finished OR branch removed)
+      - daemon-test + daemon-lint green after removals; no dangling imports
+    type: refactor
+  - id: 78-3
+    title: 'Daemon deferred observability — start_periodic_heartbeat (ADR-131) + detect_gpu/GpuInfo span (ADR-046) unwired: wire or cut'
+    description: "Wiring-audit finding (sq-wire-it, 2026-06-02). Two deferred-FEATURE exports (distinct from pure dead code — each has ADR lineage, so this is a finish-or-cut decision, not an automatic delete): (1) start_periodic_heartbeat (sidequest_daemon/media/daemon.py:155) — its own docstring says 'NOT YET WIRED INTO _run_daemon'; the 30s idle-heartbeat (ADR-131 liveness) never fires, only per-connection _write_heartbeat keeps liveness. (2) detect_gpu/GpuInfo (sidequest_daemon/media/gpu_detect.py:25) — no prod caller; the GPU-detection OTEL span (ADR-046 budget coordinator) never fires in production. For each: decide wire (schedule heartbeat as a background task in _run_daemon; call detect_gpu at warmup so its span fires) or cut (delete + note the ADR defers the feature). Prefer wiring if the ADR still wants the capability."
+    points: 2
+    priority: p3
+    status: backlog
+    repos: daemon
+    workflow: tdd
+    acceptance_criteria:
+      - 'start_periodic_heartbeat: scheduled in _run_daemon as a background task AND idle-heartbeat emission verified, OR removed with an ADR-131 deferral note'
+      - 'detect_gpu/GpuInfo: called at daemon warmup so the GPU-detection span fires in production, OR removed with an ADR-046 deferral note'
+      - 'If wired: OTEL span assertion test proves the heartbeat/GPU span fires on the live path'
+    type: chore

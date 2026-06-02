@@ -439,3 +439,17 @@ stories:
       - 'test_dispatch_precondition_gate.py covers witnessed_act: inert when snapshot.political_state is None, not-inert when hydrated'
       - No production code change; existing test_witnessed_act_subsystem.py precondition assertion may remain or be removed once co-located
     type: chore
+  - id: 59-30
+    title: _WITNESSES engagement witness for witnessed_act + movement (close political-spine lie-detector gap)
+    description: "Wiring-audit residual (sq-wire-it, 2026-06-02). Plan 2b (#583) wired the witnessed_act PRODUCER (intent router prompt + intent_router.witnessed_act_classified span) and the engine emits its four premise/bloc dial spans. But the GENERIC engagement watcher (sidequest-server/sidequest/agents/dispatch_engagement_watcher.py:180) _WITNESSES dict still covers only 6 subsystems — no witnessed_act, no movement (movement is a pre-existing gap). Without a witness, the 'dispatched-but-didn't-engage' lie detector cannot flag the case where the router classifies witnessed_act but the political_state dials never move. Docstring at line ~221 still says 'all six live-path subsystems' though 8 are now registered. Add _check_witnessed_act_engaged (evidence = political_state dial moved this turn) and _check_movement_engaged (evidence = region relocation in snapshot), register both in _WITNESSES, and correct the stale docstring count. Note: 71-34 (shared OTEL watcher-test harness) is the natural test home if it lands first."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    acceptance_criteria:
+      - _check_witnessed_act_engaged added and registered in _WITNESSES; flags mismatch when witnessed_act dispatched but no political_state dial moved
+      - _check_movement_engaged added and registered in _WITNESSES; flags mismatch when movement dispatched but no region relocation occurred
+      - Stale 'all six live-path subsystems' docstring corrected to the actual registered count
+      - 'Watcher unit test per new witness: positive (engaged → None) and negative (dispatched, not engaged → evidence string)'
+    type: chore
