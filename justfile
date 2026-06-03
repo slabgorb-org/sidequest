@@ -461,7 +461,7 @@ render-pd-audio *flags:
 # Cross-repo + utilities
 # ---------------------------------------------------------------------------
 
-check-all: server-check client-lint client-typecheck client-test daemon-lint daemon-test composer-lint composer-test
+check-all: server-check client-lint client-build client-test daemon-lint daemon-test composer-lint composer-test
 
 # Content validation — reference chrome + visibility across all live packs
 content-validate-references: reference-chrome-validate reference-validate-all
