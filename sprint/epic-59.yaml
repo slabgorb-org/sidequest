@@ -241,6 +241,7 @@ stories:
     repos: server
     workflow: trivial
     type: chore
+    review_verdict: approved
   - id: 59-16
     title: 'Confrontation beats: collapse to one filtered delivery path (kill emitter firewall bypass)'
     description: "Solo Fighter is offered other classes' confrontation beats (Backstab/Cast Cantrip/Cast Spell/Turn Undead/Pray for Aid). Root cause (confirmed 2026-05-26): beats reach clients via TWO racing mechanisms (Story 49-7) — an unfiltered full-union CONFRONTATION broadcast + a per-PC class-filtered overlay queued behind it (UI is last-message-wins). Mechanical trigger: emitters.py project_emitter = author_player_id is not None; the CONFRONTATION emit passes no author, so the emitter raw-bypasses the ADR-105 projection firewall (Invariant 3) and out_to_self is the raw union. In solo the player IS the emitter -> always gets the union; the overlay loses the race after a flee/reconnect. handlers/connect.py:1474 (resume) filters in one clean call -> correct on first load. Locked design (Keith): ONE delivery path — beat/class logic stays in the encounter layer; canonical union -> EventLog only (never a client socket); one per-recipient class-filtered fan-out to EVERY connected socket including the emitter; delete both overlay loops (wssh:4614-4657, dice.py:667-704); fail LOUD (no silent union fallback) if a seated+connected PC won't resolve. Full plan: docs/superpowers/specs/2026-05-26-confrontation-single-filtered-delivery.md. Branch: feat/confrontation-single-filtered-delivery (sidequest-server). Adjacent firewall surface: 59-9."
