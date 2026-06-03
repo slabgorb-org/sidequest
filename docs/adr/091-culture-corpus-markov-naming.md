@@ -120,4 +120,4 @@ This is **content authoring** (the `conlang` agent's lane), not an engine capabi
 - `sidequest-server/sidequest/genre/models/culture.py` — `Culture` / `CultureSlot` / `CorpusRef` data model.
 - `sidequest-content/genre_packs/*/cultures.yaml` — culture declarations per genre pack.
 - `sidequest-content/genre_packs/*/corpus/` — text corpora per genre pack.
-- `~/Projects/orc-penny/pennyfarthing/.../conlang.md` — the `conlang` content agent (corpus curation).
+- `sidequest-content/.claude/agents/conlang.md` — the `conlang` content agent (corpus curation).
