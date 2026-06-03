@@ -30,6 +30,7 @@ completed_epics:
   - '77'
   - '79'
   - '80'
+  - '78'
 completed_stories:
   - id: 55-1
     epic: '55'
@@ -845,4 +846,19 @@ completed_stories:
     epic: '80'
     title: Genre-grouped world picker + scoped lobby theming (house chrome)
     points: 5
+    completed: '2026-06-03'
+  - id: 78-1
+    epic: '78'
+    title: Daemon camera post-processing unwired — apply_post never invoked at render (wire or delete)
+    points: 2
+    completed: '2026-06-03'
+  - id: 78-2
+    epic: '78'
+    title: Daemon dead-export sweep — NullRenderer/Renderer ABC, dead genre/models.py stubs, half-extracted dispatch_request image branch
+    points: 3
+    completed: '2026-06-03'
+  - id: 78-3
+    epic: '78'
+    title: 'Daemon deferred observability — start_periodic_heartbeat (ADR-131) + detect_gpu/GpuInfo span (ADR-046) unwired: wire or cut'
+    points: 2
     completed: '2026-06-03'

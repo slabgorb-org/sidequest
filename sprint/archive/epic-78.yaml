@@ -3,7 +3,7 @@ type: epic
 title: Daemon Media-Pipeline Wiring Debt
 description: 'Wiring-audit findings (2026-06-02, sq-wire-it): daemon exports that exist but are not connected to the live socket/render path. Each is a wire-or-delete decision. Daemon was at origin/develop during the audit, so these are current, not stale-tree artifacts. Covers camera post-processing never invoked at render (apply_post), pure dead exports (NullRenderer/Renderer ABC, genre/models.py stubs, half-extracted dispatch_request image branch), and deferred-feature observability (start_periodic_heartbeat per ADR-131, detect_gpu/GpuInfo span per ADR-046).'
 priority: p3
-status: backlog
+status: done
 repos: daemon
 stories:
   - id: 78-1
@@ -44,7 +44,7 @@ stories:
     description: "Wiring-audit finding (sq-wire-it, 2026-06-02). Two deferred-FEATURE exports (distinct from pure dead code — each has ADR lineage, so this is a finish-or-cut decision, not an automatic delete): (1) start_periodic_heartbeat (sidequest_daemon/media/daemon.py:155) — its own docstring says 'NOT YET WIRED INTO _run_daemon'; the 30s idle-heartbeat (ADR-131 liveness) never fires, only per-connection _write_heartbeat keeps liveness. (2) detect_gpu/GpuInfo (sidequest_daemon/media/gpu_detect.py:25) — no prod caller; the GPU-detection OTEL span (ADR-046 budget coordinator) never fires in production. For each: decide wire (schedule heartbeat as a background task in _run_daemon; call detect_gpu at warmup so its span fires) or cut (delete + note the ADR defers the feature). Prefer wiring if the ADR still wants the capability."
     points: 2
     priority: p3
-    status: in_progress
+    status: done
     started: '2026-06-03'
     repos: daemon
     workflow: tdd
@@ -52,4 +52,6 @@ stories:
       - 'start_periodic_heartbeat: scheduled in _run_daemon as a background task AND idle-heartbeat emission verified, OR removed with an ADR-131 deferral note'
       - 'detect_gpu/GpuInfo: called at daemon warmup so the GPU-detection span fires in production, OR removed with an ADR-046 deferral note'
       - 'If wired: OTEL span assertion test proves the heartbeat/GPU span fires on the live path'
+    completed: '2026-06-03'
     type: chore
+completed: '2026-06-03'
