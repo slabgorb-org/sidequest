@@ -2,11 +2,31 @@
 """Tests for the feature-inventory generator (Phase 1)."""
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
 
-from scripts.feature_inventory_verify import load_span_constants
+from scripts.feature_inventory_verify import (
+    Category,
+    Feature,
+    ManifestError,
+    VerifyContext,
+    adr_status,
+    draft_world_is_draft,
+    load_manifest,
+    load_span_constants,
+    resolve_module,
+    verify_feature,
+    wiring_test_exists,
+)
+from scripts.regenerate_feature_inventory import (
+    MARKER_BEGIN,
+    MARKER_END,
+    generate,
+    render_body,
+    replace_between_markers,
+)
 
 ROOT = Path(__file__).parent.parent.parent  # repo root
 
@@ -33,9 +53,6 @@ def test_load_span_constants_against_real_registry():
     assert len(names) > 20  # registry is substantial
 
 
-from scripts.feature_inventory_verify import wiring_test_exists, resolve_module
-
-
 def test_wiring_test_exists(tmp_path):
     (tmp_path / "a.test.tsx").write_text("// test")
     assert wiring_test_exists("a.test.tsx", tmp_path) is True
@@ -60,10 +77,6 @@ def test_resolve_module_ui_component(tmp_path):
     assert resolve_module("NopeOverlay", tmp_path) is None
 
 
-# append to scripts/tests/test_feature_inventory.py
-from scripts.feature_inventory_verify import adr_status, draft_world_is_draft
-
-
 def test_adr_status_reads_frontmatter(tmp_path):
     adr_dir = tmp_path / "docs" / "adr"
     adr_dir.mkdir(parents=True)
@@ -84,10 +97,6 @@ def test_draft_world_predicate(tmp_path):
     live.mkdir(parents=True)
     (live / "world.yaml").write_text("name: Glenross\n")  # no draft key
     assert draft_world_is_draft("tea_and_murder/glenross", tmp_path) is False
-
-
-# append to scripts/tests/test_feature_inventory.py
-from scripts.feature_inventory_verify import load_manifest, ManifestError
 
 
 def test_load_manifest_parses_categories(tmp_path):
@@ -131,10 +140,6 @@ def test_load_manifest_rejects_duplicate_ids(tmp_path):
         load_manifest(d)
 
 
-# append to scripts/tests/test_feature_inventory.py
-from scripts.feature_inventory_verify import verify_feature, VerifyContext, Feature, Category
-
-
 def _ctx(tmp_path, span_names=("confrontation.resolved",)):
     return VerifyContext(
         repo_root=tmp_path,
@@ -173,10 +178,6 @@ def test_module_existence_failure_blocks_any_status(tmp_path):
     assert "does_not_exist" in reason
 
 
-# append to scripts/tests/test_feature_inventory.py
-from scripts.regenerate_feature_inventory import render_body, replace_between_markers, MARKER_BEGIN, MARKER_END
-
-
 def test_render_body_emits_category_table(tmp_path):
     cats = [Category("Confrontation Engine", [
         Feature(id="x", name="Conf engine", status="live_wired",
@@ -196,10 +197,6 @@ def test_replace_between_markers_preserves_surrounds(tmp_path):
     replace_between_markers(f, "NEW")
     out = f.read_text()
     assert "PRE" in out and "POST" in out and "NEW" in out and "old" not in out
-
-
-# append to scripts/tests/test_feature_inventory.py
-from scripts.regenerate_feature_inventory import generate
 
 
 def test_generate_fails_on_unverifiable_claim(tmp_path, capsys):
@@ -227,7 +224,6 @@ def test_generate_writes_doc_when_all_verify(tmp_path):
     assert "### X" in doc.read_text()
 
 
-# append to scripts/tests/test_feature_inventory.py
 def test_check_recipe_detects_drift(tmp_path):
     """A hand-edit inside the markers must be reverted by regen → git sees drift."""
     # This is a behavioral contract test for the recipe; assert the generator
@@ -238,7 +234,6 @@ def test_check_recipe_detects_drift(tmp_path):
     )
     doc = tmp_path / "docs" / "feature-inventory.md"
     doc.write_text(f"PRE\n{MARKER_BEGIN}\nTAMPERED\n{MARKER_END}\nPOST\n")
-    from scripts.regenerate_feature_inventory import generate
     generate(repo_root=tmp_path, span_names=set())
     assert "TAMPERED" not in doc.read_text()
     assert "### X" in doc.read_text()
@@ -255,11 +250,9 @@ def test_check_recipe_is_wired_in_justfile():
 def test_real_repo_regenerates_clean():
     """End-to-end: the committed manifest verifies and the committed doc is
     already in sync (no drift) against the live registry."""
-    from scripts.regenerate_feature_inventory import generate
     rc = generate(repo_root=ROOT)
     assert rc == 0, "committed manifest fails verification against the live repo"
     # doc must be unchanged after regen (committed state is canonical)
-    import subprocess
     diff = subprocess.run(
         ["git", "diff", "--stat", "docs/feature-inventory.md"],
         cwd=ROOT, capture_output=True, text=True,
