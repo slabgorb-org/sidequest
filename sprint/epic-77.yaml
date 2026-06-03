@@ -10,12 +10,16 @@ stories:
     title: Seed-at-creation — quest_anchor + quest_log + active_stakes from PC drive/calling
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-02'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - "Verify behavior against a no-drive-scene prose pack (e.g. wry_whimsy): Character.drive defaults to '' when the genre has no drive-shaped scene (builder.py:423), so seed-at-creation must NOT be assumed to close the gap there — Option B (77-2) is the load-bearing fix for prose packs"
       - 'Empty-drive path degrades LOUDLY: emit quest.seeded_at_creation span carrying a WARNING-severity attribute on empty seed (No Silent Fallbacks), never a silent no-op'
+    completed: '2026-06-02'
+    review_findings: 'HIGH: seed_quest_spine unconditionally overwrites world-authored active_stakes (flickering_reach/annees_folles opening chapters); fix = fill-not-clobber guard + preserving test'
+    review_verdict: approved
   - id: 77-2
     title: Typed quest/stakes narrator tools — record_quest + set_stakes (ADR-102)
     points: 5
