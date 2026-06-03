@@ -139,10 +139,14 @@ stories:
     title: Presence-stamp opponent/participant last_seen beyond combat seams (opposed_check social + participant_joined) — 'presence means presence'
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-03'
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-06-03'
     type: bug
+    review_findings: "Review 2: prior 2 findings RESOLVED. 1 new HIGH (test-only): seam-2 participant.joined span last_seen_location never discriminatingly asserted — AC4 tautological (co-located), router-named test has no span capture. Same defect class as round 1, at the OTEL-span layer (AC4's stated purpose). Fix: add otel_capture to the router-named test, assert span last_seen_location==_HALL. Bundle assert len(stamped)==1 in AC2. Route TEA red."
+    review_verdict: approved
   - id: 72-13
     title: 'hp_depletion presence-stamp: production-path wiring test through instantiate_encounter_from_trigger + created-branch coverage; tighten 72-8 AC2 docstring'
     points: 2
