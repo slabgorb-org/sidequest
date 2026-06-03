@@ -257,11 +257,24 @@ stories:
     review_verdict: approved
   - id: 65-12
     title: Lore world timeline — merge legends, history chapters, POI founding into one spine
+    description: "Add a public 'Timeline' section to the lore reference page (GET /reference/lore/{pack}/{world}, ADR-135), final follow-on slice after 65-8/65-9/65-11. Builds a WORLD-HISTORICAL spine from the world's legends only — era/period shown verbatim as a chip (D7), ordered as authored, with an ascending numeric sort applied ONLY when every entry exposes a uniformly-parseable key (else authored order), recorded in a reference_timeline_rendered OTEL span (sort_mode). Reuses 65-9/65-11 synthesized-section+TOC append, the Legend model, _load_legends_flexible, and the reference span family. Resolution per Operator 2026-06-03: campaign history.yaml:chapters (wrong axis + ADR-135 D1 dormant-trope spoiler seeds) are EXCLUDED, and POI founding (no structured field exists) is DEFERRED to 74-3 — both logged as Design Deviations vs spec line 234. Server-only, feat/65-12-* off develop. See sprint/context/context-story-65-12.md."
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-03'
     repos: server
     workflow: tdd
+    acceptance_criteria:
+      - "AC1 Timeline section registered+rendered: lore page gains a 'Timeline' section with a TOC entry via the 65-9 Cast/65-11 Map synthesized-section append (append to kept_toc after _wrap_sections_by_toc, NOT via TOC_TO_FILES). Pass: world with >=1 legend -> section present. Edge: world with no legends -> HTTP 200, page unchanged, no section, no error. Loud: malformed legends.yaml -> HTTP 500 (No Silent Fallbacks). Assert on rendered HTML."
+      - "AC2 Entries from legends, nothing dropped: every Legend renders as exactly one entry; temporal value (era else period) non-empty -> dated entry, neither -> explicit 'undated' group. Entry count == legend count. Test fixture covers era / period-only / neither; assert each appears once and the undated one is grouped."
+      - "AC3 Verbatim temporal chip, never normalized: era/period renders verbatim as a chip beside the entry (D7). '-11540', '15 years ago', 'early Second Rising', 'shot February 25, 1855, ...' each appear in chip markup exactly as authored — never reformatted/parsed/truncated. Test: fixture with all four dialects -> assert each raw string present verbatim."
+      - "AC4 Honest conditional sort: default = authored (load) order; ascending numeric sort applied IFF every dated entry exposes a uniformly-parseable comparable key (all clean <=4-digit years, OR all 'N <unit> ago' one unit family); one non-conforming entry forces authored order for the whole world. Stable sort, ties by authored order; undated group sorts to tail. Tests: uniform-year fixture -> ascending; mixed-dialect fixture -> authored order unchanged."
+      - 'AC5 Optional history preamble, no decomposition: if world.lore.history prose present, render as section framing preamble, visually distinct from entries, NOT parsed into entries. Test: with lore.history -> preamble + entries; without -> entries-only, no error, no empty preamble node.'
+      - "AC6 OTEL on render decision (mandatory): emit reference_timeline_rendered once per render with entry_count, undated_count, sort_mode ('sorted'|'authored_order'). Reuse telemetry/spans/reference.py + FLAT_ONLY_SPANS, mirror reference_map_rendered_span. Test: complement assertion via span_attrs_by_name — uniform-year fixture reports sort_mode=='sorted' AND mixed fixture reports 'authored_order', so the span alone proves the gate engaged. GM panel is the lie detector."
+      - 'AC7 Public projection only (ADR-135 D1): no ?audience param/GM mode. Only public legend fields render (name, era/period, summary, cultural_impact, monuments, terrain_scars). history.yaml:chapters[], any tropes/status:dormant/escalation-seed data, and ADR-053 belief/clue data NEVER appear. Test: dormant-trope fixture -> no chapter/trope/seed tokens in Timeline section; assert no query param changes output.'
+      - 'AC8 Wiring + regression (no source-text wiring tests): >=1 integration test hits the real /reference/lore/{pack}/{world} route via the reference client fixture, asserts Timeline section + >=1 entry + a verbatim chip end-to-end (behavior/OTEL/fixture-driven, never grep of source). Existing sections (geography/POI, cast, map, history, factions) render unchanged (regression). Chrome-wiring fixture extended so new timeline CSS classes are rendered+validated.'
+    completed: '2026-06-03'
+    review_verdict: approved
   - id: 65-13
     title: '65-9 review follow-ups: Cast docstring accuracy, span-test rigor, chrome-contract guard + AC8 reference_portrait spans'
     description: 'Non-blocking follow-ups from the 65-9 review (Reviewer APPROVED). All 10 findings + the full audit trail are archived in sprint/archive/65-9-session.md (Delivery Findings + Design Deviations → Architect reconcile). Server-only; reference-page Cast section. Pattern: epic 76 ← 75-6.'
