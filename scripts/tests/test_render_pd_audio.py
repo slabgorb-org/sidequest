@@ -1,0 +1,47 @@
+import pytest
+
+from scripts.render_pd_audio import (
+    UncataloguedTrackError,
+    collect_demand,
+    plan_renders,
+)
+
+CATALOG = {
+    "Satie - Gymnopedie No.1.ogg": {
+        "out_name": "Satie - Gymnopedie No.1.ogg",
+        "title": "Gymnopédie No. 1",
+        "source_url": "https://example/g1.mid",
+    },
+    "Chopin - Nocturne Op.9 No.2 in E-flat major.ogg": {
+        "out_name": "Chopin - Nocturne Op.9 No.2 in E-flat major.ogg",
+        "title": "Nocturne",
+        "source_url": "https://example/noc.mid",
+    },
+}
+
+
+def test_collect_demand_extracts_shared_classical_pd_filenames():
+    audio_yaml = {
+        "mood_tracks": {
+            "exploration": [
+                {"path": "assets/audio/classical_pd/Satie - Gymnopedie No.1.ogg",
+                 "title": "x", "bpm": 60},
+                {"path": "audio/music/local.ogg", "title": "y", "bpm": 90},  # pack-local: ignored
+            ]
+        }
+    }
+    assert collect_demand([audio_yaml]) == {"Satie - Gymnopedie No.1.ogg"}
+
+
+def test_plan_renders_skips_already_in_r2():
+    demand = {"Satie - Gymnopedie No.1.ogg", "Chopin - Nocturne Op.9 No.2 in E-flat major.ogg"}
+    already = {"genre_packs/assets/audio/classical_pd/Satie - Gymnopedie No.1.ogg"}
+    todo = plan_renders(demand, CATALOG, already_keys=already)
+    assert [e["out_name"] for e in todo] == ["Chopin - Nocturne Op.9 No.2 in E-flat major.ogg"]
+
+
+def test_plan_renders_fails_loud_on_uncatalogued_demand():
+    demand = {"Mystery - Unknown.ogg"}
+    with pytest.raises(UncataloguedTrackError) as exc:
+        plan_renders(demand, CATALOG, already_keys=set())
+    assert "Mystery - Unknown.ogg" in str(exc.value)
