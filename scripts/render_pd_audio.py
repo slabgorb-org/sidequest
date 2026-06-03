@@ -25,18 +25,20 @@ import argparse
 import json
 import logging
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
 import yaml
 
 _ROOT = Path(__file__).resolve().parent.parent
-_SCRIPTS = _ROOT / "scripts"
 CONTENT_ROOT = _ROOT / "sidequest-content"
 COMPOSER_ROOT = _ROOT / "sidequest-composer"
 
 # How audio.yaml spells demand vs. the r2 key prefix the bucket uses.
+# These key forms MUST stay in lockstep with the server's shared-bucket rule in
+# sidequest-server/sidequest/genre/audio_paths.py (`resolve_audio_relpath`,
+# scope="shared"): an `assets/...` track resolves to `genre_packs/<rel>`. If
+# that convention changes, update both sides together.
 SHARED_AUDIO_PREFIX = "assets/audio/classical_pd/"
 SHARED_REL = "genre_packs/assets/audio/classical_pd"
 
@@ -153,15 +155,14 @@ def main(argv: list[str] | None = None) -> int:
     catalog = load_catalog()
     demand = collect_demand(_audio_configs(args.pack))
     already = set() if args.force else _already_keys()
-    catalogued = {d for d in demand if d in catalog}
 
     todo = plan_renders(demand, catalog, already_keys=already)
 
     logger.info(
         "demand=%d catalogued=%d already=%d to-render=%d",
         len(demand),
-        len(catalogued),
-        len(demand) - len(todo) if not args.force else 0,
+        len(catalog),
+        len(demand) - len(todo),
         len(todo),
     )
 
@@ -186,8 +187,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # --- Upload the new OGGs via the existing R2 sync ------------------------
     new_oggs = [SHARED_DIR / e["out_name"] for e in todo]
-    if str(_SCRIPTS) not in sys.path:
-        sys.path.insert(0, str(_SCRIPTS))
+    # Deferred import: keep boto3's import cost off the --dry-run path.
     from scripts import r2_sync_packs  # noqa: PLC0415
 
     counts = r2_sync_packs.sync(content_root=CONTENT_ROOT, files=new_oggs)
