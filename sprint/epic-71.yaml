@@ -418,3 +418,16 @@ stories:
     type: refactor
     review_findings: "HIGH: dormant 6th gm_sees_all assertion (test_adr105_b1::test_gm_sees_redacted_dispatch_through_production_path, skipped) leaves AC 'all is_gm tests deleted' unmet — delete/rewrite like b3. MED: renamed OTEL label invariant:player_excluded_kind never positively asserted; tautological include_if:is_self() in test_genre_stage. LOW: stale non-GM fossils in test_core_invariants. Source deletion itself verified correct + behaviour-preserving."
     review_verdict: approved
+  - id: 71-36
+    title: Machine-guard the peer-reveal accumulator invariant — source-text wiring test that snapshot captures raw peerReveals.reveals, never mergedPeerReveals (71-12 follow-up)
+    description: 'Convert the 71-12 prose guard into a machine guard. The accumulator-direction invariant (snapshot at App.tsx:1351 must capture raw peerReveals.reveals, never the display-only mergedPeerReveals) has no test, while the mirror display-direction IS pinned in src/__tests__/turn-status-derivation-wiring.test.ts. Add a matched source-text assertion in that same file: expect(appSrc).toMatch(/persistedPeerActions\.capture\(\s*currentRound\s*,\s*peerReveals\.reveals\s*\)/) and expect(appSrc).not.toMatch(/persistedPeerActions\.capture\([^)]*mergedPeerReveals/). This catches any future refactor that flips the snapshot to the merged map (the named stale-draft regression). Source: 71-12 Reviewer Delivery Finding.'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: sidequest-ui
+    workflow: trivial
+    acceptance_criteria:
+      - A source-text assertion in turn-status-derivation-wiring.test.ts asserts the snapshot captures raw peerReveals.reveals (toMatch on persistedPeerActions.capture(currentRound, peerReveals.reveals))
+      - A complementary not.toMatch assertion fails if the snapshot is fed mergedPeerReveals
+      - The new assertions live alongside the existing display-direction guards (mirror pattern); full UI suite stays green
+    type: chore
