@@ -42,3 +42,4 @@
 | [ADR-065: Protocol Message Decomposition — Split message.rs by Domain](065-protocol-message-decomposition.md) | ✓ accepted | — |
 | [ADR-081: Advancement Effect Variant Expansion (v1)](081-advancement-effect-variant-expansion.md) | ✓ accepted | [ADR-087: Post-Port Subsystem Restoration Plan](087-post-port-subsystem-restoration-plan.md) |
 | [ADR-099: Coyote Object Salvage Hooks — Two-Phase Auto-Fire for the_salvage](099-coyote-object-salvage-hooks.md) | ✓ accepted | — |
+| [ADR-138: NPC Ratification Gates Projection Eligibility — Unratified Pool Members Stay Out of the ADR-118 Index and the ADR-135 Public Surface](138-npc-ratification-gates-projection.md) | ◇ proposed | Design-only (story 75-9). Governs existing sidequest-server/sidequest/game/npc_pool.py (NpcPoolMember.observation_pending — Story 49-6 gate) and the ADR-118 §D3 NPC to_card() projector (game/entity_card.py / entity_sync.py). Implementation deferred to follow-on stories 75-11..75-14. |

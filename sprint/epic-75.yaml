@@ -118,7 +118,8 @@ stories:
     title: '[DESIGN] NPC-pool ratification gate + pool/Npc split (ADR-135) — governs ADR-118 projection source'
     points: 3
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-06-03'
     repos: sidequest-server
     workflow: tdd
     type: chore

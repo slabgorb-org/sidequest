@@ -102,6 +102,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-118: Universal Retrieval Layer — Index + Per-Turn Floor-and-Fill Retrieval for NPCs, Locations, and Factions](118-universal-retrieval-layer.md) | ✓ accepted | live → sidequest-server/sidequest/game/retrieval_orchestration.py + entity_card.py + dispatch/universal_retrieval.py — retrieve_turn_context called every narrator turn |
 | [ADR-123: Mechanical-Engagement Pipeline — Confidence-Gated Topological Dispatch Bank, Precondition/Unregistered Gates, and the LethalityArbiter](123-mechanical-engagement-pipeline.md) | ✓ accepted | live |
 | [ADR-134: Per-Session API Cost Runaway Detector and Hard-Kill Ceiling — Rolling-Baseline Triggers and Terminal Refusal](134-cost-runaway-ceiling.md) | ✓ accepted | live |
+| [ADR-138: NPC Ratification Gates Projection Eligibility — Unratified Pool Members Stay Out of the ADR-118 Index and the ADR-135 Public Surface](138-npc-ratification-gates-projection.md) | ◇ proposed | deferred → Design-only (story 75-9). Governs existing sidequest-server/sidequest/game/npc_pool.py (NpcPoolMember.observation_pending — Story 49-6 gate) and the ADR-118 §D3 NPC to_card() projector (game/entity_card.py / entity_sync.py). Implementation deferred to follow-on stories 75-11..75-14. |
 
 ## Game Systems
 
@@ -304,6 +305,7 @@ ADRs whose implementation is absent, partial, or deferred. See [DRIFT.md](DRIFT.
 | [ADR-065: Protocol Message Decomposition — Split message.rs by Domain](065-protocol-message-decomposition.md) | deferred | — |
 | [ADR-081: Advancement Effect Variant Expansion (v1)](081-advancement-effect-variant-expansion.md) | deferred | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
 | [ADR-099: Coyote Object Salvage Hooks — Two-Phase Auto-Fire for the_salvage](099-coyote-object-salvage-hooks.md) | deferred | — |
+| [ADR-138: NPC Ratification Gates Projection Eligibility — Unratified Pool Members Stay Out of the ADR-118 Index and the ADR-135 Public Surface](138-npc-ratification-gates-projection.md) | deferred | Design-only (story 75-9). Governs existing sidequest-server/sidequest/game/npc_pool.py (NpcPoolMember.observation_pending — Story 49-6 gate) and the ADR-118 §D3 NPC to_card() projector (game/entity_card.py / entity_sync.py). Implementation deferred to follow-on stories 75-11..75-14. |
 | [ADR-013: Lazy JSON Extraction](013-lazy-json-extraction.md) | **drift** | [ADR-102](102-tool-use-protocol-for-structured-output.md) |
 | [ADR-041: Genie Wish / Consequence Engine](041-genie-wish-consequence-engine.md) | **drift** | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
 | [ADR-042: OCEAN Personality Live Evolution](042-ocean-personality-live-evolution.md) | **drift** | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
