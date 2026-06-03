@@ -139,10 +139,13 @@ stories:
     title: Comment-guard at peer-reveal capture site (App.tsx) — 'MUST use raw reveals, never merged' to prevent stale-draft regression
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-03'
     repos: sidequest-ui
     workflow: trivial
+    completed: '2026-06-03'
     type: chore
+    review_verdict: approved
   - id: 71-13
     title: MP opening live-broadcast bypasses emit_event — route opening through emit_event(author_player_id) for uniform per-recipient POV + perception fanout + event-sourcing (anchor-peer live-swap + visible_to private-segment leak)
     points: 5
