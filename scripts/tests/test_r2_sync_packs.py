@@ -13,7 +13,10 @@ from scripts.r2_sync_packs import (
 
 
 def test_lfs_extensions_match_gitattributes() -> None:
-    expected = {".ogg", ".png", ".wav", ".mp3", ".jpg", ".jpeg", ".webp", ".flac"}
+    expected = {
+        ".ogg", ".png", ".wav", ".mp3", ".jpg", ".jpeg", ".webp", ".flac",
+        ".woff2", ".woff", ".ttf", ".otf",
+    }
     assert LFS_EXTENSIONS == expected
 
 
@@ -26,6 +29,23 @@ def test_content_type_for_known_extensions() -> None:
     assert content_type_for(Path("a.mp3")) == "audio/mpeg"
     assert content_type_for(Path("a.wav")) == "audio/wav"
     assert content_type_for(Path("a.flac")) == "audio/flac"
+
+
+def test_content_type_for_font_extensions() -> None:
+    assert content_type_for(Path("Cinzel.woff2")) == "font/woff2"
+    assert content_type_for(Path("Cinzel.woff")) == "font/woff"
+    assert content_type_for(Path("Orbitron.ttf")) == "font/ttf"
+    assert content_type_for(Path("Orbitron.otf")) == "font/otf"
+
+
+def test_iter_media_files_includes_fonts(tmp_path: Path) -> None:
+    fonts = tmp_path / "assets" / "fonts"
+    fonts.mkdir(parents=True)
+    (fonts / "Cinzel-Regular.woff2").write_bytes(b"x")
+    (fonts / "Orbitron.ttf").write_bytes(b"y")
+    (tmp_path / "notes.txt").write_text("skip me")
+    found = sorted(p.name for p in iter_media_files(tmp_path))
+    assert found == ["Cinzel-Regular.woff2", "Orbitron.ttf"]
 
 
 def test_content_type_for_unknown_extension_raises() -> None:

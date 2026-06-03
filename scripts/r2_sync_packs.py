@@ -22,7 +22,10 @@ from botocore.exceptions import ClientError
 from scripts.r2_manifest import _md5_of, build_manifest_entry, write_manifest
 
 LFS_EXTENSIONS: frozenset[str] = frozenset(
-    {".ogg", ".png", ".wav", ".mp3", ".jpg", ".jpeg", ".webp", ".flac"}
+    {
+        ".ogg", ".png", ".wav", ".mp3", ".jpg", ".jpeg", ".webp", ".flac",
+        ".woff2", ".woff", ".ttf", ".otf",
+    }
 )
 
 _CONTENT_TYPES: dict[str, str] = {
@@ -34,6 +37,10 @@ _CONTENT_TYPES: dict[str, str] = {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
     ".webp": "image/webp",
+    ".woff2": "font/woff2",
+    ".woff": "font/woff",
+    ".ttf": "font/ttf",
+    ".otf": "font/otf",
 }
 
 CACHE_CONTROL_IMMUTABLE = "public, max-age=31536000, immutable"
