@@ -32,6 +32,7 @@ completed_epics:
   - '80'
   - '78'
   - '81'
+  - '83'
 completed_stories:
   - id: 55-1
     epic: '55'
@@ -877,4 +878,9 @@ completed_stories:
     epic: '81'
     title: Feed PacingHint into TurnContext so the [PACING] injection fires (ADR-025)
     points: 3
+    completed: '2026-06-03'
+  - id: 83-1
+    epic: '83'
+    title: "Rebuild ConnectScreen as the Standing Folio lobby — genre accordion + cinematic preview"
+    points: 5
     completed: '2026-06-03'
