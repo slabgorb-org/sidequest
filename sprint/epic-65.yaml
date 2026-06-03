@@ -291,3 +291,18 @@ stories:
       - Starting a wry_whimsy/oz session shows NO 404 / 'Unable to decode audio data' in the browser console and music plays
       - r2_manifest.json updated to track the classical_pd set
     type: chore
+  - id: 65-15
+    title: Kill font split-brain — self-host all fonts from R2, zero Google Fonts
+    points: 5
+    priority: p2
+    status: done
+    assigned_to: White Rabbit
+    repos: orchestrator,server,ui,content
+    workflow: tdd
+    acceptance_criteria:
+      - Zero fonts.googleapis.com references remain in sidequest-ui/content/server source
+      - Genre theme_css font url()s resolved through resolve_asset_url() seam (CDN in prod, /genre/ offline)
+      - All referenced faces vendored to genre_packs/assets/fonts and synced to R2 by r2_sync_packs.py
+      - Reference-page + chrome + dice fonts all self-hosted from R2
+    completed: '2026-06-03'
+    type: chore
