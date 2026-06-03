@@ -151,10 +151,12 @@ stories:
     title: 'hp_depletion presence-stamp: production-path wiring test through instantiate_encounter_from_trigger + created-branch coverage; tighten 72-8 AC2 docstring'
     points: 2
     priority: p3
-    status: backlog
+    status: in_progress
     repos: sidequest-server
     workflow: trivial
     type: chore
+    branch: feat/72-13-hp-depletion-presence-wiring-test
+    started: '2026-06-03'
   - id: 72-14
     title: Replace source-text wiring test (_publish_combat_edge_to_npcs occurrence count) in test_npc_registry_combat_stats.py with OTEL-span/behavior assertion
     points: 1
