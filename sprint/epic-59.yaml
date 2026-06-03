@@ -509,3 +509,26 @@ stories:
     type: bug
     review_findings: "HIGH: missing dispatch-level wiring test (rule-checker + test-analyzer, <critical> 'Every Test Suite Needs a Wiring Test' violation). LOW: 2 weak test assertions (:273 !=→is None, :471 unasserted signal metrics) + 3 stale/false comments (narration_apply:2799, :4568 docstring false participant.left OTEL claim, test:389). Code itself correct — 8/9 rules compliant, 0 runtime bugs."
     review_verdict: approved
+  - id: 59-32
+    title: Shared is_player_victory() classifier — opponent_yielded/surrender/rout inherit player_victory rewards
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: refactor
+  - id: 59-33
+    title: ResolutionSignal yield_side field — distinguish opponent-yield from player-yield for the dormant 49-5 [ENCOUNTER RESOLVED] narration
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 59-34
+    title: Real-OTEL wiring test for the opponent_yield_on_location_change trigger path
+    points: 1
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: chore
