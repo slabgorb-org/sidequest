@@ -121,6 +121,23 @@ def _already_keys() -> set[str]:
     return {e["key"] for e in entries}
 
 
+def _composer_entries(todo: list[dict]) -> list[dict]:
+    """Return copies of ``todo`` with a single trailing ``.ogg`` stripped.
+
+    The composer (pipeline.py) builds its output filename as
+    ``out_dir / f"{out_name}.{output_format}"`` — it *appends* ``.ogg``. Our
+    catalog ``out_name`` already ends in ``.ogg`` (it equals the audio.yaml
+    demand filename and the R2 key), so we must hand the composer the bare stem
+    or it produces ``<name>.ogg.ogg``. Originals are left untouched: ``new_oggs``
+    later relies on the original ``out_name`` (with ``.ogg``), which equals the
+    composer's actual output ``<stem>.ogg``.
+    """
+    return [
+        {**entry, "out_name": entry["out_name"].removesuffix(".ogg")}
+        for entry in todo
+    ]
+
+
 def _write_temp_manifest(entries: list[dict]) -> Path:
     """Write a composer manifest holding ``entries`` and return its path."""
     fh = tempfile.NamedTemporaryFile(
@@ -128,7 +145,7 @@ def _write_temp_manifest(entries: list[dict]) -> Path:
     )
     with fh:
         yaml.safe_dump(
-            {"loudness": -16, "entries": entries},
+            {"loudness": -16, "entries": _composer_entries(entries)},
             fh,
             allow_unicode=True,
             sort_keys=False,
@@ -186,6 +203,9 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     # --- Upload the new OGGs via the existing R2 sync ------------------------
+    # Original out_name (with .ogg) == the composer's actual output filename:
+    # composer wrote `<stem>.ogg` from the stem in _composer_entries, and
+    # out_name == f"{stem}.ogg". So this points at the real file on disk.
     new_oggs = [SHARED_DIR / e["out_name"] for e in todo]
     # Deferred import: keep boto3's import cost off the --dry-run path.
     from scripts import r2_sync_packs  # noqa: PLC0415

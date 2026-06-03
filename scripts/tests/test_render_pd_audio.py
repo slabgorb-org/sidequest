@@ -40,6 +40,15 @@ def test_plan_renders_skips_already_in_r2():
     assert [e["out_name"] for e in todo] == ["Chopin - Nocturne Op.9 No.2 in E-flat major.ogg"]
 
 
+def test_composer_entries_strip_ogg_suffix_for_composer_outname():
+    from scripts.render_pd_audio import _composer_entries
+    todo = [{"out_name": "Satie - Gymnopedie No.1.ogg", "title": "G1", "source_url": "x.mid"}]
+    out = _composer_entries(todo)
+    assert out[0]["out_name"] == "Satie - Gymnopedie No.1"   # composer re-appends .ogg
+    assert todo[0]["out_name"] == "Satie - Gymnopedie No.1.ogg"  # originals untouched
+    assert out[0]["source_url"] == "x.mid"  # other fields preserved
+
+
 def test_plan_renders_fails_loud_on_uncatalogued_demand():
     demand = {"Mystery - Unknown.ogg"}
     with pytest.raises(UncataloguedTrackError) as exc:
