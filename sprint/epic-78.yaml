@@ -27,7 +27,8 @@ stories:
     description: 'Wiring-audit finding (sq-wire-it, 2026-06-02). Pure dead exports in the daemon — zero non-test (often zero total) consumers: (1) NullRenderer + renderer.base.Renderer ABC (sidequest_daemon/renderer/null.py) — no importer anywhere, even tests; no factory, no daemon path. (2) Dead genre/models.py stubs — VisualStyle, AudioConfig, MixerSettings, AIGenerationConfig, ThemeFamily, MoodTrack, Variation, PackMeta have no non-definition references (daemon uses StyleCatalog/YAML directly; only GenrePack is referenced, and only under TYPE_CHECKING). (3) dispatch_request image-tier branch (daemon.py:246) raises NotImplementedError — half-extracted (music tier wired, image tier a trap for future callers). Default action: delete (1) and (2). For (3), either finish the image-tier extraction or collapse dispatch_request back so the NotImplementedError trap is removed. Confirm zero consumers immediately before deleting each.'
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-03'
     repos: daemon
     workflow: trivial
     acceptance_criteria:
@@ -35,7 +36,9 @@ stories:
       - Confirmed-dead genre/models.py stubs removed; GenrePack retained if still TYPE_CHECKING-referenced
       - dispatch_request image-tier NotImplementedError trap resolved (extraction finished OR branch removed)
       - daemon-test + daemon-lint green after removals; no dangling imports
+    completed: '2026-06-03'
     type: refactor
+    review_verdict: approved
   - id: 78-3
     title: 'Daemon deferred observability — start_periodic_heartbeat (ADR-131) + detect_gpu/GpuInfo span (ADR-046) unwired: wire or cut'
     description: "Wiring-audit finding (sq-wire-it, 2026-06-02). Two deferred-FEATURE exports (distinct from pure dead code — each has ADR lineage, so this is a finish-or-cut decision, not an automatic delete): (1) start_periodic_heartbeat (sidequest_daemon/media/daemon.py:155) — its own docstring says 'NOT YET WIRED INTO _run_daemon'; the 30s idle-heartbeat (ADR-131 liveness) never fires, only per-connection _write_heartbeat keeps liveness. (2) detect_gpu/GpuInfo (sidequest_daemon/media/gpu_detect.py:25) — no prod caller; the GPU-detection OTEL span (ADR-046 budget coordinator) never fires in production. For each: decide wire (schedule heartbeat as a background task in _run_daemon; call detect_gpu at warmup so its span fires) or cut (delete + note the ADR defers the feature). Prefer wiring if the ADR still wants the capability."
