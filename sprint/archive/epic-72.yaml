@@ -3,7 +3,7 @@ type: epic
 title: NPC Identity Hardening
 description: 'DEEP-DIVE (perseus_cloud session 894, 2026-05-29): an NPC has no stable id — identity is a case-folded NAME STRING split across two unreconciled stores (snapshot.npcs = mechanical state; snapshot.npc_pool = identity scaffold) with no consistency invariant. The development pipeline (weight escalation + disposition evolution + interest counting) is DORMANT — promotion fires only on mechanical necessity (combat stat block), never on player interest, backwards from ADR-014/020. Source: sq-playtest-pingpong DEEP-DIVE #1. Every leg needs OTEL.'
 priority: p2
-status: backlog
+status: done
 repos: sidequest-server
 stories:
   - id: 72-1
@@ -163,10 +163,14 @@ stories:
     title: Replace source-text wiring test (_publish_combat_edge_to_npcs occurrence count) in test_npc_registry_combat_stats.py with OTEL-span/behavior assertion
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-03'
     repos: sidequest-server
     workflow: trivial
+    completed: '2026-06-03'
     type: chore
+    branch: feat/72-14-replace-source-text-wiring-test-with-otel-assertion
+    review_verdict: approved
   - id: 72-15
     title: Rescue test_pregen.py from the caverns_sunden blanket-skip + fix stale _stub_pack
     description: "TEST DEBT surfaced by 72-11. tests/server/dispatch/test_pregen.py is ENTIRELY skip-listed in tests/conftest.py (_CAVERNS_SUNDEN_DEPRECATED_TESTS) because its ONE e2e (test_e2e_seed_caverns_sunden_populates_manual) binds the deprecated caverns_sunden world. That over-broad file-level skip sweeps in ~16 world-AGNOSTIC seed_manual unit tests (same trap the conftest's own NOTE rescued test_pov_swap from). Worse: those unit tests' _stub_pack is STALE — it exposes .cultures but seed_manual now calls pack.effective_cultures(world), so they would ERROR if naively un-skipped. RESCUE: (1) fix _stub_pack to implement effective_cultures(world); (2) re-point the deprecated e2e to a DEDICATED TEST FIXTURE pack/world (operator decision 2026-06-03: target a FIXTURE, NOT a live genre-pack world like coyote_star/caverns_and_claudes — live content is mid-migration per 71-31 and would re-introduce the coupling fragility 72-11 deliberately avoided); (3) remove test_pregen.py from the conftest skip set so all ~16 unit tests + the re-pointed e2e run. This is the proper home for 72-11's AC5 'existing pregen tests stay green' (those named tests were skipped-and-stale). Honors CLAUDE.md 'no skipping tests for live subsystems' (pregen is live). Repos: sidequest-server (tests + conftest only; no production change)."
@@ -186,3 +190,4 @@ stories:
     branch: feat/72-15-rescue-test-pregen-skip
     type: chore
     review_verdict: approved
+completed: '2026-06-03'

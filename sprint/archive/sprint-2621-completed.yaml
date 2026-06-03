@@ -33,6 +33,7 @@ completed_epics:
   - '78'
   - '81'
   - '83'
+  - '72'
 completed_stories:
   - id: 55-1
     epic: '55'
@@ -899,3 +900,78 @@ completed_stories:
     title: Tidy two pre-existing weak/stale tests in test_audit_namegen_corpora.py — (a) test_audit_synthetic_ample_corpus_exits_zero asserts rc=0 + name-present but not OK-classification (add co-located OK-row check); (b) test_audit_live_tree_exits_zero_after_corpus_expansion docstring claims the pre-fix failure is THIN when the real mode is MISSING/rc=1 (refresh the note). Found by Reviewer round-2 during 64-7 (out-of-diff, deferred).
     points: 1
     completed: 'Co-delivered with 64-16 under one bundled session (archived: sprint/archive/64-16-session.md). Server PR slabgorb/sidequest-server#613 merged (7ce6c03). Reviewer APPROVED.'
+  - id: 72-1
+    epic: '72'
+    title: Revive dormant NPC development pipeline — interest-signal increment, resolution_tier escalation, disposition drift, OTEL
+    points: 8
+    completed: '2026-05-30'
+  - id: 72-2
+    epic: '72'
+    title: Preserve disposition on pool to Npc promotion + reconcile npcs vs npc_pool on load
+    points: 5
+    completed: '2026-05-30'
+  - id: 72-3
+    epic: '72'
+    title: MM NPC provenance through the injection seam — NpcPatch manual_origin, preserved through merge
+    points: 3
+    completed: '2026-05-31'
+  - id: 72-4
+    epic: '72'
+    title: Route narrator-invented NPC names through culture-bound ADR-091 namegen
+    points: 5
+    completed: '2026-05-30'
+  - id: 72-5
+    epic: '72'
+    title: Fix narrator-invented born-hostile disposition default (-20 to neutral spawn)
+    points: 2
+    completed: '2026-05-30'
+  - id: 72-6
+    epic: '72'
+    title: Cap npc_pool growth (LRU/last-seen) + prune stale observation_pending scaffolds
+    points: 3
+    completed: '2026-06-03'
+  - id: 72-7
+    epic: '72'
+    title: Apply NPC identity drift — overwrite canonical pronoun/role on re-mention, not warn-only
+    points: 3
+    completed: '2026-05-31'
+  - id: 72-8
+    epic: '72'
+    title: Stamp last_seen_turn/location on encounter presence, not just prose mention
+    points: 2
+    completed: '2026-06-01'
+  - id: 72-9
+    epic: '72'
+    title: Wire OCEAN/disposition + scenario belief_state for narrator-invented NPCs
+    points: 5
+    completed: '2026-05-30'
+  - id: 72-10
+    epic: '72'
+    title: observation_pending gate-ordering assert (gate must precede mint)
+    points: 1
+    completed: '2026-05-31'
+  - id: 72-11
+    epic: '72'
+    title: "Pregen MAX_CULTURES=4 cap silently drops world cultures from the seeded NPC roster — scale to the world's culture count (coyote_star: voidborn excluded; surfaced by 71-31)"
+    points: 3
+    completed: '2026-06-02'
+  - id: 72-12
+    epic: '72'
+    title: Presence-stamp opponent/participant last_seen beyond combat seams (opposed_check social + participant_joined) — 'presence means presence'
+    points: 3
+    completed: '2026-06-03'
+  - id: 72-13
+    epic: '72'
+    title: 'hp_depletion presence-stamp: production-path wiring test through instantiate_encounter_from_trigger + created-branch coverage; tighten 72-8 AC2 docstring'
+    points: 2
+    completed: '2026-06-03'
+  - id: 72-14
+    epic: '72'
+    title: Replace source-text wiring test (_publish_combat_edge_to_npcs occurrence count) in test_npc_registry_combat_stats.py with OTEL-span/behavior assertion
+    points: 1
+    completed: '2026-06-03'
+  - id: 72-15
+    epic: '72'
+    title: Rescue test_pregen.py from the caverns_sunden blanket-skip + fix stale _stub_pack
+    points: 2
+    completed: '2026-06-03'
