@@ -45,10 +45,12 @@ stories:
     description: "ADR-025 runtime bug. DEPENDS ON 81-2 (needs a live, accumulating TensionTracker to derive a hint from). ROOT CAUSE: TurnContext.pacing_hint (declared sidequest/agents/orchestrator.py:728 as 'PacingHint | None = None') is never set — the sole TurnContext construction site (sidequest/server/session_helpers.py:1158) omits it — so it is None every turn, and the orchestrator's [PACING] injection (orchestrator.py:2648-2653, 'if context.pacing_hint is not None: register_pacing_section(...)') never fires. The narrator therefore never receives a pacing hint. FIX (consumer/bridge side): at TurnContext construction in session_helpers.py:1158, derive the hint from the session TensionTracker (81-2) via tracker.pacing_hint(thresholds) using the genre's DramaThresholds, and pass it into TurnContext. EXPLICITLY OUT OF SCOPE (deferred per code): the original quiet-turn pre/post game-state diff, and the accelerator/decelerator keyword scan stubbed at sidequest/game/trope_tick.py:226-230. Evidence: docs/adr/AUDIT-2026-06-03.md (ADR-025)."
     points: 3
     priority: p1
-    status: backlog
+    status: in_progress
+    started: '2026-06-03'
     repos: sidequest-server
     workflow: tdd
     depends_on: 81-2
+    branch: feat/81-3-pacing-hint-turncontext
     acceptance_criteria:
       - TurnContext construction (session_helpers.py:1158) derives pacing_hint from the session TensionTracker (81-2) + the genre's DramaThresholds; pacing_hint is non-None on turns where accumulated tension warrants a hint.
       - 'The orchestrator [PACING] injection actually fires (orchestrator.py:2648-2653 register_pacing_section): a prompt-assembly test asserts the assembled narrator prompt contains the pacing-hint section when pacing_hint is set.'
