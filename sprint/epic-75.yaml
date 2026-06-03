@@ -118,11 +118,13 @@ stories:
     title: '[DESIGN] NPC-pool ratification gate + pool/Npc split (ADR-135) — governs ADR-118 projection source'
     points: 3
     priority: p2
-    status: in_progress
+    status: done
     started: '2026-06-03'
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-06-03'
     type: chore
+    review_verdict: approved
   - id: 75-10
     title: Wire player-NPC reference signal into the budgeted working-set brief tier (75-2 carryover, ADR-118)
     points: 2
