@@ -649,6 +649,15 @@ adr-regen:
     set -euo pipefail
     python3 {{root}}/scripts/regenerate_adr_indexes.py
 
+# Regenerate the feature inventory from the verified manifest
+feature-inventory-regen:
+    cd {{root}} && uv run python3 {{root}}/scripts/regenerate_feature_inventory.py
+
+# CI guard: regen must produce no diff and no verification failure
+feature-inventory-check:
+    cd {{root}} && uv run python3 {{root}}/scripts/regenerate_feature_inventory.py > /dev/null
+    cd {{root}} && git diff --quiet docs/feature-inventory.md || (echo "feature-inventory.md is stale. Run: just feature-inventory-regen (then stage + commit)" && exit 1)
+
 # Validate a single genre pack directory structure against pack_schema.yaml.
 # Usage: just content-validate <genre>  (e.g. just content-validate caverns_and_claudes)
 content-validate genre:

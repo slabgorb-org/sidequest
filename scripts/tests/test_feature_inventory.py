@@ -225,3 +225,20 @@ def test_generate_writes_doc_when_all_verify(tmp_path):
     rc = generate(repo_root=tmp_path, span_names=set())
     assert rc == 0
     assert "### X" in doc.read_text()
+
+
+# append to scripts/tests/test_feature_inventory.py
+def test_check_recipe_detects_drift(tmp_path):
+    """A hand-edit inside the markers must be reverted by regen → git sees drift."""
+    # This is a behavioral contract test for the recipe; assert the generator
+    # rewrites a tampered region back to canonical.
+    (tmp_path / "docs" / "feature-inventory").mkdir(parents=True)
+    (tmp_path / "docs" / "feature-inventory" / "x.yaml").write_text(
+        "category: X\nfeatures:\n  - id: a\n    name: A\n    status: engineering\n"
+    )
+    doc = tmp_path / "docs" / "feature-inventory.md"
+    doc.write_text(f"PRE\n{MARKER_BEGIN}\nTAMPERED\n{MARKER_END}\nPOST\n")
+    from scripts.regenerate_feature_inventory import generate
+    generate(repo_root=tmp_path, span_names=set())
+    assert "TAMPERED" not in doc.read_text()
+    assert "### X" in doc.read_text()
