@@ -37,9 +37,11 @@ stories:
     title: Promote quest_anchors to first-class WorldStatePatch field + wire to orbital course
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-04'
     repos: server
     workflow: tdd
+    completed: '2026-06-04'
   - id: 77-4
     title: One-mechanism cleanup — retire quest_updates lane + strip apply_world_patch quest/stakes paths
     points: 3
