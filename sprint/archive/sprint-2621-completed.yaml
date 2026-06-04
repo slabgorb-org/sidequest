@@ -39,6 +39,7 @@ completed_epics:
   - '85'
   - '75'
   - '59'
+  - '76'
 completed_stories:
   - id: 55-1
     epic: '55'
@@ -1351,5 +1352,60 @@ completed_stories:
   - id: 59-35
     epic: '59'
     title: Seat present FRIENDLY companions as side=player combatants in confrontations (ADR-116 / Guitar Solo)
+    points: 5
+    completed: '2026-06-04'
+  - id: 76-1
+    epic: '76'
+    title: dispatch_worker entity_pending gate regression test — assert sd.embed_task spawns on an entity-only turn (seed pool member, no lore, call lore_embed.dispatch_worker). Guards the 75-6 silent-revert risk.
+    points: 1
+    completed: '2026-06-02'
+  - id: 76-2
+    epic: '76'
+    title: "Tighten 3 loose 75-6 test assertions (python.md #6): result.embedded >=1 -> ==1; over-broad failed_refs guard -> exact ['   ']; add assert op=='synced' on the skipped-path watcher event."
+    points: 1
+    completed: '2026-06-03'
+  - id: 76-3
+    epic: '76'
+    title: expected_dim parity for the entity embed worker — mirror lore's dimension guard in embed_pending_entity_cards + EntityStore.update_embedding so a mid-session daemon model-dim change cannot write a stale-dim vector (currently self-heals one turn later via requeue).
+    points: 2
+    completed: '2026-06-04'
+  - id: 76-4
+    epic: '76'
+    title: Harden embed text-too-large log against future content leakage — log type(exc).__name__ instead of the ValueError object in entity_embedding.py AND lore_embedding.py (defense-in-depth; safe today, fragile if a content-bearing ValueError is introduced).
+    points: 1
+    completed: '2026-06-03'
+  - id: 76-5
+    epic: '76'
+    title: Entity-only-turn embed telemetry precision — surface entity_pending in the lore_embed dispatch 'completed' and 'dispatch_skipped' events so an entity-only turn no longer reports pending_at_dispatch=0 with no entity-queue signal.
+    points: 1
+    completed: '2026-06-03'
+  - id: 76-6
+    epic: '76'
+    title: 'Source coverage: sync stateful snapshot.npcs into the entity index — add an Npc projector path (project_npc_card currently takes only NpcPoolMember) and extend sync_entity_cards so scene-stateful NPCs, not just pool members, are retrievable.'
+    points: 3
+    completed: '2026-06-04'
+  - id: 76-7
+    epic: '76'
+    title: 'Source coverage: sync factions + locations into the entity index — wire faction (world lore) and location (diffuse: room graph / world_materialization / PG promotions) sources through project_faction_card/project_location_card so entity_sync.{faction,location}_count stop reading 0. Makes the universal index actually universal.'
+    points: 5
+    completed: '2026-06-04'
+  - id: 76-8
+    epic: '76'
+    title: Fix stale _StubSession in test_aside_channel_wiring (missing _retrieve_entities_for_turn)
+    points: 1
+    completed: '2026-06-03'
+  - id: 76-9
+    epic: '76'
+    title: Consolidate duplicated test helpers — shared FakeSocket (16 copies, 2 shapes) + make_orchestrator (5 copies, cross-dir) into one shared support module
+    points: 3
+    completed: '2026-06-04'
+  - id: 76-10
+    epic: '76'
+    title: Clear pre-existing sidequest-server ruff check debt — develop carries 10 auto-fixable 'ruff check .' errors (mostly I001 import-sort, plus SIM/B/UP), so just server-lint is repo-wide-RED and 'ruff check clean' is unmeetable for every server story (the lint gate is effectively defeated). Apply ruff check --fix for the mechanical I001s; REVIEW any SIM/B/UP/semantic fixes individually before applying (auto-fixable != always-safe). Separately, ~125 files are unformatted (ruff format ungated) — a format sweep is a distinct follow-up. Surfaced during the 76-2/76-4 trivial batch.
+    points: 2
+    completed: '2026-06-04'
+  - id: 76-11
+    epic: '76'
+    title: Location source coverage v2 — wire room-graph + world_materialization adapters into the entity index (via location_view authored-prose resolution), batch the per-region promotion read, and surface per-region read failures as a watcher event (carries forward 76-7 Reviewer/Dev Delivery Findings)
     points: 5
     completed: '2026-06-04'

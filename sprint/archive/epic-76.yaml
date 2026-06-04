@@ -3,7 +3,7 @@ type: epic
 title: Universal Retrieval Follow-Ups — 75-6 Hardening + Source Coverage
 description: "Non-blocking follow-ups carried forward from Story 75-6 (ADR-118 §D2 entity card sync/reproject) review + finish. Two threads: (1) HARDENING — close the untested dispatch_worker entity_pending gate, tighten loose test assertions, mirror the lore worker's expected_dim guard, harden the embed log against future content leakage, and fix entity-only-turn telemetry. (2) SOURCE COVERAGE — the index is NPC-pool-only today (ADR-118-permitted NPC-first v1); extend sync_entity_cards to stateful snapshot.npcs, factions, and locations so the 'universal' retrieval index is actually universal. Blocks the full value of 75-7 (OTEL/GM-panel) and 75-8 (e2e)."
 priority: p2
-status: backlog
+status: done
 repos: sidequest-server
 stories:
   - id: 76-1
@@ -130,3 +130,4 @@ stories:
     workflow: tdd
     completed: '2026-06-04'
     review_verdict: approved
+completed: '2026-06-04'
