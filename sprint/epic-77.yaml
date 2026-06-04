@@ -56,9 +56,11 @@ stories:
     title: Quest/objective panel — render quest_log + quest_anchors + active_stakes (quests payload)
     points: 5
     priority: p3
-    status: backlog
+    status: in_progress
+    started: '2026-06-04'
     repos: ui
     workflow: tdd
+    branch: feat/77-5-quest-objective-panel
   - id: 77-6
     title: Author wry_whimsy seed_tropes deck (ADR-128) — active_seeds carve-out
     points: 2
