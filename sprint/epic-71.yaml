@@ -456,7 +456,8 @@ stories:
       SCOPE: server only. Corrects the (now-archived) epic-65 65-8 gate doctrine — no new pattern, no ADR. Was filed as 65-17 before epic 65 archived; re-homed here. The #642 'Renderable Landscapes' section is correct and lights up the moment this lands; the Location tab (#643) already works for oz/gulliver regardless. Sibling: 71-39 (wonderland content article mismatch). Test against oz (assets present on R2).
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-04'
     repos: server
     workflow: tdd
     acceptance_criteria:
@@ -465,7 +466,9 @@ stories:
       - 'DEEP-LINK REGRESSION GUARD (blast radius): reference_url_for_region and the location-{slug} card ids STILL resolve via the hyphen (slugify) form — an existing region-header deep-link does not break. Pin BOTH forms in one test (R2 key = underscore, anchor = hyphen, for the same authored slug) so the decouple can never silently re-couple.'
       - "Fix the now-wrong load_poi_image_slugs docstring that claims the authored slug and the card slug 'both pass through slugify' — that conflation IS the bug. Document the two distinct forms: R2 object key = verbatim authored slug; HTML anchor = slugify(authored slug)."
       - "No new OTEL span family (slug/keying correction is cosmetic-class per CLAUDE.md 'Not needed for: cosmetic'). The existing reference_manifest_loaded span (world_key_count) already proves the gate read the manifest; the verifiable signal is gated_poi_slugs becoming non-empty (POI imgs emit) — assert that, per No-Source-Text-Wiring-Tests."
+    completed: '2026-06-04'
     type: bug
+    review_verdict: approved
   - id: 71-39
     title: Wonderland POI slug↔region_id article normalization — align history.yaml POI slugs + R2 keys to the canonical region_id
     description: |-
