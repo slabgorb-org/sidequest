@@ -54,10 +54,11 @@ stories:
     type: refactor
   - id: 77-5
     title: Quest/objective panel — render quest_log + quest_anchors + active_stakes (quests payload)
-    description: 'BLOCKED on 77-8 (server quests projection). TEA RED (2026-06-04) found the rich quests projection (quest_log + quest_anchors + active_stakes) never reaches the client — 77-1..77-4 store/maintain the spine but no story projects it outbound. This render-only UI panel has nothing to consume. Per story-context Technical Guardrails, the payload shape must NOT be fabricated into the thin Record<string,string>. Re-sequenced behind 77-8 (Bossmang decision, 2026-06-04): land + verify the server projection, then this panel mirrors its shape into a QuestsPayload TS type and renders it. Resume this story after 77-8 merges.'
+    description: 'Server quests projection landed (77-8, 2026-06-04). This render-only UI panel mirrors the rich QuestsPayload (quest_log + quest_anchors + active_stakes) into a TS type and renders it as a dockable GameBoard widget, mirroring the ADR-136 RelationshipsPanel pattern. No game-logic writes, no fabrication of payload shape — consume the full server projection shape.'
     points: 5
     priority: p3
-    status: backlog
+    status: in_progress
+    assigned_to: dev
     started: '2026-06-04'
     repos: ui
     workflow: tdd

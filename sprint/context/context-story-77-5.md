@@ -42,34 +42,37 @@ consumer of an already-projected server field — no game logic, no writes.
   seed. Adding any client-side quest-write affordance is out of scope and a
   guardrail violation.
 
-- **Gated on the server projection being OTEL-verified first (fast-follow).** ADR-137
-  §"Why C-core + D-as-fast-follow" is explicit: the server fix must land and be
-  **OTEL-verified independently** (the GM panel is the lie-detector for
-  `quest.seeded_at_creation` / `quest.created` / `quest.anchor.added` / `stakes.set`)
-  *before* this panel consumes the projection. Do not start the panel against an
-  empty/improvised projection — confirm the spine is actually populated in a live
-  session (or a real snapshot fixture) before treating it as the source of truth.
-  This honors "Verify Wiring, Not Just Existence."
+- **Server projection landed — 77-8 complete (2026-06-04, merged).** The blocking
+  dependency is resolved. Story 77-8 shipped the rich `quests` projection (QuestsPayload:
+  quest_log + quest_anchors + active_stakes) to the client via a new QUESTS message
+  type, mirroring the ADR-136 RELATIONSHIPS snapshot pattern. The server now emits
+  a typed `QuestsPayload` (with `QuestLogEntry` and `QuestAnchorEntry` sub-types
+  from `sidequest/protocol/models.py`) outbound on creation-seed / record_quest /
+  set_stakes mutations. **This story mirrors that payload shape into a TS type and
+  renders it.** See the payload contract at
+  `sidequest-server/sidequest/protocol/models.py` (lines ~650–680).
 
-- **The rich `quests` projection does not exist yet — it is a blocking dependency.**
-  Measured against `sidequest-ui` HEAD (2026-06-02): a `quests` field *does* exist,
-  but it is **the wrong shape for this story**. It is declared as
-  `quests?: Record<string, string>` on `StateDelta` (`src/types/payloads.ts:46`),
-  carried into `ClientGameState` as `quests: Record<string, string>`
-  (`src/providers/GameStateProvider.tsx:64,109`), and merged in the state mirror
-  (`src/hooks/useStateMirror.ts:389-390`). That is the **legacy quest-title→status
-  map** (e.g. `{ "Find the Amulet": "in_progress" }` — see
-  `GameStateProvider.test.tsx`). It carries **only `quest_log`-as-status-strings**;
-  it has **no `quest_anchors` and no `active_stakes`**. There is **no rich `quests`
-  payload** (no `QuestsPayload` interface, no `QUESTS` message type, no projection
-  carrying log+anchors+stakes together). **Before implementation, the Dev/TEA must
-  confirm with the server lane whether 77-1…77-4 ship a richer `quests` projection
-  (analogous to the `RELATIONSHIPS` snapshot / `RelationshipEntryPayload`). If it
-  does not, this story is BLOCKED on a server projection field** — flag it, do not
-  invent the panel against the thin `Record<string, string>` and call it done. The
-  ADR's claim that "the `quests` field already exists in payloads.ts and renders
-  nowhere" is *partially* true (a field exists) but **understates the gap**: the
-  field present today cannot express anchors or stakes.
+- **Mirror the payload shape exactly. No fabrication.** The server emits:
+  - `quest_log: QuestLogEntry[]` — each quest has quest_id, title, objective, status,
+    anchor_id
+  - `quest_anchors: QuestAnchorEntry[]` — each anchor has anchor_id, quest_id
+    (nullable), resolution (nullable)
+  - `active_stakes: string` — current stakes text (empty string if none)
+  
+  Do **not** thin this into a `Record<string, string>` or any other lossy shape.
+  Mirror the rich payload into a `QuestsPayload` TS interface in `payloads.ts` and
+  consume it fully. This honors ADR-137's "the server lands + OTEL-verifies before
+  the panel consumes" sequencing and the "Don't Reinvent — Wire Up What Exists"
+  principle.
+
+- **Retire the legacy `quests` field gracefully.** The current `StateDelta.quests`
+  (`Record<string, string>`) was never populated (test_wire_parity.py asserts its
+  omission in AC5). The new rich projection will arrive via a separate `quests`
+  field on the game-state snapshot (analogous to how `relationships` threads
+  separately from the legacy underscore-prefixed field). When the new projection
+  lands, this panel feeds from it; the legacy `Record<string, string>` can remain
+  in the type signature (for compatibility with old saves) but will never be read.
+  Do **not** try to merge both shapes — the new rich payload is the source of truth.
 
 - **Mirror the established dock-panel pattern — do not invent a new one.** The
   reference implementation is the ADR-136 Relationships panel, which is structurally
