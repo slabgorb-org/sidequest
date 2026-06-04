@@ -46,9 +46,11 @@ stories:
     title: One-mechanism cleanup — retire quest_updates lane + strip apply_world_patch quest/stakes paths
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-04'
     repos: server
     workflow: tdd
+    completed: '2026-06-04'
     type: refactor
   - id: 77-5
     title: Quest/objective panel — render quest_log + quest_anchors + active_stakes (quests payload)
