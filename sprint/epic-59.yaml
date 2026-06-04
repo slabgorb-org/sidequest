@@ -515,10 +515,20 @@ stories:
     title: Shared is_player_victory() classifier — opponent_yielded/surrender/rout inherit player_victory rewards
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-04'
     repos: sidequest-server
     workflow: tdd
+    acceptance_criteria:
+      - 'is_player_victory(outcome: str) -> bool: single source of truth for the CREDIT-victory label. True set = {player_victory, opponent_yielded, surrender, rout}; all else False (opponent_victory, yielded, abandoned_on_location_change, mutual_destruction, resolution_beat:*, composure_break:*, unknown)'
+      - Wire is_player_victory() into the resolution OTEL credit-outcome collapse in _resolve_opponent_yield (replace the hardcoded outcome=player_victory mapping). Do NOT touch the kill/defeated-side tracker at websocket_session_handler.py:195 — credit-victory and defeated-side are divergent semantics
+      - Normalize opponent_yield_outcome() return to 'opponent_yielded' (consumer-safe; both consumers None-check only) per step 3
+      - 'Unit tests: full True/False outcome matrix for is_player_victory(). Wiring test: classifier is the actual producer of the credit-victory label in _resolve_opponent_yield (non-vacuous — NOT an award_turn_xp XP-parity test, which is vacuous since award_turn_xp is a flat per-turn tick that never gates on outcome)'
+      - 'REFRAME NOTE (Keith 2026-06-04): original premise (opponent_yielded XP rewards via award_turn_xp) was a no-op — award_turn_xp never gates on outcome. Reframed to credit-victory label SoT backing the OTEL credit-outcome collapse'
+    completed: '2026-06-04'
     type: refactor
+    branch: feat/59-32-shared-is-player-victory-classifier
+    review_verdict: approved
   - id: 59-33
     title: ResolutionSignal yield_side field — distinguish opponent-yield from player-yield for the dormant 49-5 [ENCOUNTER RESOLVED] narration
     points: 2
