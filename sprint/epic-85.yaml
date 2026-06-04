@@ -30,11 +30,14 @@ stories:
     title: 'Location surface: pick ONE source of truth for where-am-I (header vs Location tab) — design-first'
     points: 5
     priority: p2
-    status: in_progress
+    status: done
     started: '2026-06-04'
     repos: ui,server
     workflow: tdd
+    completed: '2026-06-04'
     branch: feat/85-2-location-source-of-truth
+    review_findings: '2 HIGH-confidence false-green tests in a TDD deliverable: split-party test passes via characters[0] coincidence (not player_id lookup); slug-fallback guard never asserts the composed breadcrumb. + null-literal/alt-text/intermediate-staleness coverage gaps + stale (RED) comments. Code correct & rule-clean; rework is test-hardening only, implementation unchanged.'
+    review_verdict: approved
   - id: 85-3
     title: Confrontation mode — spatial promotion to a dockview panel (opponent portrait + stakes + Guitar-Solo party action)
     description: "Tier B of the confrontation space-usage design (docs/design/confrontation-space-usage.md, The Duchess 2026-06-04). Promote the confrontation from a thin bottom strip into a focused dockview 'confrontation mode' that claims the board canvas while an encounter is active — giving the drama peak the screen it earns (Cost Scales with Drama; Diamonds and Coal). GATING DESIGN DECISION (Architect/operator, before any code): does confrontation mode SPLIT with the narration panel (prose left, confrontation right — keeps the soloist reachable, Duchess-recommended) or TAKE OVER full-screen? Depends on / builds atop 85-1 (Tier A polish). Possible small protocol dependency: opponent portrait + stakes may not yet be on the CONFRONTATION payload — verify before scoping the server half."
