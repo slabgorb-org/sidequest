@@ -15,9 +15,11 @@ implementation-pointer: "sidequest-server/sidequest/game/ruleset/registry.py —
 # ADR-117: Pluggable Ruleset Module System
 
 > **Documents a system already live in code.** The `RulesetModule` seam, its
-> registry, and two modules (`native`, `swn`) shipped during the 2026-05 SWN /
-> ablative-HP work (ADR-114) without a governing ADR. This record closes that
-> architecture-of-record gap and states what the decision *was*.
+> registry, and the `native` / `swn` modules shipped during the 2026-05 SWN /
+> ablative-HP work (ADR-114) without a governing ADR; the `wwn` and `cwn` modules
+> followed. This record closes that architecture-of-record gap and states what
+> the decision *was*. Four modules are now live and pack-bound (`native`, `swn`,
+> `wwn`, `cwn`).
 
 ## Context
 
@@ -49,10 +51,12 @@ default.
 
 **Resolution behavior is pluggable per genre via a `RulesetModule` seam. Each
 genre pack binds exactly one module by slug in `rules.yaml` (`ruleset:`). The
-binding is resolved through a fail-loud registry. Two modules are implemented:
-`native` (the ADR-033 dial/confrontation engine, the default) and `swn` (Stars
+binding is resolved through a fail-loud registry. Four modules are implemented:
+`native` (the ADR-033 dial/confrontation engine, the default), `swn` (Stars
 Without Number — d20 attack-vs-AC, three-category saves, 2d6 skill checks,
-1d8+DEX initiative, ablative HP via ADR-114).**
+1d8+DEX initiative, ablative HP via ADR-114), and the two SWN-derived
+Without-Number modules `wwn` (Worlds Without Number) and `cwn` (Cities Without
+Number), each subclassing `swn` and adding its own lethality/subsystem layer.**
 
 This is a **scoped reversal of ADR-033's rejection of per-genre engine modules.**
 ADR-033 is not superseded — its dial engine survives intact *as the `native`
@@ -74,6 +78,11 @@ procedure; it is one registered module among a planned several.
 - **`native.py`** — `NativeRulesetModule` (`slug = "native"`). Wraps the ADR-033
   dial engine. The default when a pack omits `ruleset:`.
 - **`swn.py`** — `SwnRulesetModule` (`slug = "swn"`). Stars Without Number.
+- **`wwn.py`** — `WwnRulesetModule` (`slug = "wwn"`). Worlds Without Number;
+  subclasses `swn` (shared d20/HP core) and adds the WWN lethality layer (Luck
+  save, Shock, Trauma, System Strain, Mortal Injury) plus WWN magic (Effort).
+- **`cwn.py`** — `CwnRulesetModule` (`slug = "cwn"`). Cities Without Number;
+  subclasses `swn` and adds the CWN Luck save and the cyberspace hacking ladder.
 - **`resolution.py`** — shared resolution helpers.
 
 ### Binding contract
@@ -108,10 +117,13 @@ singletons (safe to share). There is no per-turn module switching and no
 
 **Negative / cost**
 
-- Two resolution procedures now exist; contributors must know which module a
+- Multiple resolution procedures now exist; contributors must know which module a
   pack binds before reasoning about combat.
-- The `RulesetModule` contract is broad (10 methods). Adding a third SRD will
-  test whether the abstraction generalizes or leaks SWN/native assumptions.
+- The `RulesetModule` contract is broad (10 methods). The `wwn` and `cwn` modules
+  exercised the abstraction by subclassing `swn` rather than re-deriving from the
+  ABC, confirming the shared Without-Number core generalizes; a non-SWN-derived
+  SRD (B/X, Fate) is still the harder test of whether it leaks SWN/native
+  assumptions.
 - Per-module narrator surfacing is not uniform yet (see Implementation status).
 
 ## Alternatives considered
@@ -127,18 +139,30 @@ singletons (safe to share). There is no per-turn module switching and no
 
 ## Implementation status
 
-`implementation-status: partial` — the **seam is live**; the **rollout is partial.**
+`implementation-status: live` — the **seam is live** with four pack-bound
+modules; some **per-module narrator routing is still partial** (see Deferred).
 
 **Live:**
-- `RulesetModule` ABC, registry (fail-loud), `native` + `swn` modules.
+- `RulesetModule` ABC, registry (fail-loud), four modules: `native`, `swn`,
+  `wwn`, `cwn`.
 - `space_opera` binds `ruleset: swn`; SWN attack-vs-AC + damage + ablative HP +
   `hp_depletion` win condition are live for personal (Firefight) and ship combat
   (e2e green 2026-05-27).
+- `elemental_harmony` binds `ruleset: wwn` and `neon_dystopia` binds
+  `ruleset: cwn`; both inherit the SWN attack/damage/HP core and add their own
+  lethality/subsystem layers (WWN: Luck/Shock/Trauma/System Strain/Mortal Injury
+  + Effort magic; CWN: Luck save + hacking ladder).
+- `check_params` / `save_params` / `roll_initiative` are wired through generic
+  `ruleset.X(...)` dispatch (not SWN-special-cased): checks/saves via the
+  player-initiated `CHECK_THROW` dice protocol (ADR-074; `dispatch/check.py`,
+  resolved with no narrator run), initiative via `dispatch/encounter_lifecycle.py`
+  (`ruleset.roll_initiative`). Checks are **player-pull** — the narrator does not
+  autonomously demand one.
 
 **Deferred / not yet built:**
-- SWN `check_params` / `save_params` / `roll_initiative` are implemented in the
-  module but **not yet routed from the narrator orchestrator** (skill checks,
-  saves, formal initiative do not fire in play yet).
+- The narrator/intent-router does not yet autonomously decide that an action
+  *requires* a check and push a roll prompt — checks/saves are player-initiated
+  (player-pull) via the dice protocol, not narrator-triggered.
 - `space_opera` chargen does not yet author per-class HP tables
   (`base_max_by_class`); characters default to 10 HP until added.
 - Non-combat confrontations (negotiation, pursuit, dogfight) still resolve via

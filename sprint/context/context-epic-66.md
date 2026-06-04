@@ -97,6 +97,48 @@ class definitions (content, per pack)
 - 66-4 is **decision-gated**: do not author wry_whimsy classes until the class
   roster is settled, to avoid authoring abilities for classes that get cut.
 
+## Ruleset Compatibility (native / SWN / WWN / CWN)
+
+Chargen builds the flavor statline **below the `RulesetModule` seam.** The ABC
+(`sidequest/game/ruleset/base.py`) is resolution-only — `stat_modifier`,
+`compute_dc`, `attack_params`, `roll_initiative`, saves, etc. — and carries **no
+chargen/statline-construction method.** `builder.py:generate_stats` (~2501-2569)
+generates raw ability scores by the pack's `stat_generation` strategy
+(`roll_3d6_strict` / `standard_array` / `point_buy`), then applies
+`acc.stat_bonuses` **additively** in *flavor-stat names* (Physique, Reflex…). The
+bound module never sees chargen; it consumes the finished flavor statline at play
+time via its own `attribute_map` + modifier curve (e.g.
+`swn.py:swn_attribute_modifier`). So a chargen `+2 Physique` correctly becomes a
+better STR modifier under SWN. **This is the compatibility guarantee — and it is
+implicit, so a future dev could wrongly assume chargen dispatches through the
+module. It does not.**
+
+As scoped, epic 66 is compatible because both content stories target
+**native-bound packs** — `mutant_wasteland` (native, default) and `wry_whimsy`
+(native, explicit) — and the three pipeline stories (66-1/3/5) move flat integers
+and presentation that are ruleset-agnostic. Nothing in 66 touches the
+SWN/WWN/CWN packs (`space_opera`→swn, `elemental_harmony`→wwn,
+`neon_dystopia`→cwn). **Three guards keep it that way:**
+
+- **66-1 — magnitudes are scale-sensitive, the mechanism is not.** A `+3` on a
+  3–18 Without-Number attribute is a large modifier swing; the same number on
+  native's scale means something else. Author bonus *values* relative to the
+  bound ruleset's stat scale; the additive engine itself composes everywhere.
+  (The `standard_array` auto-differentiation hack at `builder.py:~2553` only fires
+  when **no** explicit bonuses exist, so authoring explicit bonuses bypasses it —
+  correct.)
+- **66-5 — "show the math" must show the *bound ruleset's* math.** For a WN pack,
+  legible means `Physique 14 → STR +1`, not the raw flavor number alone. Do not
+  hardcode a native-only presentation; the planned per-genre field-label override
+  is the right hook — extend it to **ruleset-aware stat presentation**, or at
+  minimum don't preclude it.
+- **66-2/66-4 — ADR-097 "one signature ability per class" is a native-shaped
+  surface; do NOT generalize it cross-ruleset.** SWN/WWN/CWN classes express
+  mechanical identity through **foci**, not a single signature move. Authoring
+  signature abilities for the two native packs is correct; promoting it into a
+  universal "every class has one signature ability" contract would be wrong for
+  the WN-bound packs.
+
 ## Cross-Epic Dependencies
 
 **Depends on:**

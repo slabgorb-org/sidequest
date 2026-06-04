@@ -13,7 +13,7 @@
 > - 2026-05-15: Anthropic SDK cutover (ADR-101) — narrator default; native tool-use (ADR-102); native OTEL via tool registry (ADR-103)
 > - 2026-05-17: ADR-106 runtime procedural Jaquaysed megadungeon closed; `caverns_and_claudes/beneath_sunden` replaces `caverns_sunden` as the live caverns world
 > - 2026-05-18: Forensics telemetry substrate P1 + P2 merged (`turn_telemetry` + `mechanical_census`); ADR-107 out-of-band aside channel accepted
-> - 2026-05-25: Pluggable ruleset module system (Spec 0) live — `native` + `swn` modules, one per pack via `ruleset:`
+> - 2026-05-25: Pluggable ruleset module system (Spec 0) live — four modules (`native`, `swn`, `wwn`, `cwn`), one per pack via `ruleset:`
 > - 2026-05-26: Intent Router mechanical-engagement spine (ADR-113) wired end-to-end as a pre-narrator Haiku pass; ablative HP substrate (ADR-114 Part 1) live
 > - 2026-05-28: Persistence substrate migrated SQLite → PostgreSQL (ADR-115, complete); SQLite write layer deleted, forensics now reads Postgres tables
 
@@ -179,15 +179,17 @@ A non-turn-consuming channel for OOC player→GM table-talk. `PLAYER_ACTION` car
 
 ### Spec 0: Pluggable Ruleset Module System (live)
 
-Mechanical resolution is dispatched through a pluggable ruleset layer in `sidequest/game/ruleset/`: `registry.py` (module lookup), `base.py` (the `RulesetModule` ABC), and the concrete modules `native.py` and `swn.py`. The ABC defines the mechanical surface every module must implement: `find_confrontation`, `stat_modifier`, `compute_dc`, `apply_beat`, `resolve_damage`, `attack_params`, `ship_attack_params`, `check_params`, `save_params`, `roll_initiative`.
+Mechanical resolution is dispatched through a pluggable ruleset layer in `sidequest/game/ruleset/`: `registry.py` (module lookup), `base.py` (the `RulesetModule` ABC), and the concrete modules `native.py`, `swn.py`, `wwn.py`, and `cwn.py`. The ABC defines the mechanical surface every module must implement: `find_confrontation`, `stat_modifier`, `compute_dc`, `apply_beat`, `resolve_damage`, `attack_params`, `ship_attack_params`, `check_params`, `save_params`, `roll_initiative`.
 
-Two modules are live:
-- **`native`** — wraps the existing dial/confrontation engine (ADR-033). Default for all packs.
-- **`swn`** — Stars Without Number.
+Four modules are live:
+- **`native`** — wraps the existing dial/confrontation engine (ADR-033). Default for all packs that omit `ruleset:`.
+- **`swn`** — Stars Without Number. Bound by `space_opera`.
+- **`wwn`** — Worlds Without Number. Bound by `elemental_harmony`. Subclasses `swn` (shared d20/HP core) and adds the WWN lethality layer (Luck save, Shock, Trauma, System Strain, Mortal Injury) plus WWN magic (Effort).
+- **`cwn`** — Cities Without Number. Bound by `neon_dystopia`. Subclasses `swn` and adds the CWN Luck save and the cyberspace hacking ladder.
 
 Each genre pack binds **exactly one** module via the `ruleset:` key in its `rules.yaml` (default `native`). An unknown value raises `UnknownRulesetError` at pack load — fail-loud, no silent degradation to a default.
 
-Additional modules (`bx`, `fate`, `pbta`, `5e`) are designed but **not implemented**; only `native` and `swn` exist today.
+The `native`, `swn`, `wwn`, and `cwn` modules are live and pack-bound. Additional modules (`bx`, `fate`, `pbta`, `5e`) are designed but **not implemented**.
 
 ### ADR-114: Ablative HP Substrate (partial — Part 1 live)
 

@@ -144,8 +144,9 @@ Genre packs are loaded via the `SIDEQUEST_GENRE_PACKS` env var. See
     ([ADR-091](docs/adr/091-culture-corpus-markov-naming.md))
 11. **Combat:** Ablative HP is the live personal survivability track on `CreatureCore`
     (ADR-114, reversing ADR-078's HP removal). The bound ruleset module selects combat
-    resolution — SWN (attack-vs-AC, `hp_depletion`) is live for space_opera; B/X or 3.5
-    SRD (both HP-based) are planned for caverns_and_claudes. Edge / Composure dials
+    resolution — three HP-based Without-Number rulesets (all attack-vs-AC, `hp_depletion`)
+    are live: SWN for space_opera, WWN for elemental_harmony, CWN for neon_dystopia; B/X or
+    3.5 SRD (both HP-based) are planned for caverns_and_claudes. Edge / Composure dials
     (ADR-078) are planned to return as the Fate SRD substrate — "for different engines,"
     not yet co-resident. (Vessel rig-composure survives separately.) 3D dice (Three.js +
     Rapier) render inline in the confrontation overlay
