@@ -113,9 +113,10 @@ stories:
     title: Clear pre-existing sidequest-server ruff check debt — develop carries 10 auto-fixable 'ruff check .' errors (mostly I001 import-sort, plus SIM/B/UP), so just server-lint is repo-wide-RED and 'ruff check clean' is unmeetable for every server story (the lint gate is effectively defeated). Apply ruff check --fix for the mechanical I001s; REVIEW any SIM/B/UP/semantic fixes individually before applying (auto-fixable != always-safe). Separately, ~125 files are unformatted (ruff format ungated) — a format sweep is a distinct follow-up. Surfaced during the 76-2/76-4 trivial batch.
     points: 2
     priority: p3
-    status: backlog
+    status: done
     repos: sidequest-server
     workflow: trivial
+    completed: '2026-06-04'
     type: chore
   - id: 76-11
     title: Location source coverage v2 — wire room-graph + world_materialization adapters into the entity index (via location_view authored-prose resolution), batch the per-region promotion read, and surface per-region read failures as a watcher event (carries forward 76-7 Reviewer/Dev Delivery Findings)
