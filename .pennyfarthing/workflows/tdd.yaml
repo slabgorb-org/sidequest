@@ -1,8 +1,11 @@
 # TDD Workflow - Test-Driven Development
-# Default workflow for feature development in Pennyfarthing
+# Default workflow for feature development in Pennyfarthing.
+# Lightweight: RED → GREEN → review, no architect spec phases.
 #
-# Flow: SM → TEA → Dev → Architect (spec-check) → TEA (verify) → Reviewer → Architect (spec-reconcile) → SM
-# Scale routing: 1-2 pts use 'trivial' workflow instead
+# Flow: SM → TEA → Dev → Reviewer → SM
+# Scale routing: 1-2 pts use 'trivial' workflow instead.
+# For spec-governed work with architect spec-check/reconcile phases, opt in
+# to the heavier `sdd` (Spec-Driven Development) workflow on the story.
 
 workflow:
   name: tdd
@@ -49,35 +52,9 @@ workflow:
         type: dev_exit
         condition: Tests green, tree clean, no debug code, correct branch
 
-    - name: spec-check
-      agent: architect
-      input: [implementation, story_context]
-      output: [spec_check_result]
-      gate:
-        file: gates/spec-check
-        type: spec_check
-        condition: All ACs addressed, no undocumented spec drift, deviations logged
-
-    - name: verify
-      agent: tea
-      input: [implementation, passing_tests]
-      output: [quality_verified]
-      gate:
-        file: gates/quality-pass
-        type: quality_pass
-        condition: Lint, typecheck, and all tests passing
-      team:
-        teammates:
-          - agent: simplify-reuse
-            task: "Review changed files for code duplication and extraction opportunities. Report findings only."
-          - agent: simplify-quality
-            task: "Review changed files for naming, readability, and structural quality. Report findings only."
-          - agent: simplify-efficiency
-            task: "Review changed files for unnecessary complexity and over-engineering. Report findings only."
-
     - name: review
       agent: reviewer
-      input: [implementation, passing_tests, quality_verified]
+      input: [implementation, passing_tests]
       output: [approval]
       entry_gate:
         file: gates/status-sync
@@ -93,18 +70,9 @@ workflow:
             target_phase: green
             max_attempts: 3
 
-    - name: spec-reconcile
-      agent: architect
-      input: [approval]
-      output: [reconciliation_decisions]
-      gate:
-        file: gates/spec-reconcile-pass
-        type: spec_reconcile
-        condition: All spec-check failures reconciled, Architect reconcile section present
-
     - name: finish
       agent: sm
-      input: [reconciliation_decisions]
+      input: [approval]
       output: [archived_session, story_summary]
       entry_gate:
         file: gates/status-sync
