@@ -25,6 +25,40 @@ Read `sq-playtest/pingpong.md` in this skill directory for the full coordination
 
 ---
 
+## Phase 0: Orient — What Changed Since Last Playtest
+
+**Run this before touching the stack, in both modes (full-stack and headless).** Walking
+into a playtest blind is how an untested subsystem hides behind convincing narration for a
+whole session. This phase answers two questions first: *when did we last play, and what has
+landed since that we haven't exercised?*
+
+Run the manifest gatherer (read-only, no side effects):
+
+```bash
+python3 scripts/playtest_manifest.py
+```
+
+It anchors on the newest playtest archive (by mtime, across both the archive dir and loose
+`~/Projects/` archives) and prints a tiered manifest:
+
+- **Tier 1 — Features to test:** sprint stories completed, merged PRs without a story, and
+  specs/plans authored since the anchor (tagged `shipped` vs `in-flight`).
+- **Tier 2 — Unverified fixes:** the live ping-pong working set (`open` + `fixed`-awaiting-
+  verify). **These are the highest-signal targets — verify them first.**
+- **Tier 3 — Coverage backstop:** LOCAL working-tree churn per subrepo. If it warns that
+  local trees are **behind remote** (PRs merged on develop but 0 pulled locally), **pull +
+  restart before verifying** — otherwise you're testing stale code/content (the recurring
+  oq-2-lags-develop trap).
+
+**Then exercise judgment** (the script gathers; you prioritize): read the manifest to the
+operator and propose a test order — Tier 2 unverified fixes first, then the Tier 1 features
+that touch the world about to be played. If Phase 0 exits with "no prior playtest archive,"
+this is the first playtest (or the archive dir moved) — say so and proceed.
+
+`python3 scripts/playtest_manifest.py --json` emits the raw data if you want to script over it.
+
+---
+
 ## Phase 1: Stack Launch (Full-Stack)
 
 Poll for services- if services are not up, ask the user to start them. (There is no separate save-forensics service to start — both the OTEL dashboard and the Save Forensics page are served by the game server itself on `:8765`; see Phase 3c.)
