@@ -1,0 +1,43 @@
+id: '86'
+type: epic
+title: 'road_warrior → Cities Without Number: Two-Tier Rig Combat'
+description: 'Bind road_warrior to the cwn ruleset and give rig combat real mechanical backing via a faithful SRD port (design: docs/superpowers/specs/2026-06-04-road-warrior-cwn-rig-combat-design.md). Today road_warrior runs native dials and its rig/composure/chase identity is PROSE WITH NO MECHANICAL BACKING — the narrator improvises vehicular combat. A whole rig subsystem (RigComposurePool, rig_crash, vessel_tags, rig spans) already sits DORMANT in the engine; this is mostly wire-up + binding, not build-from-scratch. Two tiers (Keith, 2026-06-04): SOLO RIG (default) = CWN Vehicle Combat §2.4.8 (AC +Drive moving, Armor, ramming, crash dmg), reusing the existing single-char RigComposurePool; WAR RIG (special) = SWN Space Combat pp.114-119 (departments→driver/gunner/wrench/spotter/boss, Command Points, Crisis table) — the SOUL Guitar-Solo wider-action made mechanical, needing a net-new crew-seat primitive. Locked decisions: both tiers; driver = full ablative HP (Driver Edge/ADR-078 removed, per the SWN-crunch/HP mandate); adopt standard CWN six ability scores. Touches ADR-117 (pluggable ruleset), ADR-114 (ablative HP), ADR-125 (chassis/rig), ADR-077 (dogfight), ADR-116 (confrontation-requires-other). Both repos.'
+priority: p2
+status: backlog
+repos: sidequest-server,sidequest-content
+stories:
+  - id: 86-1
+    title: 'Plan 1 — CWN binding + ablative-HP driver combat: add ruleset:cwn to road_warrior; adopt standard CWN six (STR/DEX/CON/INT/WIS/CHA), remap every flavor-name reference (injury_system, archetypes, classes, char_creation, power_tiers); remove edge_config/Driver Edge → ablative HP + Shock/Trauma/Mortal/Major-Injury; combat confrontation win_condition:hp_depletion with opponent_default_stats carrying ALL SIX abilities + hp + armor_class; classes→CWN class+foci; FIX the hp_depletion calibration migration (test_road_warrior_pack_loads_with_dual_dial_schema + COMBAT_PACKS, per space_opera precedent); apply the Without-Number wiring checklist; mandatory OTEL/integration wiring test (cwn spans fire on a real turn).'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server,sidequest-content
+    workflow: tdd
+  - id: 86-2
+    title: 'Plan 2 — Solo rig two-pool vehicle combat: wire the dormant RigComposurePool + rig_crash into a real confrontation. Vehicle AC (+Drive moving, -4 stationary), Armor reduction, Rig Composure as ablative hull; NET-NEW two-pool resolution (hull→0 = crash event → dismounted → driver HP, per CWN §2.4.8.1-2); ramming (opposed Dex/Drive, max-HP dmg + Trauma 1d12×3, ramming vehicle takes dmg back); crash damage to occupants (Physical+Luck saves). New WinCondition variant or beat-application branch. Assert rig_pool.delta/zero_crossing + rig_pool.crash_event spans fire.'
+    points: 8
+    priority: p2
+    status: backlog
+    repos: sidequest-server,sidequest-content
+    workflow: tdd
+  - id: 86-3
+    title: "Plan 3 — Vehicle chase confrontation: CWN Vehicle Chases §2.6.2 pace/pursuit model as the chase encounter type (fleeing Drive check = pace; passengers hinder +1..+3; pursuers Dex/Drive vs pace with situational mods); map road_warrior's existing Opening/Pursuit/Escalation/Crisis/Resolution beats; converge into the Plan 2 two-pool combat when vehicles close. OTEL confrontation.* spans on each chase beat."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server,sidequest-content
+    workflow: tdd
+  - id: 86-4
+    title: "Plan 4 — War Rig (crewed vessel): SWN Space Combat port — departments→stations (driver/gunner/wrench/spotter/road-boss), Command Points economy (Do Your Duty/Above-and-Beyond/Support Department), Crisis table (continuing/acute, Deal With a Crisis). NET-NEW crew-seat primitive (EncounterActor has no seat field): multi-PC, one shared Hull, concurrent verbs per round = the SOUL Guitar-Solo wider-action. Single-seat-fighter case == solo rig. Architectural fork to settle in this story's spec: reuse ADR-077 dogfight sealed-letter infra vs beat_selection vs new crew-seat confrontation type. Depends on 86-1/86-2."
+    points: 13
+    priority: p3
+    status: backlog
+    repos: sidequest-server,sidequest-content
+    workflow: tdd
+  - id: 86-5
+    title: 'Plan 5 — Content remap + calibration + playtest: vessel stat blocks in inventory.yaml (composure/armor/speed/mount_slots per rig tier), mount_slots→CWN vehicle weapons, archetype + lethality calibration against the live cwn substrate, OTEL playtest pass on road_warrior/the_circuit verifying every rig/chase/War-Rig subsystem fires (no improvised prose). Final integration gate for the epic.'
+    points: 5
+    priority: p3
+    status: backlog
+    repos: sidequest-server,sidequest-content
+    workflow: tdd
