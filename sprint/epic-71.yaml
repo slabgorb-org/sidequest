@@ -275,9 +275,14 @@ stories:
     title: Solo narration streaming — wire messages.stream into existing UI delta path
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-04T00:00:00Z'
     repos: sidequest-server,sidequest-ui
     workflow: tdd
+    completed: '2026-06-04'
+    branch: feat/71-23-solo-narration-streaming
+    review_findings: 'HIGH: SDK narration streaming fans raw deltas to all sockets with no solo gate — firewall+POV breach for >1-connected MP rooms (story is solo-only). MEDIUM: awaited delta sink lacks try/except, a room error aborts the turn. Fix: gate sink on solo (<=1 connected) + wrap sink. Solo happy-path correct + tested.'
+    review_verdict: approved
   - id: 71-24
     title: perseus_cloud personal-melee combat beat bank — distinct from ship/dogfight beats
     points: 3
