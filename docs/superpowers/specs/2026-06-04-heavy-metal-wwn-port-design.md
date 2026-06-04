@@ -56,8 +56,8 @@ faithful SRD port:
 |---|----------|-----------|
 | D1 | **Faithful WWN 3-chassis** — Warrior / Expert / Mage + Foci; dark-fantasy flavor in descriptions. Mage "traditions" (necromancer, elementalist, pact-born, …) expressed as caster classes whose `cast_spell` pulls a themed spell list. | "A port is a port." Closest to WWN; the live mage traditions (esp. necromancy) are perfectly on-theme for doom fantasy. |
 | D2 | **`magic_level: high`** (was `medium`) | Spells are central to the genre; matches the `elemental_harmony` precedent. |
-| D3 | **Adopt the standard six** (STR/DEX/CON/INT/WIS/**CHA**). The sixth attribute is **engine-mandatory** — Charisma is half the WWN **Mental save** (best-of WIS/CHA) and the defender-save path fails loud without it. Added as a required stat, not a placeholder. No attribute_map. | Content already uses the standard abbreviations; faithful-WWN (D1) means standard labels; the EH-style attribute_map escape hatch is not needed here. |
-| D4 | **`lethality: high`**; `hp_depletion` + Trauma / Mortal Injury | `gritty_realism` rest, `lingering` injuries, `hard` death saves, "every empire is ending" — the WWN lethality layer is a glove fit. |
+| D3 | **Standard six, already present** (STR/DEX/CON/INT/WIS/CHA in `rules.yaml`). CHA is **engine-mandatory** (half the WWN **Mental save**, best-of WIS/CHA; the defender-save path fails loud without it), so it **stays** despite being a placeholder originally. **A complete `wwn.attribute_map` IS required** — the `wwn` validator (`rules.py:_validate_wwn`) raises without all six canonical keys (STRENGTH/CONSTITUTION/DEXTERITY/INTELLIGENCE/WISDOM/CHARISMA), each mapping to a declared `ability_score_names` entry. Because the stats are the standard abbreviations, the map is canonical→abbreviation: `STRENGTH: STR`, …, `CHARISMA: CHA`. (My earlier "no attribute_map" was wrong — verified against the validator.) | The save / gunnery / strain paths translate canonical SWN keys through `attribute_map`; it is mandatory, not optional. |
+| D4 | **`lethality: high`**; `hp_depletion` + Trauma / Mortal Injury. **Remove the `edge_config` block** (heavy_metal currently runs ADR-078 Edge/Composure as its HP replacement) — under WWN the combatant is an ablative-HP character. This is the exact road_warrior D2 move (Edge → ablative HP). | `gritty_realism` rest, `lingering` injuries, `hard` death saves, "every empire is ending" — the WWN lethality layer is a glove fit; one combat model engine-wide. |
 | D5 | **Retire the pact/ledger magic framing.** The `ritual` confrontation is replaced by WWN `cast_spell`; the `debt_collection` confrontation is **cut**; `ledger_tracking` / `pact_cost_attribution` custom rules drop. | Keith: the framing shades too hard into flavor — replace it with the port. |
 | D6 | **Faithful SRD port, not a redesign.** Mechanics are lifted from the WWN SRD and the EH binding verbatim, not reinvented. | road_warrior precedent. |
 
@@ -134,20 +134,32 @@ road_warrior→CWN Plan 1 (#658 epic).
 
 ### 6.1 Content changes — `genre_packs/heavy_metal/rules.yaml`
 - Add `ruleset: wwn`.
-- Add the `wwn:` block — **no `attribute_map`** (standard six). Author `system_strain`, `trauma`,
-  and `magic` sub-blocks; start from the EH values and tune `trauma` upward for high lethality
-  (Keith's crunch call): e.g. `default_trauma_target`, `mortal_injury_rounds`, `major_injury_save`.
-- `ability_score_names` → `STR, DEX, CON, INT, WIS, CHA` (add the sixth).
+- Add the `wwn:` block with a **complete `attribute_map`** (required — see D3): canonical→
+  abbreviation (`STRENGTH: STR`, `DEXTERITY: DEX`, `CONSTITUTION: CON`, `INTELLIGENCE: INT`,
+  `WISDOM: WIS`, `CHARISMA: CHA`). Author `system_strain` (`max_source: CONSTITUTION` — a canonical
+  *key* of the map, not `CON`), `trauma`, and `magic` sub-blocks. Start from the EH values
+  (`trauma: 6 / 6 / physical`; `magic` effort_base 1, killing_blow_divisor 2,
+  day_reclaim_requires_comfort true, default_spell_save mental); `trauma`/lethality tuning is
+  Keith's crunch call.
+- `ability_score_names` is **already** `STR, DEX, CON, INT, WIS, CHA` — leave it unchanged.
+- **Remove the `edge_config` block** (ADR-078 Edge/Composure) — the combatant becomes an
+  ablative-HP WWN character (D4). Also remove `display_fields` that reference `edge`/`max_edge`/
+  `composure_state`.
 - `magic_level: high` (was `medium`).
 - Set `lethality: high`.
-- Add a `combat` confrontation: `resolution_mode: beat_selection`, `win_condition: hp_depletion`,
-  `category: combat`, `intent_verbs` + `on_intent_mismatch`, beats (strike / a heavier strike /
-  guard / yield), and an `opponent_default_stats` block carrying **all six** ability scores **plus**
-  `hp`, `armor_class`, `dexterity` (initiative). The `cast_spell` beat is added in Story 3.
-- Leave the bespoke `ritual` / `debt_collection` confrontations and `ledger_tracking` /
-  `pact_cost_attribution` in place **only if** the calibration tests still pass with them present;
-  otherwise remove them here (their full retirement is Story 4). Flag clearly — no silent
-  implication of mechanical backing.
+- **Convert the existing `combat` confrontation ("Blade-work")** from
+  `resolution_mode: opposed_check` + momentum dials to `resolution_mode: beat_selection` +
+  `win_condition: hp_depletion`. Replace its `opponent_default_stats` (currently `STR/DEX/CON: 12`,
+  the pre-calibration parity number) with a block carrying **all six** ability scores (≤ 10) **plus**
+  the reserved seed keys `hp`, `armor_class`, `dexterity` (initiative). Keep the existing
+  strike/brace/push beats; drop the now-unused `player_metric`/`opponent_metric`. The `cast_spell`
+  beat is added in Story 3.
+- Leave the `negotiation` ("Cold Negotiation") and `chase` ("Pursuit") dial confrontations in
+  place — they are generic and survive (mirrors EH keeping negotiation + chase).
+- Leave the bespoke `pact_working` ("Working the Rite") + `debt_collection` ("The Collector at the
+  Door") confrontations and the `ledger_tracking` / `pact_cost_attribution` custom rules in place
+  for Story 1 (they are dial confrontations that pass the migrated load test); their full
+  retirement is **Story 4**. Flag clearly — no silent implication of mechanical backing.
 
 ### 6.2 Engine changes — `sidequest-server`
 - **No new module.** `wwn` already exists and is wired (EH). Confirm `heavy_metal` loads through
@@ -157,11 +169,14 @@ road_warrior→CWN Plan 1 (#658 epic).
   `dice.py` downed seam + `_physical_save_target_for` already cover `wwn` (`downed_seam.py`
   `run_cwn_wwn_downed_seam` gates on `ruleset in ("cwn","wwn")`); OTEL span-assertion tests exist
   for the `wwn.*` lethality spans.
-- **Calibration migration** (documented trap): binding to `hp_depletion` migrates
-  `test_heavy_metal_pack_loads_with_dual_dial_schema` (`tests/genre/test_pack_load.py:44`) and the
-  `COMBAT_PACKS` set (`tests/genre/test_confrontation_calibration.py:93`). Fix per the
-  space_opera precedent — filter `dial_threshold`, drop `heavy_metal` from `COMBAT_PACKS`. **Do
-  not** treat these as pre-existing failures.
+- **Calibration migration** (documented trap, narrower than road_warrior's): heavy_metal is **not**
+  in `COMBAT_PACKS` or `SHIPPED_PACKS` (`tests/genre/test_confrontation_calibration.py`), so there
+  is **nothing to drop there**. The **only** test that migrates is
+  `test_heavy_metal_pack_loads_with_dual_dial_schema` (`tests/genre/test_pack_load.py:44`): once the
+  combat confrontation is metricless `hp_depletion`, the unconditional `player_metric.threshold`
+  loop NPEs on it. Fix it to the EH/space_opera shape — filter to
+  `win_condition == "dial_threshold"` confrontations and assert at least one remains. **Do not**
+  treat this as a pre-existing failure.
 
 ### 6.3 OTEL / wiring test (mandatory — the GM panel is the lie detector)
 - Seed a heavy_metal combat encounter; run a turn through narrator context build; assert the
@@ -188,7 +203,9 @@ road_warrior→CWN Plan 1 (#658 epic).
 - **Flavor loss** — retiring the gorgeous `ritual` / `debt_collection` prose. Mitigation: re-home
   its voice into spell descriptions and narrator hints (Story 3) so the doom-cost *feeling*
   survives even though the mechanics are vanilla WWN Effort / System Strain.
-- **Second-pack assumptions** — the EH binding is the only prior WWN pack; a few seams may carry
-  EH-specific assumptions (e.g. attribute_map presence). Verify each seam works for a pack that
-  uses the **standard six with no attribute_map** — that is the one structural way heavy_metal
-  differs from EH.
+- **Second-pack assumptions** — the EH binding is the only prior WWN pack, and EH uses *flavor*
+  ability names (Strength/Agility/…) so its `attribute_map` values differ from its keys.
+  heavy_metal uses the *abbreviations* (STR/DEX/…), so its map is canonical→abbreviation
+  (`CONSTITUTION: CON`). Verified against `_validate_wwn`: this is well-formed (values must be in
+  `ability_score_names`; `max_source` must be a canonical *key*). This is the one structural way
+  heavy_metal differs from EH — the wiring/load test must exercise it on the real pack.
