@@ -443,10 +443,11 @@ stories:
     title: Classify person-vs-creature at the NPC invention seam — route beasts to the Monster Manual (ADR-059), not the culture-NPC namer
     points: 5
     priority: p2
-    status: in_progress
+    status: canceled
     started: '2026-06-04'
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-06-04'
     type: bug
     branch: feat/71-37-person-vs-creature-npc-seam
   - id: 71-38
