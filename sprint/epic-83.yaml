@@ -11,7 +11,8 @@ stories:
     description: "Deferred from ping-pong #74 (PR #638). That fix classifies a narrator creature mention (NpcMention.is_creature) and keeps the person namer off it, but a promoted creature Npc still carries NO bestiary identity: _promote_pool_member_to_npc builds a person-shaped Npc (placeholder HpPool 10/10, no creature_id/threat_level/abilities/morale) and only reports is_creature on telemetry. The Npc model ALREADY supports creature fields (creature_id/threat_level/abilities/morale, session.py); the Monster Manual generator exists (ADR-059; _creature_patch_from_enemy in dispatch/monster_manual_inject.py returns an NpcPatch with those fields). WIRE them: when a creature-typed pool member promotes (or at the creature mention seam), draw a bestiary/creature identity — species, threat profile, HP, abilities, morale — from the Monster Manual instead of a person placeholder, with NO culture/person-name. This is the 'route creatures to Monster Manual creature generation' half of the #74 fix direction. Per CLAUDE.md 'Don't Reinvent — Wire Up What Exists': the MM and the Npc creature fields exist; the wire from a narrator-classified creature to MM generation does not."
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-05'
     repos: server
     workflow: tdd
     acceptance_criteria:
@@ -20,6 +21,7 @@ stories:
       - An OTEL span records the bestiary draw (creature_id, threat_level, hp, source) so the GM panel can verify the engine generated a creature identity rather than winging it. is_creature on the spawn span is True for these.
       - Persons (is_creature=False) are completely unaffected — they still promote through the existing person path; no regression in the 72-x NPC-identity suite.
       - A wiring test drives a creature mention end-to-end (mention → pool → promotion) and asserts the resulting Npc has MM creature fields populated and reachable from a production code path.
+    completed: '2026-06-05'
   - id: 83-2
     title: Culture self-match — named people-group resolves to its own culture (Munchkin→Munchkin)
     description: "The people-side half of ping-pong #74, still UNFIXED after PR #638. _resolve_invented_naming_context (narration_apply.py) resolves the culture for a narrator-invented PERSON by random.shuffle over the world's bound cultures and picking the first whose corpus builds — so a named people-group is tagged with a RANDOM culture: the Munchkins (Munchkin/blue East) were minted 'Roric the Crimson' culture=Quadling; a later threat got Quadling then Emerald City. When the narrator names a specific people/group/clan, the engine should resolve THAT group's own culture (Munchkin→Munchkin) rather than shuffling. Needs a match from the mention's name/group against the bound cultures (by culture name + any authored aliases/demonyms), falling back to the existing shuffle ONLY when no match is found (a genuinely unaffiliated stranger). Keep No-Silent-Fallbacks: a matched-but-unbuildable corpus must still surface loud (namegen.thin_corpus already exists)."
