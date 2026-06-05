@@ -59,14 +59,14 @@ sidequest-content/            # Genre packs — single source of truth (subrepo)
 │   │                         #   wry_whimsy).
 │   │                         # neon_dystopia (franchise_nations) + pulp_noir (annees_folles)
 │   │                         #   asset gates now MET (portraits + POI landscapes rendered to
-│   │                         #   R2). heavy_metal: evropi complete, long_foundry portraits
-│   │                         #   pending. space_opera adds aureate_span (baroque corona
+│   │                         #   R2). heavy_metal: evropi + long_foundry both asset-complete
+│   │                         #   (portraits + POIs on R2). space_opera adds aureate_span (baroque corona
 │   │                         #   megastation, live) + perseus_cloud. spaghetti_western adds
 │   │                         #   five_points. tea_and_murder adds blackthorn_moor (draft,
 │   │                         #   assets pending). wry_whimsy (portal-fairytale) hosts oz +
 │   │                         #   wonderland + gulliver (asset gate MET; shared PD music via
-│   │                         #   assets/ prefix). Remaining asset gaps: long_foundry portraits,
-│   │                         #   coyote_star POIs, blackthorn_moor (all). See pack README.
+│   │                         #   assets/ prefix). Remaining asset gaps: coyote_star POIs,
+│   │                         #   blackthorn_moor (all). See pack README.
 │   └── <genre>/worlds/<world>/   # World-specific overrides
 │                             #   (in-progress worlds set `draft: true` in world.yaml
 │                             #   to stay out of selection; the old genre_workshopping/

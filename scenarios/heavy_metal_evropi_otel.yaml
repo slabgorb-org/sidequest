@@ -1,0 +1,27 @@
+# heavy_metal / evropi — WWN combat + magic OTEL playtest (story 87-4 AC5).
+# Caster Calling so BOTH the wwn.* combat spans AND wwn.spell.cast fire on a
+# real narrator-in-the-loop turn against the actual evropi world overlay.
+# Verifies the final-gate content sweep did not break the WWN binding and the
+# narrator draws on mechanical state (HP ablation, Effort/Strain) rather than
+# improvising the retired pact/ledger framing.
+# Run: just playtest-scenario heavy_metal_evropi_otel
+
+name: Heavy Metal Evropi WWN OTEL
+genre: heavy_metal
+world: evropi
+
+character:
+  strategy: auto
+  class: Necromancer   # caster Calling — cast_spell beat is class-gated to casters
+
+actions:
+  - "look around and take the measure of this place"
+  - "check what I am carrying and what I can bring to bear"
+  - "find someone hostile — I am looking for a fight"
+  - "draw my blade and strike the nearest enemy"
+  - "keep fighting, press the attack with my weapon"
+  - "work a prepared spell against my enemy — spend the Effort"
+  - "cast again, push the working harder even as it costs me"
+  - "strike a finishing blow"
+  - "check my wounds and how much the workings have taken from me"
+  - "loot the body for anything of worth"
