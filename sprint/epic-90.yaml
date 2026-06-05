@@ -10,9 +10,12 @@ stories:
     title: Encountergen ruleset-awareness — emit WWN/CWN/SWN-aligned enemy stat blocks via the RulesetModule seam so pregen.seed_manual populates the Monster Manual encounters pool for ruleset-module packs (replaces native allowed_classes/class_hp_bases dependency)
     points: 8
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-05'
     repos: server,content
     workflow: tdd
+    completed: '2026-06-05'
+    review_verdict: approved
   - id: 90-2
     title: WWN/ADR-126 magic plugin not instantiated at session-bind — long_foundry ships magic.yaml but runtime snapshot.magic_state is None, so cast paths gate; instantiate the world MagicPlugin into the session and assert magic_state present via OTEL
     points: 5
