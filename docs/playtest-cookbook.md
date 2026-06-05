@@ -45,7 +45,7 @@ just playtest-scenario combat_stress
 |------|---------|
 | `--scenario PATH` | Run a YAML scenario (chargen + actions) |
 | `--fixture NAME` | Load an ADR-092 fixture (skip chargen) |
-| `--keep` | Resume existing save instead of creating new |
+| `--fresh` | Force a new COLD session (cache-bust). Default REUSES the same-day slug so the 1h prompt cache stays warm across runs (ADR-101) — reuse resumes the existing character (chargen skipped) |
 | `--span-jsonl PATH` | Capture OTEL spans to JSONL via Jaeger |
 | `--seed INT` | Deterministic dice rolls |
 | `--max-projected-cost-usd N` | Cost cap (default $0.50) |
@@ -310,12 +310,12 @@ just server
 
 1. Play a few turns in any scenario
 2. Check `~/.sidequest/saves/` for the SQLite `.db` file
-3. Stop the session, restart server, reconnect with `--keep` flag
+3. Stop the session, restart server, reconnect (the default reuses the same-day slug — do NOT pass `--fresh`)
 4. Verify state restored correctly (inventory, HP, location, NPC dispositions)
 
 ```bash
-# Reconnect to existing slug
-just playtest --genre mutant_wasteland --keep
+# Reconnect to existing slug (reuse is the default; --fresh would mint a new one)
+just playtest --genre mutant_wasteland
 ```
 
 ## How to Test: Narration Quality (SOUL Compliance)

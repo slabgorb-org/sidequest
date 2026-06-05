@@ -11,8 +11,8 @@ client and the Playwright harness.
 
 Usage:
     just playtest-scenario smoke_test
-    python3 scripts/playtest.py --scenario scenarios/combat_otel.yaml
-    python3 scripts/playtest.py --scenario scenarios/combat_otel.yaml --keep
+    python3 scripts/playtest.py --scenario scenarios/combat_otel.yaml          # reuses same-day session (warm cache)
+    python3 scripts/playtest.py --scenario scenarios/combat_otel.yaml --fresh  # cache-bust: new COLD session, re-bills prefix
 
 OTEL span-tree capture (Phase E SDK parity gate):
     --span-jsonl PATH dumps every span the run produced (one JSON object
@@ -1172,9 +1172,17 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Display name used for the player (default: %(default)s).",
     )
     parser.add_argument(
-        "--keep",
+        "--fresh",
         action="store_true",
-        help="Do not pass force_new=true when minting the game — resume an existing slug if one matches.",
+        help=(
+            "Force a brand-new session (cache-bust / clean slate). By DEFAULT "
+            "the playtest REUSES an existing same-day slug so the 1h prompt "
+            "cache stays warm across runs (ADR-101) — repeated runs are cheap. "
+            "Pass --fresh to mint a new session: it starts COLD and re-bills the "
+            "full stable prefix. Note reuse resumes the existing character/state "
+            "(chargen is skipped); use --fresh when a scenario must replay from "
+            "chargen on a clean slate."
+        ),
     )
     parser.add_argument(
         "--idle-timeout",
@@ -1346,7 +1354,7 @@ async def amain(args: argparse.Namespace) -> int:
         server=args.server,
         rest_base=args.rest,
         player_name=args.player_name,
-        force_new=not args.keep,
+        force_new=args.fresh,
         idle_timeout=args.idle_timeout,
         seed=args.seed,
         fixture=args.fixture,
