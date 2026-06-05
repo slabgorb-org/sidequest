@@ -43,7 +43,8 @@ stories:
     description: "ADR-121 overstated. Resolver[T].resolve_merged (genre/resolver.py ~:200-390) — the Global->Genre->World->Culture four-tier merge walk the ADR calls 'live' — is never instantiated or called in production; the only archetype resolution path is the two-tier shim (genre/archetype/shim.py ~:64-158: world-funnel-or-genre-fallback) via chargen_mixin.py ~:391. Supporting types (LayeredMerge, MergeStrategy, Provenance/MergeStep) are live and archetype_provenance rides the wire. DECISION + FIX: either route production resolution through Resolver.resolve_merged (full four-tier + provenance) with OTEL, OR formally narrow ADR-121 to the two-tier shim and remove/mark resolve_merged so no dead code remains. Navigate by symbol."
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-05'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
@@ -51,7 +52,10 @@ stories:
       - 'If wired: production archetype resolution calls Resolver.resolve_merged; the four-tier merge + provenance actually runs; OTEL emits the merge steps/provenance (GM/dev observable).'
       - 'If narrowed: ADR-121 is rewritten to describe the two-tier shim as the production reality and resolve_merged is removed or explicitly marked non-production (no unmarked dead code).'
       - 'WIRING TEST: the production resolution path exercises the chosen mechanism end-to-end; fails on current code if the four-tier path is chosen. Full server-test green.'
+    completed: '2026-06-05'
     type: bug
+    review_findings: '4 LOW mechanical findings: ruff format on new test file; stale four-tier docstring in resolved.py:18; stale Resolved[T] mention in test_resolver.py docstring; add cross-reference comments in new test file. Format/docs-only — green rework to Dev.'
+    review_verdict: approved
   - id: 82-5
     title: Reconcile ADR-040 No-Raw-Stats with mechanics-first doctrine — supersede or re-scope (decision)
     description: "RESOLVED 2026-06-03 (decision + execution complete). DECISION: supersede ADR-040 (No Raw Stats). Keith confirmed — players have consistently asked for MORE mechanical visibility in real games, and mechanics-first players (Sebastien, Jade) want the math legible (CLAUDE.md); ADR-114 already surfaces raw HP. EXECUTED by architect: ADR-040 frontmatter set status=deprecated, implementation-status=retired, superseded-by=null (deprecated not superseded — doctrine shift, no 1:1 successor; related=[114,136]); a DEPRECATED banner added to the body preserving the original (now-reversed) rationale; scripts/regenerate_adr_indexes.py rerun (README/DRIFT/SUPERSEDED/CLAUDE.md updated); frontmatter validates 0 errors. No raw-stat hiding implemented. Original audit finding: docs/adr/AUDIT-2026-06-03.md (ADR-040)."

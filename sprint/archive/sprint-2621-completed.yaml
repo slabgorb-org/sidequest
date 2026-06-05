@@ -40,6 +40,7 @@ completed_epics:
   - '75'
   - '59'
   - '76'
+  - '66'
 completed_stories:
   - id: 55-1
     epic: '55'
@@ -1409,3 +1410,28 @@ completed_stories:
     title: Location source coverage v2 — wire room-graph + world_materialization adapters into the entity index (via location_view authored-prose resolution), batch the per-region promotion read, and surface per-region read failures as a watcher event (carries forward 76-7 Reviewer/Dev Delivery Findings)
     points: 5
     completed: '2026-06-04'
+  - id: 66-1
+    epic: '66'
+    title: Differentiated statlines via thematic stat_bonuses on chargen choices
+    points: 5
+    completed: '2026-06-05'
+  - id: 66-2
+    epic: '66'
+    title: Author ADR-095 signature abilities + class moves for mutant_wasteland classes
+    points: 5
+    completed: '2026-06-05'
+  - id: 66-3
+    epic: '66'
+    title: Chargen names-step extraction — split rider road-name vs rig-name from prose (or use followup answer); stop storing whole sentence as char_name
+    points: 3
+    completed: '2026-06-05'
+  - id: 66-4
+    epic: '66'
+    title: Author wry_whimsy classes.yaml — one signature ability per class (ADR-097), decision-gated
+    points: 3
+    completed: '2026-06-05'
+  - id: 66-5
+    epic: '66'
+    title: Creation confirmation sheet shows raw funnel labels not resolved race/class (+ per-genre field-label override)
+    points: 2
+    completed: '2026-06-05'

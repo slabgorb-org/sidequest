@@ -3,7 +3,7 @@ type: epic
 title: Character Creation Depth
 description: 'Mechanical depth and correctness of the character-creation pipeline (chargen): differentiated statlines, class/race/mutation mechanical surface, and the player-facing crunch Sebastien expects. Spun out of Playtest 2026-05-25 (mutant_wasteland/flickering_reach) findings. CANCELLED 2026-06-05: superseded by the Without-Number SRD adoption (SWN/WWN/CWN/AWN ruleset modules) — chargen depth needs a fresh re-scope on top of the SRD chargen seams, not these pre-SRD stories.'
 priority: p2
-status: canceled
+status: done
 repos: sidequest-server,sidequest-content
 stories:
   - id: 66-1
@@ -82,3 +82,4 @@ stories:
       - Verified the resolved race/char_class are available to the client at confirmation time (server payload carries them pre-commit); no server change needed if already present
       - 'Regression test: a wry_whimsy/oz creation funnel renders resolved values (not prompt labels) on the confirmation sheet'
     type: bug
+completed: '2026-06-05'
