@@ -43,6 +43,7 @@ completed_epics:
   - '66'
   - '71'
   - '87'
+  - '89'
 completed_stories:
   - id: 55-1
     epic: '55'
@@ -1685,5 +1686,35 @@ completed_stories:
   - id: 87-4
     epic: '87'
     title: 'Story 4 — Content sweep + calibration + OTEL playtest: RETIRE the bespoke pact_working (Working the Rite) + debt_collection (The Collector at the Door) confrontations and the ledger_tracking/pact_cost_attribution custom_rules; exhaustive 5e-baggage sweep across all content files (no dead class/race/spell/stat references the narrator could cite); full-suite calibration with SIDEQUEST_DATABASE_URL+SIDEQUEST_GENRE_PACKS; OTEL playtest pass on heavy_metal/evropi + long_foundry verifying combat + magic fire mechanically (no improvised prose). Final integration gate for the epic.'
+    points: 5
+    completed: '2026-06-05'
+  - id: 89-1
+    epic: '89'
+    title: 'Story 1 — World skeleton + red/green core: world.yaml (axis_snapshot, Helium anchor, cover_poi), Frazetta visual_style.yaml override, red + green cultures + conlang corpora (>=200 tokens each), the Helium + Korad dead-sea-bottom regions, openings (unified schema, solo+MP), 6 world archetypes, lore/history/npcs. Result: a faithful, playable Barsoom. Plan: docs/superpowers/plans/2026-06-05-barsoom-story-1-world-skeleton.md.'
+    points: 5
+    completed: '2026-06-05'
+  - id: 89-2
+    epic: '89'
+    title: "Story 2 — The South: Therns / First Born / Issus / Valley Dor. Geography (River Iss, Valley Dor, Lost Sea of Korus, Golden Cliffs, Otz Mountains, Omean), the thern + black-Martian cultures + corpora, factions/NPCs, region cartography + POIs, per-origin openings. Stays out of the red/green core's authored scope."
+    points: 8
+    completed: '2026-06-05'
+  - id: 89-3
+    epic: '89'
+    title: 'Story 3 — The North & Lothar: Okar + Marentina (domed northern cities, the Carrion Caves) and Lothar (home of the Mentalist tradition). Yellow-Martian + Lotharian cultures + corpora, regions/POIs, factions/NPCs, openings.'
+    points: 8
+    completed: '2026-06-05'
+  - id: 89-4
+    epic: '89'
+    title: "Story 4 — Magic content: author the two WWN caster traditions' spell lists (Lotharian Mentalist + Barsoomian Super-scientist) over the inherited Effort/System-Strain engine; wire cast_spell beats with class_filter; super-science also as gear; telepathy as universal narrator-framed baseline. Mirrors the EH/heavy_metal wwn magic seam (no engine change expected)."
+    points: 8
+    completed: '2026-06-05'
+  - id: 89-5
+    epic: '89'
+    title: "Story 5 — Chargen surface + CRUNCH FLAGS (Keith's mechanics call): Earthman gravity-boon as a world-tier origin trait that MUST resolve to a REAL engine consumer (no unwired crunch — document the tier exception + verify the consumer); green four-arm physiology (fiction-only vs light trait); Mentalist/Super-scientist expressed as classes-vs-Foci. Touches the engine only where a consumer is required."
+    points: 8
+    completed: '2026-06-05'
+  - id: 89-6
+    epic: '89'
+    title: 'Story 6 — Assets: portraits (portrait_manifest.yaml) for the Lore Cast (currently placeholders), audio mood-map, and any remaining POIs for Stories 2-3 regions. Render to R2, rebuild r2_manifest.json. NOTE: the Story-1 red/green-core POIs (8) already shipped at 28 steps via PRs #365-367; this story covers portraits + South/North POIs + audio.'
     points: 5
     completed: '2026-06-05'

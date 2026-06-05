@@ -13,7 +13,6 @@ epics:
   - '84'
   - '86'
   - '88'
-  - '89'
   - '90'
 standalone_stories:
   - id: 73-16

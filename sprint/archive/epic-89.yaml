@@ -3,7 +3,7 @@ type: epic
 title: Barsoom — Faithful Sword-and-Planet World
 description: "Build Edgar Rice Burroughs' Barsoom (Mars) as a faithful sword-and-planet WORLD on the heavy_metal/WWN chassis (heavy_metal is a clean WWN pack per epic 87; Barsoom sets its own flavor at the world tier). True to source = heroic Frazetta pulp, NOT grimdark doom. Whole-planet scope, phased 6-story decomposition. Design: docs/superpowers/specs/2026-06-05-barsoom-heavy-metal-world-design.md. Content-only (no engine changes) except the Story-5 crunch flags, which must be wired to REAL engine consumers (no unwired crunch). Magic = two WWN caster traditions (Lotharian Mentalist + Barsoomian Super-scientist) deferred to Story 4. Story 1 (world skeleton + red/green core) and the 8-POI asset spread already landed (content PRs #363-367)."
 priority: p2
-status: in_progress
+status: done
 repos: sidequest-content
 stories:
   - id: 89-1
@@ -52,9 +52,13 @@ stories:
     title: "Story 5 — Chargen surface + CRUNCH FLAGS (Keith's mechanics call): Earthman gravity-boon as a world-tier origin trait that MUST resolve to a REAL engine consumer (no unwired crunch — document the tier exception + verify the consumer); green four-arm physiology (fiction-only vs light trait); Mentalist/Super-scientist expressed as classes-vs-Foci. Touches the engine only where a consumer is required."
     points: 8
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-05'
     repos: sidequest-server,sidequest-content
     workflow: tdd
+    completed: '2026-06-05'
+    review_findings: "Round 2 APPROVED: R1/R2 content fixes verified line-level; R3 guard test proven non-vacuous (resolver raises on old bad value, fixed pairs resolve). Full suite 10960 green. Round-1 engine-seam approval stands."
+    review_verdict: approved
   - id: 89-6
     title: 'Story 6 — Assets: portraits (portrait_manifest.yaml) for the Lore Cast (currently placeholders), audio mood-map, and any remaining POIs for Stories 2-3 regions. Render to R2, rebuild r2_manifest.json. NOTE: the Story-1 red/green-core POIs (8) already shipped at 28 steps via PRs #365-367; this story covers portraits + South/North POIs + audio.'
     points: 5
@@ -67,3 +71,4 @@ stories:
     type: chore
     review_findings: 'Post-merge review (oq-2): authoring half landed in content#369 (portrait_manifest 10 NPCs, audio mood-map, POI prompts); renders to R2 deferred to operator. VALIDATOR DEBT: barsoom tropes.yaml + legends/ missing — 2 live-pack validator tests red on develop, no owning story.'
     review_verdict: approved
+completed: '2026-06-05'
