@@ -6,7 +6,7 @@ date: 2026-05-26
 deciders: ["Keith Avery", "Leonard of Quirm (Architect)"]
 supersedes: []
 superseded-by: null
-related: [24, 31, 33, 77, 113, 114]
+related: [24, 31, 33, 77, 113, 114, 139]
 tags: [game-systems]
 implementation-status: partial
 implementation-pointer: sprint/context/context-story-59-13.md

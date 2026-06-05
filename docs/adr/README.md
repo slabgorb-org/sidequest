@@ -136,6 +136,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-130: Orbital Story-Time Clock and Course Model — Beat-Driven Time Advance and Approximate Hohmann Transit](130-orbital-clock-course.md) | ✓ accepted | live |
 | [ADR-136: Player-Facing Relationship Surface — Reactive RELATIONSHIPS Projection, Disposition Beat-Log, and the Claims-Only Belief Firewall](136-player-facing-relationship-surface.md) | ✓ accepted | live → docs/superpowers/plans/2026-06-01-npc-relationship-panel.md |
 | [ADR-137: Quest & Stakes Substrate — Create/Anchor Lane, First-Class active_stakes Source, and One-Mechanism Consolidation](137-quest-stakes-substrate.md) | ◇ proposed | *partial* → sidequest-server/sidequest/game/quest_seed.py (story 77-1 seed-at-creation live, quest.seeded_at_creation OTEL); 77-2..77-7 deferred |
+| [ADR-139: Confrontation Integrity Invariants — Win-Condition Liveness, Seated-Actor HP Durability, the Mechanically-Capable Other, and the Dispatch Applicability Gate](139-confrontation-integrity-invariants.md) | ✓ accepted | *partial* → sidequest-server/sidequest/game/ — confrontation resolution + ADR-059 monster_manual injection + opponent-seater; first impl on FIXER branches fix/eh-opp-damage and fix/eh-magic-gate (2026-06-04 burning_peace playtest); verification home = Epic 73 Confrontation Engine Hardening |
 
 ## Frontend / Protocol
 
@@ -329,5 +330,6 @@ ADRs whose implementation is absent, partial, or deferred. See [DRIFT.md](DRIFT.
 | [ADR-121: Layered Content Resolution — Global→Genre→World→Culture Merge with Per-Field Strategies and Provenance](121-layered-content-resolution.md) | *partial* | Resolver.resolve_merged four-tier walk is dead code; production uses two-tier shim (archetype/shim.py) — sprint story 82-4 (wire or narrow) |
 | [ADR-135: Reference Pages Are a Public Table Tool — Single Fixed Projection, No GM Audience](135-reference-pages-public-table-tool.md) | *partial* | sidequest-server reference_renderer.py — audience doctrine + stories 65-7..65-9 live; 65-10..65-12 pending |
 | [ADR-137: Quest & Stakes Substrate — Create/Anchor Lane, First-Class active_stakes Source, and One-Mechanism Consolidation](137-quest-stakes-substrate.md) | *partial* | sidequest-server/sidequest/game/quest_seed.py (story 77-1 seed-at-creation live, quest.seeded_at_creation OTEL); 77-2..77-7 deferred |
+| [ADR-139: Confrontation Integrity Invariants — Win-Condition Liveness, Seated-Actor HP Durability, the Mechanically-Capable Other, and the Dispatch Applicability Gate](139-confrontation-integrity-invariants.md) | *partial* | sidequest-server/sidequest/game/ — confrontation resolution + ADR-059 monster_manual injection + opponent-seater; first impl on FIXER branches fix/eh-opp-damage and fix/eh-magic-gate (2026-06-04 burning_peace playtest); verification home = Epic 73 Confrontation Engine Hardening |
 
 <!-- ADR-INDEX:GENERATED:END -->
