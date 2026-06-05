@@ -25,3 +25,12 @@ stories:
     repos: content
     workflow: tdd
     depends_on: 88-1
+  - id: 88-3
+    title: WN capability-gate consolidation sweep — convert remaining ruleset slug-string sites to isinstance/override-probe capability gates (ADR-117 amendment 2026-06-05)
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 88-2
+    type: refactor

@@ -9,7 +9,7 @@ superseded-by: null
 related: [33, 78, 93, 97, 114]
 tags: [game-systems]
 implementation-status: live
-implementation-pointer: "sidequest-server/sidequest/game/ruleset/registry.py — native, swn, cwn, wwn modules live and pack-bound"
+implementation-pointer: "sidequest-server/sidequest/game/ruleset/registry.py — native, swn, cwn, wwn, awn modules live and pack-bound"
 ---
 
 # ADR-117: Pluggable Ruleset Module System
@@ -171,3 +171,36 @@ modules; some **per-module narrator routing is still partial** (see Deferred).
   designed in the spec but **not implemented**. Per the Edge/HP doctrine
   (ADR-114), the planned Fate module is the intended home for the retired
   Edge/Composure substrate.
+
+## Amendments
+
+### 2026-06-05 — Capability gates, not slug strings (the fifth-module lesson)
+
+The fifth module, `awn` (Ashes Without Number → `mutant_wasteland`;
+`AwnRulesetModule(CwnRulesetModule)`, epic 88, design spec
+`docs/superpowers/specs/2026-06-05-ashes-without-number-mutant-wasteland-design.md`
+§11), exposed a recurring cost in how the engine *outside* the seam keys on
+ruleset behavior. Two binding styles coexist:
+
+| Style | Example | Cost per new sister module |
+|---|---|---|
+| **Capability / type** — `isinstance(cfg, CwnConfig)`, `isinstance(module, CwnRulesetModule)`, method-override probes (e.g. the opponent-reprisal check `type(ruleset).resolve_opponent_attack is not RulesetModule.resolve_opponent_attack`) | `downed_seam.py` cfg gate, `dice.py` reprisal probe | **Zero.** A thin subclass *is* its parent; these sites covered `awn` with no edits. |
+| **Slug-string membership** — `rules.ruleset == "cwn"`, `ruleset in ("cwn", "wwn")` | `builder.py` `seed_system_strain`, `downed_seam.py` (second gate), `stabilize_mortal_injury.py`, `adjust_system_strain.py` | **One edit per site per module**, and the failure mode is a *silent no-op* (`"awn" != "cwn"` falls through quietly — a No Silent Fallbacks violation in spirit, since nothing fails loud). |
+
+The `awn` integration (story 88-1) required touching six slug-string sites that
+the capability-style sites covered for free; `road_warrior`'s `cwn` binding paid
+the same toll earlier.
+
+**Doctrine going forward:** cross-cutting ruleset capability gates SHOULD key on
+the **config/module type or a method-override probe**, not on `rules.ruleset`
+slug-string membership. Slug strings remain correct for exactly two uses: the
+registry lookup itself, and genuinely slug-specific behavior (e.g. the
+SWN-only dogfight gate). When a gate means "this family of rulesets supports
+System Strain / Mortal Injury / Shock," express it as
+`isinstance(cfg, CwnConfig)` (covers all present and future subclasses) or
+probe the method override.
+
+**Known debt:** the remaining slug-string sites (the four named above, post-88-1
+state) are recorded for a consolidation sweep — tracked as future sprint work
+(epic 88 follow-on), scheduled alongside the next plan that touches those files,
+and mandatory before sister module #6.
