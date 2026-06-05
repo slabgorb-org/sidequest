@@ -27,7 +27,8 @@ stories:
     description: "The people-side half of ping-pong #74, still UNFIXED after PR #638. _resolve_invented_naming_context (narration_apply.py) resolves the culture for a narrator-invented PERSON by random.shuffle over the world's bound cultures and picking the first whose corpus builds — so a named people-group is tagged with a RANDOM culture: the Munchkins (Munchkin/blue East) were minted 'Roric the Crimson' culture=Quadling; a later threat got Quadling then Emerald City. When the narrator names a specific people/group/clan, the engine should resolve THAT group's own culture (Munchkin→Munchkin) rather than shuffling. Needs a match from the mention's name/group against the bound cultures (by culture name + any authored aliases/demonyms), falling back to the existing shuffle ONLY when no match is found (a genuinely unaffiliated stranger). Keep No-Silent-Fallbacks: a matched-but-unbuildable corpus must still surface loud (namegen.thin_corpus already exists)."
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-05'
     repos: server
     workflow: tdd
     acceptance_criteria:
@@ -36,7 +37,9 @@ stories:
       - When no culture matches the mention (an unaffiliated stranger), the existing shuffle-and-build behavior is preserved unchanged — this is an additive prefer-match step, not a replacement.
       - The npc.invented_name_routed span records WHY a culture was chosen (matched vs shuffled) + the matched token, so the GM panel can see the culture router is no longer guessing.
       - 'No-Silent-Fallbacks preserved: a matched culture whose corpus is missing/below-floor still fires the loud namegen guard, not a silent fall-through to a wrong culture.'
+    completed: '2026-06-05'
     type: bug
+    review_verdict: approved
   - id: 83-3
     title: Ongoing-threat identity stability — reconcile a re-described threat instead of re-minting
     description: "Deferred from ping-pong #74. A single ongoing threat was re-minted under a NEW identity every turn because the narrator re-describes it each turn and each novel descriptor hits the Step-3 novel-mint branch: the forest threat became 'Clemence Coralfast' → 'The Unseen Watcher' → 'Keeper Goldbraid' across two turns, and NONE reconciled to the authored Cowardly Lion already in the npcs roster (disposition 5). The result is unstable opponent identity — the GM panel and the player see three monsters where there is one, and a hand-authored NPC is shadowed by phantom duplicates. Add a stability/reconciliation guard so a recurring threat resolves to its existing pool member or authored Npc instead of minting a fresh one. Likely levers: a narrator continuity signal (the mention points at an existing entity), appearance/role similarity reconciliation, and/or a 'one active unnamed threat' guard per scene. Coordinate with the existing comma-inversion match keys and the observation-gate ratification (49-6) so this doesn't fight them. Note interaction with 83-1: a creature with a stable creature_id is easier to reconcile across turns."
