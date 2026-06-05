@@ -174,3 +174,18 @@ stories:
       - The existing fail-loud ValueError self-guard in each tool remains as a backstop (not removed)
       - Filtering is driven by the bound ruleset slug, not a hardcoded per-tool allowlist duplicated from the tool modules
     type: refactor
+  - id: 73-16
+    title: 'Handler-level e2e coverage for the full combat beat-tick → threshold/HP-depletion → resolution lifecycle through DICE_THROW — build a combat-capable session fixture (PC + opponent with wired combatant CreatureCore/stats so the dice-path edge_resolver resolves the opponent) and drive handle_message(DICE_THROW) to resolution. Closes the gap left by 73-12, which covered only encounter CREATION through the handler (beat→resolution is engine-level only: tests/integration/test_combat_otel_wiring.py calls apply_beat directly; tests/server/test_confrontation_dispatch_wiring.py pre-seats). Found by TEA/Reviewer during 73-12.'
+    points: 5
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 73-17
+    title: Confirm + document caverns_and_claudes dual-dial momentum semantics — a plain 'attack' (kind=strike) debits the opponent's edge/HP and does NOT advance the player momentum dial. Determine which beats are intended to advance player_metric/opponent_metric for a dial_threshold combat, document it (and fix beat defs / apply_beat if the dial is meant to advance but doesn't). Surfaced during 73-12 while rebuilding the walkthrough (the original test assumed attack→momentum+2). Affects sidequest/game/beat_kinds.py + caverns_and_claudes combat beat defs.
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: chore
