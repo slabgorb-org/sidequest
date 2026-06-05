@@ -168,7 +168,8 @@ stories:
     description: "Architect finding (2026-06-04, ADR-117 ruleset routing dig). orchestrator.py:3844/3992 hands the narrator default_registry.tool_definitions() — ALL registered tools, unfiltered by bound ruleset. The WWN/CWN-only tools (commit_effort/long_rest/veterans_luck=wwn; adjust_system_strain/stabilize_mortal_injury=cwn) are therefore visible to the narrator on EVERY pack, including native packs. They self-guard fail-loud: tool description says 'WWN-only…' and the handler raises ValueError if pack.rules.ruleset != the required slug (e.g. commit_effort.py:96). So this is NOT a correctness bug (no silent fallback) — it is a tightening: the narrator wastes tool-budget on, and can mis-attempt, tools irrelevant to the bound ruleset. Tighten by filtering tool_definitions to the bound ruleset at assembly time. NOTE: SM may re-home — no dedicated ruleset epic exists; parked in 73 because the gated tools are combat/lethality tools."
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-05'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
@@ -176,7 +177,9 @@ stories:
       - A WWN-bound pack exposes the WWN tools and not the CWN tools; CWN-bound pack the inverse
       - The existing fail-loud ValueError self-guard in each tool remains as a backstop (not removed)
       - Filtering is driven by the bound ruleset slug, not a hardcoded per-tool allowlist duplicated from the tool modules
+    completed: '2026-06-05'
     type: refactor
+    review_verdict: approved
   - id: 73-16
     title: 'Handler-level e2e coverage for the full combat beat-tick → threshold/HP-depletion → resolution lifecycle through DICE_THROW — build a combat-capable session fixture (PC + opponent with wired combatant CreatureCore/stats so the dice-path edge_resolver resolves the opponent) and drive handle_message(DICE_THROW) to resolution. Closes the gap left by 73-12, which covered only encounter CREATION through the handler (beat→resolution is engine-level only: tests/integration/test_combat_otel_wiring.py calls apply_beat directly; tests/server/test_confrontation_dispatch_wiring.py pre-seats). Found by TEA/Reviewer during 73-12.'
     points: 5
