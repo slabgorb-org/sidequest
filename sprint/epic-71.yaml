@@ -263,14 +263,6 @@ stories:
     completed: '2026-05-30'
     type: bug
     review_verdict: approved
-  - id: 71-22
-    title: "Glenross router latency AC5 — measure + diagnose 4-12s vs <1.2s budget (env vs code)"
-    points: 3
-    priority: p2
-    status: backlog
-    repos: sidequest-server
-    workflow: tdd
-    type: bug
   - id: 71-23
     title: "Solo narration streaming — wire messages.stream into existing UI delta path"
     points: 5
@@ -306,14 +298,6 @@ stories:
     completed: '2026-06-04'
     type: bug
     review_verdict: approved
-  - id: 71-26
-    title: "Solo turn-latency p95 — diagnose/cap tool-loop iterations"
-    points: 3
-    priority: p3
-    status: backlog
-    repos: sidequest-server
-    workflow: tdd
-    type: bug
   - id: 71-27
     title: "Router emits combat dispatch with no registered handler — register or stop emitting"
     points: 2
@@ -506,4 +490,12 @@ stories:
       - "Cross-world hygiene (audit, scope-guard): extend the assertion (or r2_audit) to flag ANY world where a region_id with a POI image lacks a matching verbatim R2 key — so oz/gulliver stay green and a future world can't silently reintroduce the article mismatch. Report mismatches; only wonderland needs renaming now."
       - "No engine/server change and no new render: the assets already exist (14 on R2). Verify the wonderland Location tab resolves the landscape after a content pull + bounce with ZERO code diff in sidequest-server. The lore-page 'Renderable Landscapes' images remain gated on 71-38 (separate engine slug fix) — note the dependency, do not fold 71-38 in here."
     completed: '2026-06-05'
+    type: bug
+  - id: 71-40
+    title: Per-turn latency diagnosis — router decompose + narrator tool-loop p50/p95 + env-vs-code/iteration attribution
+    points: 6
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
     type: bug
