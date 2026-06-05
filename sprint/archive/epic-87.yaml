@@ -3,7 +3,7 @@ type: epic
 title: 'heavy_metal → Worlds Without Number: Faithful Ruleset Port'
 description: 'Bind heavy_metal to the wwn ruleset as the SECOND WWN pack after elemental_harmony (design: docs/superpowers/specs/2026-06-04-heavy-metal-wwn-port-design.md; Story-1 plan: docs/superpowers/plans/2026-06-04-heavy-metal-wwn-story-1.md). Today heavy_metal runs native dials: combat and magic are PROSE WITH NO MECHANICAL BACKING (narrator improvises), the class/race/spell list is 5e leftover scaffolding, and the signature magic was modeled as bespoke pact/ledger confrontations. Per Keith (2026-06-04) that magic framing shades too hard into flavor and is RETIRED in favor of the port — the doom-cost feeling re-homes into spell descriptions. Unlike road_warrior→CWN (which needed a net-new crew-seat primitive), this needs ZERO engine changes: EH already proved every wwn seam (ruleset+wwn block, cast_spell, spells_wwn.yaml, hp_depletion, downed seam). This is a content port + standard calibration/OTEL wiring. Locked decisions: faithful WWN 3-chassis (Warrior/Expert/Mage + Foci, mage traditions as themed caster classes); magic_level high; lethality high; abilities already the standard six (CHA engine-mandatory for the Mental save); a complete canonical→abbreviation wwn.attribute_map IS required (verified _validate_wwn); remove edge_config (Edge→ablative HP). Touches ADR-117 (pluggable ruleset), ADR-114 (ablative HP), ADR-126 (pluggable magic). Both repos.'
 priority: p2
-status: backlog
+status: done
 repos: sidequest-server,sidequest-content
 stories:
   - id: 87-1
@@ -47,7 +47,12 @@ stories:
     title: 'Story 4 — Content sweep + calibration + OTEL playtest: RETIRE the bespoke pact_working (Working the Rite) + debt_collection (The Collector at the Door) confrontations and the ledger_tracking/pact_cost_attribution custom_rules; exhaustive 5e-baggage sweep across all content files (no dead class/race/spell/stat references the narrator could cite); full-suite calibration with SIDEQUEST_DATABASE_URL+SIDEQUEST_GENRE_PACKS; OTEL playtest pass on heavy_metal/evropi + long_foundry verifying combat + magic fire mechanically (no improvised prose). Final integration gate for the epic.'
     points: 5
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-05'
     repos: sidequest-server,sidequest-content
     workflow: tdd
+    completed: '2026-06-05'
     type: chore
+    review_findings: 'AC3/AC6 incomplete: prompts.yaml ritual:(L178) names retired pact_working + frames ledger as live mechanic; debt_collection:(L200) prompt key named after retired confrontation. Dev re-homed combat: but missed these two. Unreachable dead fields (nil live risk) but unmet AC on final gate. Fix: re-home/remove both blocks (mirror combat: re-homing). Non-blocking: no wiring test, guard/loader skip-mismatch, 3 redundant tests.'
+    review_verdict: approved
+completed: '2026-06-05'

@@ -58,3 +58,8 @@
 
 ### Hardware context for Dev decisions
 - **MacBook Pro M3 Max 128GB** — can run Flux locally without VRAM constraints. No CUDA, so tooling must support MPS (Metal Performance Shaders) or CPU fallback. Unified memory means ML workloads don't have to round-trip across PCIe. 40-core GPU.
+
+### Don't over-gate playtest API spend (2026-06-05, Keith directive)
+- **Decision:** When running OTEL/narrator playtests (`scripts/playtest.py`), do NOT stall on cost or ask repeated go/no-go for normal-size scenarios. Keith: "don't worry about the charges so much." A 10-action scenario projects ~$0.39 (under the built-in $0.50 ADR-134 cap); just run it.
+- **Why:** The diagnostic value of a live narrator-in-the-loop OTEL run (lie-detector spans: confrontation.intent_mismatch, dispatch.gated, wwn.* / wwn.spell.cast firing or not) outweighs the small per-run cost. Excessive cost-confirmation slows the work without protecting anything the built-in `--max-projected-cost-usd` cap doesn't already cover.
+- **How to apply:** Run playtest scenarios directly. Still surface the projected cost line in passing, and still stop for genuinely large/unbounded runs — but normal bounded scenarios don't need a spend confirmation. The cost cap is the guardrail; trust it.
