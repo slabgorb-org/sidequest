@@ -83,10 +83,13 @@ stories:
     title: Wire AffinityState tier promotion + OTEL + player-facing delta (ADR-021 track 2; game/character.py ~:55-57,102-103)
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-05'
     repos: sidequest-server
     workflow: tdd
     depends_on: 82-3
+    completed: '2026-06-05'
+    review_verdict: approved
   - id: 82-8
     title: Wire item narrative_weight / WealthTier gold->label consumer + OTEL + player-facing (ADR-021 track 3; item_catalog_resolution.py ~:31, progression.py ~:187-221)
     points: 2
