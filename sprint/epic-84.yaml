@@ -49,10 +49,12 @@ stories:
     title: WI-2 Lifecycle-aware scope — dormant quest/trope indexing + active→floor routing; per-type active/dormant predicate (amends ADR-118 §D2; quest source = epic 77, trope = ADR-128)
     points: 5
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-05'
     repos: sidequest-server
     workflow: tdd
     depends_on: 84-1
+    completed: '2026-06-05'
   - id: 84-6
     title: 'WI-3 Tiered projection + lazy demote-on-read-miss + vector-shedding (years-scale forgetting; extends ADR-048 eviction gap) — DEFERRED: do not start until a save actually grows large'
     points: 5
