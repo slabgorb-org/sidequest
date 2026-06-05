@@ -1,13 +1,13 @@
 id: '71'
 type: epic
-title: Playtest bugfix — uncovered findings (coyote_star MP, 2026-05-27)
+title: "Playtest bugfix — uncovered findings (coyote_star MP, 2026-05-27)"
 description: Open playtest findings from the 2026-05-27 coyote_star MP run (and carryover) NOT already covered by epics 59/61/63/64/65/66/67/68/69/70. Cross-referenced from the ping-pong tracker. Excludes findings covered by the dispatch-bank consolidation (59-11), reference-renderer epic (63), MP-resilience epic (67), genre-tone epic (68), gameboard-UX epic (69), daemon-media epic (70); excludes the beneath_sunden unmapped-deep QUESTION (by design, ADR-106).
 priority: p2
 status: backlog
 repos: sidequest-ui,sidequest-server
 stories:
   - id: 71-1
-    title: space_opera Rules page — render per-class signature ability in the class picker
+    title: "space_opera Rules page — render per-class signature ability in the class picker"
     points: 3
     priority: p2
     status: done
@@ -18,7 +18,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 71-2
-    title: Orrery ring label — apply ADR-094 upright-flip on far-arc tangent labels
+    title: "Orrery ring label — apply ADR-094 upright-flip on far-arc tangent labels"
     points: 2
     priority: p3
     status: done
@@ -28,7 +28,7 @@ stories:
     completed: '2026-05-28'
     type: bug
     review_verdict: rejected
-    review_findings: 'Snapshot regression: coyote_star_callouts_system_t0.svg not re-baselined. test_coyote_star_callouts_byte_identical fails (1 failed, 315 passed). Fix: re-generate snapshot. All other checks pass — TRAP #1, TRAP #2, AC5 all verified correct.'
+    review_findings: "Snapshot regression: coyote_star_callouts_system_t0.svg not re-baselined. test_coyote_star_callouts_byte_identical fails (1 failed, 315 passed). Fix: re-generate snapshot. All other checks pass — TRAP #1, TRAP #2, AC5 all verified correct."
   - id: 71-3
     title: WS reconnect error banner auto-clears on successful reconnect/turn round-trip
     points: 2
@@ -41,7 +41,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 71-4
-    title: Player-action transcript — contrast bump on own-echo + persist peer action post-resolution
+    title: "Player-action transcript — contrast bump on own-echo + persist peer action post-resolution"
     points: 3
     priority: p2
     status: done
@@ -52,7 +52,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 71-5
-    title: MP opening narration — POV-swap the driving player's own card (not raw-bypass)
+    title: "MP opening narration — POV-swap the driving player's own card (not raw-bypass)"
     points: 3
     priority: p2
     status: done
@@ -63,7 +63,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 71-6
-    title: Narration POV person-agreement — anchor-PC bare-possessive + mixed-person slips
+    title: "Narration POV person-agreement — anchor-PC bare-possessive + mixed-person slips"
     points: 2
     priority: p3
     status: done
@@ -108,7 +108,7 @@ stories:
     branch: feat/71-9-migrate-dice-overlay-wiring-34-5-behavioral-assertion
     review_verdict: approved
   - id: 71-10
-    title: 'Peer-action transcript: anchor by exact round (add round to PlayerActionPayload) — replaces positional placement'
+    title: "Peer-action transcript: anchor by exact round (add round to PlayerActionPayload) — replaces positional placement"
     points: 3
     priority: p3
     status: done
@@ -122,10 +122,10 @@ stories:
       - Wiring test exercises real usePersistedPeerActions -> NarrationScroll/buildSegments path; existing 71-4 persistence tests still pass; peer TEXT still sourced only from perception-filtered reveals map (ADR-104/105)
     completed: '2026-05-28'
     type: chore
-    review_findings: 'LOW-only: (1) blocking format-gate failure — ruff format tests/protocol/test_messages.py:~828 (>100 chars after round=0 fixture add); (2) remove 2 redundant test casts in peer-action-round-anchor-71-10.test.tsx (as PeerAwareBuild, as unknown as NarrationCards — real signatures now match, TS-1). No logic defects; firewall + No-Silent-Fallbacks + stale-closure fix all verified clean. Route: green rework -> dev.'
+    review_findings: "LOW-only: (1) blocking format-gate failure — ruff format tests/protocol/test_messages.py:~828 (>100 chars after round=0 fixture add); (2) remove 2 redundant test casts in peer-action-round-anchor-71-10.test.tsx (as PeerAwareBuild, as unknown as NarrationCards — real signatures now match, TS-1). No logic defects; firewall + No-Silent-Fallbacks + stale-closure fix all verified clean. Route: green rework -> dev."
     review_verdict: approved
   - id: 71-11
-    title: Per-genre peer-action contrast a11y sweep — axe/devtools across live theme_css, bump peer token if <4.5:1
+    title: "Per-genre peer-action contrast a11y sweep — axe/devtools across live theme_css, bump peer token if <4.5:1"
     points: 2
     priority: p3
     status: done
@@ -136,7 +136,7 @@ stories:
     type: chore
     review_verdict: approved
   - id: 71-12
-    title: Comment-guard at peer-reveal capture site (App.tsx) — 'MUST use raw reveals, never merged' to prevent stale-draft regression
+    title: "Comment-guard at peer-reveal capture site (App.tsx) — 'MUST use raw reveals, never merged' to prevent stale-draft regression"
     points: 1
     priority: p3
     status: done
@@ -147,7 +147,7 @@ stories:
     type: chore
     review_verdict: approved
   - id: 71-13
-    title: MP opening live-broadcast bypasses emit_event — route opening through emit_event(author_player_id) for uniform per-recipient POV + perception fanout + event-sourcing (anchor-peer live-swap + visible_to private-segment leak)
+    title: "MP opening live-broadcast bypasses emit_event — route opening through emit_event(author_player_id) for uniform per-recipient POV + perception fanout + event-sourcing (anchor-peer live-swap + visible_to private-segment leak)"
     points: 5
     priority: p2
     status: done
@@ -158,7 +158,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 71-14
-    title: Test-file pyright cleanup for 71-5 — +13 type-looseness in opening-POV test files + 2 visibility_sidecar alias false-positives (pyright-ignore)
+    title: "Test-file pyright cleanup for 71-5 — +13 type-looseness in opening-POV test files + 2 visibility_sidecar alias false-positives (pyright-ignore)"
     points: 1
     priority: p3
     status: done
@@ -169,7 +169,7 @@ stories:
     type: chore
     review_verdict: approved
   - id: 71-15
-    title: ADR-055 — wire per-transition trope-tick + item resource depletion on room-graph movement
+    title: "ADR-055 — wire per-transition trope-tick + item resource depletion on room-graph movement"
     points: 5
     priority: p2
     status: done
@@ -178,7 +178,7 @@ stories:
     workflow: tdd
     completed: '2026-05-28'
   - id: 71-16
-    title: ADR-113 — per-dispatch confidence scoring + threshold gating in the intent router
+    title: "ADR-113 — per-dispatch confidence scoring + threshold gating in the intent router"
     points: 5
     priority: p2
     status: done
@@ -189,7 +189,7 @@ stories:
     branch: feat/71-16-intent-router-confidence-gate
     assignee: keith
   - id: 71-17
-    title: ADR-092 — resolve scene-harness dev-gate doctrine (Cloudflare-only vs DEV_SCENES env gate)
+    title: "ADR-092 — resolve scene-harness dev-gate doctrine (Cloudflare-only vs DEV_SCENES env gate)"
     description: "RESOLUTION (2026-05-29, SM triage): Decided & documented — scene-harness dev-gate doctrine resolved as Cloudflare-only; DEV_SCENES env gate removed. See docs/adr/092-scene-harness-http-endpoint.md:287-307 ('DEV_SCENES gate removed') and scene_harness_router.py:6 (always-registered; zero DEV_SCENES refs in server source). Closed done without PR."
     points: 2
     priority: p3
@@ -199,7 +199,7 @@ stories:
     completed: '2026-05-29'
     type: chore
   - id: 71-18
-    title: GM-panel NPC Registry widget reads only npc_pool — merge snapshot.npcs so roster NPCs are not a false-negative
+    title: "GM-panel NPC Registry widget reads only npc_pool — merge snapshot.npcs so roster NPCs are not a false-negative"
     description: "Playtest 2026-05-28 finding #C1 (GM-panel NPC Registry false-negative). RESOLUTION (2026-05-29, SM triage): Already fixed via story 45-52 — snapshot.npc_registry is now server-built from BOTH snap.npcs (roster, w/ HP/disposition/last_seen) AND snap.npc_pool (walk-ons) at rest.py:360-452; dashboard.html:584-599 reads npc_registry and enriches against snap.npcs via npcLookup. The 'reads ONLY npc_pool' false-negative cannot occur in current code. Closed done without PR."
     points: 1
     priority: p3
@@ -208,12 +208,12 @@ stories:
     workflow: trivial
     acceptance_criteria:
       - The NPC Registry widget displays authored-roster NPCs (snapshot.npcs) in addition to npc_pool walk-ons.
-      - "A session with a populated roster and an empty npc_pool (the exact #C1 coyote_star shape) shows the roster NPCs, not 'No NPCs in registry yet'."
+      - 'A session with a populated roster and an empty npc_pool (the exact #C1 coyote_star shape) shows the roster NPCs, not ''No NPCs in registry yet''.'
       - The widget distinguishes (or at least does not conflate) roster NPCs vs narrator-invented walk-ons in its display.
     completed: '2026-05-29'
     type: bug
   - id: 71-19
-    title: Author Glenross ADR-053 scenario — give the tea_and_murder flagship a solvable mystery (clue graph, suspects, belief state, gossip)
+    title: "Author Glenross ADR-053 scenario — give the tea_and_murder flagship a solvable mystery (clue graph, suspects, belief state, gossip)"
     description: "Playtest 2026-05-28 finding #G6 (the headline 59-8 Glenross finding). tea_and_murder IS a mystery engine, and ADR-053 (Scenario System: clue graph, belief state, gossip propagation) is the mechanical spine that makes a mystery SOLVABLE rather than improvised. Glenross — the flagship tea_and_murder world — ships archetypes/calendar/cartography/cultures/demographics/history/legends/lore/npcs/openings/tropes/world.yaml (a rich SETTING) but ZERO scenario/clue/belief content (find worlds/glenross -iname '*scenario*' -o -iname '*clue*' -o -iname '*belief*' => no files). So the router classifies investigation as scenario_clue, the handler runs, but snapshot.scenario_state is None => consume_clue_footnotes returns silently: no clue discovered, no belief update, no SPAN_SCENARIO_ADVANCE. For mechanics-first players (Jade/Sebastien) the murder is unsolvable-by-system — the narrator confabulates forensics each turn (turn-4 body exam invented a temple wound, a Perth rail ticket, 'he was not lying so when I left him' — all clue-shaped reveals with ZERO mechanical provenance, non-canonical, non-reproducible). This is the mystery equivalent of a combat pack with no confrontation engine, and exactly the Illusionism the OTEL lie-detector exists to catch. ENGINE IS FINE — the scenario_clue handler + Footnote coercion work (the coyote_star Footnote-enum fix is live: 'category_coerced raw=forensic -> Lore'); what is MISSING is the authored mystery. This also blocks #G6-adjacent social-confrontation validation: Glenross has no adversarial suspects to seat an Other, so cross-examine/social_duel/scandal can't be exercised either. CONTENT authoring job — a natural fit for the 'Jade authors content' path in CLAUDE.md (she will author worlds + lore). NOTE: coyote_star also lacks an ADR-053 scenario — this is a PATTERN; if more investigation-worlds need scenarios, promote to a dedicated 'ADR-053 scenario authoring' epic (this story currently parks in epic 71 playtest-findings). Reference an existing authored scenario (if any pack has one) as the schema template; otherwise see ADR-053 + the scenario_state / BeliefState / discovered_clues models in sidequest-server (game/ scenario). Repos: content (the scenario YAML lives under genre_packs/tea_and_murder/worlds/glenross/); engine is already wired."
     points: 8
     priority: p2
@@ -223,16 +223,16 @@ stories:
     workflow: tdd
     acceptance_criteria:
       - 'Glenross ships an authored ADR-053 scenario: a victim, a canonical solution, and a suspect set each with explicit means / motive / opportunity.'
-      - A clue graph of discoverable nodes wired so investigation actions (examine body, interrogate, search) resolve real scenario_clue discoveries — discovered_clues populates and SPAN_SCENARIO_ADVANCE / scenario_clue.resolved fires (no more silent no-op when scenario_state is None).
+      - "A clue graph of discoverable nodes wired so investigation actions (examine body, interrogate, search) resolve real scenario_clue discoveries — discovered_clues populates and SPAN_SCENARIO_ADVANCE / scenario_clue.resolved fires (no more silent no-op when scenario_state is None)."
       - NPC belief_state is seeded for the suspects/witnesses (initial_beliefs), so disposition/interrogation reads have canonical knowledge behind them rather than narrator improv.
       - Gossip edges between NPCs are defined so information can propagate between scenes (ADR-053 gossip propagation), per the world's social graph.
-      - 'At least one suspect is authorable as adversarial (means to seat an Other) so a social confrontation (cross-examine / social_duel / scandal) can actually instantiate against them — unblocking the 59-8 confrontation-lane validation #G6 also blocks.'
+      - "At least one suspect is authorable as adversarial (means to seat an Other) so a social confrontation (cross-examine / social_duel / scandal) can actually instantiate against them — unblocking the 59-8 confrontation-lane validation #G6 also blocks."
       - The scenario loads through the live loader and validates against the ADR-053 scenario schema (pf validate, no ERROR-level gaps); a playtest investigation turn produces a real clue discovery with mechanical provenance visible in the GM panel.
       - 'OTEL: a scenario_clue.resolved / SPAN_SCENARIO_ADVANCE span fires on a clue discovery so the GM panel can confirm the mystery engine is engaged (not narrator confabulation).'
     completed: '2026-05-30'
     branch: feat/71-19-glenross-adr053-scenario
   - id: 71-20
-    title: Fail loud at startup when Postgres schema is behind alembic head — a behind-head DB is a silent landmine
+    title: "Fail loud at startup when Postgres schema is behind alembic head — a behind-head DB is a silent landmine"
     description: "Playtest 2026-05-28 finding #G4 (the design follow-up; the immediate asset_ledger outage was already resolved by the driver applying the migration). INCIDENT: the dev DB was stamped at alembic 0001 while head was 0002 (0002_asset_ledger.py / Story 65-2 had never been applied). The server BOOTED FINE and ran for many turns; the only symptom was 'relation \"asset_ledger\" does not exist' ERROR on every scene render's ledger write — a failure surfacing deep in a turn, far from the root cause (a behind-head schema). VIOLATION: this is a textbook No Silent Fallbacks breach — a misconfigured/behind-head DB should fail LOUD at boot, not limp along and explode mid-turn at the first write to the missing table. ADR-115 already fails loud when Postgres is UNREACHABLE (MissingDatabaseUrlError, 10s pool-wait timeout); this extends that contract to 'reachable but schema behind head'. THE DECISION (record it in the story): (A) assert at startup that the connected DB's alembic current revision == alembic heads, and fail loud at boot if not (preferred — explicit, No-Silent-Fallbacks-aligned; migration stays an explicit operator step), OR (B) have boot / 'just up' run 'alembic upgrade head' automatically (convenient, but silently mutating the schema at boot is itself a silent action and can surprise on a shared DB). Recommendation leans (A) fail-loud-assert, optionally pairing 'just up' with an EXPLICIT, visible 'alembic upgrade head' step the operator sees — not a hidden auto-migrate. Implementation lives in the server startup path (app lifespan / db_config / db_pool); compare alembic current vs heads via the alembic API against SIDEQUEST_DATABASE_URL. Repos: server. See .pennyfarthing/guides/save-management.md for migration procedures. Possible cross-check from the same incident: confirm a behind-head schema was NOT contributing to other mid-turn write failures."
     points: 3
     priority: p2
@@ -241,11 +241,11 @@ stories:
     repos: server
     workflow: tdd
     acceptance_criteria:
-      - Server startup asserts the connected Postgres DB's alembic revision equals alembic heads; if the DB is behind (or divergent), the server fails loud AT BOOT with a clear error naming the current vs head revision — never deferring the failure to a mid-turn write.
+      - "Server startup asserts the connected Postgres DB's alembic revision equals alembic heads; if the DB is behind (or divergent), the server fails loud AT BOOT with a clear error naming the current vs head revision — never deferring the failure to a mid-turn write."
       - The startup failure message tells the operator exactly how to fix it (e.g. run 'alembic upgrade head' / 'just <recipe>').
       - "DECISION recorded in the story with rationale: fail-loud-assert (A) vs auto-upgrade-on-boot (B). If (A): boot/'just up' does NOT silently mutate the schema — migration stays an explicit, visible operator step. If (B): the auto-upgrade is logged loudly and is opt-outable."
       - Reuses/extends the existing ADR-115 fail-loud startup contract (MissingDatabaseUrlError / pool-wait timeout) rather than adding a parallel mechanism.
-      - 'Test: booting against a behind-head DB raises the loud startup error (asserted), and a head-current DB boots clean — the failure is at startup, not at render-write time.'
+      - "Test: booting against a behind-head DB raises the loud startup error (asserted), and a head-current DB boots clean — the failure is at startup, not at render-write time."
       - Startup logs the schema-version check result (current rev, head rev, pass/fail) so the operator/GM panel can see the DB is at head.
     completed: '2026-05-29'
     branch: feat/71-20-fail-loud-schema-behind-head
@@ -253,7 +253,7 @@ stories:
     review_findings: 'Mechanical only: 2x SIM117 nested-with + 1 ruff format failure in new test files (test_schema_at_head_check.py, test_startup_schema_guard_wiring.py). Substantively clean/approved. Green rework.'
     review_verdict: approved
   - id: 71-21
-    title: perseus_cloud one-sided combat — beat_selection has no server-driven enemy-attack path (resolve_opponent_attack)
+    title: "perseus_cloud one-sided combat — beat_selection has no server-driven enemy-attack path (resolve_opponent_attack)"
     points: 5
     priority: p2
     status: done
@@ -264,7 +264,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 71-22
-    title: Glenross router latency AC5 — measure + diagnose 4-12s vs <1.2s budget (env vs code)
+    title: "Glenross router latency AC5 — measure + diagnose 4-12s vs <1.2s budget (env vs code)"
     points: 3
     priority: p2
     status: backlog
@@ -272,7 +272,7 @@ stories:
     workflow: tdd
     type: bug
   - id: 71-23
-    title: Solo narration streaming — wire messages.stream into existing UI delta path
+    title: "Solo narration streaming — wire messages.stream into existing UI delta path"
     points: 5
     priority: p2
     status: done
@@ -281,10 +281,10 @@ stories:
     workflow: tdd
     completed: '2026-06-04'
     branch: feat/71-23-solo-narration-streaming
-    review_findings: 'HIGH: SDK narration streaming fans raw deltas to all sockets with no solo gate — firewall+POV breach for >1-connected MP rooms (story is solo-only). MEDIUM: awaited delta sink lacks try/except, a room error aborts the turn. Fix: gate sink on solo (<=1 connected) + wrap sink. Solo happy-path correct + tested.'
+    review_findings: "HIGH: SDK narration streaming fans raw deltas to all sockets with no solo gate — firewall+POV breach for >1-connected MP rooms (story is solo-only). MEDIUM: awaited delta sink lacks try/except, a room error aborts the turn. Fix: gate sink on solo (<=1 connected) + wrap sink. Solo happy-path correct + tested."
     review_verdict: approved
   - id: 71-24
-    title: perseus_cloud personal-melee combat beat bank — distinct from ship/dogfight beats
+    title: "perseus_cloud personal-melee combat beat bank — distinct from ship/dogfight beats"
     points: 3
     priority: p2
     status: done
@@ -296,7 +296,7 @@ stories:
     branch: feat/71-24-perseus-cloud-melee-beats
     review_verdict: approved
   - id: 71-25
-    title: perseus_cloud location grounding — declare world POIs (New Kowloon) as snapshot entities from content
+    title: "perseus_cloud location grounding — declare world POIs (New Kowloon) as snapshot entities from content"
     points: 3
     priority: p2
     status: done
@@ -307,7 +307,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 71-26
-    title: Solo turn-latency p95 — diagnose/cap tool-loop iterations
+    title: "Solo turn-latency p95 — diagnose/cap tool-loop iterations"
     points: 3
     priority: p3
     status: backlog
@@ -315,7 +315,7 @@ stories:
     workflow: tdd
     type: bug
   - id: 71-27
-    title: Router emits combat dispatch with no registered handler — register or stop emitting
+    title: "Router emits combat dispatch with no registered handler — register or stop emitting"
     points: 2
     priority: p3
     status: done
@@ -326,7 +326,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 71-28
-    title: OTEL-coverage split — encounter beats land in events table but emit no watcher spans (live GM panel half-blind)
+    title: "OTEL-coverage split — encounter beats land in events table but emit no watcher spans (live GM panel half-blind)"
     points: 3
     priority: p2
     status: done
@@ -346,7 +346,7 @@ stories:
     completed: '2026-06-04'
     type: bug
   - id: 71-30
-    title: action_reveal.dropped_rate_limit also ephemeral — add to _EPHEMERAL_EVENT_TYPES (sibling of composing-storm fix)
+    title: "action_reveal.dropped_rate_limit also ephemeral — add to _EPHEMERAL_EVENT_TYPES (sibling of composing-storm fix)"
     points: 1
     priority: p3
     status: done
@@ -356,7 +356,7 @@ stories:
     completed: '2026-06-04'
     type: chore
   - id: 71-31
-    title: space_opera doctrine — move named/backstoried cultures from genre to world layer, genre ships generic culture slots (Crunch in Genre, Flavor in World)
+    title: "space_opera doctrine — move named/backstoried cultures from genre to world layer, genre ships generic culture slots (Crunch in Genre, Flavor in World)"
     points: 3
     priority: p3
     status: done
@@ -368,7 +368,7 @@ stories:
     branch: feat/71-31-space-opera-culture-flavor-to-world
     review_verdict: approved
   - id: 71-32
-    title: World-level scenario discovery + world-aware binding — load scenarios from worlds/<world>/scenarios/ and bind only the active world's scenario; relocate tea_and_murder/the_morning_train under worlds/glenross/ (follow-up to 71-19)
+    title: "World-level scenario discovery + world-aware binding — load scenarios from worlds/<world>/scenarios/ and bind only the active world's scenario; relocate tea_and_murder/the_morning_train under worlds/glenross/ (follow-up to 71-19)"
     points: 5
     priority: p2
     status: done
@@ -381,7 +381,7 @@ stories:
     review_findings: 'Quality-bar green-rework: stale module docstring contradicts behavior (scenario_bind.py:5-21), 10 stale type:ignore[attr-defined], inline import copy, stale RED-phase comments, OTEL reason/guilty_npc assertion gaps. No correctness/security defects.'
     review_verdict: approved
   - id: 71-33
-    title: Migrate pulp_noir scenarios to world tier (worlds/annees_folles/scenarios/) — restore scenario binding after 71-32 made bind world-aware
+    title: "Migrate pulp_noir scenarios to world tier (worlds/annees_folles/scenarios/) — restore scenario binding after 71-32 made bind world-aware"
     points: 3
     priority: p2
     status: done
@@ -392,7 +392,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 71-34
-    title: Extract shared OTEL watcher-test harness (_setup/_Sock/_wait_for) into tests/integration/conftest — dedupe across combat + beat-advance wiring tests
+    title: "Extract shared OTEL watcher-test harness (_setup/_Sock/_wait_for) into tests/integration/conftest — dedupe across combat + beat-advance wiring tests"
     points: 2
     priority: p3
     status: done
@@ -433,20 +433,21 @@ stories:
     review_findings: "HIGH: dormant 6th gm_sees_all assertion (test_adr105_b1::test_gm_sees_redacted_dispatch_through_production_path, skipped) leaves AC 'all is_gm tests deleted' unmet — delete/rewrite like b3. MED: renamed OTEL label invariant:player_excluded_kind never positively asserted; tautological include_if:is_self() in test_genre_stage. LOW: stale non-GM fossils in test_core_invariants. Source deletion itself verified correct + behaviour-preserving."
     review_verdict: approved
   - id: 71-36
-    title: Machine-guard the peer-reveal accumulator invariant — source-text wiring test that snapshot captures raw peerReveals.reveals, never mergedPeerReveals (71-12 follow-up)
+    title: "Machine-guard the peer-reveal accumulator invariant — source-text wiring test that snapshot captures raw peerReveals.reveals, never mergedPeerReveals (71-12 follow-up)"
     description: 'Convert the 71-12 prose guard into a machine guard. The accumulator-direction invariant (snapshot at App.tsx:1351 must capture raw peerReveals.reveals, never the display-only mergedPeerReveals) has no test, while the mirror display-direction IS pinned in src/__tests__/turn-status-derivation-wiring.test.ts. Add a matched source-text assertion in that same file: expect(appSrc).toMatch(/persistedPeerActions\.capture\(\s*currentRound\s*,\s*peerReveals\.reveals\s*\)/) and expect(appSrc).not.toMatch(/persistedPeerActions\.capture\([^)]*mergedPeerReveals/). This catches any future refactor that flips the snapshot to the merged map (the named stale-draft regression). Source: 71-12 Reviewer Delivery Finding.'
     points: 1
     priority: p3
-    status: backlog
+    status: done
     repos: sidequest-ui
     workflow: trivial
     acceptance_criteria:
       - A source-text assertion in turn-status-derivation-wiring.test.ts asserts the snapshot captures raw peerReveals.reveals (toMatch on persistedPeerActions.capture(currentRound, peerReveals.reveals))
       - A complementary not.toMatch assertion fails if the snapshot is fed mergedPeerReveals
       - The new assertions live alongside the existing display-direction guards (mirror pattern); full UI suite stays green
+    completed: '2026-06-04'
     type: chore
   - id: 71-37
-    title: Classify person-vs-creature at the NPC invention seam — route beasts to the Monster Manual (ADR-059), not the culture-NPC namer
+    title: "Classify person-vs-creature at the NPC invention seam — route beasts to the Monster Manual (ADR-059), not the culture-NPC namer"
     points: 5
     priority: p2
     status: canceled
@@ -457,7 +458,7 @@ stories:
     type: bug
     branch: feat/71-37-person-vs-creature-npc-seam
   - id: 71-38
-    title: POI lore-gate slug normalization — decouple R2-object-key slug (verbatim) from HTML-anchor slug (slugify)
+    title: "POI lore-gate slug normalization — decouple R2-object-key slug (verbatim) from HTML-anchor slug (slugify)"
     description: |-
       ROOT CAUSE (confirmed on develop HEAD 2026-06-04, repro test test_reference_renderable_landscapes.py): the lore-page 'Renderable Landscapes' POI gate emits 0 <img> for EVERY underscore-slug world (oz: 12 munchkin_country-style POIs on R2, all suppressed). load_poi_image_slugs (reference_renderer.py:~1150) runs the authored POI slug from history.yaml points_of_interest[].slug — authored underscore, e.g. munchkin_country — through slugify(), producing munchkin-country (hyphen). That hyphenated slug feeds _gate_poi_slugs_on_manifest -> poi_image_key(pack, world, 'munchkin-country') (reference_renderer.py:~1228) -> genre_packs/.../poi/munchkin-country.png. But the real R2 object key is .../poi/munchkin_country.png (underscore: render_common.py writes <slug>.png from the authored slug verbatim). Hyphen-key vs underscore-manifest -> never matches -> gated_poi_slugs empty. One slugify-normalised slug does DOUBLE DUTY: (1) match the location-{slug} HTML card id / deep-link anchor (hyphen — correct, conventional, blast radius via reference_url_for_region, Story 63-6); (2) build the R2 object key via poi_image_key (must be underscore). The load_poi_image_slugs docstring encodes the wrong assumption verbatim: 'the authored POI slug (often underscore-style) and the card slug (hyphenated) both pass through slugify' — true for the anchor, the BUG for the R2 key.
 
@@ -475,14 +476,14 @@ stories:
     acceptance_criteria:
       - 'DECOUPLE the slug forms: the R2-object-key/gate comparison feeds poi_image_key the AUTHORED POI slug VERBATIM (underscore, as authored in history.yaml points_of_interest[].slug); the HTML card anchor / location-{slug} id / reference_url_for_region deep-link continue to use slugify() (hyphen). poi_image_key is never fed a slugified value. Both forms are carried out of load_poi_image_slugs (verbatim for the gate, slugified for the anchor) so neither side is lost.'
       - 'LOAD-BEARING REPRO (extends test_reference_renderable_landscapes.py): an underscore-slug world whose r2_manifest.json contains .../poi/<underscore_slug>.png now yields a NON-EMPTY gated_poi_slugs and emits the POI <img>. Pin oz: its 12 munchkin_country-style keys -> 12 landscape cards render where today there are 0. Assert behaviorally (img emitted / gated set non-empty), not by source grep.'
-      - 'DEEP-LINK REGRESSION GUARD (blast radius): reference_url_for_region and the location-{slug} card ids STILL resolve via the hyphen (slugify) form — an existing region-header deep-link does not break. Pin BOTH forms in one test (R2 key = underscore, anchor = hyphen, for the same authored slug) so the decouple can never silently re-couple.'
+      - "DEEP-LINK REGRESSION GUARD (blast radius): reference_url_for_region and the location-{slug} card ids STILL resolve via the hyphen (slugify) form — an existing region-header deep-link does not break. Pin BOTH forms in one test (R2 key = underscore, anchor = hyphen, for the same authored slug) so the decouple can never silently re-couple."
       - "Fix the now-wrong load_poi_image_slugs docstring that claims the authored slug and the card slug 'both pass through slugify' — that conflation IS the bug. Document the two distinct forms: R2 object key = verbatim authored slug; HTML anchor = slugify(authored slug)."
       - "No new OTEL span family (slug/keying correction is cosmetic-class per CLAUDE.md 'Not needed for: cosmetic'). The existing reference_manifest_loaded span (world_key_count) already proves the gate read the manifest; the verifiable signal is gated_poi_slugs becoming non-empty (POI imgs emit) — assert that, per No-Source-Text-Wiring-Tests."
     completed: '2026-06-04'
     type: bug
     review_verdict: approved
   - id: 71-39
-    title: Wonderland POI slug↔region_id article normalization — align history.yaml POI slugs + R2 keys to the canonical region_id
+    title: "Wonderland POI slug↔region_id article normalization — align history.yaml POI slugs + R2 keys to the canonical region_id"
     description: |-
       FINDING (Architect / White Queen, 2026-06-04, verified against R2 + develop HEAD): wonderland's Location-tab POI landscape 404s NOT because the asset is missing — all 14 wonderland POI landscapes are ON R2 (r2_manifest.json + live cdn.slabgorb.com 200s; the FIXER's '404' hit a wrong slug, the_hall_of_doors.png, vs the real key hall_of_doors.png). The defect is a CONTENT slug mismatch unique to wonderland: cartography region_ids are mostly the_-prefixed (the_hall_of_doors, the_pool_of_tears, the_mad_tea_party, …) but the history.yaml points_of_interest[].slug values — and therefore the rendered R2 keys — DROP the article (hall_of_doors, pool_of_tears, mad_tea_party, …). oz and gulliver are internally consistent (region_id == POI slug == R2 key); wonderland is the ONLY offender (re-confirmed on develop: exactly 9 region-corresponding POIs mismatch).
 
@@ -499,8 +500,8 @@ stories:
     repos: content
     workflow: tdd
     acceptance_criteria:
-      - Rename the 9 region-corresponding wonderland POI slugs in worlds/wonderland/history.yaml points_of_interest[].slug to add the leading 'the_' so each equals its cartography region_id verbatim (chessboard_country→the_chessboard_country, coronation_feast, garden_of_live_flowers, hall_of_doors, hall_of_justice, mad_tea_party, pool_of_tears, queens_croquet_ground, tweedle_wood). Do NOT touch humpty_dumptys_wall / the_looking_glass (already match) or the non-region POIs (caterpillars_mushroom, duchess_pepper_kitchen, white_rabbits_house).
-      - 'Rename the 9 corresponding R2 objects genre_packs/wry_whimsy/worlds/wonderland/assets/poi/<old>.png → <the_old>.png (S3 copy + delete) and update r2_manifest.json keys to match. After: cdn.slabgorb.com/.../poi/the_hall_of_doors.png → 200 and .../hall_of_doors.png → 404 (old key gone, no dangling duplicate).'
+      - "Rename the 9 region-corresponding wonderland POI slugs in worlds/wonderland/history.yaml points_of_interest[].slug to add the leading 'the_' so each equals its cartography region_id verbatim (chessboard_country→the_chessboard_country, coronation_feast, garden_of_live_flowers, hall_of_doors, hall_of_justice, mad_tea_party, pool_of_tears, queens_croquet_ground, tweedle_wood). Do NOT touch humpty_dumptys_wall / the_looking_glass (already match) or the non-region POIs (caterpillars_mushroom, duchess_pepper_kitchen, white_rabbits_house)."
+      - "Rename the 9 corresponding R2 objects genre_packs/wry_whimsy/worlds/wonderland/assets/poi/<old>.png → <the_old>.png (S3 copy + delete) and update r2_manifest.json keys to match. After: cdn.slabgorb.com/.../poi/the_hall_of_doors.png → 200 and .../hall_of_doors.png → 404 (old key gone, no dangling duplicate)."
       - "Wiring/consistency test (load-bearing guard): for wonderland, assert every cartography region_id that has a POI image resolves to an R2 key EQUAL to the region_id verbatim — for each region with a landscape, genre_packs/wry_whimsy/worlds/wonderland/assets/poi/{region_id}.png is present in r2_manifest.json. This is exactly the identifier #643's map_emit.py:585 builds, proving the Location tab resolves. Fails today (the_hall_of_doors etc.), passes after the rename."
       - "Cross-world hygiene (audit, scope-guard): extend the assertion (or r2_audit) to flag ANY world where a region_id with a POI image lacks a matching verbatim R2 key — so oz/gulliver stay green and a future world can't silently reintroduce the article mismatch. Report mismatches; only wonderland needs renaming now."
       - "No engine/server change and no new render: the assets already exist (14 on R2). Verify the wonderland Location tab resolves the landscape after a content pull + bounce with ZERO code diff in sidequest-server. The lore-page 'Renderable Landscapes' images remain gated on 71-38 (separate engine slug fix) — note the dependency, do not fold 71-38 in here."
