@@ -17,3 +17,12 @@ epics:
   - '84'
   - '86'
   - '87'
+standalone_stories:
+  - id: 73-16
+    jira: 73-16
+    title: Opponent-only panel valence + ledger test coverage (73-13 follow-up)
+    points: 2
+    status: done
+    repos: sidequest-ui
+    pr: 343
+    branch: feat/73-16-opponent-only-valence-followup
