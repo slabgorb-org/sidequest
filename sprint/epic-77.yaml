@@ -70,9 +70,12 @@ stories:
     title: Author wry_whimsy seed_tropes deck (ADR-128) — active_seeds carve-out
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-04'
     repos: content
     workflow: trivial
+    completed: '2026-06-04'
+    branch: feat/77-6-wry-whimsy-seed-tropes-deck
   - id: 77-7
     title: Engine lull-escalation — drive a Bang/complication when turns_since_meaningful climbs (ADR-024/025/128)
     description: |-
