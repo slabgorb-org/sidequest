@@ -1,0 +1,55 @@
+id: '91'
+type: epic
+title: Dark Spend — LLM Cost Observability & Cache Integrity
+description: "Cost-forensics 2026-06-05 ([COST-1] pingpong) found ~half the daily Anthropic bill invisible to all internal accounting: Haiku 4.5 burns $3.3-3.5/day (4x'd Jun 3) with ZERO prompt caching (cache_creation=0 org-wide despite llm_factory.py documenting a 1h marker — the under-4,096-floor silent-no-cache trap), ~8 Haiku calls/turn vs the expected ~1 (575 calls / 70 turns on Jun 4), and ~97% of that spend emits no llm.request span and no usage log line. Log-based cost tables (narrator.sdk.usage) structurally see only the narrator Sonnet loop. Per-turn unit economics make or break the business model: narrator is healthy (6.6-7.6c/turn post-May-31 tier fix) while the classification side is unmetered waste. Doctrine: NO UNINSTRUMENTED TOKEN — every Anthropic call goes through one choke point that logs + spans model/tokens/cache/cost/caller, the ADR-134 runaway detector covers all models, and a daily dark-spend reconciliation against the Admin API (scripts/anthropic_usage.py) alerts loudly when billed > instrumented. Sibling epic (local classification routing, wiring epic-48 Ollama deliverables) removes the Haiku bill entirely; story 91-3 (cache repair) is descoped if that lands first. Evidence + methodology: /sq-llm-costs skill, pingpong [COST-1]."
+priority: p1
+status: ready
+repos: sidequest-server
+stories:
+  - id: 91-1
+    title: 'Single SDK choke point — universal usage instrumentation (log line + llm.request span + cost_usd + caller tag on EVERY Anthropic call; wiring test: no AsyncAnthropic() outside the factory)'
+    points: 5
+    priority: p1
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: refactor
+  - id: 91-2
+    title: Attribute and fix the 8x/turn Haiku volume (caller tags from 91-1; fix retries/fan-out or document budget with per-turn assertion)
+    points: 3
+    priority: p1
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    depends_on: 91-1
+    type: bug
+  - id: 91-3
+    title: 'Intent Router cache repair + fail-loud floor guard (combined prefix >=4096 or raise at build; live-gated test: cache_creation>0 turn 1, cache_read>0 turn 2; DESCOPE if local routing epic lands first)'
+    points: 3
+    priority: p1
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    type: bug
+  - id: 91-4
+    title: Cross-model runaway coverage — extend ADR-134 detector + per-session cumulative cost to all call sites and models
+    points: 2
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 91-5
+    title: Dark-spend detector — automated three-layer reconciliation (instrumented vs Admin API), loud alert on >10% gap, GM dashboard surface
+    points: 3
+    priority: p1
+    status: backlog
+    repos: orchestrator,sidequest-server
+    workflow: tdd
+  - id: 91-6
+    title: Gate narrator.cache.both_writes_fired WARNING on cache_read>0 (cold-start dual writes are unavoidable, not a pathology)
+    points: 1
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: trivial
+    type: chore
