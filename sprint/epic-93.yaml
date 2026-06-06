@@ -1,0 +1,72 @@
+id: '93'
+type: epic
+title: Chargen Freeform Resolution & Character History Surface
+description: "All-freeform chargen hard-blocks at the archetype gate, and the player's chargen answers are orphaned. Two coupled problems found in the heavy_metal/barsoom playtest ([BAR-1] pingpong). PROBLEM 1 (hard-block): a player who answers hint-bearing chargen scenes via the 'describe it in your own words' box accumulates ZERO archetype hints (builder.apply_freeform records the text but sets no jungian_hint/rpg_role_hint), so axis-bearing packs (heavy_metal, elemental_harmony) dead-end at confirm with 'archetype resolution failed (missing_axes_with_pack_axes)' (chargen_mixin gate ~495-540). The fail-loud gate is correct; freeform just offers no path to an archetype. PROBLEM 2 (orphaned data): freeform text is consumed only for the {class} prose slot then discarded; selections survive only as a few flavor labels (origin_label/calling_label/background/drive). The player's actual answers — their words and their picks — never reach the Character, snapshot, or sheet. DECISIONS (operator, 2026-06-06): (A) resolve the block with a Haiku one-shot inference of the missing jungian_hint/rpg_role_hint from the accumulated freeform text, constrained to the pack's valid axis values, following the intent-router emit_tool pattern; emit a chargen.archetype_inferred OTEL span (lie detector — GM panel must show inference fired vs preset accumulation); still fail loud when there is nothing to infer from. (B) add a durable creation_answers provenance record to Character (per scene: prompt, kind=choice|freeform, the player's words or chosen label) and carry it in the snapshot. (C) render a new 'History' section on the character sheet, starting with the origin block (chargen answers + an inferred-archetype badge), designed as the future home for player-linked lore. (D) wire that section to the existing lore store (ADR-048 / story 75-15 creation-seed fragments) so player-linked lore surfaces. AUDIENCE: keeps the freeform escape hatch viable for narrative-first players (Alex/James) instead of dead-ending; makes chargen provenance legible in the player UI (Sebastien/Jade). Spans sidequest-server (inference + storage + lore link) and sidequest-ui (History section)."
+priority: p2
+status: backlog
+repos: sidequest-server,sidequest-ui
+stories:
+  - id: 93-1
+    title: Haiku archetype inference unblocks all-freeform chargen
+    description: "Resolve the all-freeform chargen hard-block with a Haiku one-shot archetype inference. When the archetype gate (chargen_mixin ~495-540) would BLOCK with missing_axes_with_pack_axes — i.e. the pack declares base_archetypes/archetype_constraints but the accumulated jungian_hint/rpg_role_hint pair is incomplete — AND the player supplied freeform answers, run a single Haiku call (intent-router emit_tool pattern in agents/llm_factory.py) over the accumulated freeform text to infer the missing axis value(s), constrained to the pack's valid jungian/rpg_role enum. Fill only the missing axis (don't override a hint a preset already set), then resolve the archetype normally. Inference fires at gate-time ONLY (cheap, targeted), not per-scene. Fail loud (keep the existing block) when there is no freeform to infer from, or when Haiku returns an out-of-enum value. NO SILENT FALLBACK to a pack-default archetype. Cost rides the existing session ledger + ADR-134 ceiling. Refs: [BAR-1] pingpong 'All-freeform chargen hard-blocks at confirm'; builder.apply_freeform (game/builder.py ~1790); accumulation site (builder.py ~1418); gate (chargen_mixin.py ~495)."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    acceptance_criteria:
+      - Given heavy_metal/barsoom chargen answered ENTIRELY via freeform (origins+crucible+obligation+the_road in the 'describe in your own words' box), Create Character succeeds — no 'archetype resolution failed (missing_axes_with_pack_axes)'.
+      - The inferred jungian_hint and rpg_role_hint are each one of the pack's declared axis values (out-of-enum Haiku output is rejected, not coerced).
+      - When a preset already set ONE axis and freeform must supply the other, inference fills only the missing axis and leaves the preset-set one untouched.
+      - When the gate would block AND there is no freeform text to infer from, chargen still fails loud with the existing error (no archetype invented, no pack-default fallback).
+      - "A chargen.archetype_inferred OTEL span fires on every inference with attrs: inferred_axes, jungian_hint, rpg_role_hint, source='freeform', and is visible on the GM panel (Observability Principle — lie detector distinguishes inferred vs preset-accumulated)."
+      - 'Wiring test: the inference path is reachable from the production chargen build/gate flow (not just unit-callable) — a test drives the all-freeform build end-to-end and asserts the span + resolved archetype.'
+      - Haiku call accounts to the session cost ledger and respects the ADR-134 ceiling (no unmetered caller).
+    type: bug
+  - id: 93-2
+    title: Durable creation_answers provenance model + snapshot exposure
+    description: "Stop orphaning the player's chargen answers. Today freeform text is consumed only for the {class} prose slot then discarded, and selections survive only as flavor labels (origin_label/calling_label/background/drive) — the per-scene answer the player actually gave is never durably recorded. Add a creation_answers provenance record to the Character model: an ordered list, one entry per answered chargen scene, each carrying scene_id, prompt (the scene's question/title), kind ('choice' | 'freeform'), value (the player's verbatim freeform text OR the chosen option label), and an optional archetype_inferred flag/marker for the scene(s) whose freeform fed 93-1's inference. Populate it in builder.build() from self._results (ChoiceInput.choice_label / FreeformInput.text are already captured on SceneResult — this is wiring, not new capture). Expose creation_answers in the character snapshot (CharacterSheetDetails / views.py serialization) so the UI can read it. Server-only; the UI render is 93-3. Refs: builder.py ~1730 (apply_choice/choice_label), ~1790 (apply_freeform/FreeformInput), ~2654 (build); character.py model; server/views.py snapshot."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    acceptance_criteria:
+      - 'Character gains a typed creation_answers field: ordered list of {scene_id, prompt, kind: choice|freeform, value, archetype_inferred?}.'
+      - After an all-freeform build, creation_answers contains one entry per answered scene with kind='freeform' and value = the player's verbatim text (not a derived label).
+      - After a preset build, each entry has kind='choice' and value = the chosen option label; combined-origin and drive scenes are represented faithfully.
+      - creation_answers is carried in the character snapshot payload and round-trips through save/load (persisted, not recomputed).
+      - The scene(s) whose freeform fed 93-1's archetype inference are marked archetype_inferred=true so the UI can badge them.
+      - 'Wiring test: a snapshot built from a real chargen flow exposes creation_answers (asserts it reaches the serialized payload, not just the in-memory model).'
+  - id: 93-3
+    title: Character-sheet History section — origin block
+    description: "Render a new 'History' section on the character sheet, starting with the origin block. New collapsible/labelled 'History' section in CharacterSheet.tsx that reads the creation_answers payload from 93-2 and lists, per scene, the prompt and the player's answer (their verbatim words for freeform, their chosen label for selections). Scenes marked archetype_inferred get a small badge ('inferred from your words') so the player sees where the engine read their freeform. The section is structured as the future home for player-linked lore (93-4 attaches lore there) — so build the container/heading to host more than the origin block, but render ONLY the origin block now (no lore stubs). Add the creation_answers type to payloads.ts. Audience: makes chargen provenance legible in the player UI (Sebastien/Jade) and gives narrative-first players (James) their own words back. Refs: CharacterSheet.tsx ~101-242; payloads.ts CharacterSheetData ~22-88; depends on 93-2 snapshot field."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-ui
+    workflow: tdd
+    depends_on: 93-2
+    acceptance_criteria:
+      - CharacterSheet renders a 'History' section with an 'Origin' block listing each chargen scene's prompt + the player's answer.
+      - Freeform answers show the player's verbatim words; preset answers show the chosen option label.
+      - Scenes whose freeform fed archetype inference show an 'inferred from your words' badge.
+      - creation_answers is typed in payloads.ts (CharacterSheetData); the section renders nothing (graceful) when the field is absent/empty on legacy saves.
+      - The History container is structured to host additional entry kinds later (lore) without a rewrite, but renders only the origin block now — no placeholder/stub lore rows.
+      - Component test asserts the History/Origin rows render from a creation_answers fixture incl. the inferred badge.
+  - id: 93-4
+    title: History section lore-link plumbing to the ADR-048 store
+    description: "Wire the character-sheet History section to player-linked lore. The History section (93-3) is designed as the home for player-linked lore; this story attaches it to the existing lore store. Story 75-15 already persists creation-seed lore fragments across resume (rag.character_creation_lore_seeded) via the ADR-048 lore RAG store — surface the fragments that are linked to THIS character/player in the History section beneath the origin block. Server: expose the player-/character-linked lore fragments in (or alongside) the character snapshot — a typed list of {fragment_id, title/summary, source} filtered to the character's creation-seed + player-attributed fragments (perception/visibility honored). UI: render those as a 'Lore' subsection under History, linking to the lore page where one exists. No new lore authoring — this is plumbing existing fragments to the surface. NO SILENT FALLBACK: if a linked fragment id resolves to nothing, log/skip loudly, don't fabricate. Refs: ADR-048 lore RAG; story 75-15 (creation-seed lore persistence); depends on 93-3 (History section) + 93-2 (creation_answers)."
+    points: 5
+    priority: p3
+    status: backlog
+    repos: sidequest-server,sidequest-ui
+    workflow: tdd
+    depends_on: 93-3
+    acceptance_criteria:
+      - Server exposes a typed list of player-/character-linked lore fragments (creation-seed + player-attributed) in the character snapshot, filtered by perception/visibility.
+      - The History section renders a 'Lore' subsection under the origin block listing those fragments (title/summary), linking to the lore page where a route exists.
+      - Fragments are sourced from the existing ADR-048 store (75-15 creation-seed persistence) — no new authoring; a fresh session's seeded fragments appear after creation.
+      - An unresolvable linked fragment id is skipped loudly (logged), never fabricated (No Silent Fallbacks).
+      - 'OTEL/observability: emit a span/log for lore-link resolution count per character so the GM panel can confirm fragments reached the surface.'
+      - "Wiring + perception test: a character's linked fragments reach the snapshot and render; another player's private fragments do NOT leak into this character's History."
