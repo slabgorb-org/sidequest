@@ -128,7 +128,8 @@ stories:
     description: "ADR-110 amendment 2026-06-05. The IntentRouter.decompose pre-narrator pass (ADR-113) is a SECOND, un-slimmed consumer of a per-turn snapshot dump. Its own _build_state_summary (sidequest/server/intent_router_pass.py:116) applies Phase A only (model_dump exclude_defaults/exclude_none) and never applies the narrator's Phase B (_PHASE_B_DROP_FIELDS) or Phase C (_apply_phase_c_projections), so it ships a mean ~48 KB state_summary every turn (5-10x the narrator's 5-10 KB). 82-9 diagnosis: decompose runs 3.8s p50 / 6.6s p95 vs the ADR-113 <1.2s budget, ~100% raw Haiku round-trip with 0.1ms code overhead, and state_summary_bytes corr 0.50 with decompose latency. Input size is the only code lever. DESIGN (reuse-first): extract Phase B drop + Phase C projection from session_helpers._build_turn_context into a shared narrator-agnostic apply_snapshot_slimming(payload, snapshot, *, current_room_id, perspective); call it from BOTH consumers; router applies it to its base dump BEFORE layering router-specific additions (confrontation_types, witnessed_act_vocabulary, present_npcs). Narrator prompt-specific mutations (sealed-letter/party_formation/shared_world_delta merge, notorious-party redaction, 45-13 room-state span) stay in _build_turn_context and are NOT extracted. Safe because the router's need is strictly weaker than the narrator's (routes dispatch handlers, doesn't anchor prose); every field safe to drop for the narrator is safe for the router. SCOPE BOUNDARY: a router-specific positive allowlist (few-KB, tighter than narrator) is a MEASURED FOLLOW-UP, not this cut — it needs a per-dispatch-precondition read audit and carries regression risk; this story lands the audited-safe reuse cut and the OTEL before/after decides if the follow-up is warranted."
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-06'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
@@ -138,6 +139,7 @@ stories:
       - 'Re-run verification: scripts/latency_diag_82_9.py against a FRESH glenross capture (raise the Jaeger query limit above 1000 for a tighter-than-n=7 sample) shows the decompose p95 dropping materially toward the <1.2s budget; update sidequest-server/docs/82-9-latency-diagnosis.md (or a sibling 82-10 doc) with the before/after numbers.'
       - "Diag-script correctness (folded from 82-9 carry-forward — must be trustworthy BEFORE the re-run): remove the loop_turn_ms = turns[:len(iters)] truncating slice at scripts/latency_diag_82_9.py:95 and let _corr's length guard return None symmetrically when lengths differ; add an integration test exercising main() end-to-end on a recorded span fixture."
       - 'Wiring test (server CLAUDE.md): at least one fixture-driven or OTEL-span assertion proves the router actually consumes the shared slimmer in a production path (not just that the function exists) — e.g. drive a decompose with a fat synthetic snapshot and assert the emitted state_summary_bytes reflects Phase B+C, not Phase A alone.'
+    completed: '2026-06-06'
     type: refactor
   - id: 82-11
     title: Parse SIDEQUEST_NARRATOR_ITERATION_CAP once at startup, not per-turn (82-9 follow-up; narrator.py:86 + orchestrator.py:4125)
