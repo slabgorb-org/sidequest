@@ -421,6 +421,22 @@ satisfies — and re-run `scripts/latency_diag_82_9.py` against a fresh capture
 (with the Jaeger query limit raised for a tighter-than-n=7 sample) to confirm the
 decompose p95 drop.
 
+## Cost-forensics follow-up (2026-06-06)
+
+A live `2026-06-06-the_circuit` drive confirmed the **volatile `game_state`
+snapshot is the dominant remaining per-turn write lever** (~10–12k tok @5m,
+~$0.04/turn; the static narrator prose is read-tier and already squeezed — see
+`docs/analysis/2026-06-06-narrator-prompt-verbosity-trim-report.md`). The
+snapshot is being **truncated** to fit (Phase B drops 14+ NPCs/turn) *while* the
+ADR-118 universal-retrieval layer is already live and surfaces the relevant
+NPCs/factions/lore by similarity for ~300–700 tok — i.e. we pay twice. The
+identified next step is a **RAG-rebalance**: lean on ADR-118 retrieval so the
+snapshot carries only structural essentials (PC, current location, active
+confrontation/dials) instead of shipping-then-dropping the full roster. This is
+the realization of this ADR's deferred **diff-with-anchor (Phase C)** intent and
+is an architecture call (mechanics-adjacent — discuss with Keith). Full anatomy:
+`docs/analysis/2026-06-06-narrator-per-turn-cache-write-anatomy.md`.
+
 ## References
 
 - ADR-014 — Diamonds and Coal (narrator detail discipline)

@@ -443,6 +443,20 @@ partially reversed the four-section promotion from Story 57-3:
    `genre_keeper_monologue`, `genre_town`). `genre_chargen` is
    conditionally registered and User-bucketed.
 
+## Cost-forensics follow-up (2026-06-06)
+
+The stable-prose front is **squeezed** — a 2026-06-06 verbosity pass found no
+safe pure-redundancy worth cutting. The static narrator `.md` prose (~5.5k tok)
+lives in the **read** tier ($0.30/M), so even a 20% cut ≈ $0.0003/turn; and what
+reads as "redundancy" is mostly **test-pinned regression fingerprints** that
+ADR-111 §Alternatives B explicitly refused to compress (a trial consolidation of
+`output_only.md`'s "Patients on a sickbed count…" sentences broke
+`test_57_4_recency_guardrails_migration` and `test_61_12_output_format_compaction`
+and was reverted). **Do not re-attempt prose trimming for cost.** The remaining
+per-turn lever is the volatile `game_state` snapshot via RAG-rebalance — see
+ADR-110's 2026-06-06 follow-up and
+`docs/analysis/2026-06-06-narrator-prompt-verbosity-trim-report.md`.
+
 ## References
 
 - ADR-009 — Attention-Aware Prompt Zones (the zone model the
