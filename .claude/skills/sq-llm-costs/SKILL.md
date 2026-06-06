@@ -6,13 +6,36 @@ description: LLM cost and cache forensics — reconcile server-log narrator cost
 # sq-llm-costs — LLM Cost & Cache Forensics
 
 <run>
-You are running a **cost reconciliation audit**. The cardinal rule, learned 2026-06-05: **server logs only see the narrator.** The Console bill includes consumers the logs are blind to. Always reconcile all three layers before drawing conclusions.
+You are running a **cost reconciliation audit**. Two cardinal rules:
+- **(2026-06-05) Server logs do not see everything.** The narrator and the Haiku adapters log to *different* anchors (`narrator.sdk.usage` vs `llm.sdk.usage`), and subprocess `claude -p` logs to neither. The Console bill is the only ground truth. Reconcile all layers before concluding.
+- **(2026-06-06) A clean log is not a clean session — it may be the wrong log.** Before you read a single usage line, run **Layer 0** below. The live server may run from a *different clone* (oq-1 vs oq-3), may have *restarted minutes ago* (rotating the busy log out from under you), and the Haiku/router lines live in **rotated files**, not the current one. Never conclude "no Haiku" from a grep that returned zero — a null result means *validate the grep*, not *the calls didn't happen*. Open the Console (Layer 3) **first** when investigating a specific caller.
+
+## Layer 0 — Provenance preflight (MANDATORY, run before any log read)
+
+Skipping this is how the 2026-06-06 audit spent an hour reading an empty post-restart log and declared Haiku silent while the Console showed it firing every turn.
+
+```bash
+# Which process serves the game on :8765, from WHICH checkout, started WHEN?
+ps -eo pid,lstart,command | grep -iE "uvicorn.*sidequest.server.app" | grep -v grep
+# ^ note the .venv path in the child proc — oq-1 vs oq-2 vs oq-3. The log you must
+#   read belongs to THAT clone's server, and the code you cite must be THAT clone.
+
+# Which log file is it writing, and when did it last rotate?
+ls -lt ~/.sidequest/logs/sidequest-server.log* | head -5
+head -1 ~/.sidequest/logs/sidequest-server.log | cut -c1-30   # current-log start time
+
+# Is the classification rung Haiku or local? (unset => anthropic => Haiku)
+ps eww <server-pid> | tr ' ' '\n' | grep -E "SIDEQUEST_(CLASSIFICATION_BACKEND|LLM_BACKEND)"
+```
+
+**Rule:** if the current `sidequest-server.log` starts *after* the window you care about, the traffic is in a rotated `*.log.YYYYMMDD-HHMMSS` file. **Grep the rotations, not just the live file.** Every Layer 1 query below must include rotated files for the window.
 
 ## The Three Layers (run all of them)
 
 | Layer | Source | Sees | Blind to |
 |-------|--------|------|----------|
-| 1. Server logs | `narrator.sdk.usage` lines | Narrator Sonnet loop only | Haiku router/asides, `claude -p` subprocesses, anything off-box |
+| 1a. Server logs — narrator | `narrator.sdk.usage` lines | Narrator Sonnet loop only | Haiku router/asides, `claude -p`, anything off-box |
+| 1b. Server logs — Haiku | `llm.sdk.usage` lines (`caller=intent_router\|aside`, since story 91-1) | Router + aside Haiku calls | `claude -p` subprocesses, anything off-box |
 | 2. OTEL / Jaeger | `llm.request` spans | Instrumented SDK call sites | Subprocess callers, span-less paths, trace-limit truncation |
 | 3. Admin API | `scripts/anthropic_usage.py` | **Everything billed to the org** | Per-turn attribution (no request counts) |
 
@@ -23,6 +46,8 @@ If Layer 3 ≫ Layer 1, something uninstrumented is spending money. That is a fi
 Usage lines are emitted by `sidequest-server/sidequest/agents/anthropic_sdk_client.py` (grep anchor: `narrator.sdk.usage`). Logs live at `~/.sidequest/logs/sidequest-server.log` with rotations `*.log.YYYYMMDD-HHMMSS` (30-day retention, **rotation-stamped local time** — each "day" can include the prior evening's tail).
 
 **Run under `bash -c`, not zsh** — zsh does not word-split `$files`, which silently yields zero matches.
+
+**Anchor the sed on `iter=`, not `usage iter=`.** As of the 92-eval work the line gained `caller=` and `model=` fields between `usage` and `iter=`, so the old `.*usage iter=` anchor silently matches nothing on current logs and the awk divides by zero. Use `.*iter=([0-9]+) input=...`.
 
 ```bash
 bash -c '
@@ -48,6 +73,22 @@ Column semantics:
 - `warm1h` = warm calls that re-wrote the 1h tier. **Healthy ≈ 0–2/day.** Sustained high values = the stable prefix is churning (the May 25–30 pathology: every warm call re-billed the 1h tier at $6/M; fixed May 31).
 - Dollar split uses Sonnet 4.6 rates: read $0.30/M, 5m write $3.75/M, 1h write $6/M, out $15/M, in $3/M.
 
+### Layer 1b — Haiku (router + aside) aggregation
+
+The narrator script above only parses `narrator.sdk.usage`. Haiku is a **separate anchor** — run this too, over the same rotated-file set, or you will report "no Haiku" while it bills every turn.
+
+```bash
+bash -c '
+cd ~/.sidequest/logs
+files=$(ls sidequest-server.log sidequest-server.log.$(date +%Y%m%d)-* 2>/dev/null)
+grep -h "llm.sdk.usage" $files 2>/dev/null | \
+sed -E "s/.*caller=([a-z_]+) model=[^ ]* input=([0-9]+) output=([0-9]+) cache_read=([0-9]+) cache_write=([0-9]+) cost_usd=([0-9.]+).*/\1 \2 \3 \4 \5 \6/" | \
+awk "{n[\$1]++; unc[\$1]+=\$2; cr[\$1]+=\$4; cost[\$1]+=\$6}
+END{for(c in n) printf \"%-16s calls=%d uncached_in=%d cache_read=%d cost=\$%.4f\n\", c, n[c], unc[c], cr[c], cost[c]}"'
+```
+
+Per-call shape tells the story: `cache_read>0` means 91-3's cache-floor guard is reading the warm prefix; the `uncached_in` remainder (~3k for the router) is the per-turn variable tail — the only remaining lever now that the local rung is NO-GO (see Pitfalls).
+
 ## Layer 2 — OTEL span census
 
 ```bash
@@ -67,6 +108,8 @@ print('spans:',dict(c)); print('uncached input:',dict(toks))
 ```
 
 Caveat: `limit` counts **traces**, not spans — heavy days truncate. Use this for *shape* (per-call token profile), not absolute counts. Per-call uncached input ≈ `tokens/spans` identifies the caller: ~5.2k = Intent Router shape (~4.7k tools+system prefix + user content).
+
+**Stale-store trap:** if a `lookback=6h` and a `lookback=72h` query return *identical* counts, Jaeger is handing you its whole retained store, not your window — the data is **stale, not live**. Do not attribute old span counts (e.g. aside calls from a prior session) to the current playtest. Cross-check call existence against the live log (Layer 1b) and the Console (Layer 3), which are time-accurate.
 
 ## Layer 3 — Admin API ground truth
 
@@ -105,13 +148,16 @@ Per-model pricing for estimates ($/M): Sonnet 4.6 = 3 in / 15 out / 3.75 w5m / 6
 - Prompt cache hit rate: **76–82%**.
 - Output: ~320 tokens/call, stable.
 - Cold starts: a handful/day under dev restarts; each ~12–16¢ (22–30k dual-tier write).
-- Haiku (router + asides) *should* be ~1 call/turn with a warm 1h prefix → cents/day. (As of 2026-06-05 it is NOT: caching dead + ~8 calls/turn ≈ $3+/day. See pingpong/backlog.)
+- Haiku (router) is ~1 call/turn (91-2 cut the 8x), ~7.5k total input = **~4.4k cache-read + ~3.1k uncached tail** (91-3 cache-floor guard working), ~$0.005/turn. Asides are ~0 unless a player actually sends OOC table-talk — do not assume aside traffic from stale Jaeger.
+- **Local Qwen rung is NO-GO / OFF.** Story 92-2's A/B gate FAILED (qwen2.5:7b: 86% schema vs ≥95%, p95 24,134ms vs ≤5000ms; qwen3-coder:30b aborted). `SIDEQUEST_CLASSIFICATION_BACKEND` is unset → defaults to `anthropic` → router = Haiku. **Zero-Haiku does NOT mean the local rung is working — verify the env var and the gate before claiming it.** Remaining cost lever is cutting the ~3.1k uncached router tail ("cut the prompt size"), since route-to-local is dead.
 
 ## Known Pitfalls
 
 - zsh word-splitting silently breaks multi-file greps — use `bash -c`.
 - Log "days" are rotation-stamped local; Admin buckets are UTC.
-- `narrator.sdk.usage` exists ONLY in the narrator loop. Haiku adapters (`llm_factory.py`) emit OTEL spans only; subprocess `claude -p` callers emit neither.
+- `narrator.sdk.usage` exists ONLY in the narrator loop. **Haiku adapters (`llm_factory.py`) DO log `llm.sdk.usage` (caller=intent_router|aside) since story 91-1** — grep that anchor (Layer 1b), not just the narrator one. Only subprocess `claude -p` callers emit neither log nor span.
+- **The live server may run from a different clone than the one you pulled/read.** `ps` the `:8765` process for its `.venv` path (oq-1/oq-2/oq-3). Read that clone's logs and cite that clone's code. Auditing oq-3's tree while oq-1 serves the game = wrong code, wrong conclusions.
+- **A grep returning zero is a hypothesis to disprove, not a finding.** Before reporting "X never fired," confirm you read the right log file (post-restart rotations included), the right anchor, and cross-checked the Console. The 2026-06-06 audit reported "no Haiku" three times while Haiku billed every turn — each time the cause was a wrong file/anchor, never an absent call.
 - `ANTHROPIC_API_KEY` in the shell means every `claude -p` on the box bills the workspace key, while interactive Claude Code rides the OAuth subscription — the Console chart splits accordingly.
 - Jaeger query `limit` truncates by trace; never use it for absolute call counts.
 </run>
