@@ -14,6 +14,13 @@ implementation-pointer: null
 
 # ADR-133: Client State Reconciliation v2
 
+> **Partial removal (2026-06-07):** the **streaming-narration accumulator**
+> (§Decision 2 below) was deleted when narrator-text streaming was removed
+> end-to-end, operator-directed (server #732, ui #349 — `narration.delta` no
+> longer exists on the wire; narration is delivered complete-only). §2 is
+> preserved as historical record. The full-replay mirror (§1), HMR-survival
+> split (§3), and ImageBus scrapbook merge remain live and governing.
+
 > **Documents a system already live in code.** The React client's actual
 > reconciliation strategy — re-deriving *all* client state by replaying the full
 > message log on every change — shipped incrementally across the post-port UI
@@ -114,6 +121,11 @@ The mirror only calls `setState` when `messages.length` actually changed
 (`:343-347`), so re-renders that do not extend the log are no-ops.
 
 ### 2. Streaming-narration accumulator (rebuilt idempotently on replay)
+
+> **REMOVED 2026-06-07** — narrator-text streaming was excised end-to-end
+> (server #732, ui #349); `streamingNarration.ts`, the provider slice, and the
+> `narration.delta` routing in `useStateMirror` are gone. Historical record
+> only; the code pointers below no longer resolve.
 
 `reduceStreamingNarration` (`sidequest-ui/src/providers/streamingNarration.ts`)
 is a pure reducer over a `Map<turn_id, TurnStreamState>` plus an `activeTurnId`.

@@ -78,7 +78,6 @@ _server-cmd *flags:
     # hardcoded here. Shell exports still override the .env values.
     SIDEQUEST_GENRE_PACKS={{content}} \
     SIDEQUEST_RENDER_ENABLED=1 \
-    SIDEQUEST_NARRATOR_STREAMING="${SIDEQUEST_NARRATOR_STREAMING:-0}" \
     SIDEQUEST_ASSET_BASE_URL="${SIDEQUEST_ASSET_BASE_URL:-https://cdn.slabgorb.com}" \
         exec uv run uvicorn sidequest.server.app:create_app \
             --factory \
@@ -138,7 +137,6 @@ serve *flags:
     cd {{root}}/sidequest-server
     SIDEQUEST_GENRE_PACKS={{content}} \
     SIDEQUEST_RENDER_ENABLED=1 \
-    SIDEQUEST_NARRATOR_STREAMING="${SIDEQUEST_NARRATOR_STREAMING:-0}" \
     SIDEQUEST_ASSET_BASE_URL="${SIDEQUEST_ASSET_BASE_URL:-https://cdn.slabgorb.com}" \
     SIDEQUEST_UI_DIST={{root}}/sidequest-ui/dist \
         uv run uvicorn sidequest.server.app:create_app \

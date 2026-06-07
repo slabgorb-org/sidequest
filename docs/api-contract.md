@@ -330,6 +330,14 @@ Always sent, even when the turn produced no state delta.
 > exists in `sidequest-protocol/src/message.rs` but will be removed when
 > ADR-076 moves from Proposed to Accepted.
 
+> **Removed (2026-06-07, operator-directed):** `narration.delta` (the
+> Story 71-23 ephemeral streaming message — `kind` not `type`, outside the
+> `GameMessage` union, never event-sourced) was deleted along with the entire
+> narrator-text streaming feature (server #732, ui #349). Narration is
+> delivered complete-only: the canonical `NARRATION` message is the first and
+> only prose the client renders for a turn. The ADR-133 client
+> streaming-narration accumulator was removed with it.
+
 #### Footnotes
 
 Footnotes are structured knowledge extracted from narrator output. New discoveries (`is_new: true`) become KnownFact entries. Callbacks (`is_new: false`) link to existing facts via `fact_id`.
