@@ -6,10 +6,10 @@ date: 2026-06-01
 deciders: ["Keith Avery", "Neo (Architect)"]
 supersedes: []
 superseded-by: null
-related: [53, 86, 104, 119, 120]
+related: [53, 86, 104, 119, 120, 141]
 tags: [core-architecture, frontend-protocol]
 implementation-status: partial
-implementation-pointer: "sidequest-server reference_renderer.py — audience doctrine + stories 65-7..65-9 live; 65-10..65-12 pending"
+implementation-pointer: "sidequest-server reference_renderer.py — audience doctrine + stories 65-7..65-9 live; 65-10..65-12 pending. The 2026-06-08 amendment (server-projection / React-render seam) reframes the render substrate from server HTML to a projected JSON API + React SPA — design-only, implementation tracked as epic 100; see the Amendment section and docs/superpowers/specs/2026-06-08-reference-pages-react-migration-design.md."
 ---
 
 # ADR-135: Reference Pages Are a Public Table Tool — Single Fixed Projection, No GM Audience
@@ -137,3 +137,115 @@ Tracked as epic 65, stories 65-7 (populate `r2_manifest.json`), 65-8 (POI galler
 65-9 (public Cast/portrait projection), 65-10 (TOC repair), with follow-ons 65-11
 (POI map) and 65-12 (world timeline). Renderer: `sidequest-server/sidequest/server/
 reference_renderer.py` + `reference_presenters.py`.
+
+## Amendment — Server-Projection / React-Render Seam (epic 100, 2026-06-08)
+
+> **Design-only; implementation tracked as epic 100.** This amendment changes the
+> *render substrate* of the reference pages, not the audience doctrine above. The
+> original ADR (and the epic-65 work) assumed **server-rendered HTML**
+> (`reference_renderer.py` → `HTMLResponse`). Epic 100 splits that single
+> responsibility into a **server-side public projection** (JSON) and a
+> **client-side React renderer** (SPA routes). Everything the Decision section
+> says about the one fixed *public* projection still holds — the firewall is the
+> same, and it moves *earlier* (to the JSON boundary), strengthening it. Authority:
+> `docs/superpowers/specs/2026-06-08-reference-pages-react-migration-design.md`.
+
+### A1 — The seam: the server projects, React renders
+
+The reference surface is split into two responsibilities across a JSON boundary:
+
+- **Server projects.** `/reference/api/*` emits the *public projection* as JSON —
+  the same single fixed public view ADR-135 already mandates, now serialized as
+  data rather than HTML.
+- **React renders.** Session-free `/reference/*` SPA routes fetch that JSON and
+  render it (generic node-tree + section components: POI, Cast, Map, Timeline,
+  generic YAML).
+
+This does not reopen the audience question. There is still exactly **one**
+projection — the public one (Decision §1). The seam only moves *where the HTML is
+assembled* (browser, not server); it does not add a parameter, a role, or a
+keeper view.
+
+### A2 — C1: the firewall is a projection at the JSON boundary, never a CSS hide
+
+The spoiler firewall (`reference_visibility.py`: `PUBLIC_STEMS`, `KEEPER`
+carve-outs, `EXCLUDED_FILES`, `npc_pool.is_projectable`) is **reused verbatim** as
+the projection gate for the JSON API. **Keeper fields never cross the JSON
+boundary.** Shipping full YAML and hiding keeper fields in the React layer is a
+spoiler leak in the browser network tab — explicitly forbidden. The keeper set
+(`ocean`, `history_seeds`, `initial_disposition`, `distinguishing_features`,
+ADR-053 belief/clue data, `seed_tropes.yaml`, `tropes.yaml`) is **absent from the
+payload**. The security boundary is JSON emit, not the component tree, and is
+deterministic and testable there. This is a *strengthening* of Decision §2/§4:
+the projection moves off the presenter and onto the wire.
+
+### A3 — C2: the no-session invariant
+
+The `/reference/*` SPA routes MUST mount and fully render with **no WebSocket
+session, no auth, no character, no genre-pack session state.** Pack and world come
+from the URL (`:pack`, `:world`) only. This is the direct continuation of Decision
+§4 ("static, public, pre-session document") into the client: hosting the pages
+inside the game client must not couple them to the live-session machinery. Test
+strategy: each reference route renders under a bare `MemoryRouter` with **no**
+session/WS provider in scope.
+
+### A4 — C3: theme without a session
+
+`useGenreTheme` is session-coupled today (CSS variables injected from a `theme_css`
+WebSocket event on connect, 8 s grace timer). A session-free reference route has no
+such event. **Resolution:** reuse the *mechanism* (CSS-var `<style>` injection) but
+feed it from the reference **projection JSON** (keyed by `:pack`), not the WS event.
+The projection API emits theme tokens as part of its payload — one theme source per
+surface, no session dependency.
+
+### A5 — C4: determinism is preserved (d3-dag)
+
+The cartography map carries a byte-deterministic layout contract (node order
+independent of YAML key order; a test pins it). The migration preserves
+determinism: the replacement layout is **d3-dag** (Sugiyama layered — legible *and*
+deterministic), **not** `d3-force` (which jiggles per load). The determinism test
+moves from Python to Vitest against the shared React/TypeScript layout module.
+
+### A6 — C5: public URL home
+
+Today the canonical public URL is server-hosted (`GET /reference/lore/...` →
+`HTMLResponse`). After migration the canonical URL is the **SPA route**
+(`/reference/lore/:pack/:world`). FastAPI **retires the HTML routes**, **keeps
+`/reference/api/*`** (JSON), and serves the SPA index as a history-fallback for
+`/reference/*` deep-links. (If the SPA is hosted separately, a redirect-to-SPA-host
+substitutes; the deploy topology is confirmed at planning time.) The "works without
+the game running" property of Decision §4 is retained — the canonical home is just
+a static SPA route instead of a server HTML route.
+
+### A7 — Shared map component is drill-aware-ready (epic 98 / ADR-141 bridge)
+
+The cartography Map section becomes **one** d3-dag component shared by the reference
+page and the in-game `MapOverlay` (killing the `reference_map.py` ↔
+`cartographyLayout.ts` split-brain). Because **ADR-141** (epic 98, story 98-3)
+layers a campaign↔local **scale/drill** view-model onto that same in-game map, the
+shared component (story 100-10) must be built **drill-aware-ready**:
+
+- Render the cartography graph **self-contained** — no assumption that
+  `MapWidget`'s current feed shape or `orbital` toggle is permanent (epic 98
+  reworks both).
+- Accept a `selected`/`active` node prop and expose a node-select callback, so
+  98-3 can layer drill-down **without forking the layout**.
+
+**Ownership boundary:** 100-10 owns the **layout engine** (the d3-dag module + Map
+component); 98-3 owns the **view-model** (scale rendering, drill affordances).
+**Sequencing:** 100-10 lands first (epic 100 is p2, epic 98 is p3); 98-3 builds
+against the shared component, not the deleted `cartographyLayout.ts`. See ADR-141's
+2026-06-08 amendment for the reciprocal note, and the epic-100 spec for the
+`cartography.yaml` edge semantics (`adjacent` = topology the layout consumes;
+`routes` = jump-mechanics annotations the layout must not treat as dangling).
+
+### Implementation (epic 100)
+
+Phased: **Phase 0** — this amendment (story 100-1). **Phase 1** — JSON projection
+API + firewall reuse (lore generic/Cast/POI/Timeline sections, rules page, theme
+tokens; stories 100-2…100-7). **Phase 2** — React reference shell + session-free
+theme injector (100-8, 100-9). **Phase 3** — shared d3-dag Map + React section
+components (100-10, 100-11). **Phase 4** — cutover: flip `/reference/*` to the SPA,
+retire the Python HTML emitters + `islands.js`, keep `reference_visibility.py`
+feeding the API (100-12). Phase 1 Slice A (lore map projection JSON API) already
+shipped via `sidequest-server` PR #762.

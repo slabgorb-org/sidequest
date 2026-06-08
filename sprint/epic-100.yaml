@@ -10,7 +10,8 @@ stories:
     title: 'Phase 0 — ADR-135 amendment: server-projection/React-render seam, public-firewall rule, no-session invariant'
     points: 2
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-06-08'
     repos: orchestrator
     workflow: trivial
     type: chore
