@@ -1,18 +1,13 @@
 sprint:
-  name: TO Sprint 2621
+  name: TO Sprint 2624
   jira_sprint_id: 0
-  jira_sprint_name: TO Sprint 2621
-  goal: Post-Playtest-3 development — scope TBD pending epic promotion
-  start_date: '2026-05-18'
-  end_date: '2026-06-07'
+  jira_sprint_name: TO Sprint 2624
+  goal: Ruleset-world combat & magic, cost observability, and the reference SPA migration
+  start_date: '2026-06-08'
+  end_date: '2026-06-21'
   status: active
-  number: 2621
+  number: 2624
 epics:
-  - '73'
-  - '82'
-  - '84'
-  - '86'
-  - '88'
   - '90'
   - '91'
   - '92'
@@ -22,12 +17,4 @@ epics:
   - '98'
   - '99'
   - '100'
-standalone_stories:
-  - id: 73-16
-    jira: 73-16
-    title: Opponent-only panel valence + ledger test coverage (73-13 follow-up)
-    points: 2
-    status: done
-    repos: sidequest-ui
-    pr: 343
-    branch: feat/73-16-opponent-only-valence-followup
+standalone_stories: []
