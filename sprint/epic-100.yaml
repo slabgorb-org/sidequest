@@ -1,0 +1,94 @@
+id: '100'
+type: epic
+title: Reference pages → React SPA migration (server-projection / React-render seam)
+description: 'Get the server out of HTML rendering: server emits public-projected JSON, React renders it. Reuse reference_visibility.py firewall as the server-side projection (keeper fields never cross the JSON boundary, C1); /reference/* SPA routes render with no session (C2); theme via a session-free injector fed from the projection JSON (C3); cartography map becomes one d3-dag component shared with the in-game MapOverlay (kills the reference_map.py↔cartographyLayout.ts split-brain, C4). Spec: docs/superpowers/specs/2026-06-08-reference-pages-react-migration-design.md. Phase 1 Slice A (lore map projection JSON API) already SHIPPED via sidequest-server PR #762 (plan: docs/superpowers/plans/2026-06-08-reference-lore-projection-api-map-slice.md). Amends ADR-135 (server-rendered HTML premise).'
+priority: p2
+status: backlog
+repos: sidequest-server,sidequest-ui,orchestrator
+stories:
+  - id: 100-1
+    title: 'Phase 0 — ADR-135 amendment: server-projection/React-render seam, public-firewall rule, no-session invariant'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    type: chore
+  - id: 100-2
+    title: 'Phase 1 — Lore generic-YAML section projection + classify() firewall reuse (security-bearing: no keeper field crosses JSON)'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 100-3
+    title: Phase 1 — Lore Cast section JSON projection (is_projectable gate, R2 portrait resolved server-side)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 100-4
+    title: Phase 1 — Lore POI section JSON projection (R2 landscape gate server-side)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 100-5
+    title: Phase 1 — Lore Timeline section JSON projection
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 100-6
+    title: Phase 1 — Rules page JSON projection API + firewall reuse (/reference/api/rules/{pack})
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 100-7
+    title: Phase 1 — Theme tokens in projection JSON (theme.yaml -> CSS-var token set, C3)
+    points: 2
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 100-8
+    title: 'Phase 2 — React reference shell: session-free /reference/* routes + generic node-tree renderer components (C2)'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-ui
+    workflow: tdd
+  - id: 100-9
+    title: Phase 2 — Session-free theme injector (CSS-var mechanism fed from projection JSON, not WS theme_css; C3)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-ui
+    workflow: tdd
+  - id: 100-10
+    title: Phase 3 — Shared d3-dag map component + in-game MapOverlay adoption + delete cartographyLayout.ts (C4)
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-ui
+    workflow: tdd
+  - id: 100-11
+    title: 'Phase 3 — React section components: POI, Cast, Timeline'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-ui
+    workflow: tdd
+  - id: 100-12
+    title: 'Phase 4 — Cutover: flip /reference/* to SPA, retire Python HTML emitters + islands.js, keep reference_visibility.py feeding the API'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: sidequest-server,sidequest-ui
+    workflow: tdd
+    type: refactor
