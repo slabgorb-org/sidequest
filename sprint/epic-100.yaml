@@ -31,9 +31,9 @@ stories:
     points: 3
     priority: p2
     status: in_progress
+    started: '2026-06-08'
     repos: sidequest-server
     workflow: tdd
-    started: '2026-06-08'
     branch: feat/100-3-lore-cast-section-projection
   - id: 100-4
     title: Phase 1 — Lore POI section JSON projection (R2 landscape gate server-side)
