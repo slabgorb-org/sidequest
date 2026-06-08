@@ -3,7 +3,7 @@
 > Package and dependency choices for the Python game engine.
 > FastAPI + uvicorn, pydantic v2, pytest, OTEL.
 >
-> **Last updated:** 2026-05-28 (PostgreSQL persistence per ADR-115; post-ADR-101 SDK cutover; forensics telemetry P1+P2 live)
+> **Last updated:** 2026-06-08 (11 live genre packs; game/ ~70+ modules)
 
 ## Runtime & Tooling
 
@@ -42,8 +42,8 @@ sidequest-server/
 ├── pyproject.toml                     # [project], deps, entry points, ruff config
 ├── sidequest/
 │   ├── protocol/                      # GameMessage discriminated union, 44 message types, sanitization
-│   ├── genre/                         # YAML genre pack loader, pydantic models, 10 live packs
-│   ├── game/                          # ~30+ modules — state, combat, NPCs, lore, audio direction
+│   ├── genre/                         # YAML genre pack loader, pydantic models, 11 live packs
+│   ├── game/                          # ~70+ modules — state, combat, NPCs, lore, audio direction
 │   ├── agents/                        # Anthropic SDK narrator (default) + claude -p/Ollama opt-in, auxiliary agents
 │   ├── server/                        # FastAPI app, session management, dispatch, watcher
 │   ├── daemon_client/                 # Unix socket client for Python media daemon
