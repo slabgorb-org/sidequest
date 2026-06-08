@@ -167,8 +167,21 @@ during implementation.
 2. **Server (Dev lane):** per-region resolution of system orrery files; scope
    selection keyed to the current node; retain the single-primary `system_root()`
    contract per file. Jump mechanics on `routes` via the ruleset seam (ADR-117).
-3. **UI (Dev lane):** `MapWidget` two-scale rendering — cartography SVG graph at
+3. **UI (Dev lane):** `MapWidget` two-scale rendering — cartography graph at
    campaign scale, orrery on drill-down; retire the orbital-as-whole-Map toggle.
+
+   > **Amendment (2026-06-08).** The "cartography **SVG** graph" wording here (and at
+   > §Consequences) predates epic 100's reference-pages React migration, which **deletes
+   > `cartographyLayout.ts` and replaces the SVG layout with a shared d3-dag Map
+   > component** consumed by both the reference page and the in-game `MapOverlay` (amends
+   > ADR-135; see `docs/superpowers/specs/2026-06-08-reference-pages-react-migration-design.md`).
+   > This ADR's UI work (epic 98 / story 98-3) **renders via that shared d3-dag
+   > component**, not the retired SVG path. **Ownership:** epic 100 owns the layout engine
+   > (d3-dag); this ADR owns the campaign↔local scale/drill view-model. **Sequencing:** the
+   > d3-dag component (epic 100 Phase 3) lands first; 98-3 depends on it. The
+   > galactic-graph / orrery *design* is unchanged — only the render substrate is d3-dag,
+   > not hand-laid SVG.
+
 4. **Cleanup:** mark `perseus_cloud.sector.json` as a non-runtime authoring
    reference (or remove); document that monolithic `orbits.yaml` is retired for
    cluster worlds.

@@ -63,6 +63,19 @@ for this epic (Architect):**
 This keeps **No Silent Fallbacks** honest: the *default jump cost* is an
 explicit, ruleset-owned computation (logged via OTEL), not a silent zero.
 
+> **Layout cross-reference (2026-06-08, Architect — epic-100 reconciliation).** The
+> shared d3-dag Map component (epic 100 / story 100-10) renders graph **topology from
+> `adjacent:` only** — `routes:` entries are mechanics annotations, **not** layout edges.
+> Two invariants the d3-dag module must honor, and which 98-4 (C2/S2) authoring relies
+> on: (1) an `adjacent` pair with **no** matching `routes` entry is a valid navigable
+> edge (ruleset-default jump cost), **not** a dangling/dropped edge; (2) only an adjacency
+> to an *unknown region* is dropped (the existing `sidequest.reference.map_dangling_edge`
+> WARN span). A `routes` entry whose endpoints are not in any `adjacent` list is a
+> route-level anomaly (drop + WARN), never silently promoted to connectivity. Epic 100's
+> Error-Handling/dangling-edge section now cross-references this §3 as the authoritative
+> `cartography.yaml` edge model — keep the two specs in agreement when 98-4 finalizes the
+> `routes` field names (S2 AC3).
+
 ## 4. Story breakdown
 
 Five stories. Content-1 and Server-1 are the critical path; UI-1 depends on
@@ -108,11 +121,25 @@ Server-1's response shape. Content-2/Server-2 (jump mechanics) can follow.
 ### Story U1 — UI: two-scale MapWidget, retire the `orbital: bool` whole-Map toggle
 **Lane:** Dev · **Repo:** ui · **Files:**
 `components/GameBoard/widgets/MapWidget.tsx` (`orbital?: boolean` at :20,
-`orbitalEnabled` at :65)
+`orbitalEnabled` at :65), `components/MapOverlay.tsx` (drives the graph)
+**Depends on:** epic 100 / story 100-10 (Phase 3) — see sequencing note below.
 
-- AC1: Cluster world (perseus_cloud) default Map = **cartography SVG
-  nodes-and-edges graph** (regions=nodes, `adjacent`/`routes`=edges) — NOT the
-  orrery.
+> **Render-target dependency (2026-06-08, Architect — epic-100 reconciliation).**
+> U1 must **not** build against `sidequest-ui/src/lib/cartographyLayout.ts`: epic 100 /
+> story 100-10 (reference-pages React migration, Phase 3) **deletes that SVG layout** and
+> replaces it with a **shared d3-dag cartography-layout module + Map component** consumed
+> by both the reference page and the in-game `MapOverlay`. **U1's render target is that
+> shared d3-dag component** — U1 owns the **view-model** (campaign↔local scale, drill
+> state, orrery drill-down), 100-10 owns the **layout engine**. U1 drives the shared
+> component via its active-node prop + node-select callback (which 100-10 exposes for
+> exactly this); it does not fork or re-layout the graph. **Land 100-10 first** (its p2
+> precedes U1's p3, and U1 depends on the d3-dag component existing). Until 100-10 lands,
+> the SVG path is doomed scaffolding — do not invest in it.
+
+- AC1: Cluster world (perseus_cloud) default Map = **cartography nodes-and-edges graph**
+  rendered via the **shared d3-dag component from 100-10** (regions=nodes,
+  `adjacent` = connectivity edges; `routes` = mechanics annotations, see §3) — NOT the
+  orrery, and **NOT** the retired `cartographyLayout.ts` SVG.
 - AC2: Selecting/entering a node drills into **that system's orrery**; a back
   affordance returns to the galactic graph.
 - AC3: The `orbital: boolean` whole-Map toggle is replaced by a **scale/drill
@@ -162,6 +189,9 @@ C1 ──► S1 ──► U1        (critical path: orrery becomes legible per-s
 
 - **C1 + S1 + U1** deliver the core ADR value (legible campaign map + readable
   per-system orrery for `yula`). Ship this slice first.
+- **Cross-epic dependency (2026-06-08):** **U1 depends on epic 100 / story 100-10**
+  (shared d3-dag Map component, Phase 3). Land 100-10 before U1. U1 owns the scale/drill
+  view-model; 100-10 owns the layout engine. See the U1 render-target note above.
 - **S2 + C2** layer the campaign-scale jump crunch (Sebastien/Jade crunch
   payoff). Can be a second epic increment if scope pressure demands.
 

@@ -51,6 +51,24 @@ reference page and the in-game overlay.
 - No change to the in-game `MapOverlay`'s data source *other than* sharing the new map
   component (the overlay keeps getting cartography from its current session path).
 
+  > **Amendment (2026-06-08, Architect — epic-98 reconciliation).** "No change to the
+  > overlay's data source" is scoped to *this epic's* work: epic 100 does not itself
+  > rewire how `MapWidget` feeds `MapOverlay`. It is **not** a guarantee that the feed is
+  > permanent. **Epic 98 / ADR-141 (story 98-3 / U1) deliberately reworks that feed** —
+  > retiring the `orbital: boolean` whole-Map toggle and layering a campaign↔local
+  > **scale/drill** view-model on top of the overlay, with orrery drill-down per node.
+  > **Ownership boundary:** 100-10 owns the **layout engine** (the shared d3-dag
+  > cartography-layout module + Map component); 98-3 owns the **view-model** (which scale
+  > renders when, drill-in/back affordances, single-system collapse). To keep that
+  > boundary clean, the shared Map component built here **must be drill-aware-ready**: it
+  > must (a) render the cartography graph as a self-contained component that does **not**
+  > assume `MapWidget`'s `orbital` toggle or current feed shape is fixed, and (b) accept a
+  > selected/active-node signal and expose a node-select callback so 98-3 can drive
+  > drill-down without forking the layout. It need not implement the orrery scale itself —
+  > that is 98-3 — but it must not foreclose it. **Sequencing:** 100-10 lands first
+  > (p2 < p3; 98-3 depends on it); 98-3 builds against this shared component, **not**
+  > against the now-deleted `cartographyLayout.ts`.
+
 ## Load-Bearing Constraints
 
 ### C1 — The firewall is a server-side data projection, not a CSS hide
@@ -179,6 +197,27 @@ HTML, `islands.js`, the reference static CSS now expressed in React.
   and reported — the existing `sidequest.reference.map_dangling_edge` WARN span is
   preserved (emitted at projection time, server-side).
 
+  > **Edge-shape cross-reference (2026-06-08, Architect — epic-98 reconciliation).**
+  > `cartography.yaml` carries **two distinct overlaid edge concepts**, and the d3-dag
+  > edge-drop logic must be explicit about which it prunes:
+  > 1. **Connectivity** — each region's `adjacent:` list. This is the graph's true
+  >    topology and the **only** input to the d3-dag layout. The dangling-edge drop above
+  >    operates on **this** set (adjacency to an unknown region).
+  > 2. **Mechanics** — `routes:` entries (jump fuel / transit / hazard), introduced/
+  >    expanded by **epic 98 / ADR-141 story 98-4 (C2/S2)**. A `routes` entry is an
+  >    *annotation* on a traversable `adjacent` pair, authored on demand
+  >    (Diamonds-and-Coal); an `adjacent` pair with **no** matching `routes` entry is a
+  >    valid navigable edge (ruleset-default jump cost), **not** dangling. Conversely a
+  >    `routes` entry whose endpoints are **not** in any `adjacent` list is the only
+  >    *route-level* anomaly — handle it consistently with the adjacency drop (drop +
+  >    WARN span), do not silently render it as connectivity.
+  >
+  > The shared d3-dag module **must not** treat `routes` membership as layout topology
+  > (that would drop default-cost navigable edges) and **must not** treat a missing
+  > `routes` entry as a dangling edge. Epic 98 §3 ("The edge wrinkle") is the authoritative
+  > statement of this content model; this spec defers to it for `cartography.yaml` edge
+  > semantics.
+
 ## Observability (OTEL)
 
 The reference span family (`sidequest.reference.map_rendered`, `map_pin_resolved`,
@@ -229,7 +268,12 @@ HTML is deleted, and the map (the original ask) lands as soon as the shell exist
   HTML routes still canonical.
 - **Phase 3 — Sections, incl. shared d3-dag Map.** POI, Cast, Map (d3-dag, shared with
   `MapOverlay`), Timeline. Deletes `cartographyLayout.ts`; `MapOverlay` adopts the shared
-  component. Delivers the prettier map.
+  component. Delivers the prettier map. **The shared Map component must be built
+  drill-aware-ready** (active-node prop + node-select callback; no assumption that
+  `MapWidget`'s feed/toggle is permanent) so epic 98 / ADR-141 story 98-3 can layer the
+  campaign↔local scale/drill view-model on top — see the Non-Goals amendment. **This phase
+  is the hand-off point for 98-3** (which depends on it and builds against this component,
+  not the deleted SVG layout).
 - **Phase 4 — Cutover + retire.** Flip `/reference/*` to the SPA (history-fallback or
   redirect per Open Questions), delete the Python HTML emitters + `islands.js` + reference
   static CSS, keep `reference_visibility.py` feeding the API, update the ADR pointer.
