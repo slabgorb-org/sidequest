@@ -9,5 +9,6 @@ sprint:
   jira_sprint_name: "TO Sprint 2618"
   goal: Playtest 3 closeout — MP correctness, state hygiene, post-port cleanup
 
-completed:
+completed_epics: []
+completed_stories: []
   # Completed stories will be appended here by pf sprint archive
