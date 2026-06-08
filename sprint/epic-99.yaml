@@ -18,10 +18,11 @@ stories:
     title: 'Playtest docs cleanup: salvage+delete playtest-script.md, fix cookbook SQLite line, repoint README:89'
     points: 3
     priority: p2
-    status: in_progress
+    status: done
     started: '2026-06-08'
     repos: orchestrator
     workflow: trivial
+    completed: '2026-06-08'
     type: chore
   - id: 99-3
     title: Refresh docs/system-diagram.md (13 drift markers)
