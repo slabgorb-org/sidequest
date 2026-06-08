@@ -12,8 +12,8 @@ sprint:
   end_date: 2026-06-21
   status: active
 
-completed_epics:
+completed_epics: []
   # Epic shard files live in sprint/archive/epic-{ref}.yaml
 
-completed_stories:
+completed_stories: []
   # Orphan stories not belonging to an epic
