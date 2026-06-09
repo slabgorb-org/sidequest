@@ -33,9 +33,14 @@ stories:
     description: "DEPENDS ON 100-10 (epic 100, Phase 3 shared d3-dag Map). Cross-epic sequencing: 100-10 replaces cartographyLayout.ts with the shared d3-dag layout module and adopts it in MapOverlay. This story (98-3) must build the two-scale drill (cartography-default + orrery drill-down) ON TOP of that shared component — NOT against the doomed SVG cartographyLayout.ts, or the work is redone. Ownership division: 100-10 owns the layout engine (d3-dag); 98-3 owns the view-model (scale/drill UX at the MapWidget layer, retiring orbital:bool). Land 100-10 first (p2 < p3 already favors this). See Architect spec reconciliation (epic-100 spec lines 51-52 'overlay feed frozen' contradicts this story)."
     points: 5
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-09'
     repos: ui
     workflow: tdd
+    completed: '2026-06-09'
+    branch: feat/98-3-two-scale-mapwidget
+    review_findings: "HIGH: stale cached orbital chart suppresses AC5 no-local-chart state (App clears error-on-chart but not chart-on-error; widget gate lastOrbitalError && !chart renders wrong system's orrery after travel to unauthored region). MEDIUM: drill state survives region change with no refetch; no wiring test for lastOrbitalError chain above widget level. 3x LOW (assertion strength, stale JSDoc, untyped fixture). Rework: TEA writes failing precedence/region-change/wiring tests, Dev fixes with App-side chart clear + drill reset."
+    review_verdict: approved
   - id: 98-4
     title: C2 Content — jump mechanics on reached cartography routes (yula neighbors first)
     points: 2

@@ -1,5 +1,9 @@
 ## Dev Gotchas
 
+### `git add -A` in a subrepo sweeps strangers' untracked files into your story commit (2026-06-09, story 98-3)
+- sidequest-ui had a stray untracked `src/styles/reference.css` (epic-100 leftover, present before story setup). The dev-workflow boilerplate `git add . && git commit` swept it into the 98-3 feature commit and it got PUSHED before I noticed. Fix: `git rm --cached <file> && git commit --amend --no-edit && git push --force-with-lease`.
+- **Rule of thumb:** check the FIRST `git status` of the session for pre-existing `??` entries; stage explicitly (`git add <paths-I-touched>`) or at minimum eyeball `git status --short` output between add and commit. Pre-existing untracked files belong to nobody's branch — leave them untracked.
+
 ### Before deleting shipped content a loader reads, grep BOTH tests and runtime loader callers (2026-06-09, story 98-1)
 - Story C1 deleted `perseus_cloud/orbits.yaml` (the monolith) as the AC4-preferred path. Safe only after confirming: (1) no server test loads the real file — `tests/orbital/test_scope_bind.py` *mentions* perseus_cloud in comments but actually uses a synthetic `fixtures/world_sector_join`, so deletion didn't regress it (355/355 orbital green); (2) runtime callers of `load_orbital_content` (`grep -rln load_orbital_content sidequest/`) degrade gracefully — `session_room.py:259` catches `OrbitalContentMissingError` → `orbital_content=None` (chart unavailable, no crash), but `rest.py` also calls it and may not, so flag the endpoint for the loader-rewrite story.
 - **Rule of thumb:** deleting content that a production loader resolves by hard-coded filename is a runtime behavior change even when the test suite stays green. Always `grep` the loader's callers, classify each as fail-soft (caught) vs fail-loud (uncaught), and log a Delivery Finding when a downstream story owns the rewire. "Tests pass" ≠ "runtime unaffected."

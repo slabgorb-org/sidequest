@@ -1,5 +1,9 @@
 ## TEA Gotchas
 
+### Orbital intent error seam is incomplete server-side (found in 98-3 RED, 2026-06-09)
+- `OrbitalIntentHandler.handle` (sidequest-server/sidequest/handlers/orbital_intent.py) catches only `OrbitalContentUnavailableError` (→ ERROR code `orbital_unavailable`). The 98-2 fail-loud `OrbitalContentMissingError` (orbital/loader.py — unauthored `systems/<region>.yaml`) is NOT caught there, so a drill into an unauthored system likely surfaces as an unhandled exception, not a typed ERROR the UI can render. Logged as a Delivery Finding on 98-3; AC5's UI test pins the widget seam (`lastOrbitalError` prop) regardless.
+- When RED-testing a UI seam fed by server errors, read the server handler's actual `except` clauses before assuming an error code exists on the wire — the loader raising loudly does not mean the handler forwards it.
+
 ### Confrontation resolution has MULTIPLE overlapping resolvers — find the incumbent before writing outcome tests (59-31)
 - The per-turn sweep at the bottom of `_apply_narration_result_to_snapshot` runs resolvers IN ORDER, each short-circuiting on `enc.resolved`: `_resolve_if_no_opponent_remains` (4350, → `opponent_withdrew`) then `_resolve_dial_threshold_and_phase` (4359). The location-change handler (~2790) resolves EARLIER in the same call (→ `abandoned_on_location_change` / `player_victory` via `dial_threshold_outcome()`). So an "all opponents withdrawn" state already has an incumbent label (`opponent_withdrew`) — a new outcome story must RELABEL/REPLACE the incumbent, not add a resolver after it (the incumbent wins by running first).
 - When writing outcome-label tests, drive the real entry `_apply_narration_result_to_snapshot(snap, NarrationTurnResult(...), player_name=, room=room_for(snap))` (no pack needed for the sweep), not the internal helper — survives whichever helper the Dev edits, and proves wiring.
