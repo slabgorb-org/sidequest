@@ -10,9 +10,10 @@ stories:
     title: Rewrite content-coupled server tests against fixtures (decouple from live packs)
     points: 8
     priority: p2
-    status: in_progress
+    status: done
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-06-09'
     type: refactor
   - id: 96-2
     title: Fix Earthman race-boon tier leak — world-tier trait applied at genre tier (source=Race)
