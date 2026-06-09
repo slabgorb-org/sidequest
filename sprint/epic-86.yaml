@@ -50,7 +50,8 @@ stories:
     title: 'Plan 5 — Content remap + calibration + playtest: vessel stat blocks in inventory.yaml (composure/armor/speed/mount_slots per rig tier), mount_slots→CWN vehicle weapons, archetype + lethality calibration against the live cwn substrate, OTEL playtest pass on road_warrior/the_circuit verifying every rig/chase/War-Rig subsystem fires (no improvised prose). Final integration gate for the epic.'
     points: 5
     priority: p3
-    status: backlog
+    status: in_progress
+    started: '2026-06-09'
     repos: sidequest-server,sidequest-content
     workflow: tdd
   - id: 86-6
