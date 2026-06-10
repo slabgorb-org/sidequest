@@ -18,6 +18,7 @@ completed_epics:
   - '100'
   - '96'
   - '98'
+  - '101'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -284,3 +285,43 @@ completed_stories:
     title: S2 Server — inter-system jump adjudication via SWN ruleset seam (ADR-117), default cost OTEL-logged
     points: 5
     completed: '2026-06-09'
+  - id: 101-1
+    epic: '101'
+    title: Align daemon renderer models with server contract — remove CARTOGRAPHY tier + zimage configs, align StageCue.camera typing, add cross-repo contract test
+    points: 3
+    completed: '2026-06-10'
+  - id: 101-2
+    epic: '101'
+    title: Remove all voice-generation references from server — VoicePresets models/loader, VOICE_SIGNAL/VOICE_TEXT protocol types, Npc.voice_id
+    points: 3
+    completed: '2026-06-10'
+  - id: 101-3
+    epic: '101'
+    title: 'Triage + remove zero-importer server modules: gossip_engine (check ADR-053 partial status), learned_ops, corpus/going_forward, corpus/negatives'
+    points: 2
+    completed: '2026-06-10'
+  - id: 101-4
+    epic: '101'
+    title: UI dead-code sweep — delete deprecated OverlayType (zero importers) and retire no-op groupPortraitSegments call sites
+    points: 1
+    completed: '2026-06-10'
+  - id: 101-5
+    epic: '101'
+    title: Retire daemon 'flux' alias shim — warm_up_flux(), worker='flux' RPC dispatch target, --warmup=flux CLI doc (zero callers remain)
+    points: 2
+    completed: '2026-06-10'
+  - id: 101-6
+    epic: '101'
+    title: Daemon housekeeping — delete empty ml/ package, drop dead pygame-ce dependency, fix stale CLAUDE.md daemon tree
+    points: 1
+    completed: '2026-06-10'
+  - id: 101-7
+    epic: '101'
+    title: Finish daemon dispatch extraction — one dispatch path for all tiers; pull EmbedWorker/RenderService out of the daemon.py god module
+    points: 3
+    completed: '2026-06-10'
+  - id: 101-8
+    epic: '101'
+    title: Unify slug derivation across render/portrait/reference surfaces
+    points: 3
+    completed: '2026-06-10'

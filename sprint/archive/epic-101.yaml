@@ -3,7 +3,7 @@ type: epic
 title: Split-Brain Remediation — Daemon Renderer Drift & Dead Twins
 description: 'Remediation of the 2026-06-09 systemwide split-brain scan (Architect, all repos on fresh origin/develop). The scan confirmed the suspected lore/rules reference-page split-brain was already resolved by story 100-12 (commit a6894cbb, server HTML renderer deleted, JSON API + React SPA is the single implementation). ONE live split-brain remains: daemon<->server renderer model drift at the deliberately-duplicated subset seam — daemon RenderTier still carries CARTOGRAPHY (removed server-side 2026-04-28) plus two zimage tier configs, and StageCue.camera is typed CameraPreset enum daemon-side vs plain str server-side. No contract test holds the seam. Also found: dead TTS-era voice-generation surfaces in server (VoicePresets models/loader, VOICE_SIGNAL/VOICE_TEXT protocol types, Npc.voice_id); four server modules with zero production importers; minor UI dead code; daemon housekeeping rot (empty ml/ package, dead pygame-ce dep, stale CLAUDE.md tree) and the half-extracted dispatch in the 1,290-LOC daemon.py. Originally filed as epic 99 in clone oq-4 — renumbered to 101 after collision with archived epic-99/epic-100 on origin.'
 priority: p2
-status: backlog
+status: done
 repos: server,daemon,ui
 stories:
   - id: 101-1
@@ -39,10 +39,14 @@ stories:
     title: 'Triage + remove zero-importer server modules: gossip_engine (check ADR-053 partial status), learned_ops, corpus/going_forward, corpus/negatives'
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-10'
     repos: server
     workflow: trivial
+    completed: '2026-06-10'
     type: chore
+    branch: feat/101-3-remove-zero-importer-modules
+    review_verdict: approved
   - id: 101-4
     title: UI dead-code sweep — delete deprecated OverlayType (zero importers) and retire no-op groupPortraitSegments call sites
     points: 1
@@ -142,3 +146,4 @@ stories:
     completed: '2026-06-10'
     type: refactor
     review_verdict: approved
+completed: '2026-06-10'
