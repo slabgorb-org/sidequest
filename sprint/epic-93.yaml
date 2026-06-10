@@ -11,7 +11,8 @@ stories:
     description: "Resolve the all-freeform chargen hard-block with a Haiku one-shot archetype inference. When the archetype gate (chargen_mixin ~495-540) would BLOCK with missing_axes_with_pack_axes — i.e. the pack declares base_archetypes/archetype_constraints but the accumulated jungian_hint/rpg_role_hint pair is incomplete — AND the player supplied freeform answers, run a single Haiku call (intent-router emit_tool pattern in agents/llm_factory.py) over the accumulated freeform text to infer the missing axis value(s), constrained to the pack's valid jungian/rpg_role enum. Fill only the missing axis (don't override a hint a preset already set), then resolve the archetype normally. Inference fires at gate-time ONLY (cheap, targeted), not per-scene. Fail loud (keep the existing block) when there is no freeform to infer from, or when Haiku returns an out-of-enum value. NO SILENT FALLBACK to a pack-default archetype. Cost rides the existing session ledger + ADR-134 ceiling. Refs: [BAR-1] pingpong 'All-freeform chargen hard-blocks at confirm'; builder.apply_freeform (game/builder.py ~1790); accumulation site (builder.py ~1418); gate (chargen_mixin.py ~495)."
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-10'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
@@ -22,7 +23,10 @@ stories:
       - "A chargen.archetype_inferred OTEL span fires on every inference with attrs: inferred_axes, jungian_hint, rpg_role_hint, source='freeform', and is visible on the GM panel (Observability Principle — lie detector distinguishes inferred vs preset-accumulated)."
       - 'Wiring test: the inference path is reachable from the production chargen build/gate flow (not just unit-callable) — a test drives the all-freeform build end-to-end and asserts the span + resolved archetype.'
       - Haiku call accounts to the session cost ledger and respects the ADR-134 ceiling (no unmetered caller).
+    completed: '2026-06-10'
     type: bug
+    review_findings: "HIGH: Anthropic SDK/transport exceptions escape the inference seam's narrow except (LlmClientError, ceiling) and crash chargen confirm — WS session dropped instead of the loud inference-failed block; broaden the catch. MEDIUM: unbounded player freeform joined into the Haiku input (python.md #11) — truncate + delimiter. Both fixes localized to chargen_mixin.py / llm_factory.py; TEA pins with failing tests first."
+    review_verdict: approved
   - id: 93-2
     title: Durable creation_answers provenance model + snapshot exposure
     description: "Stop orphaning the player's chargen answers. Today freeform text is consumed only for the {class} prose slot then discarded, and selections survive only as flavor labels (origin_label/calling_label/background/drive) — the per-scene answer the player actually gave is never durably recorded. Add a creation_answers provenance record to the Character model: an ordered list, one entry per answered chargen scene, each carrying scene_id, prompt (the scene's question/title), kind ('choice' | 'freeform'), value (the player's verbatim freeform text OR the chosen option label), and an optional archetype_inferred flag/marker for the scene(s) whose freeform fed 93-1's inference. Populate it in builder.build() from self._results (ChoiceInput.choice_label / FreeformInput.text are already captured on SceneResult — this is wiring, not new capture). Expose creation_answers in the character snapshot (CharacterSheetDetails / views.py serialization) so the UI can read it. Server-only; the UI render is 93-3. Refs: builder.py ~1730 (apply_choice/choice_label), ~1790 (apply_freeform/FreeformInput), ~2654 (build); character.py model; server/views.py snapshot."
