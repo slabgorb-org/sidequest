@@ -10,10 +10,13 @@ stories:
     title: Align daemon renderer models with server contract — remove CARTOGRAPHY tier + zimage configs, align StageCue.camera typing, add cross-repo contract test
     points: 3
     priority: p2
-    status: backlog
+    status: done
     repos: daemon
     workflow: tdd
+    completed: '2026-06-10'
     type: refactor
+    branch: feat/101-1-align-daemon-renderer-models
+    review_verdict: approved
   - id: 101-2
     title: Remove all voice-generation references from server — VoicePresets models/loader, VOICE_SIGNAL/VOICE_TEXT protocol types, Npc.voice_id
     description: "Remove ALL voice-generation references from the engine (Operator decision 2026-06-09; /sq-voice remains orchestrator-level authoring tooling, outside the engine). Scan-verified surface (all dead: zero runtime readers, voice_presets.yaml exists in zero packs, zero kokoro refs, UI never reads voice fields): (1) genre/models/audio.py — VoiceConfig, VoicePresets, CreatureVoicePreset, and the creature_voice_presets field on AudioConfig; (2) genre/loader.py:27,1691-1692,2008 — the voice_presets.yaml optional-load path; (3) genre/models/pack.py:289 voice_presets field + models/__init__.py exports; (4) protocol/enums.py:48-49 VOICE_SIGNAL + VOICE_TEXT message types (zero emitters/handlers) and the VOICE_TEXT routing entry in game/projection/invariants.py:60; (5) game/session.py:141 Npc.voice_id (only ever assigned None at world_materialization.py:545,874). CAUTION: Npc has model_config extra=forbid and persisted saves may carry voice_id — removal must tolerate or migrate existing Postgres snapshots; verify save load of a pre-removal session. Daemon is CLEAN (its only 'voice' hit is a narrative appearance-regex word in scene_interpreter.py:64 — keep)."
