@@ -53,9 +53,13 @@ stories:
     title: WN narrator tool contract (SWN design §8, P5 follow-on) — the per-module narrator tool surface so the narrator drives WN resolution through typed tools (not improv); isolated behind tool-level tests + OTEL per §12 risk note. Shared WN-family.
     points: 8
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-10'
     repos: server
     workflow: tdd
+    completed: '2026-06-10'
+    review_findings: 'HIGH: wn_attack ignores the weapon arg for damage selection — multi-weapon actors get the first damage-bearing inventory item (probe: named Maul 3d6+3, got 2 = Dart). MEDIUM: pyright regression (spec.roll(random) :205, pack.rules narrowing :74) vs clean baseline. Needs a multi-weapon regression test + fix.'
+    review_verdict: approved
   - id: 102-6
     title: Psionics (SWN design §6 follow-on, P7) — SWN/WWN psychic disciplines + Effort economy + System Strain, wired into live dispatch with {ruleset}.effort.commit/reclaim + system_strain.delta spans. server,content (discipline catalogs).
     points: 8
