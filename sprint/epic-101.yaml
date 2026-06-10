@@ -1,0 +1,87 @@
+id: '101'
+type: epic
+title: Split-Brain Remediation — Daemon Renderer Drift & Dead Twins
+description: 'Remediation of the 2026-06-09 systemwide split-brain scan (Architect, all repos on fresh origin/develop). The scan confirmed the suspected lore/rules reference-page split-brain was already resolved by story 100-12 (commit a6894cbb, server HTML renderer deleted, JSON API + React SPA is the single implementation). ONE live split-brain remains: daemon<->server renderer model drift at the deliberately-duplicated subset seam — daemon RenderTier still carries CARTOGRAPHY (removed server-side 2026-04-28) plus two zimage tier configs, and StageCue.camera is typed CameraPreset enum daemon-side vs plain str server-side. No contract test holds the seam. Also found: dead TTS-era voice-generation surfaces in server (VoicePresets models/loader, VOICE_SIGNAL/VOICE_TEXT protocol types, Npc.voice_id); four server modules with zero production importers; minor UI dead code; daemon housekeeping rot (empty ml/ package, dead pygame-ce dep, stale CLAUDE.md tree) and the half-extracted dispatch in the 1,290-LOC daemon.py. Originally filed as epic 99 in clone oq-4 — renumbered to 101 after collision with archived epic-99/epic-100 on origin.'
+priority: p2
+status: backlog
+repos: server,daemon,ui
+stories:
+  - id: 101-1
+    title: Align daemon renderer models with server contract — remove CARTOGRAPHY tier + zimage configs, align StageCue.camera typing, add cross-repo contract test
+    points: 3
+    priority: p2
+    status: backlog
+    repos: daemon
+    workflow: tdd
+    type: refactor
+  - id: 101-2
+    title: Remove all voice-generation references from server — VoicePresets models/loader, VOICE_SIGNAL/VOICE_TEXT protocol types, Npc.voice_id
+    description: "Remove ALL voice-generation references from the engine (Operator decision 2026-06-09; /sq-voice remains orchestrator-level authoring tooling, outside the engine). Scan-verified surface (all dead: zero runtime readers, voice_presets.yaml exists in zero packs, zero kokoro refs, UI never reads voice fields): (1) genre/models/audio.py — VoiceConfig, VoicePresets, CreatureVoicePreset, and the creature_voice_presets field on AudioConfig; (2) genre/loader.py:27,1691-1692,2008 — the voice_presets.yaml optional-load path; (3) genre/models/pack.py:289 voice_presets field + models/__init__.py exports; (4) protocol/enums.py:48-49 VOICE_SIGNAL + VOICE_TEXT message types (zero emitters/handlers) and the VOICE_TEXT routing entry in game/projection/invariants.py:60; (5) game/session.py:141 Npc.voice_id (only ever assigned None at world_materialization.py:545,874). CAUTION: Npc has model_config extra=forbid and persisted saves may carry voice_id — removal must tolerate or migrate existing Postgres snapshots; verify save load of a pre-removal session. Daemon is CLEAN (its only 'voice' hit is a narrative appearance-regex word in scene_interpreter.py:64 — keep)."
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - All five server voice surfaces removed; ruff + full server test suite green
+      - A pre-removal Postgres save containing voice_id loads without error (tolerant load or Alembic migration)
+      - 'Wiring test: grep-guard or import test proving no voice_presets/VOICE_SIGNAL/VOICE_TEXT references remain in production code'
+      - Daemon untouched except confirmation note (scene_interpreter regex word is narrative, stays)
+    type: chore
+  - id: 101-3
+    title: 'Triage + remove zero-importer server modules: gossip_engine (check ADR-053 partial status), learned_ops, corpus/going_forward, corpus/negatives'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
+  - id: 101-4
+    title: UI dead-code sweep — delete deprecated OverlayType (zero importers) and retire no-op groupPortraitSegments call sites
+    points: 1
+    priority: p3
+    status: backlog
+    repos: ui
+    workflow: trivial
+    type: chore
+  - id: 101-5
+    title: Retire daemon 'flux' alias shim — warm_up_flux(), worker='flux' RPC dispatch target, --warmup=flux CLI doc (zero callers remain)
+    description: "ADR-070 wiring check (2026-06-09): media/workers/ contains ONLY zimage_mlx_worker.py — the doctrine holds, FluxMLXWorker is gone. But daemon.py retains a compatibility shim whose stated justification no longer exists: warm_up_flux() at daemon.py:271 ('retained so the --warmup=flux CLI flag and existing RPC callers that dispatch on worker=\"flux\" keep working'), the target in ('all','flux','image') dispatch at daemon.py:443, and the --warmup=flux usage doc at daemon.py:9. Grep across sidequest-server/sidequest/daemon_client, sidequest-server/sidequest/media, and orchestrator scripts/ finds ZERO callers sending worker='flux' — the shim is dead naming debt that misleads readers into thinking a Flux renderer still exists. Remove the alias (or collapse it to 'image'), update the CLI usage text, and check justfile/just daemon warmup invocations for the flag. Also sweep stale Flux-vs-Z-Image comments in daemon.py (lines 220,250,322,907-909) where they describe retired behavior rather than current MPS/CPU device placement."
+    points: 2
+    priority: p3
+    status: backlog
+    repos: daemon
+    workflow: trivial
+    acceptance_criteria:
+      - No 'flux' dispatch target or warm_up_flux symbol remains; daemon CLI help reflects reality
+      - just daemon / justfile warmup paths verified working post-removal
+      - 'Wiring test: daemon warmup integration test passes with the surviving target names'
+    type: chore
+  - id: 101-6
+    title: Daemon housekeeping — delete empty ml/ package, drop dead pygame-ce dependency, fix stale CLAUDE.md daemon tree
+    description: "Daemon feature tour (2026-06-09, Architect) found three housekeeping rots: (1) sidequest_daemon/ml/ is an EMPTY package — zero bytes, zero importers; CLAUDE.md still documents it as 'GPU memory management (ADR-046)'. Delete the package; check ADR-046 implementation status against docs/adr/DRIFT.md and update its pointer if the coordinator logic now lives in zimage_mlx_worker or was never ported. (2) pygame-ce>=2.5 in sidequest-daemon/pyproject.toml is a dead dependency — no pygame import anywhere; sole mention is a historical docstring at media/pipeline_factory.py:3 ('Previously constructed an audio playback pipeline'). Drop the dep. (3) Orchestrator CLAUDE.md daemon tree is fiction in two places: lists 'audio/ — pygame-ce mixer (music + SFX, no TTS)' (no audio/ package exists — playback lives in sidequest-ui/src/audio) and the ml/ ADR-046 line. Fix the tree to match reality: media/ (render+music), renderer/ (beat filter + models), training/ (ADR-073/48-3 CLIs), telemetry/ (ADR-131 bridge), genre/+types.py (cross-boundary stubs). Optionally add a JARGONFILE note that daemon renderer/beat_filter.py (render-worthiness) and server game/beat_filter.py (confrontation beats) are a name collision, not duplicates."
+    points: 1
+    priority: p3
+    status: backlog
+    repos: daemon,orchestrator
+    workflow: trivial
+    acceptance_criteria:
+      - sidequest_daemon/ml/ deleted; uv run pytest green; daemon boots (just daemon-status)
+      - pygame-ce removed from pyproject; uv sync clean; stale docstring in pipeline_factory.py updated
+      - CLAUDE.md daemon tree matches the actual package layout (no audio/, no ml/, training/ + telemetry/ present)
+      - ADR-046 status verified against DRIFT.md and pointer corrected if drifted
+    type: chore
+  - id: 101-7
+    title: Finish daemon dispatch extraction — one dispatch path for all tiers; pull EmbedWorker/RenderService out of the daemon.py god module
+    description: "daemon.py is a 1,290-LOC god module hosting the socket server, heartbeat writer, CLI parsing, EmbedWorker, RenderService, warmup/shutdown/status, AND dispatch — and dispatch is half-extracted: dispatch_request() (daemon.py:168) handles ONLY tier=music while image tiers are routed by a parallel inline if/elif chain in _handle_client (methods at lines 429-897); the function's own docstring admits image renders 'never reach this function'. Two dispatch mechanisms for one method is the embryo of the next split-brain. Scope: (1) unify render dispatch — all tiers route through one dispatcher with loud ValueError on unknown tier (No Silent Fallbacks); (2) extract EmbedWorker and RenderService into their own modules (media/embed_worker.py, media/render_service.py or similar), leaving daemon.py as socket lifecycle + routing only; (3) preserve the heartbeat and warmup contracts exactly — server's DaemonStateMirror (story 45-31) and daemon_client are consumers; do NOT change the wire protocol. Pairs with 101-5 (flux alias retirement) — sequence after it to avoid churn. Wiring test: existing socket integration tests must pass unchanged, plus one test proving every advertised method reaches the unified dispatcher."
+    points: 3
+    priority: p3
+    status: backlog
+    repos: daemon
+    workflow: tdd
+    acceptance_criteria:
+      - Single dispatch path for all render tiers; unknown tier fails loud
+      - EmbedWorker + RenderService live outside daemon.py; daemon.py under ~500 LOC, socket lifecycle + routing only
+      - 'Wire protocol unchanged: server daemon_client + DaemonStateMirror integration tests green without modification'
+      - Wiring test proves every RPC method (ping/status/shutdown/warm_up/render/embed) reaches the unified dispatcher
+    type: refactor
