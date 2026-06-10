@@ -68,13 +68,16 @@ stories:
     description: "Measured (blackthorn solo 2026-06-07 turn 1): two byte-identical disposition beats per NPC — two _apply_npc_mentions passes in one turn. Server #742's Npc.last_development_turn dedupe made it harmless at the development seam, but the UPSTREAM double-apply is unexplained and presumably double-runs every other per-mention side effect (last_seen updates, pool matching, mint paths). Cross-ref: the unfiled narrator.cache.both_writes_fired WARN on the ping-pong watch list. Root-cause and fix at the source, then consider removing the seam-level dedupe if it becomes dead."
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-10'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - One narration turn produces exactly one _apply_npc_mentions pass (or the second pass is load-bearing and documented)
       - both_writes_fired WARN explained or eliminated
+    completed: '2026-06-10'
     type: bug
+    review_verdict: approved
   - id: 97-6
     title: test_chargen_name_rig_extraction xdist flake — pg-gated pair fails order-dependently in parallel full-suite runs
     description: 'Known flake documented 2026-06-07 (server #741 PR notes): tests/server/test_chargen_name_rig_extraction.py::TestNameRigExtractionWiring pair (extracted_name_and_renamed_rig, extraction_decisions_are_observable) fails order-dependently under xdist in FULL-suite runs — chargen.names_extracted span absent from the InMemorySpanExporter capture. Passes in isolation, serially, per-directory, and intermittently in full runs with identical code. These pg-gated tests only started RUNNING when SIDEQUEST_TEST_DATABASE_URL became part of the standard env (they were silently skipped in earlier baselines). Suspect shared tracer-provider/span-exporter state across tests in a worker, or an extraction-path global raced by a sibling test. Fix the isolation, not the assertion.'
