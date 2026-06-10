@@ -67,9 +67,11 @@ stories:
     title: AWN (Ashes Without Number) module live wiring for mutant_wasteland — bind the AWN RulesetModule + content per spec 2026-06-05-ashes-without-number-mutant-wasteland-design.md; prove AWN combat + lethality fire live (mirrors heavy_metal/WWN). server,content.
     points: 8
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-10'
     repos: server,content
     workflow: tdd
+    completed: '2026-06-10'
   - id: 102-8
     title: Doc-drift cleanup — retire stale 'not wired to dispatch (Plan 3)'/'deferred' markers across ruleset/wwn.py, swn.py, cwn.py (apply_killing_blow IS wired at dice.py:644/725; veterans_luck has a narrator tool) and reconcile docs/adr/DRIFT.md + the WN plan docs so 'deferred' reflects reality post-102. chore.
     points: 2
