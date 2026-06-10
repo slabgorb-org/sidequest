@@ -111,7 +111,11 @@ stories:
     title: 'fix: flaky lobby-start-ws-open.test.tsx 5s timeout (vitest-websocket-mock/StrictMode)'
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-10'
     repos: sidequest-ui
     workflow: tdd
+    completed: '2026-06-10'
+    review_verdict: approved
     type: bug
+    branch: feat/97-8-2026-06-10-fix-flaky-lobby-start-ws-open
