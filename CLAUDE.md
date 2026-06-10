@@ -3,7 +3,7 @@
 This is the orchestrator repo for the SideQuest RPG Runner/Editor. It coordinates five subrepos:
 - **sidequest-server** — Python/FastAPI game engine and WebSocket API (port 8765)
 - **sidequest-ui** — React/TypeScript game client (Vite, port 5173)
-- **sidequest-daemon** — Python media services (Flux/Z-Image generation, audio)
+- **sidequest-daemon** — Python media services (Z-Image generation, music generation)
 - **sidequest-content** — Genre packs (YAML configs, audio, images, world data)
 - **sidequest-composer** — Standalone CLI: public-domain notation (MusicXML/MIDI) → tagged, rights-free audio via MuseScore 4 / FluidSynth. Deterministic synthesis, not AI generation
 
@@ -118,7 +118,7 @@ sidequest-daemon/             # Python media services (subrepo)
 │   ├── telemetry/            # watcher_bridge.py — OTEL HTTP bridge to server (ADR-131)
 │   ├── genre/                # Cross-boundary genre model subset (VisualStyle, AudioConfig)
 │   ├── scene_interpreter.py
-│   └── types.py              # Cross-boundary data stubs (StageCue, RenderTier, RenderResult)
+│   └── types.py              # Cross-boundary stub types replacing sidequest.game.* (DocumentEvent, GameState, Character)
 ├── tests/
 └── pyproject.toml
 
