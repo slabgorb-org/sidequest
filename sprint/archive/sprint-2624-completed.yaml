@@ -21,6 +21,7 @@ completed_epics:
   - '101'
   - '93'
   - '102'
+  - '97'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -386,4 +387,44 @@ completed_stories:
     epic: '102'
     title: Doc-drift cleanup — retire stale 'not wired to dispatch (Plan 3)'/'deferred' markers across ruleset/wwn.py, swn.py, cwn.py (apply_killing_blow IS wired at dice.py:644/725; veterans_luck has a narrator tool) and reconcile docs/adr/DRIFT.md + the WN plan docs so 'deferred' reflects reality post-102. chore.
     points: 2
+    completed: '2026-06-10'
+  - id: 97-1
+    epic: '97'
+    title: Pool-member relationship projection gap — engaged npc_pool members never get ADR-136 cards
+    points: 3
+    completed: '2026-06-08'
+  - id: 97-2
+    epic: '97'
+    title: Seal-reconcile roster races reconnect order — first reconnector told the table is solo (sealed=0/1)
+    points: 2
+    completed: '2026-06-10'
+  - id: 97-3
+    epic: '97'
+    title: Dice banner DC has two sources of truth — client formula vs server effective difficulty
+    points: 3
+    completed: '2026-06-07'
+  - id: 97-4
+    epic: '97'
+    title: 'Scratch sweep fires on same-region drift — clear_scratch_on_scene_end keys on the raw location-string gate #739 fixed for encounters'
+    points: 2
+    completed: '2026-06-10'
+  - id: 97-5
+    epic: '97'
+    title: Turn-1 double-apply of _apply_npc_mentions — narrator.cache.both_writes_fired root cause
+    points: 2
+    completed: '2026-06-10'
+  - id: 97-6
+    epic: '97'
+    title: test_chargen_name_rig_extraction xdist flake — pg-gated pair fails order-dependently in parallel full-suite runs
+    points: 2
+    completed: '2026-06-10'
+  - id: 97-7
+    epic: '97'
+    title: 'fix: ConfrontationOverlay BeatEffect tsc error breaks client-build on develop (from 73-4/97-3)'
+    points: 2
+    completed: '2026-06-10'
+  - id: 97-8
+    epic: '97'
+    title: 'fix: flaky lobby-start-ws-open.test.tsx 5s timeout (vitest-websocket-mock/StrictMode)'
+    points: 1
     completed: '2026-06-10'

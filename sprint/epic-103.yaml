@@ -31,9 +31,13 @@ stories:
     title: Roll the Bones alt-attribute mode — 3d6-in-order over the standard six, 2-stat reroll budget, chargen flag + UI affordance. Build plan §D-C.
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-11'
     repos: server,ui
     workflow: tdd
+    completed: '2026-06-11'
+    review_findings: '[HIGH] stale roll_the_bones mode survives go_back — default re-pick still walks the bones scene and builds from stale rolls (AC-1 violation; mode not ledger-anchored, 103-2 doctrine); [MEDIUM] reroll_stat accepted off the bones scene incl. post-confirm/post-summary (nothing locks the array); [MEDIUM] Back+re-pick rerolls the full array with budget reset — reroll-budget fishing; [LOW] unknown-stat error discloses full ability_score_names list'
+    review_verdict: approved
   - id: 103-4
     title: Saint canon (GM lane) — all ~25 Saints from world spec §6 curated to AWN mutation IDs in worlds/seaboard_of_saints/saints.yaml + iconography + veneration flavor; gap analysis -> additive genre-tier mutations where no analog exists (coordinated genre PR). Depends on 103-1 schema freeze.
     points: 5

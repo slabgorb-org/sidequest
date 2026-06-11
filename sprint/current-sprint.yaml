@@ -10,6 +10,5 @@ sprint:
 epics:
   - '84'
   - '90'
-  - '97'
   - '103'
 standalone_stories: []

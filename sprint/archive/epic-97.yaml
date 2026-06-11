@@ -3,7 +3,7 @@ type: epic
 title: Ping-pong 2026-06-07 follow-ups — residuals from the perseus MP fix sitting
 description: "Deliberately-out-of-scope residuals flagged in the 2026-06-07 ping-pong FIXER notes (PRs #739-#742 server, #351/#352 ui). Each story cites its parent entry's FIXER note as the measured evidence base."
 priority: p2
-status: backlog
+status: done
 repos: server,ui
 stories:
   - id: 97-1
@@ -120,3 +120,4 @@ stories:
     review_verdict: approved
     type: bug
     branch: feat/97-8-2026-06-10-fix-flaky-lobby-start-ws-open
+completed: '2026-06-11'
