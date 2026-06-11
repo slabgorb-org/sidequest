@@ -38,7 +38,7 @@ stories:
     description: "Spec: addendum §5 Story M-D + §4. orbital/render.py textPath arc-belt: opposite-side belts need opposite sweep-flag/reversed path so 'broken drift' label reads upright. Cosmetic, ADR-094; no OTEL needed."
     points: 1
     priority: p3
-    status: backlog
+    status: in_progress
     repos: server
     workflow: trivial
     type: bug
