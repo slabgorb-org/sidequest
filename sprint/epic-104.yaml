@@ -11,9 +11,12 @@ stories:
     description: 'Spec: 2026-06-11-space-opera-map-playtest-addendum.md §5 Story M-A. Server sets explicit is_cluster/multi_system flag on cartography + reference map-section payload, true iff world has systems/ dir (or sector graph). perseus_cloud=true; coyote_star/aureate_span=false. OTEL span on the decision. Supersedes client regionCount>1 heuristic. No silent fallback. Blocks 104-2.'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-11'
     repos: server
     workflow: tdd
+    completed: '2026-06-11'
+    review_verdict: approved
   - id: 104-2
     title: M-B — Single-system worlds collapse to orrery-as-Map; isCluster reads server flag not regionCount
     description: 'Spec: addendum §5 Story M-B. DEPENDS ON 104-1 (consumes the server multi-system flag). isCluster reads the flag, not regionCount. Single-system world -> orrery-as-Map (reuse verified #748 collapse, no cluster graph, no drill); coyote_star/aureate_span regression-tested. Cluster (perseus_cloud) unchanged. UI test w/ single-system multi-region fixture asserts no cluster graph + no drill + orrery direct.'
