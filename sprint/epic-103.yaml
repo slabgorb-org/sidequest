@@ -54,9 +54,11 @@ stories:
     title: All 17 regions (GM lane) — places/cartography.yaml + encounter_tables.yaml; the Corridor as connective spine; region statuses per world spec §3; cliché bans (§11) enforced. Depends on 103-5.
     points: 8
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-11'
     repos: content
     workflow: tdd
+    completed: '2026-06-11'
   - id: 103-7
     title: Cultures + factions (GM lane) — 15 cultures with ADR-091 corpus bindings; 6 major factions + regional minors; Cryptic-Alliance faction tags (v1 = content tags, AWN Plan-7 Enclave retrofit hook flagged). Depends on 103-5.
     points: 5
