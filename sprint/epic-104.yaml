@@ -1,0 +1,41 @@
+id: '104'
+type: epic
+title: 'Space-Opera Map: single-system collapse, lore-map wiring, fancier graph'
+description: Materializes docs/superpowers/specs/2026-06-11-space-opera-map-playtest-addendum.md (SM/DRIVER + Operator, 2026-06-11). Amends the 2026-06-08 Two-Scale epic (98) and reference-SPA migration (100). Corrects isCluster=regionCount>1 (single-vs-cluster must key on multi-SYSTEM, not multi-region), collapses single-system worlds (coyote_star, aureate_span) to orrery-as-Map, and completes story 100-12's dropped seam by wiring the lore-page Map section to the d3-dag CartographyMap with NPC portrait pins. Found in 2026-06-11 coyote_star playtest.
+priority: p2
+status: backlog
+repos: server,ui
+stories:
+  - id: 104-1
+    title: M-A — Server multi-system flag from systems/ presence (retire region-count cluster heuristic)
+    description: 'Spec: 2026-06-11-space-opera-map-playtest-addendum.md §5 Story M-A. Server sets explicit is_cluster/multi_system flag on cartography + reference map-section payload, true iff world has systems/ dir (or sector graph). perseus_cloud=true; coyote_star/aureate_span=false. OTEL span on the decision. Supersedes client regionCount>1 heuristic. No silent fallback. Blocks 104-2.'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 104-2
+    title: M-B — Single-system worlds collapse to orrery-as-Map; isCluster reads server flag not regionCount
+    description: 'Spec: addendum §5 Story M-B. DEPENDS ON 104-1 (consumes the server multi-system flag). isCluster reads the flag, not regionCount. Single-system world -> orrery-as-Map (reuse verified #748 collapse, no cluster graph, no drill); coyote_star/aureate_span regression-tested. Cluster (perseus_cloud) unchanged. UI test w/ single-system multi-region fixture asserts no cluster graph + no drill + orrery direct.'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: tdd
+  - id: 104-3
+    title: M-C — Wire lore-page Map section + NPC portrait-pin renderer (completes 100-12 dropped seam)
+    description: "Spec: addendum §5 Story M-C + §3. Completes story 100-12 dropped seam. Add case 'map' to SectionDispatch -> MapSection adapting server {regions,edges,pins,starting_region} to CartographyMap. Render NPC portrait pins (the 'fancy node thing'). Session-free (reference SPA, no WS). UI test: lore map section renders a graph (not nothing) + pins when portrait_url present. Same upgraded renderer serves the in-game cluster graph (one component, both surfaces — honors 100-10 intent)."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: tdd
+  - id: 104-4
+    title: M-D — Fix orrery broken-drift arc-label sweep rotation
+    description: "Spec: addendum §5 Story M-D + §4. orbital/render.py textPath arc-belt: opposite-side belts need opposite sweep-flag/reversed path so 'broken drift' label reads upright. Cosmetic, ADR-094; no OTEL needed."
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: bug
