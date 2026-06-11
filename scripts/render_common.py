@@ -357,6 +357,7 @@ async def send_render(
     lora_scales: list[float] | None = None,
     variant: str = "",
     fidelity: str = "turbo",
+    background: str = "",
 ) -> dict:
     """Send a render request to the daemon and return the result.
 
@@ -397,6 +398,8 @@ async def send_render(
         params["subject"] = subject
         params["genre"] = genre
         params["world"] = world
+        if background:
+            params["background"] = background
     else:
         # Direct path — caller pre-composed the prompt.
         params["positive_prompt"] = positive
@@ -851,6 +854,7 @@ async def render_batch(
         try:
             lora_paths, lora_scales = resolve_lora_args(visual_style)
             if use_catalog:
+                backdrop = item.get("backdrop_poi", "")
                 result = await send_render(
                     tier,
                     "",
@@ -864,6 +868,7 @@ async def render_batch(
                     lora_scales=lora_scales,
                     variant=visual_style.get("preferred_model", ""),
                     fidelity=fidelity,
+                    background=f"where:{item['world']}/{backdrop}" if backdrop else "",
                 )
             else:
                 result = await send_render(

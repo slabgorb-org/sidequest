@@ -72,6 +72,7 @@ def collect_characters(genre_dir: Path) -> list[dict]:
                     "appearance": char.get("appearance", ""),
                     "culture_aesthetic": char.get("culture_aesthetic", ""),
                     "element_visual": char.get("element_visual", ""),
+                    "backdrop_poi": char.get("backdrop_poi", ""),
                 }
             )
 
