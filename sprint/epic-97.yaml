@@ -103,9 +103,10 @@ stories:
     title: 'fix: ConfrontationOverlay BeatEffect tsc error breaks client-build on develop (from 73-4/97-3)'
     points: 2
     priority: p2
-    status: in_review
+    status: done
     repos: sidequest-ui
     workflow: tdd
+    completed: '2026-06-10'
     type: bug
   - id: 97-8
     title: 'fix: flaky lobby-start-ws-open.test.tsx 5s timeout (vitest-websocket-mock/StrictMode)'
