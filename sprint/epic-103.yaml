@@ -15,6 +15,7 @@ stories:
     repos: server,content
     workflow: tdd
     completed: '2026-06-10'
+    review_verdict: approved
   - id: 103-2
     title: Stock system — stock chargen step + per-stock branching of the mutation step; stocks.yaml schema + generic stock application (attr mods/Move/AC/Trauma-Target/granted mutation IDs, zero per-stock special cases); Sleeper implants as System-Strain item sources; awn.stock.applied span; UI chargen branch flow. Ships proof stocks (Sleeper, one Animal). Build plan §D-B.
     points: 8
