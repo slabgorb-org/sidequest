@@ -33,9 +33,10 @@ stories:
     title: Saint canon (GM lane) — all ~25 Saints from world spec §6 curated to AWN mutation IDs in worlds/seaboard_of_saints/saints.yaml + iconography + veneration flavor; gap analysis -> additive genre-tier mutations where no analog exists (coordinated genre PR). Depends on 103-1 schema freeze.
     points: 5
     priority: p3
-    status: backlog
+    status: done
     repos: content
     workflow: tdd
+    completed: '2026-06-10'
   - id: 103-5
     title: 'World core (GM lane) — world.yaml (draft: true until asset gate), lore.yaml (the Glory, the Shake, New Catholicism, Magisterium doctrine incl. Wild-Mutant marking), history.yaml.'
     points: 3
