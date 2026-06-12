@@ -10,9 +10,10 @@ stories:
     title: Restore the span-proof instrument — teach scripts/playtest.py to answer the Epic-66 pick_portrait frame (portrait_confirm skip) so scenarios/beneath_sunden_engagement.yaml (59-15) runs past chargen and captures movement/confrontation/magic spans instead of silently dying with WrongPhaseError; coordinate with 90-9 which also edits playtest.py chargen
     points: 2
     priority: p1
-    status: in_review
+    status: done
     repos: orchestrator
     workflow: tdd
+    completed: '2026-06-12'
     type: bug
   - id: 105-2
     title: Deterministic surface→deep seam crossing — when a PC in a cartography region that owns a deep_descent route expresses descent, bind to the dungeon entrance (or fail loud), NOT gated on the Haiku intent router alone; forbid location_update from inventing procedural-deep sub-locations on the surface lane; emit OTEL proving pc_region reaches a procedural node + discovered_regions>0 + projection engages. 59-15 goes green on span-proof
