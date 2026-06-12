@@ -4,6 +4,24 @@
 **Purpose:** *Manual-testing index.* Each row names a shipped feature, where it lives in the code (so you know what to grep when it breaks), and a one-line "Manual test" describing what to look for in a real session. If a row has no Manual-test note, it's an engineering-internal seam not directly user-exercisable.
 **Sprint 3:** Playtest 3 closeout — MP correctness, state hygiene, post-port cleanup (active 2026-04-27 → 2026-05-10). Progress: 299/339 points · 8 in backlog.
 
+> **⚙️ Part hand-written, part generated — regenerate before trusting status.**
+> The **Confrontation Engine** section (between the
+> `<!-- FEATURE-INVENTORY:GENERATED -->` markers) is produced by
+> `scripts/regenerate_feature_inventory.py` from
+> `docs/feature-inventory/confrontation-engine.yaml`, with every claimed status
+> **verified against the live span registry, wiring tests, and ADR frontmatter**
+> — drift fails the build. Do **not** hand-edit inside the markers; edit the
+> manifest and run `just feature-inventory-regen` (`just feature-inventory-check`
+> is the CI guard). Every other category below is still **hand-maintained prose**
+> and can silently drift.
+>
+> **Follow-on** (the Phase-1 generator plan was completed + archived at
+> `docs/superpowers/plans/completed/2026-06-03-feature-inventory-generator-phase1.md`):
+> migrate the remaining hand-written categories into per-category manifests one
+> at a time so each stale claim surfaces mechanically; Phase 2 adds
+> observed-emission capture, Phase 3 adds coverage reports. Until then this doc
+> is a hybrid — regenerate the machine section, eyeball the rest.
+
 > **Post-port snapshot.** This inventory describes the **Python** backend
 > (`sidequest-server`) live since the ADR-082 cutover (2026-04-23). The
 > language-level Rust → Python port is complete; subsystem-level drift is
