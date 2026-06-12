@@ -86,10 +86,11 @@ stories:
     title: 'Asset gate (art/music lane) — visual_style.yaml, portrait_manifest.yaml (Saint icons, faction NPCs), POI landscapes for 17 regions, audio params; world leaves draft: true only when gate MET. Depends on 103-6 + 103-7.'
     points: 5
     priority: p3
-    status: in_progress
+    status: done
     started: '2026-06-11'
     repos: content
     workflow: tdd
+    completed: '2026-06-12'
   - id: 103-10
     title: 'End-to-end wiring + regression — integration test per stock: chargen -> narrator opening -> confrontation where Saint drawback/stock trait mechanically fires (OTEL-asserted) -> save cycle; flickering_reach regression (loads clean, Wild-only, zero Saint content); cliché-judge audit over shipped content. Depends on all. Build plan §4 DoD.'
     points: 5
