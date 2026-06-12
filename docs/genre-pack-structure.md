@@ -331,8 +331,8 @@ fallback. A `wwn` pack with caster classes that declare `casts_per_day_by_level`
 A world's `world.yaml` may set `draft: true`. The loader **skips** draft worlds
 entirely (`_load_single_world` returns `None`), so they never appear in
 selection. This is how in-progress worlds stay hidden until their asset gate
-(portraits + POI landscapes rendered to R2) is met — `tea_and_murder/blackthorn_moor`
-is the current example. The old `genre_workshopping/` staging tree was retired
+(portraits + POI landscapes rendered to R2) is met. As of 2026-06-12 no world
+sets it — all 22 worlds are live. The old `genre_workshopping/` staging tree was retired
 on 2026-06-03; `draft: true` replaces it.
 
 ## Media: repo holds specs, R2 holds renders

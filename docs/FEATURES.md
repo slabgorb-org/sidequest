@@ -42,7 +42,17 @@ CHANGELOG.
   and **Gulliver** — the sensible-outsider-reshapes-absurd-society spine, plus pack
   classes and per-world bestiary/lore/tropes.
 - **`heavy_metal` WWN port adds Barsoom** — a full world skeleton on the WWN ruleset
-  with its own classes and chargen, joining `evropi` and `long_foundry`.
+  with its own classes and chargen, joining `evropi` and `long_foundry` (live
+  2026-06-05; POIs on R2, portraits still rendering).
+- **`mutant_wasteland` adds Seaboard of Saints** — a second world beside
+  `flickering_reach`, asset-complete (18 POIs + 51 portraits + leitmotif music on R2).
+- **All worlds now live — no drafts.** `tea_and_murder/blackthorn_moor` cleared its
+  asset gate and was promoted out of `draft: true`; with it gone, all 22 worlds across
+  11 packs are selectable. The per-world asset matrix moved to
+  [`docs/genre-pack-status.md`](genre-pack-status.md).
+- **`caverns_and_claudes/beneath_sunden` WWN port + surface→deep seam (105-2).**
+  The pack ports to WWN (`spells_wwn.yaml`) and gains a deterministic surface→deep
+  seam registry with the authored entrance room "Under the Rope" (`rooms/entrance.yaml`).
 - **Player-facing NPC relationships (ADR-136).** Reactive `RELATIONSHIPS` projection
   and emit, a disposition beat-log, a UI Relationships tab, and a claims-only belief
   firewall (NPC belief never leaks the keeper's ground truth).
