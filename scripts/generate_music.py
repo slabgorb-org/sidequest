@@ -38,7 +38,7 @@ _GENRE_PACKS_RE = re.compile(r".*?(genre_packs/.*?)/audio/music/(.+?)_input_para
 
 def discover_jobs(pack_dir: Path) -> list[tuple[Path, str]]:
     jobs = []
-    for json_path in pack_dir.glob("**/audio/music/*_input_params.json"):
+    for json_path in pack_dir.glob("**/audio/music/**/*_input_params.json"):
         m = _GENRE_PACKS_RE.match(str(json_path))
         if not m:
             continue

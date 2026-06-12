@@ -26,6 +26,28 @@ def test_discover_jobs_walks_pack_audio_music_dir(tmp_path):
     assert len(jobs) == 2
 
 
+def test_discover_jobs_descends_into_nested_themed_dirs(tmp_path):
+    """Flat beds and nested themed/<theme>/ specs must both be discovered, once each."""
+    pack_dir = tmp_path / "genre_packs" / "cav"
+    music_dir = pack_dir / "audio" / "music"
+    music_dir.mkdir(parents=True)
+    # flat bed (legacy layout)
+    (music_dir / "the_feast_full_input_params.json").write_text("{}")
+    # nested leitmotif layout
+    themed_dir = music_dir / "themed" / "henny_voice"
+    themed_dir.mkdir(parents=True)
+    (themed_dir / "source_input_params.json").write_text("{}")
+
+    jobs = discover_jobs(pack_dir)
+
+    keys = [key for _path, key in jobs]
+    assert "genre_packs/cav/audio/music/the_feast_full.ogg" in keys
+    assert "genre_packs/cav/audio/music/themed/henny_voice/source.ogg" in keys
+    # exactly two jobs, no double-counting of the flat bed via the ** glob
+    assert len(jobs) == 2
+    assert len(keys) == len(set(keys))
+
+
 def test_is_in_r2_returns_true_on_http_200():
     with patch.dict(os.environ, {}, clear=False):
         os.environ.pop("SIDEQUEST_ASSET_BASE_URL", None)
