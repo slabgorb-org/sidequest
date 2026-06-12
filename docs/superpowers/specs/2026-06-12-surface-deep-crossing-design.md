@@ -1,6 +1,6 @@
 # Surface→Deep Crossing — Story 105-2 Seam-Design Note
 
-**Date:** 2026-06-12 (rev 2 — seam registry promoted to v1 scope per boss direction)
+**Date:** 2026-06-12 (rev 2.1 — §8 amendment: drift-strip resolves the §4/§7 contradiction found during implementation; rev 2 — seam registry promoted to v1 scope per boss direction)
 **Author:** Architect (Emmanuel Goldstein)
 **Story:** 105-2 — Deterministic surface→deep seam crossing (epic 105, Beneath Sünden)
 **Status:** Approved design, pre-implementation
@@ -217,6 +217,51 @@ same `movement.resolved` + `seam_kind` contract.
 - **Non-regression (AC5):** 90-6 tests green; ropefoot ↔ the_dropmouth
   adjacency still resolves; `entry_skipped_sub_location` unchanged for seam-less
   worlds.
+
+## 8. Rev 2.1 amendment — drift-strip (resolution of the §4/§7 contradiction)
+
+**Found during implementation review (2026-06-12).** Rev 2 was internally
+contradictory: §4 Piece 4 gates recovery on "the narrated heading does not
+resolve to known cartography," but §7's prescribed recovery test heading —
+`"The Dropmouth — The Deep"`, the live turn-3 repro — **does** resolve:
+`resolve_known_region_id`'s leading-segment match maps it to `the_dropmouth`,
+so it takes the *same-region-drift* path and never reaches the Piece 4 branch.
+Both clauses could not hold. Implemented as written, the exact confabulation
+the story exists to kill survived as a cosmetic re-title (the rev 1 root-cause
+3 harm, verbatim).
+
+**Resolution (Architect adjudication): strip, don't cross.** The drift path
+gains a third behavior: when same-region drift fires AND the PC's current
+region owns a registered seam route AND the drifted sub-title differs from the
+region's canonical display name, the engine **re-anchors the applied title and
+the `character_locations` ledger to the canonical region name** — no crossing,
+no patch acceptance. Emits `region.entry_rejected`
+`reason="seam_region_sub_location_stripped"` with the original heading.
+Crossing off a drifted title was rejected because it re-introduces text
+classification as the gate (the lexical floor §3 already rejected) and would
+teleport a player on a benign POI re-title. Benign sub-titles are flattened
+*only* in seam-owning regions — a threshold region is exactly where a narrated
+sub-location is how the confabulated deep gets minted. Seam-less region-mode
+worlds (oz) keep the 90-6 cosmetic re-title unchanged.
+
+**AC2 is therefore satisfied jointly by three guard outcomes:** drift-strip
+(resolvable sub-title over a seam region), recovery (unresolvable heading →
+real crossing, re-anchored to "Under the Rope"), and fail-loud rejection
+(`seam_crossing_unresolvable`, patch dropped, scene boundary suppressed so an
+anchored confrontation survives the refusal).
+
+**Companion fixes landed with the amendment:** the pre-resolution
+`character_locations` write is re-anchored on all three outcomes
+(`_reanchor_location_ledger`, MP cohort-aware); the rejection path no longer
+manufactures a spurious scene boundary (scratch sweep + combat-abandon
+suppressed via the same-region-drift mechanism); a rejected patch emits no
+`state.location_update` event (the GM panel never sees a move the engine
+refused); and `_entrance_room_name` reads `TacticalGridPayload.room_name`
+(the rev 2 `payload.get("name")` sketch was a latent AttributeError).
+
+**OTEL addition to the §5 table:** `region_entry_rejected`
+`reason="seam_region_sub_location_stripped"` — guard drift-strip — **new
+reason value**.
 - **Wiring test:** full turn through `execute_intent_router_pre_narrator_pass`
   + `_apply_narration_result_to_snapshot` with the seam fixture, asserting the
   span family — the guard reachable from production paths. Plus an import-time
