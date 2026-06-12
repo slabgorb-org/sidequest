@@ -1,7 +1,7 @@
 # Understudy Reconnect via Persisted Browser State — Design
 
 **Date:** 2026-06-12
-**Status:** Design (approved, pre-plan)
+**Status:** Built (sidequest-understudy PR #10 merged) — live e2e smoke (run → `--reconnect`) pending on the full stack
 **Repo:** `sidequest-understudy`
 **Related:** `docs/superpowers/specs/completed/2026-06-11-simulated-player-understudy-design.md`
 
