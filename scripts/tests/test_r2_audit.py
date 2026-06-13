@@ -92,10 +92,16 @@ def test_expected_keys_portrait_is_world_scoped(tmp_path: Path) -> None:
     assert "genre_packs/demo/images/portraits/jane_doe.png" not in keys
 
 
-def test_expected_keys_music(tmp_path: Path) -> None:
+def test_expected_keys_params_file_does_not_produce_flat_key(tmp_path: Path) -> None:
+    # Regression for the phantom-gap defect: an ACE-Step `*_input_params.json`
+    # is a generation RECIPE, not an asset reference. Its rendered output lands
+    # in set-N/ or themed/<mood>/ subdirs and is enumerated only via audio.yaml.
+    # Deriving a flat `audio/music/<track>.ogg` sibling key from the params file
+    # manufactured ~126 false "authored but not rendered" gaps, so it must NOT
+    # happen. _build_pack writes theme_input_params.json and no audio.yaml.
     _build_pack(tmp_path)
     keys = expected_keys(tmp_path)
-    assert "genre_packs/demo/audio/music/theme.ogg" in keys
+    assert "genre_packs/demo/audio/music/theme.ogg" not in keys
 
 
 def test_expected_keys_poi_without_slug_falls_back_to_name(tmp_path: Path) -> None:
@@ -294,12 +300,111 @@ def test_audit_catches_audio_yaml_404(tmp_path: Path) -> None:
 
 
 def test_expected_keys_missing_audio_yaml_is_not_an_error(tmp_path: Path) -> None:
-    # AC5: audio.yaml is optional. A pack with params-derived music but no
-    # audio.yaml must still return the params key and must not raise. (Regression
-    # guard for the existing _input_params.json path.)
-    _build_pack(tmp_path)  # builds music via theme_input_params.json, no audio.yaml
+    # AC5: audio.yaml is optional. A pack with no audio.yaml must not raise and
+    # must yield no music keys — music is now sourced exclusively from audio.yaml
+    # references, never from a params file's flat sibling.
+    _build_pack(tmp_path)  # has theme_input_params.json, no audio.yaml
     keys = expected_keys(tmp_path)
-    assert "genre_packs/demo/audio/music/theme.ogg" in keys
+    assert not any(k.startswith("genre_packs/demo/audio/music/") for k in keys)
+
+
+# ── Story 2624: audio.yaml themes + sfx_library are play-references too ──────
+#
+# DEFECT (this chore): _audio_yaml_keys parsed only `mood_tracks`. The `themes`
+# (variation paths, e.g. set-1/<mood>_full.ogg) and `sfx_library` sections were
+# never parsed, so every set-N/ theme track and every sfx clip that IS on R2 and
+# IS referenced got mis-flagged as an orphan (~137 sfx + the set-N/themed music).
+
+
+def test_expected_keys_parses_theme_variation_paths(tmp_path: Path) -> None:
+    _build_audio_pack(
+        tmp_path,
+        """
+        themes:
+          - name: exploration
+            mood: exploration
+            variations:
+              - type: full
+                path: audio/music/set-1/exploration_full.ogg
+              - type: ambient
+                path: audio/music/set-1/exploration_ambient.ogg
+        """,
+    )
+    keys = expected_keys(tmp_path)
+    assert "genre_packs/demo/audio/music/set-1/exploration_full.ogg" in keys
+    assert "genre_packs/demo/audio/music/set-1/exploration_ambient.ogg" in keys
+
+
+def test_expected_keys_parses_sfx_library(tmp_path: Path) -> None:
+    _build_audio_pack(
+        tmp_path,
+        """
+        sfx_library:
+          blaster_fire:
+            - audio/sfx/blaster_fire.ogg
+          door:
+            - audio/sfx/door_open.ogg
+            - audio/sfx/door_close.ogg
+        """,
+    )
+    keys = expected_keys(tmp_path)
+    assert "genre_packs/demo/audio/music/.." not in keys  # no path confusion
+    assert "genre_packs/demo/audio/sfx/blaster_fire.ogg" in keys
+    assert "genre_packs/demo/audio/sfx/door_open.ogg" in keys
+    assert "genre_packs/demo/audio/sfx/door_close.ogg" in keys
+
+
+def test_audit_does_not_flag_referenced_sfx_or_theme_as_orphan(tmp_path: Path) -> None:
+    # Headline regression: referenced sfx + set-N/ theme tracks on R2 must not be
+    # orphans now that themes/sfx_library are parsed.
+    _build_audio_pack(
+        tmp_path,
+        """
+        themes:
+          - name: combat
+            mood: combat
+            variations:
+              - type: full
+                path: audio/music/set-1/combat_full.ogg
+        sfx_library:
+          hit:
+            - audio/sfx/hit.ogg
+        """,
+    )
+    on_r2 = [
+        {"key": "genre_packs/demo/audio/music/set-1/combat_full.ogg"},
+        {"key": "genre_packs/demo/audio/sfx/hit.ogg"},
+    ]
+    result = audit(tmp_path, on_r2)
+    assert not result.orphans
+
+
+def test_expected_keys_theme_variation_without_path_fails_loudly(tmp_path: Path) -> None:
+    _build_audio_pack(
+        tmp_path,
+        """
+        themes:
+          - name: rest
+            mood: rest
+            variations:
+              - type: full
+        """,
+    )
+    with pytest.raises(ValueError):
+        expected_keys(tmp_path)
+
+
+def test_expected_keys_sfx_non_string_entry_fails_loudly(tmp_path: Path) -> None:
+    _build_audio_pack(
+        tmp_path,
+        """
+        sfx_library:
+          weird:
+            - path: audio/sfx/nested.ogg
+        """,
+    )
+    with pytest.raises(ValueError):
+        expected_keys(tmp_path)
 
 
 def test_expected_keys_audio_yaml_entry_without_path_fails_loudly(tmp_path: Path) -> None:

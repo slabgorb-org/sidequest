@@ -14,10 +14,18 @@ the 1:1 local-relative paths the uploader mirrors:
   - POI:      genre_packs/<g>/worlds/<world>/assets/poi/<slug>.png
   - Portrait: genre_packs/<g>/worlds/<world>/assets/portraits/<slug>.png
                (world-scoped, parity with POIs — Story 65-6)
-  - Music:    genre_packs/<g>/audio/music/<track>.ogg  (from ACE-Step
-               *_input_params.json) AND every audio.yaml ``mood_tracks`` path
-               (Story 65-15) — shared ``assets/`` paths resolve slug-less to
-               genre_packs/assets/..., pack-local paths to genre_packs/<g>/...
+  - Audio:    every path referenced by a pack's ``audio.yaml`` — the
+               ``mood_tracks``, ``themes`` (variation paths), and
+               ``sfx_library`` sections. Shared ``assets/`` paths resolve
+               slug-less to genre_packs/assets/...; pack-local paths to
+               genre_packs/<g>/... This is the authoritative "must exist for
+               playback" set. ACE-Step ``*_input_params.json`` files are
+               generation RECIPES, not asset references — their rendered output
+               lands in ``set-N/``/``themed/<mood>/`` subdirs (NOT a flat
+               sibling key) and is enumerated only via audio.yaml. Deriving an
+               expected key from a params file's flat sibling manufactured
+               phantom "authored but not rendered" gaps, so it is intentionally
+               not done.
 
 Per CLAUDE.md (no silent fallbacks) malformed YAML fails loudly. Exits non-zero
 on any gap.
@@ -36,8 +44,6 @@ from scripts.render_common import slugify as _poi_slugify
 
 # Local media extensions that map 1:1 to R2 keys (subset of r2_sync_packs).
 _MEDIA_EXTENSIONS = frozenset({".png", ".ogg"})
-
-_MUSIC_PARAMS_SUFFIX = "_input_params.json"
 
 
 def _slugify_name(name: str) -> str:
@@ -141,17 +147,6 @@ def _portrait_keys(genre: str, genre_dir: Path) -> set[str]:
     return keys
 
 
-def _music_keys(genre: str, genre_dir: Path) -> set[str]:
-    keys: set[str] = set()
-    music_dir = genre_dir / "audio" / "music"
-    if not music_dir.is_dir():
-        return keys
-    for params in sorted(music_dir.glob(f"*{_MUSIC_PARAMS_SUFFIX}")):
-        track = params.name[: -len(_MUSIC_PARAMS_SUFFIX)]
-        keys.add(f"genre_packs/{genre}/audio/music/{track}.ogg")
-    return keys
-
-
 # Shared public-domain audio (classical_pd / ragtime_pd) lives in the
 # genre_packs/assets/ bucket and is referenced WITHOUT a pack slug. This mirrors
 # the canonical rule in sidequest-server's
@@ -164,26 +159,47 @@ _AUDIO_SHARED_PREFIX = "assets/"
 _AUDIO_PASSTHROUGH_PREFIXES = ("http://", "https://", "/")
 
 
-def _audio_yaml_keys(genre: str, genre_dir: Path) -> set[str]:
-    """R2 keys for music tracks declared in a pack's ``audio.yaml``.
+def _resolve_audio_key(genre: str, rel: str) -> str | None:
+    """Resolve one ``audio.yaml`` relpath to its R2 key.
 
-    Parses the ``mood_tracks`` section (mood -> list of ``{path, title, bpm}``)
-    and resolves each ``path`` to its R2 key via the shared-vs-pack-local rule.
-    ``audio.yaml`` is optional; a pack without one yields no keys. A track entry
-    missing its ``path`` is underivable and fails loudly (no silent fallback).
-    The ``sfx_library`` section is intentionally not parsed (different shape;
-    out of scope — see Story 65-15).
+    Returns ``None`` for pass-through references (absolute URLs / server-absolute
+    paths) — those are not R2-managed keys and must not enter the expected set
+    (else they would be perpetual "authored but not rendered" noise). Mirrors
+    the shared-vs-pack-local decision in
+    ``sidequest-server/.../audio_paths.py::resolve_audio_relpath``.
+    """
+    if rel.startswith(_AUDIO_PASSTHROUGH_PREFIXES):
+        return None
+    if rel.startswith(_AUDIO_SHARED_PREFIX):
+        return f"genre_packs/{rel}"
+    return f"genre_packs/{genre}/{rel}"
+
+
+def _audio_yaml_keys(genre: str, genre_dir: Path) -> set[str]:
+    """R2 keys for every asset a pack's ``audio.yaml`` references.
+
+    Parses the three play-reference sections and resolves each ``path`` to its
+    R2 key via the shared-vs-pack-local rule (``_resolve_audio_key``):
+
+      - ``mood_tracks``: mood -> list of ``{path, title, bpm}``
+      - ``themes``: list of ``{name, mood, variations: [{type, path}]}``
+      - ``sfx_library``: name -> list of relpath strings
+
+    ``audio.yaml`` is optional; a pack without one yields no keys. The ``mixer``
+    and ``ai_generation`` sections are configuration, not asset references, and
+    are not parsed. Any reference entry missing its ``path`` (or a non-string
+    sfx entry) is underivable and fails loudly (no silent fallback), mirroring
+    ``_poi_keys``/``_portrait_keys`` raising on bad data.
     """
     audio_path = genre_dir / "audio.yaml"
     if not audio_path.is_file():
         return set()
     data = _load_yaml(audio_path)
     keys: set[str] = set()
+
     mood_tracks = data.get("mood_tracks") or {}
     for mood, entries in mood_tracks.items():
         for entry in entries or []:
-            # No silent fallback (CLAUDE.md): a malformed mood_tracks entry is
-            # not skipped. Mirrors _poi_keys/_portrait_keys raising on bad data.
             if not isinstance(entry, dict):
                 raise ValueError(
                     f"audio.yaml mood_tracks entry is not a mapping in "
@@ -195,13 +211,44 @@ def _audio_yaml_keys(genre: str, genre_dir: Path) -> set[str]:
                     f"audio.yaml track entry missing 'path' in {audio_path} "
                     f"(mood {mood!r}): {entry!r}"
                 )
-            if rel.startswith(_AUDIO_PASSTHROUGH_PREFIXES):
-                # Absolute URL / server-absolute path — not an R2-managed key.
-                continue
-            if rel.startswith(_AUDIO_SHARED_PREFIX):
-                keys.add(f"genre_packs/{rel}")
-            else:
-                keys.add(f"genre_packs/{genre}/{rel}")
+            key = _resolve_audio_key(genre, rel)
+            if key is not None:
+                keys.add(key)
+
+    themes = data.get("themes") or []
+    for theme in themes:
+        if not isinstance(theme, dict):
+            raise ValueError(
+                f"audio.yaml themes entry is not a mapping in {audio_path}: {theme!r}"
+            )
+        for variation in theme.get("variations", []) or []:
+            if not isinstance(variation, dict):
+                raise ValueError(
+                    f"audio.yaml theme variation is not a mapping in {audio_path} "
+                    f"(theme {theme.get('name')!r}): {variation!r}"
+                )
+            rel = variation.get("path")
+            if not rel:
+                raise ValueError(
+                    f"audio.yaml theme variation missing 'path' in {audio_path} "
+                    f"(theme {theme.get('name')!r}): {variation!r}"
+                )
+            key = _resolve_audio_key(genre, rel)
+            if key is not None:
+                keys.add(key)
+
+    sfx_library = data.get("sfx_library") or {}
+    for name, paths in sfx_library.items():
+        for rel in paths or []:
+            if not isinstance(rel, str):
+                raise ValueError(
+                    f"audio.yaml sfx_library entry is not a string path in "
+                    f"{audio_path} (sfx {name!r}): {rel!r}"
+                )
+            key = _resolve_audio_key(genre, rel)
+            if key is not None:
+                keys.add(key)
+
     return keys
 
 
@@ -218,7 +265,6 @@ def expected_keys(content_root: Path) -> set[str]:
         genre = genre_dir.name
         keys |= _poi_keys(genre, genre_dir)
         keys |= _portrait_keys(genre, genre_dir)
-        keys |= _music_keys(genre, genre_dir)
         keys |= _audio_yaml_keys(genre, genre_dir)
     return keys
 
