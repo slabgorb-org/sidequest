@@ -18,7 +18,10 @@ stories:
     title: 'Monster Manual for beneath_sunden — combat opponents are narrator-improvised (the creature of animal musk) with no stable name or portrait; author the dungeon bestiary as content entities (stable names + portrait assets: the four-toed pale scuttler, the eyeless bristle-faced den creature) and inject per ADR-059 into game_state as creatures nearby (not yet met), bound per-room, so the narrator draws from them instead of inventing'
     points: 5
     priority: p1
-    status: backlog
+    status: done
     repos: content,server
     workflow: tdd
     depends_on: 107-1
+    completed: '2026-06-13'
+    branch: feat/107-2-monster-manual-beneath-sunden
+    review_verdict: approved
