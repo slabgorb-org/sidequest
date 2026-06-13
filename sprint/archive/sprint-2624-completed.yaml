@@ -24,6 +24,7 @@ completed_epics:
   - '97'
   - '104'
   - '103'
+  - '105'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -500,3 +501,18 @@ completed_stories:
     title: 'End-to-end wiring + regression — integration test per stock: chargen -> narrator opening -> confrontation where Saint drawback/stock trait mechanically fires (OTEL-asserted) -> save cycle; flickering_reach regression (loads clean, Wild-only, zero Saint content); cliché-judge audit over shipped content. Depends on all. Build plan §4 DoD.'
     points: 5
     completed: '2026-06-11'
+  - id: 105-1
+    epic: '105'
+    title: Restore the span-proof instrument — teach scripts/playtest.py to answer the Epic-66 pick_portrait frame (portrait_confirm skip) so scenarios/beneath_sunden_engagement.yaml (59-15) runs past chargen and captures movement/confrontation/magic spans instead of silently dying with WrongPhaseError; coordinate with 90-9 which also edits playtest.py chargen
+    points: 2
+    completed: '2026-06-12'
+  - id: 105-2
+    epic: '105'
+    title: Deterministic surface→deep seam crossing — when a PC in a cartography region that owns a deep_descent route expresses descent, bind to the dungeon entrance (or fail loud), NOT gated on the Haiku intent router alone; forbid location_update from inventing procedural-deep sub-locations on the surface lane; emit OTEL proving pc_region reaches a procedural node + discovered_regions>0 + projection engages. 59-15 goes green on span-proof
+    points: 5
+    completed: '2026-06-13'
+  - id: 105-3
+    epic: '105'
+    title: 'Reverse seam — leaving the Deep: entrance→surface ascent (back up the rope)'
+    points: 3
+    completed: '2026-06-13'
