@@ -21,9 +21,15 @@ stories:
     title: 'F2b — Aspects-as-prompt + invoke surfacing + compel proposal: register Fate narrator prompt sections (character/scene aspects, fate points, invokable aspects) reusing _build_fate_summary as one source of truth; add propose_fate_compel narrator tool firing fate.compel.offered; invokable-aspect directive. Depends F1b/F2a (merged). Plan: docs/superpowers/plans/2026-06-14-f2b-fate-narrator-aspects.md (to author).'
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    assigned_to: slabgorb
+    started: '2026-06-14T20:39:07Z'
     repos: server
     workflow: tdd
+    completed: '2026-06-14'
+    branch: feat/116-2-f2b-fate-narrator-aspects
+    review_findings: 'BLOCKING [SEC/HIGH]: aspect text rendered into the narrator prompt without ADR-047 sanitize_player_text (fate_projection.py:41,43 -> orchestrator.py _build_fate_state_section); new player-text->prompt path bypassing the wired sanitizer. Plus 4 non-blocking Mediums: tool-arg min/max_length validation, compel_reason never reaching the OTEL span, scene_aspects not gated on enc.resolved, consequence-aspect labeling.'
+    review_verdict: approved
   - id: 116-3
     title: 'F2d — Deterministic opponent AI: game/fate_opponent.py decision fn + auto-commit hook so an undefeated opponent takes proactive Fate actions (mirrors WN _resolve_opponent_reprisal at dice.py:2011), emitting fate.opponent.decided. Closes the inert-opponent gap — fate_conflict.py rolls reactive defense only and skips uncommitted opponent slots. Deterministic, no LLM call. Depends F1c/F2a (merged). Plan: docs/superpowers/plans/2026-06-14-f2d-fate-opponent-ai.md (to author).'
     points: 5
