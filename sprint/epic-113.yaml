@@ -1,0 +1,33 @@
+id: '113'
+type: epic
+title: Genre→World boundary hygiene (ADR-140) — content-tier cleanup from the 2026-06-14 genre-pack-root audit
+description: 'Follow-on from the 2026-06-14 sweep of all 11 genre-pack roots (committed on chore/genre-pack-root-cleanup: removed 6 loader-dead files + 5 genre-tier cultures.yaml + junk). ADR-140: the genre tier is the rulebook only; the world owns cast and catalog. Remaining boundary items that need code coordination or a validation decision: (1) relocate caverns_and_claudes themes/ to its single world beneath_sunden; (2) reconcile pack_schema.yaml with the actual server loader allowlist; (3) decide on relocating combat_design.md/magic_design.md design docs out of runtime pack folders.'
+priority: p3
+status: backlog
+repos: server,content
+stories:
+  - id: 113-1
+    title: Relocate caverns_and_claudes themes/ from genre root to worlds/beneath_sunden/themes/ (ADR-140)
+    description: |-
+      themes/ is single-world (beneath_sunden) dungeon-palette content sitting at the genre root. It is NOT dead (unlike the cultures/openings sweep) — it is live-wired and read from the genre root, so this is a coupled content+server change, not a content move. load_theme_palette raises if themes/ is absent, so the content move and code change MUST land together or every beneath_sunden session crashes on dungeon attach.
+
+      WIRING (sidequest-server, all resolve to genre-pack root = world_dir.parent.parent):
+      - sidequest/dungeon/session_integration.py:75 _theme_pack_root() returns world_dir.parent.parent (docstring calls this the 'Plan 4 layout genre_packs/<genre>/themes/'); called at :149
+      - sidequest/server/session_helpers.py:574 load_theme_palette(world_dir.parent.parent)
+      - sidequest/server/websocket_handlers/map_emit.py:799 load_theme_palette(world_dir.parent.parent)
+      - sidequest/cli/validate/pack.py:370 load_theme_palette(pack_dir) — validator currently checks themes/ at pack level
+      - load_theme_palette signature: sidequest/dungeon/themes.py:288 (reads <pack_dir>/themes/*.yaml)
+
+      CONTENT (sidequest-content): git mv genre_packs/caverns_and_claudes/themes/ -> genre_packs/caverns_and_claudes/worlds/beneath_sunden/themes/ (5 palette yamls + README.md).
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    acceptance_criteria:
+      - _theme_pack_root (or its callers) resolves themes/ to world_dir (worlds/<world>/themes/), not the genre-pack root
+      - session_helpers.py:574 and map_emit.py:799 updated to read the palette from the world dir
+      - pack validator (cli/validate/pack.py) validates themes/ at the world tier, not the pack tier
+      - themes/ content moved to worlds/beneath_sunden/themes/ in sidequest-content; old genre-root path removed
+      - existing dungeon theme tests (tests/dungeon/test_themes.py, test_themes_wiring.py) updated and green; a beneath_sunden session loads its palette from the world dir end-to-end (wiring test)
+    type: refactor
