@@ -71,9 +71,10 @@ server/dispatch/fate_conflict.py   the exchange engine
 `fate_conflict.py` owns the exchange loop. Reuses the existing encounter/MP substrate:
 - **Establish:** sides, **zones** (reuse/extend the encounter's spatial notion), turn order
   by **Notice** (physical) / **Empathy** (mental).
-- **Exchange:** each seated participant takes one action ∈ {overcome, create-advantage,
-  attack, defend}; full-defense option (+2 to all defends, no proactive action). Opposition
-  active (opposed roll) or passive (set difficulty).
+- **Exchange:** each seated participant takes one of the three proactive actions ∈ {overcome,
+  create-advantage, attack}; **defend** is reactive — the engine rolls it for the target when
+  an attack resolves (SRD: defense is opposed). Opposition active (opposed roll) or passive
+  (set difficulty).
 - **Attack resolution:** shifts → target absorbs via **stress** boxes or **consequences**;
   no absorption ⇒ **taken out**. **Concede** (player-initiated, pre-roll) → fate points +
   narrative control, avoids worst outcome.
@@ -152,8 +153,9 @@ Per the OTEL Observability Principle, F1 emits at minimum:
 - **Resolution primitive:** table-driven over the four outcome tiers; 4dF distribution
   sanity; invoke (+2 / reroll) application; active vs passive opposition.
 - **Conflict engine:** an exchange resolves attack → stress → consequence → taken-out;
-  concede path; create-advantage places a situation aspect with a free invoke; full-defense
-  +2. Property: total absorbed ≤ available stress+consequence capacity, else taken-out.
+  concede path; create-advantage places a situation aspect with a free invoke; a clean miss
+  (negative shifts) deals no stress, and a tie on attack/overcome yields a boost. Property:
+  total absorbed ≤ available stress+consequence capacity, else taken-out.
 - **Wiring tests (mandatory, per server CLAUDE.md):** OTEL-span assertion that a Fate action
   driven through the *real* dispatch emits `fate.roll`/`fate.outcome` (not a source grep);
   registry test that `get_ruleset_module("fate")` resolves; a pack bound `ruleset: fate`
