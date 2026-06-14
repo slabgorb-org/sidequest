@@ -38,9 +38,10 @@ stories:
     title: 'ADR-142 doc backfill (housekeeping) — write the missing docs/adr/142-*.md recording the Without Number core extraction shipped in sidequest-server #841 (WithoutNumberRulesetModule, without_number.py, unified lethality spans, four WN modules reparented as clean siblings; tests test_142_wn_core_extraction.py / test_102_4_wn_turn_model_family.py cite it). Closes the 141->143 numbering hole. Regen ADR indexes.'
     points: 1
     priority: p3
-    status: backlog
+    status: done
     repos: orchestrator
     workflow: trivial
+    completed: '2026-06-13'
     type: chore
   - id: 108-5
     title: 'WN combat player action surface — WN action buttons (Attack / Use Item / Move-Disengage / Cast) replace the native beat menu; NO Brace/total-defense button (not a WWN action — defense is passive AC). Each button fires a real WN roll via the bound WithoutNumberRulesetModule (108-1 resolution path), rendered in the ADR-074 dice tray. Retain DICE_THROW.player_action as the RP-flavor rider — narrator hook only, ZERO mechanics (the chandelier swing) — and enforce that a bare combat free-text (no action button) does NOT resolve to a combat outcome. Add wn.action.flavor_rider{affected_mechanics=false} OTEL proving the rider stayed flavor-only. Spec: docs/superpowers/specs/2026-06-14-wn-combat-action-surface-design.md'
