@@ -17,3 +17,25 @@ stories:
     workflow: tdd
     completed: '2026-06-14T16:30:00Z'
     review_verdict: approved
+  - id: 116-2
+    title: 'F2b — Aspects-as-prompt + invoke surfacing + compel proposal: register Fate narrator prompt sections (character/scene aspects, fate points, invokable aspects) reusing _build_fate_summary as one source of truth; add propose_fate_compel narrator tool firing fate.compel.offered; invokable-aspect directive. Depends F1b/F2a (merged). Plan: docs/superpowers/plans/2026-06-14-f2b-fate-narrator-aspects.md (to author).'
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 116-3
+    title: 'F2d — Deterministic opponent AI: game/fate_opponent.py decision fn + auto-commit hook so an undefeated opponent takes proactive Fate actions (mirrors WN _resolve_opponent_reprisal at dice.py:2011), emitting fate.opponent.decided. Closes the inert-opponent gap — fate_conflict.py rolls reactive defense only and skips uncommitted opponent slots. Deterministic, no LLM call. Depends F1c/F2a (merged). Plan: docs/superpowers/plans/2026-06-14-f2d-fate-opponent-ai.md (to author).'
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 116-4
+    title: 'F2c — Create-advantage rendering + Fate honesty lie-detector: surface F1c situation aspects into the prompt + narration; add fate_engagement_watcher mirroring dispatch_engagement_watcher; emit fate.narration.mismatch when prose claims a Fate outcome (advantage created / foe taken out) the engine never produced. Depends F2b (renders into its prompt sections) + F2a. Plan: docs/superpowers/plans/2026-06-14-f2c-fate-advantage-honesty.md (to author).'
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 116-2
