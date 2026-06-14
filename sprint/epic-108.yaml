@@ -21,9 +21,10 @@ stories:
     title: 107-2 — the WN round seats its Other from the bound room roster, not an improvised opponent. Under a WN binding the opponent-seater (ADR-116 single room-sourced chokepoint) MUST prefer a bound Monster-Manual creature at the acting PC's location (npcs entries with manual_origin:true, resolution_tier:spawn, bound via location) over a narrator-invented placeholder ('aquatic creature…', 'Unknown Adversary'). Verify participant.joined{source,side} OTEL shows the bound source. Engine seater half of 107-2 (content stub-fix half is 108-3). Preserves ADR-139 mechanically-capable-Other (authored opponent_damage).
     points: 5
     priority: p1
-    status: backlog
+    status: done
     repos: server
     workflow: tdd
+    completed: '2026-06-14'
     type: bug
   - id: 108-3
     title: "Content de-nativize WWN combat defs — strip resolution_mode:beat_selection, native beat lists (strike/brace/push/angle/committed_blow/break_contact), edge_config, combat momentum metrics, and the Brace action from the COMBAT confrontation defs across the WWN packs (beneath_sunden primary verify target; heavy_metal evropi+long_foundry, elemental_harmony, heavy_metal/barsoom swept the same way). WWN combat defs express only win_condition:hp_depletion + opponent stats + authored opponent_damage DamageSpec (ADR-139 Inv-3). Chase/negotiation DIAL defs untouched. Also fix the 107-2 content stubs: Torchdeep/Torchhold/Bileden have creature_id=None/threat=None/abilities=[] (give real stat blocks) and the 'Dungeon Names' naming-source leak into the description field. → gm agent."
