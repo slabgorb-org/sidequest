@@ -1,0 +1,46 @@
+id: '117'
+type: epic
+title: Quest-seed lifecycle — authored hooks mint tracked quests, and a lie-detector that actually catches silent objectives
+description: "Live perseus_cloud playtest (2026-06-14, session 594dcc7e): player took the scripted opening's floor-boss detective hook and worked it ~15 turns; quest_log stayed {} the whole time. Root cause chain: (1) the narrator never called record_quest, so the quest existed only in prose — QUESTS emitted quests=0, QuestsPanel correctly showed nothing, and 29 lore fragments had no Quest to cohere around ('knowledge has references but nothing pulls them into a coherent picture'); (2) the unminted-objective lie-detector (aa309f5d, added same day) stayed silent because it gates on a 14-phrase hardcoded keyword list that a noir detective hook never trips — a Zork-problem keyword matcher policing open-ended narration; (3) the deeper gap: a SCRIPTED opening hook has no structured quest seed — the floor-boss is authored prose (complication: in openings.yaml) with nothing machine-readable behind it, so minting depends entirely on the narrator remembering a tool call. NOTE: the OTEL GM-panel teardown (#859) did NOT collide — quest spans are all correctly routed into the typed SPAN_ROUTES feed and 'just otel' opens the React Inspector; the only drift is a stale CLAUDE.md 'just otel' line. This epic makes authored hooks mint deterministically (Tabletop-First: a DM who hands you a job has given you a quest), hardens the lie-detector to catch open-ended objective-giving, and projects the accepted quest's lore into a coherent tracked picture (ADR-053/ADR-100)."
+priority: p1
+status: backlog
+repos: server,content
+stories:
+  - id: 117-1
+    title: "Fix stale 'just otel' reference in CLAUDE.md — points at deleted server /dashboard route; should be the React Inspector at localhost:5173/#/dashboard (server HTML dashboard deleted in #859). Pure doc drift surfaced during the quest-blindness investigation."
+    points: 1
+    priority: p2
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    type: chore
+  - id: 117-2
+    title: "Design + ADR: quest-seed authoring contract. Define how an authored hook (opening.complication / seed_trope) declares a structured quest_seed that mints a real QuestEntry deterministically when the player accepts it — no narrator tool-call required. Cover: schema (objective/anchor/stakes), the acceptance trigger (how 'player took the job' is detected without a Zork verb-set), interaction with seed_quest_spine (drive/calling seeds) and record_quest (narrator-minted), and the OTEL span. Tabletop-First framing: a DM who hands you a job has handed you a quest. Exemplar: perseus_cloud floor-boss detective hook."
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server,content
+    workflow: superpowers
+  - id: 117-3
+    title: 'Implement deterministic quest-seed minting: an authored opening/seed_trope quest_seed mints a QuestEntry into quest_log on acceptance, emitting quest.created/quest.seeded spans, so QUESTS projects to QuestsPanel without depending on the narrator calling record_quest. Author the perseus_cloud floor-boss detective hook as the first quest_seed (content). Wiring test: scripted opening → accept → quest_log non-empty → quests.emitted quests>=1.'
+    points: 8
+    priority: p1
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    depends_on: 117-2
+  - id: 117-4
+    title: "Harden the unminted-objective lie-detector: retire/augment the 14-phrase hardcoded keyword gate in dispatch_engagement_watcher.py (a noir 'discreet job' hook trips none of them) with intent-router-backed objective detection — the router already classifies objective-giving turns. Goal: narration.unminted_objective.suspected fires on open-ended hooks, not just curated phrasings, so the GM panel beeps when quest_log stays empty under a stated objective. Includes the span already routed in SPAN_ROUTES."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 117-5
+    title: "Coherence: project the accepted quest's lore into a tracked picture. Persisted lore fragments / known facts that relate to an active quest_log entry must surface under that quest (clue-graph/journal projection per ADR-053 partial + ADR-100) so the player sees 'what I've learned about this job', not scattered references. Directly addresses Keith's symptom: 'knowledge has multiple references but nothing pulls them into a coherent picture.'"
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 117-3
