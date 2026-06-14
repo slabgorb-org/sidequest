@@ -27,6 +27,7 @@ completed_epics:
   - '105'
   - '107'
   - '106'
+  - '90'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -556,5 +557,50 @@ completed_stories:
   - id: 106-6
     epic: '106'
     title: Narration-truth guardrail — narrator over-claims a player knockdown and negates a successful hit at low HP (narrates a miss on a Strike Success that removed opponent HP, and depicts the PC going down while at 1/10 with a live beat menu and no ENCOUNTER_RESOLVED); symmetric player-down cousin of the fixed kill-overclaim-on-failed-strike anchor (fbff7135), on a successful player beat
+    points: 3
+    completed: '2026-06-14'
+  - id: 90-1
+    epic: '90'
+    title: Encountergen ruleset-awareness — emit WWN/CWN/SWN-aligned enemy stat blocks via the RulesetModule seam so pregen.seed_manual populates the Monster Manual encounters pool for ruleset-module packs (replaces native allowed_classes/class_hp_bases dependency)
+    points: 8
+    completed: '2026-06-05'
+  - id: 90-2
+    epic: '90'
+    title: WWN/ADR-126 magic plugin not instantiated at session-bind — long_foundry ships magic.yaml but runtime snapshot.magic_state is None, so cast paths gate; instantiate the world MagicPlugin into the session and assert magic_state present via OTEL
+    points: 5
+    completed: '2026-06-06'
+  - id: 90-3
+    epic: '90'
+    title: AC5b live free-play OTEL proof — a fight-seeker reaches WWN combat (wwn.* + ablative HP) and a caster fires wwn.spell.cast from a world opening, lie-detector quiet, across heavy_metal evropi + long_foundry + barsoom (epic 89); depends on 90-1 statted enemies + 90-2 magic_state
+    points: 5
+    completed: '2026-06-14'
+  - id: 90-4
+    epic: '90'
+    title: Scene-harness hydrator — seed per-character WWN core.spellcasting (Effort/prepared) and a WWN hp_depletion encounter so a DETERMINISTIC fixture playtest can prove wwn.* combat + wwn.spell.cast live (deterministic counterpart to 90-3 free-play); _hydrate_character + _hydrate_encounter in server/game/scene_harness.py
+    points: 5
+    completed: '2026-06-10'
+  - id: 90-5
+    epic: '90'
+    title: '90-1 fail-loud hardening — pin the failure-path contract from review: test encountergen exit-1 (bestiary-less ruleset pack) + EncounterSeedError raise; emit pregen.seed_manual span (error attr) before raising; assert ruleset span attr in AC4; unit-test Bestiary validators; decide ensure_loaded broad-except policy for EncounterSeedError (ADR-006 vs fail-loud); doc/content polish (stale docstrings, awn in AC6 wording, hp-floor headers, derive AC6 slug list from rules.yaml scan)'
+    points: 3
+    completed: '2026-06-10'
+  - id: 90-6
+    epic: '90'
+    title: Region-mode location-drift abandons live combat the turn it instantiates
+    points: 5
+    completed: '2026-06-08'
+  - id: 90-7
+    epic: '90'
+    title: "WWN scene-harness hydrator — add the dropped Effort half: seed per-character core.effort (source-keyed EffortPool) and emit wwn.magic_hydrated OTEL, on top of #787's spellcasting-only 90-4. #787 shipped prepared/spellcasting + hp_depletion but omitted effort hydration (the title's '(Effort/prepared)') and the GM-panel lie-detector span; reference oq-1 closed PR #788 for the worked implementation + tests (effort block = source-keyed mapping, EffortPool.source from key, loud-fail on malformed)"
+    points: 3
+    completed: '2026-06-10'
+  - id: 90-8
+    epic: '90'
+    title: "Route hydration lie-detectors (wwn.magic_hydrated + magic.state_hydrated) into the typed GM-panel Subsystems feed — 90-7 fast-follow #1 (design-bearing). Today scene_harness._hydrate_character emits both via watcher_hub.publish_event, so they reach only the dashboard RAW console: neither event_type is in the UI WatcherEventType union (sidequest-ui/src/types/watcher.ts) NOR in SPAN_ROUTES (sidequest-server/sidequest/telemetry/spans/), so they never appear in the typed Subsystems tab the way wwn.spell.cast / wwn.effort.commit do. DECISION NEEDED: re-emit as a routed OTEL span (Span.open + SpanRoute event_type=state_transition, component=magic — mirrors wwn.py helpers, no UI change) vs add the literal event_types to the UI union. Routed-span path changes 90-7's emit mechanism + its test contract (tests monkeypatch _hub.publish_event). Apply the chosen pattern to BOTH siblings. Ref: 90-7 Reviewer delivery finding; scene_harness.py:371-390."
+    points: 3
+    completed: '2026-06-10'
+  - id: 90-9
+    epic: '90'
+    title: 'AC5b live OTEL proof, reframed — fix headless chargen to honor scenario class: (scripts/playtest.py) + author a fight-seeker→WWN-combat reachability path, then live re-verify the epic-102 WN cast/combat spine fires (wwn.spell.cast, wwn.* combat + ablative HP, {ruleset}.mortal_injury/.shock) across heavy_metal evropi/long_foundry + barsoom; NO magic_init/magic_state/server-schema work (Architect ruling 2026-06-10, supersedes 90-3)'
     points: 3
     completed: '2026-06-14'
