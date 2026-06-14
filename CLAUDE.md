@@ -187,7 +187,7 @@ just check-all            # server-check + client-lint + client-test + daemon-li
 # Playtest / OTEL
 just playtest [flags]     # Headless playtest driver against running server
 just playtest-scenario <name>   # Runs scenarios/<name>.yaml
-just otel                 # Opens GM dashboard (sidequest-server /dashboard)
+just otel                 # Opens the OTEL GM panel in the React Inspector (localhost:5173/#/dashboard)
 
 # Utilities
 just status               # git status across all subrepos
