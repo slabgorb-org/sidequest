@@ -28,6 +28,10 @@ completed_epics:
   - '107'
   - '106'
   - '90'
+  - '110'
+  - '111'
+  - '112'
+  - '115'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -603,4 +607,59 @@ completed_stories:
     epic: '90'
     title: 'AC5b live OTEL proof, reframed — fix headless chargen to honor scenario class: (scripts/playtest.py) + author a fight-seeker→WWN-combat reachability path, then live re-verify the epic-102 WN cast/combat spine fires (wwn.spell.cast, wwn.* combat + ablative HP, {ruleset}.mortal_injury/.shock) across heavy_metal evropi/long_foundry + barsoom; NO magic_init/magic_state/server-schema work (Architect ruling 2026-06-10, supersedes 90-3)'
     points: 3
+    completed: '2026-06-14'
+  - id: 110-1
+    epic: '110'
+    title: 'server: honest WithoutNumberRulesetModule base + lethality/attribute groundwork (PR #841)'
+    points: 5
+    completed: '2026-06-14'
+  - id: 110-2
+    epic: '110'
+    title: 'content: shaped WWN standard array across the three WWN packs (PR #440)'
+    points: 3
+    completed: '2026-06-14'
+  - id: 111-1
+    epic: '111'
+    title: 'server: chargen seam — module-owned attribute mechanics + WWN Skills/Foci/Background substrate (PR #850)'
+    points: 5
+    completed: '2026-06-14'
+  - id: 111-2
+    epic: '111'
+    title: 'content: skills/backgrounds/foci + chargen wiring for the 3 WWN packs (PR #444)'
+    points: 5
+    completed: '2026-06-14'
+  - id: 111-3
+    epic: '111'
+    title: 'ui: arrange panel reads ability_names + character sheet skills/foci sections (PR #388)'
+    points: 3
+    completed: '2026-06-14'
+  - id: 112-1
+    epic: '112'
+    title: 'server: survival-clock engine, ruleset teeth, environment_clock, OTEL + narrator (PR #834)'
+    points: 5
+    completed: '2026-06-13'
+  - id: 112-2
+    epic: '112'
+    title: 'content: caverns light survival-clock pool, lit flags, light_source tags (PR #435)'
+    points: 3
+    completed: '2026-06-13'
+  - id: 112-3
+    epic: '112'
+    title: 'ui: light survival gauge with -2-in-the-dark affordance (PR #385)'
+    points: 3
+    completed: '2026-06-13'
+  - id: 115-1
+    epic: '115'
+    title: Part A — SessionSource abstraction + session picker (A1–A5)
+    points: 5
+    completed: '2026-06-14'
+  - id: 115-2
+    epic: '115'
+    title: Part B — forensic lenses + unified shell wiring (B1–B6)
+    points: 5
+    completed: '2026-06-14'
+  - id: 115-3
+    epic: '115'
+    title: 'Part C — teardown: delete server HTML/routes, dead spans, stale fixes (C1–C4)'
+    points: 5
     completed: '2026-06-14'

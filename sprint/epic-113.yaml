@@ -21,7 +21,8 @@ stories:
       CONTENT (sidequest-content): git mv genre_packs/caverns_and_claudes/themes/ -> genre_packs/caverns_and_claudes/worlds/beneath_sunden/themes/ (5 palette yamls + README.md).
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-14'
     repos: server,content
     workflow: tdd
     acceptance_criteria:
@@ -30,7 +31,9 @@ stories:
       - pack validator (cli/validate/pack.py) validates themes/ at the world tier, not the pack tier
       - themes/ content moved to worlds/beneath_sunden/themes/ in sidequest-content; old genre-root path removed
       - existing dungeon theme tests (tests/dungeon/test_themes.py, test_themes_wiring.py) updated and green; a beneath_sunden session loads its palette from the world dir end-to-end (wiring test)
+    completed: '2026-06-14'
     type: refactor
+    review_verdict: approved
   - id: 113-2
     title: Reconcile pack_schema.yaml with the actual server loader allowlist (drift both directions)
     description: |-
