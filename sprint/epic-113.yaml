@@ -54,14 +54,17 @@ stories:
       SCOPE: make pack_schema.yaml the source of truth for the loader allowlist (or generate/validate one against the other) so the two cannot silently diverge again. Decide whether validator should WARN on unknown pack-root YAML (currently silently ignored — a No-Silent-Fallbacks gap).
     points: 3
     priority: p3
-    status: in_progress
+    status: done
     repos: server,content
     workflow: tdd
     acceptance_criteria:
       - "pack_schema.yaml genre extensions match the loader's actual filename allowlist: openings/powers/weather removed, skills/spells_wwn/foci/bestiary/backgrounds/witnessed_acts/mutations/disciplines_psionic added"
       - a test asserts schema and loader allowlist agree, so future drift fails CI
       - pack validator flags (at least WARN) an unknown YAML file at a pack root instead of silently ignoring it
+    completed: '2026-06-14'
     type: chore
+    review_findings: F401 unused 'import yaml' in tests/cli/validate/test_pack_schema_loader_drift_113_2.py:49 fails ruff check / project gate. Substance verified sound (schema==loader 19/19 exact, constant honest, dead files truly dead, security clean). Lint-only -> Dev green rework.
+    review_verdict: approved
   - id: 113-3
     title: Relocate combat_design.md / magic_design.md out of runtime genre-pack folders into docs/
     description: |-
