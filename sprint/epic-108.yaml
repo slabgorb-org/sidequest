@@ -46,10 +46,13 @@ stories:
     title: 'WN combat player action surface — WN action buttons (Attack / Use Item / Move-Disengage / Cast) replace the native beat menu; NO Brace/total-defense button (not a WWN action — defense is passive AC). Each button fires a real WN roll via the bound WithoutNumberRulesetModule (108-1 resolution path), rendered in the ADR-074 dice tray. Retain DICE_THROW.player_action as the RP-flavor rider — narrator hook only, ZERO mechanics (the chandelier swing) — and enforce that a bare combat free-text (no action button) does NOT resolve to a combat outcome. Add wn.action.flavor_rider{affected_mechanics=false} OTEL proving the rider stayed flavor-only. Spec: docs/superpowers/specs/2026-06-14-wn-combat-action-surface-design.md'
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-14'
     repos: ui,server
     workflow: tdd
     depends_on: 108-1
+    completed: '2026-06-14'
+    review_verdict: approved
   - id: 108-6
     title: 'WWN dying/down window + solo-actuator gap (BRAINSTORM-FLAGGED) — emit a real WWN mortally-wounded → d6-round stabilize → dead window under the WN round, not terminal-dead-only. The solo-actuator gap is an OPEN design problem (in solo play nothing can advance or act on the stabilize clock — input is disabled once the PC is out of the action) and MUST be brainstormed before implementation: a clock nothing can advance is worse than no clock. Server #846 already removed the dual-status CONTRADICTION (terminal-dead shows one coherent status); this story is the actionable WINDOW, not the contradiction fix. Re-homes the cancelled 106-5 dying-window work the cancellation commit (e5ae1fc8) promised would fold into this rework but never did. Refs: gm-decisions 2026-06-13/14, ADR-114, ADR-143.'
     points: 5
