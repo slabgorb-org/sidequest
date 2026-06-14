@@ -10,10 +10,14 @@ stories:
     title: "Fix stale 'just otel' reference in CLAUDE.md — points at deleted server /dashboard route; should be the React Inspector at localhost:5173/#/dashboard (server HTML dashboard deleted in #859). Pure doc drift surfaced during the quest-blindness investigation."
     points: 1
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-14'
     repos: orchestrator
     workflow: trivial
+    completed: '2026-06-14'
     type: chore
+    review_findings: 'Hermes: APPROVED. CLAUDE.md:190 just-otel comment now matches justfile:472-473 (React Inspector localhost:5173/#/dashboard). Docs-only, +1/-1, scope clean, verified against live recipe.'
+    review_verdict: approved
   - id: 117-2
     title: "Design + ADR: quest-seed authoring contract. Define how an authored hook (opening.complication / seed_trope) declares a structured quest_seed that mints a real QuestEntry deterministically when the player accepts it — no narrator tool-call required. Cover: schema (objective/anchor/stakes), the acceptance trigger (how 'player took the job' is detected without a Zork verb-set), interaction with seed_quest_spine (drive/calling seeds) and record_quest (narrator-minted), and the OTEL span. Tabletop-First framing: a DM who hands you a job has handed you a quest. Exemplar: perseus_cloud floor-boss detective hook."
     points: 3
