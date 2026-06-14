@@ -22,9 +22,13 @@ stories:
     title: "Design + ADR: quest-seed authoring contract. Define how an authored hook (opening.complication / seed_trope) declares a structured quest_seed that mints a real QuestEntry deterministically when the player accepts it — no narrator tool-call required. Cover: schema (objective/anchor/stakes), the acceptance trigger (how 'player took the job' is detected without a Zork verb-set), interaction with seed_quest_spine (drive/calling seeds) and record_quest (narrator-minted), and the OTEL span. Tabletop-First framing: a DM who hands you a job has handed you a quest. Exemplar: perseus_cloud floor-boss detective hook."
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-14'
     repos: server,content
-    workflow: superpowers
+    workflow: architecture
+    completed: '2026-06-14'
+    review_findings: "Hermes: APPROVED. ADR-146 + spec (acd33a7) — all 6 load-bearing code citations CONFIRMED against live source (OpeningTone extra=forbid, QuestEntry fields, RecordQuestArgs, dispatch confidence/threshold, _UNMINTED_OBJECTIVE_MARKERS, pending_quest_offers absent). Implementable as written. 3 cosmetic nits for 117-3 to fix in passing: (1) marker list is 13 not 14 phrases; (2) prose typo component='quot_log' (the SPAN_ROUTES snippet is correct); (3) IntentRouter decompose cited :348, actual :372."
+    review_verdict: approved
   - id: 117-3
     title: 'Implement deterministic quest-seed minting: an authored opening/seed_trope quest_seed mints a QuestEntry into quest_log on acceptance, emitting quest.created/quest.seeded spans, so QUESTS projects to QuestsPanel without depending on the narrator calling record_quest. Author the perseus_cloud floor-boss detective hook as the first quest_seed (content). Wiring test: scripted opening → accept → quest_log non-empty → quests.emitted quests>=1.'
     points: 8
