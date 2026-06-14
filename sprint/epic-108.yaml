@@ -28,12 +28,14 @@ stories:
     type: bug
   - id: 108-3
     title: "Content de-nativize WWN combat defs — strip resolution_mode:beat_selection, native beat lists (strike/brace/push/angle/committed_blow/break_contact), edge_config, combat momentum metrics, and the Brace action from the COMBAT confrontation defs across the WWN packs (beneath_sunden primary verify target; heavy_metal evropi+long_foundry, elemental_harmony, heavy_metal/barsoom swept the same way). WWN combat defs express only win_condition:hp_depletion + opponent stats + authored opponent_damage DamageSpec (ADR-139 Inv-3). Chase/negotiation DIAL defs untouched. Also fix the 107-2 content stubs: Torchdeep/Torchhold/Bileden have creature_id=None/threat=None/abilities=[] (give real stat blocks) and the 'Dungeon Names' naming-source leak into the description field. → gm agent."
+    description: "BLOCKED on 108-7 (server: make WN combat beat-optional). Content de-nativize WWN combat defs (ADR-143 / ADR-139 Inv-3). For each WWN pack COMBAT def (win_condition:hp_depletion) in genre rules.yaml: strip resolution_mode:beat_selection, the entire native beats list (strike/cast_spell/brace/committed_blow/break_contact + guard/yield variants), edge_config if present, momentum/dial metrics. ALSO strip the now-orphaned encounter_beat_choices from each WN class in classes.yaml. Result: combat def = win_condition:hp_depletion + opponent_default_stats (six abilities + hp/armor_class/dexterity) + opponent_damage DamageSpec only; WN engine (wn_round.py) supplies the action set. Targets: caverns_and_claudes 'Dungeon Combat' (verify beneath_sunden), heavy_metal 'Blade-work' (verify evropi/long_foundry/barsoom), elemental_harmony 'Martial Exchange'. LEAVE chase/negotiation DIAL defs untouched. Then correct strip-spec docs/superpowers/specs/2026-06-14-108-3-wwn-combat-denativize-strip-spec.md (zero-beat premise was wrong pre-108-7). Content-only -> gm VALIDATED (load_genre_pack). gm verified 2026-06-14: cannot start until 108-7 merges. depends_on set to 108-7 (the live blocker; the 108-1 engine cut it formerly listed is already done). The 107-2 Torchdeep/Torchhold/Bileden rider descoped (names absent from content; likely procedural/server, ADR-106)."
     points: 5
     priority: p1
     status: backlog
+    started: '2026-06-14'
     repos: content
-    workflow: superpowers
-    depends_on: 108-1
+    workflow: trivial
+    depends_on: 108-7
     type: chore
   - id: 108-4
     title: 'ADR-142 doc backfill (housekeeping) — write the missing docs/adr/142-*.md recording the Without Number core extraction shipped in sidequest-server #841 (WithoutNumberRulesetModule, without_number.py, unified lethality spans, four WN modules reparented as clean siblings; tests test_142_wn_core_extraction.py / test_102_4_wn_turn_model_family.py cite it). Closes the 141->143 numbering hole. Regen ADR indexes.'
@@ -66,3 +68,12 @@ stories:
     completed: '2026-06-14'
     review_findings: "Test integrity (HIGH): expiry tests assert nothing on AC5 spans; AC2 permit test passes via no-cfg fallback not the real carve; text-scrape 'Frail' in s.text violates structured-markers rule. Lint (HIGH): 2 ruff I001 in new test files. MEDIUM: slug-or-wwn mis-namespace; missing edge-case tests. LOW: dead _MORTAL_INJURY_MARKER + stale docstrings. Production logic is correct — red rework for test rigor + hygiene."
     review_verdict: approved
+  - id: 108-7
+    title: WN combat defs go beat-optional — gate the ≥1-beat ConfrontationDef invariant and the encounter_beat_choices↔combat-beats coupling on the bound ruleset so Without Number packs can author zero combat beats (unblocks 108-3)
+    description: "Unblocks 108-3 (content WN combat de-nativize). Today the loader REQUIRES native beats, so stripping them makes WWN packs unloadable. Two relaxations, BOTH gated on the bound ruleset owning combat (WithoutNumberRulesetModule family) so native packs keep failing loud: (1) ConfrontationDef._validate ends with an UNCONDITIONAL 'if not self.beats: raise must have at least one beat' (rules.py:~590) — a category=combat / win_condition=hp_depletion def under a WN binding must be allowed ZERO beats (the WN engine, wn_round.py, supplies attack/move/item-use/cast; 108-1). DESIGN NOTE: the pydantic model validator only sees the def, NOT the pack ruleset — so this check likely must MOVE to the loader (genre/loader.py), which knows rules.ruleset, to be gated correctly. (2) loader.py:~701 validates every allowed_classes class's encounter_beat_choices against the combat beats pool — for WN packs, classes need not declare encounter_beat_choices (allow empty/absent) since the WN engine owns the action set. Keep both guards intact for native packs (zero beats / empty class beat-choices must still raise). Tests: a beatless WN combat def + WN classes with no encounter_beat_choices LOAD; a native pack with zero beats still raises; load_genre_pack green for all three WWN packs once 108-3 strips them. After this lands, 108-3 strips the combat beats AND the now-orphaned encounter_beat_choices from WN classes, then corrects docs/superpowers/specs/2026-06-14-108-3-wwn-combat-denativize-strip-spec.md (which wrongly assumed zero-beat defs already load). ADR-143 / ADR-142."
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
