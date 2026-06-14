@@ -1,0 +1,36 @@
+id: '115'
+type: epic
+title: Unified Inspector Phase 1 — one pane of glass over two pipes
+description: "Retrospective record (built 2026-06-14 via subagent-driven-development, not the pf story workflow). Merged the live OTEL/GM dashboard and the save-forensics tool into a single React surface (#/dashboard, 'the Inspector') behind a source-agnostic SessionSource abstraction + session picker, then deleted the duplicate server-rendered HTML pages. Two data pipes (lossy/WS live, durable/RO forensic) stay separate at the data layer; only the UX is unified. Spec: docs/superpowers/specs/2026-06-14-unified-inspector-design.md. Plan: docs/superpowers/plans/2026-06-14-unified-inspector.md. Shipped across PRs: sidequest-ui #393 (Parts A+B) + #394 (C3), sidequest-server #859 (C1+C2), orchestrator #400 (plan+C4). Phase 2 (lie-detector headline, span-prune, whole-save aggregation, live mechanical-diff) deferred to a separate spec."
+priority: p2
+status: done
+repos: ui,server,orchestrator
+stories:
+  - id: 115-1
+    title: Part A — SessionSource abstraction + session picker (A1–A5)
+    description: 'Foundation: one React shell over two data sources behind a capability model (sidequest-ui, merged in PR #393). A1 source + forensic-bundle type contracts (Lens/capability model, forensic REST shapes). A2 telemetryRow→WatcherEvent adapter (makes event-array tabs source-agnostic). A3 useForensicSource read-only REST hook (saves→timeline→bundle/snapshot, cancel-on-unmount, throw-on-non-OK). A4 SessionPicker (live + saved sessions, empty-census ⚠ flag). A5 behavior-preserving extraction of useLiveSource out of DashboardApp (byte-identical reducer; live path unchanged). TDD per task, two-stage review (spec + quality) each.'
+    points: 5
+    priority: p2
+    status: done
+    repos: ui
+    workflow: superpowers
+    completed: '2026-06-14'
+  - id: 115-2
+    title: Part B — forensic lenses + unified shell wiring (B1–B6)
+    description: 'Forensic lenses + shell wiring (sidequest-ui, merged in PR #393). B1 ForensicTimelineTab (round boundaries). B2 ForensicStateTab (three truth tiers: narrative/derived-amber/stored-green). B3 MechanicalTab (per-PC census diff + trope, ADR-124 fold; live = placeholder). B4 ⑨ Mechanical tab on the bar. B5 DashboardApp rewritten as the shell (useLiveSource always + useForensicSource, per-source tab rendering, round-scoped forensic event-array tabs via buildEventArrayView; tab state stays in the live reducer). B6 manual full-stack verification (operator-verified). Full UI suite 2193/2193; live path preserved (event-parsing 4/4); forensic path integration-tested (source-switch incl. round-trip + Mechanical wiring).'
+    points: 5
+    priority: p2
+    status: done
+    repos: ui
+    workflow: superpowers
+    completed: '2026-06-14'
+  - id: 115-3
+    title: 'Part C — teardown: delete server HTML/routes, dead spans, stale fixes (C1–C4)'
+    description: "Teardown + stale fixes, gated on Part B merged/verified. C1 delete server-rendered dashboard.html/dashboard.py/forensics.html/forensics.py + their app.py routes (sidequest-server #859) — all /api/debug/* and /api/sessions/* REST data routes kept; obsolete HTML-route tests removed. C2 drop 3 dead Rust-port span constants (music_evaluate/classify_mood, inventory.extraction) + their FLAT_ONLY_SPANS membership + test assertions (#859). C3 fix both stale 'Rust memory' tooltips (DashboardHeader + StateTab) → 'from server', rename header 'SideQuest OTEL' → 'SideQuest Inspector' (sidequest-ui #394). C4 repoint 'just otel' to the React Inspector #/dashboard (orchestrator #400). Verified: telemetry 385 + route 11 pass (REST intact), zero 'Rust memory' strings remain, just otel parses."
+    points: 5
+    priority: p2
+    status: done
+    repos: ui,server,orchestrator
+    workflow: superpowers
+    completed: '2026-06-14'
+    type: chore
