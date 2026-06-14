@@ -100,9 +100,10 @@ stories:
     type: chore
   - id: 90-9
     title: 'AC5b live OTEL proof, reframed — fix headless chargen to honor scenario class: (scripts/playtest.py) + author a fight-seeker→WWN-combat reachability path, then live re-verify the epic-102 WN cast/combat spine fires (wwn.spell.cast, wwn.* combat + ablative HP, {ruleset}.mortal_injury/.shock) across heavy_metal evropi/long_foundry + barsoom; NO magic_init/magic_state/server-schema work (Architect ruling 2026-06-10, supersedes 90-3)'
+    description: 'CANCELED 2026-06-14 (Keith): reality has passed it by. This was a 2026-06-10 live-OTEL re-verification of the epic-102 WN cast/combat spine (wwn.spell.cast, wwn.* combat + ablative HP, mortal_injury/shock). Epic-108 has since rebuilt the WN combat path (108-1 cut native scaffolding; 108-5 added the WN combat flavor-rider OTEL), overtaking the AC5b framing. Original: AC5b live OTEL proof, reframed — fix headless chargen to honor scenario class + author fight-seeker->WWN-combat reachability, then live re-verify the epic-102 WN spine across heavy_metal evropi/long_foundry + barsoom.'
     points: 3
     priority: p2
-    status: backlog
+    status: canceled
     repos: orchestrator,content
     workflow: tdd
     acceptance_criteria:
