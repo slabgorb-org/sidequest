@@ -47,11 +47,13 @@ stories:
     title: CWN extraction + neon_dystopia and road_warrior personal gear; cyberware system_strain as a typed field
     points: 5
     priority: p2
-    status: in_progress
+    status: done
+    started: '2026-06-14'
     repos: server,content
     workflow: tdd
     depends_on: 114-3
-    started: '2026-06-14'
+    completed: '2026-06-14'
+    review_verdict: approved
   - id: 114-6
     title: road_warrior — bind the CWN vehicle chapter, retire bespoke Rig Composure (ADR-143)
     points: 8
