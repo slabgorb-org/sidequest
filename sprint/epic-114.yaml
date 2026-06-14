@@ -10,9 +10,10 @@ stories:
     title: Design ADR — SRD-sourced inventory model, schema extensions, and licensing policy
     points: 3
     priority: p1
-    status: backlog
+    status: done
     repos: server,content
     workflow: superpowers
+    completed: '2026-06-14'
     type: chore
   - id: 114-2
     title: Land standalone inventory defect fixes (evropi damage/AC, seaboard power_glove, caverns armor) + neon orphan loadout keys
@@ -27,18 +28,21 @@ stories:
     title: WWN CC0 equipment extraction tool — SRD chapter to canonical baseline catalog
     points: 5
     priority: p2
-    status: backlog
+    status: done
     repos: server
     workflow: tdd
     depends_on: 114-1
+    completed: '2026-06-14'
   - id: 114-4
     title: WWN baseline catalog + wire caverns_and_claudes, elemental_harmony, heavy_metal; de-duplicate barsoom/long_foundry
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-14'
     repos: server,content
     workflow: tdd
     depends_on: 114-3
+    completed: '2026-06-14'
   - id: 114-5
     title: CWN extraction + neon_dystopia and road_warrior personal gear; cyberware system_strain as a typed field
     points: 5
@@ -88,3 +92,12 @@ stories:
     repos: server,content
     workflow: tdd
     depends_on: 114-9
+  - id: 114-11
+    title: Union-by-id per-field inventory merge — genre baseline non-droppable, world overrides presentation only, verbatim-field-lock validator (ADR-145 D3)
+    points: 5
+    priority: p2
+    status: done
+    repos: server
+    workflow: tdd
+    depends_on: 114-3
+    completed: '2026-06-14'
