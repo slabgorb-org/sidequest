@@ -88,9 +88,11 @@ the WN path, not to make it behave.
 ### What a WN combat turn is
 
 Each side acts on its **own initiative**. A player's combat action is a **WN action**
-(attack, full defense, move, item-use, cast) resolved by **WN math** — attack `d20 + hit
+(attack, move, item-use, cast) resolved by **WN math** — attack `d20 + hit
 vs AC`, weapon damage dice, Shock, morale, WN saves, WN lethality (Trauma / System Strain
-/ Mortal Injury), WN/expedition XP. It is **not** a native `BeatKind` carrying dial deltas
+/ Mortal Injury), WN/expedition XP. There is **no total-defense action** — WWN defense is
+passive AC (armor, shield, Dexterity, cover, Foci), never a turn spent raising it (see the
+2026-06-14 amendment below). It is **not** a native `BeatKind` carrying dial deltas
 and fleeting-tag grants. The opponent acts at **its own initiative slot** inside the
 round walk — there is no per-beat auto-reprisal rider.
 
@@ -196,6 +198,19 @@ GM panel must be able to confirm the native engine did **not** run.
 The Operator directive driving this ADR is recorded in
 `.pennyfarthing/sidecars/gm-decisions.md` (2026-06-14) and as the 🛑 standing-ruling
 banner atop the active playtest ping-pong. Both point here as the architecture-of-record.
+
+### 2026-06-14 — "Full defense" struck from the WN action set (Keith)
+
+The original decision prose listed the WN combat action set as *"attack, full defense,
+move, item-use, cast."* **"Full defense" is struck** — it is not a WWN mechanic. WWN has
+no total-defense / fighting-defensively / dodge action; defense is **passive AC** (armor,
+shield, Dexterity, cover, Foci) and is never a turn spent raising it. "Full defense" was a
+D&D/d20-ism — the same class as the native `brace` beat this ADR removes — and leaving it
+in the action list invites the next contributor to rebuild a defend button, the exact
+regression this ADR exists to prevent. The corrected WN combat action set is **attack /
+move / item-use / cast**. If a future WN sister-ruleset (CWN/SWN/AWN) authors a genuine
+defensive Main Action from *its* SRD, it is added per-module from that SRD — never as a
+revived native `brace`. Player-surface design: `docs/superpowers/specs/2026-06-14-wn-combat-action-surface-design.md`.
 
 ### Note — ADR-142 doc gap
 
