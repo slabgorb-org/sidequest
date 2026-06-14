@@ -3,7 +3,7 @@ type: epic
 title: SRD-sourced inventory — bind the equipment catalog, don't author it (inventory audit 2026-06-14)
 description: "From the 2026-06-14 cross-pack inventory audit (docs/inventory-audit-2026-06-14.md). No pack sources gear from its bound SRD's equipment chapter — all 11 packs hand-author bespoke items with a ruleset-shaped mechanical envelope bolted on. This is the inventory analogue of the ADR-143/144 'bind the ruleset, don't balance it' doctrine: if a genre binds WWN, the gear should BE WWN gear. Licensing reality: WWN is CC0 (verbatim-reproducible); CWN likely CC0 (verify); SWN/AWN free editions carry no open license (derive-only); Fate Core has no equipment economy at all. Epic brings inventory in line with each bound ruleset world-by-world and resolves the standalone mechanical defects. Coordinates with epic-113 (ADR-140 genre->world boundary hygiene) — SRD-sourcing naturally yields the correct genre-baseline + world-override placement."
 priority: p1
-status: backlog
+status: in_progress
 repos: server,content
 stories:
   - id: 114-1
