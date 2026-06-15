@@ -29,13 +29,15 @@ The Oz **silver shoes stay narrator-placed mid-game** (a `create-an-advantage` a
 | `sidequest/genre/models/gear.py` | `GearDef`, `GearGrantAspect`, `GearGrantStunt` strict models | Create |
 | `sidequest/game/fate_sheet.py` | `AspectKind += "permission"`; `source_gear` on `Aspect`/`Stunt` | Modify |
 | `sidequest/genre/models/rules.py` | `FateConfig` + `fate:` field on `RulesConfig` | Modify |
-| `sidequest/genre/models/genre_pack.py` (+ world config) | `gear: list[GearDef]` field, mirroring `inventory` | Modify |
-| `sidequest/genre/loader.py` | load `gear.yaml` at genre + world tier | Modify |
+| `sidequest/genre/models/pack.py` | `gear: list[GearDef]` on `GenrePack` (l.407) + `World` (l.274), mirroring `inventory` | Modify |
+| `sidequest/genre/loader.py` | load `gear.yaml` genre (~l.1936) + world (~l.1616) via `_load_yaml_raw_optional` | Modify |
 | `sidequest/server/dispatch/gear_resolve.py` | `merge_gear_catalog(baseline, world)` by-`id` union | Create |
-| `sidequest/telemetry/spans/fate.py` | `fate_gear_compiled_span(...)` | Modify |
-| `sidequest/game/ruleset/fate.py` | `compile_chargen_sheet(...)` (gear → FateSheet + span) | Modify |
-| `sidequest/game/builder.py` | resolve merged gear catalog; set `fate_sheet` at CreatureCore build | Modify |
-| `sidequest/cli/validate/pack.py` | three Fate-gear invariants | Modify |
+| `sidequest/telemetry/spans/fate.py` | `fate_gear_compiled_span(...)` + `SPAN_ROUTES` entry | Modify |
+| `sidequest/game/ruleset/base.py` | `compile_fate_sheet(...)` default → `None` (beside `seed_chargen_resources`, l.261) | Modify |
+| `sidequest/game/ruleset/fate.py` | `compile_fate_sheet(...)` override (gear → FateSheet + span) | Modify |
+| `sidequest/game/builder.py` | `with_gear_catalog`; call `compile_fate_sheet`; set `fate_sheet` at CreatureCore (l.2987) | Modify |
+| `sidequest/handlers/connect.py` | merge genre+world gear; `builder.with_gear_catalog(...)` beside `with_chargen_defs` | Modify |
+| `sidequest/cli/validate/pack.py` | three Fate-gear invariants, registered in `validate_pack_structure` (l.1244) | Modify |
 
 **Content (`sidequest-content`) — Phase B, depends on Phase A:**
 
@@ -362,8 +364,11 @@ git commit -m "feat(114-10): FateConfig rules block (base_refresh, free_stunts, 
 
 **Files:**
 - Create: `sidequest/server/dispatch/gear_resolve.py`
-- Modify: `sidequest/genre/loader.py` (genre load ~line 1936 next to `inventory`; world load ~line 1616), and the genre/world config models that hold `inventory` to also hold `gear`
+- Modify: `sidequest/genre/models/pack.py` — add `gear: list[GearDef]` to `GenrePack` (field block at line 407, beside `inventory: InventoryConfig | None`) and to `World` (field block at line 274, beside its `inventory`)
+- Modify: `sidequest/genre/loader.py` — genre `gear.yaml` load beside the genre inventory load (~line 1936); world `gear.yaml` load beside `world_inventory` (~line 1616). Use the existing `_load_yaml_raw_optional(path) -> Any | None` (loader.py:197) + list-comprehension validation (the pattern used for `archetypes.yaml` at loader.py:1851-1855). There is **no** generic list-loader helper — do not invent one; use the raw+comprehension pattern.
 - Test: `tests/server/dispatch/test_gear_resolve.py`
+
+**Loader entry point (pinned):** `load_genre_pack(path: Path | str) -> GenrePack` at `loader.py:1814`. The loaded `GenrePack` exposes genre inventory as `pack.inventory`; worlds as `pack.worlds[world_slug]` (`World` objects) with `world.inventory`. After this task the same objects expose `pack.gear` and `world.gear`.
 
 - [ ] **Step 1: Write the failing test (the by-id merge)**
 
@@ -433,13 +438,29 @@ def merge_gear_catalog(baseline: list[GearDef], world: list[GearDef]) -> list[Ge
 Run: `cd sidequest-server && uv run pytest tests/server/dispatch/test_gear_resolve.py -v`
 Expected: PASS (3 passed)
 
-- [ ] **Step 5: Write the loader-wiring test**
+- [ ] **Step 5: Add the `gear` field to the config models**
+
+In `sidequest/genre/models/pack.py`, add to `GenrePack` (beside `inventory: InventoryConfig | None = None` at line 407):
+
+```python
+from sidequest.genre.models.gear import GearDef  # top of file
+# ...
+    gear: list[GearDef] = Field(default_factory=list)   # ADR-144 D5 Fate gear
+```
+
+And the identical field to `World` (beside its `inventory` at line 274):
+
+```python
+    gear: list[GearDef] = Field(default_factory=list)
+```
+
+- [ ] **Step 6: Write the loader-wiring test**
 
 ```python
 # append to tests/server/dispatch/test_gear_resolve.py
 from pathlib import Path
 
-from sidequest.genre.loader import load_genre_pack  # adjust to the real loader entry
+from sidequest.genre.loader import load_genre_pack
 
 
 def test_loader_reads_genre_gear_yaml(tmp_path: Path):
@@ -450,49 +471,49 @@ def test_loader_reads_genre_gear_yaml(tmp_path: Path):
         "- id: trench_coat\n  name: Trench Coat\n"
         "  grants_aspects:\n    - text: Collar Always Up\n"
     )
-    loaded = load_genre_pack(pack)               # adjust to actual signature
-    assert any(g.id == "trench_coat" for g in loaded.rules_gear())  # see Step 6 accessor
+    loaded = load_genre_pack(pack)
+    assert any(g.id == "trench_coat" for g in loaded.gear)
 ```
 
-> NOTE: `load_genre_pack` and the gear accessor name must match the real loader
-> entry point. Confirm the genre-pack load function and how `inventory` is exposed
-> on the loaded object (scout located genre inventory at `loader.py:1936`), then
-> mirror it for `gear`.
+> If `load_genre_pack` requires other mandatory pack files to load a bare fixture,
+> reuse the minimal-pack fixture from an existing loader test in
+> `tests/genre/` (search `load_genre_pack(` in tests) rather than hand-rolling one.
 
-- [ ] **Step 6: Wire the loader (mirror `inventory`)**
+- [ ] **Step 7: Wire the loader (mirror the `archetypes.yaml` raw pattern)**
 
 In `sidequest/genre/loader.py`, beside the genre inventory load (~line 1936):
 
 ```python
-from sidequest.genre.models.gear import GearDef
+from sidequest.genre.models.gear import GearDef  # top of loader.py
 
 # genre tier (~line 1936, next to the inventory load):
-gear: list[GearDef] = _load_yaml_list_optional(path / "gear.yaml", GearDef)
+_gear_raw = _load_yaml_raw_optional(path / "gear.yaml")
+gear: list[GearDef] = (
+    [GearDef.model_validate(g) for g in _gear_raw] if isinstance(_gear_raw, list) else []
+)
+# ... pass gear=gear into the GenrePack(...) construction alongside inventory=...
 ```
 
 ```python
 # world tier (~line 1616, next to world_inventory):
-world_gear: list[GearDef] = _load_yaml_list_optional(
-    world_path / "gear.yaml", GearDef
+_world_gear_raw = _load_yaml_raw_optional(world_path / "gear.yaml")
+world_gear: list[GearDef] = (
+    [GearDef.model_validate(g) for g in _world_gear_raw]
+    if isinstance(_world_gear_raw, list) else []
 )
+# ... pass gear=world_gear into the World(...) construction alongside inventory=...
 ```
 
-Add a `gear: list[GearDef] = Field(default_factory=list)` field to the genre-pack
-config model and the world config model that already carry `inventory` (follow the
-exact class that holds `inventory: InventoryConfig | None`). If a list-optional
-loader helper does not exist, add one mirroring `_load_yaml_optional` that returns
-`[]` for an absent file and validates each entry as `GearDef`.
-
-- [ ] **Step 7: Run loader test — verify pass**
+- [ ] **Step 8: Run loader test — verify pass**
 
 Run: `cd sidequest-server && uv run pytest tests/server/dispatch/test_gear_resolve.py -v`
 Expected: PASS (all)
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add sidequest/server/dispatch/gear_resolve.py sidequest/genre/loader.py \
-        sidequest/genre/models/*.py tests/server/dispatch/test_gear_resolve.py
+        sidequest/genre/models/pack.py tests/server/dispatch/test_gear_resolve.py
 git commit -m "feat(114-10): load + merge gear.yaml (genre+world by-id union)"
 ```
 
@@ -579,7 +600,32 @@ def fate_gear_compiled_span(
         pass
 ```
 
-If the module maintains a `SPAN_ROUTES`/`SpanRoute` registry (scout noted one ~lines 50-330), add a route entry for `"fate.gear_compiled"` following the neighboring entries so the GM panel surfaces it.
+**Mandatory:** span helpers in this module MUST register a route in `SPAN_ROUTES`
+(`SpanRoute` from `sidequest/telemetry/spans/_core.py`) — calling `Span.open` alone
+does not surface the typed event to the GM panel. Add, beside the existing
+`SPAN_ROUTES["fate.fate_point.delta"] = SpanRoute(...)` entry (fate.py:50):
+
+```python
+SPAN_ROUTES["fate.gear_compiled"] = SpanRoute(
+    event_type="state_transition",
+    component="fate",
+    extract=lambda span: {
+        "field": "gear_compiled",
+        "archetype": (span.attributes or {}).get("archetype", ""),
+        "gear_id": (span.attributes or {}).get("gear_id", ""),
+        "refresh_debited": (span.attributes or {}).get("refresh_debited", 0),
+    },
+)
+```
+
+Extend the Step 1 test to assert the route is registered:
+
+```python
+def test_gear_compiled_route_registered():
+    from sidequest.telemetry.spans._core import SPAN_ROUTES
+    assert "fate.gear_compiled" in SPAN_ROUTES
+    assert SPAN_ROUTES["fate.gear_compiled"].component == "fate"
+```
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -595,18 +641,22 @@ git commit -m "feat(114-10): fate.gear_compiled OTEL span"
 
 ---
 
-### Task 6: `FateRulesetModule.compile_chargen_sheet` — gear → FateSheet
+### Task 6: `compile_fate_sheet` — base no-op + `FateRulesetModule` override (gear → FateSheet)
 
 **Files:**
-- Modify: `sidequest/game/ruleset/fate.py` (add method; imports `Stunt`, `fate_gear_compiled_span`, `GearDef`, `FateConfig`)
+- Modify: `sidequest/game/ruleset/base.py` — add a default `compile_fate_sheet(...) -> FateSheet | None` returning `None` (mirrors the `seed_chargen_resources` default at base.py:261, so the builder calls it unconditionally with no isinstance branch and no Fate import)
+- Modify: `sidequest/game/ruleset/fate.py` — override it (imports `Stunt`, `GearDef`, `fate_gear_compiled_span`)
 - Test: `tests/game/ruleset/test_fate_gear_compile.py`
 
-**Contract:** `compile_chargen_sheet(*, class_name, fate_cfg, gear_catalog) -> FateSheet`.
-Builds a fresh `FateSheet(refresh=fate_cfg.base_refresh, fate_points=fate_cfg.base_refresh)`,
-looks up `fate_cfg.starting_gear.get(class_name, [])`, resolves each id against
-`gear_catalog` (fail loud on unknown id), appends each grant as an `Aspect`/`Stunt`
-stamped with `source_gear`, debits refresh by the number of stunt-grants beyond
-`free_stunts`, and emits one span per gear item.
+**Contract:** `compile_fate_sheet(*, rules: RulesConfig, class_name: str, gear_catalog: list[GearDef]) -> FateSheet | None`.
+Base returns `None` (non-Fate rulesets seed no sheet). The Fate override reads
+`rules.fate` (raising `ValueError` if absent — No Silent Fallbacks), builds a fresh
+`FateSheet(refresh=fate.base_refresh, fate_points=fate.base_refresh)`, looks up
+`fate.starting_gear.get(class_name, [])`, resolves each id against `gear_catalog`
+(fail loud on unknown id), appends each grant as an `Aspect`/`Stunt` stamped with
+`source_gear`, debits refresh for stunt-grants beyond `free_stunts`, and emits one
+span per gear item. Taking `rules` (not `FateConfig`) keeps the base signature
+paradigm-neutral, exactly like `seed_chargen_resources(*, rules, ...)`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -615,7 +665,7 @@ stamped with `source_gear`, debits refresh by the number of stunt-grants beyond
 import pytest
 
 from sidequest.genre.models.gear import GearDef
-from sidequest.genre.models.rules import FateConfig
+from sidequest.genre.models.rules import RulesConfig
 from sidequest.game.ruleset.fate import FateRulesetModule
 
 
@@ -630,12 +680,19 @@ def _catalog():
     ]
 
 
+def _rules(starting_gear, *, base_refresh=3, free_stunts=3):
+    return RulesConfig.model_validate(
+        {"ruleset": "fate", "fate": {"base_refresh": base_refresh,
+                                     "free_stunts": free_stunts,
+                                     "starting_gear": starting_gear}}
+    )
+
+
 def test_compiles_aspects_and_permission_free():
-    mod = FateRulesetModule()
-    cfg = FateConfig(base_refresh=3, free_stunts=3,
-                     starting_gear={"Detective": ["trench_coat", "badge"]})
-    sheet = mod.compile_chargen_sheet(class_name="Detective", fate_cfg=cfg,
-                                      gear_catalog=_catalog())
+    sheet = FateRulesetModule().compile_fate_sheet(
+        rules=_rules({"Detective": ["trench_coat", "badge"]}),
+        class_name="Detective", gear_catalog=_catalog(),
+    )
     texts = {(a.text, a.kind, a.source_gear) for a in sheet.aspects}
     assert ("Collar Always Up", "character", "trench_coat") in texts
     assert ("Authority", "permission", "badge") in texts
@@ -643,63 +700,82 @@ def test_compiles_aspects_and_permission_free():
 
 
 def test_stunt_gear_debits_refresh_beyond_free_allotment():
-    mod = FateRulesetModule()
     # free_stunts=0 => the single stunt-gear costs 1 refresh.
-    cfg = FateConfig(base_refresh=3, free_stunts=0,
-                     starting_gear={"Detective": ["custom_38"]})
-    sheet = mod.compile_chargen_sheet(class_name="Detective", fate_cfg=cfg,
-                                      gear_catalog=_catalog())
+    sheet = FateRulesetModule().compile_fate_sheet(
+        rules=_rules({"Detective": ["custom_38"]}, free_stunts=0),
+        class_name="Detective", gear_catalog=_catalog(),
+    )
     assert any(s.name == "From Cover" and s.source_gear == "custom_38" for s in sheet.stunts)
     assert sheet.refresh == 2
 
 
 def test_unknown_gear_id_fails_loud():
-    mod = FateRulesetModule()
-    cfg = FateConfig(starting_gear={"Detective": ["nonexistent"]})
     with pytest.raises(KeyError):
-        mod.compile_chargen_sheet(class_name="Detective", fate_cfg=cfg, gear_catalog=_catalog())
+        FateRulesetModule().compile_fate_sheet(
+            rules=_rules({"Detective": ["nonexistent"]}),
+            class_name="Detective", gear_catalog=_catalog(),
+        )
+
+
+def test_missing_fate_block_fails_loud():
+    rules = RulesConfig.model_validate({"ruleset": "fate"})  # no fate: block
+    with pytest.raises(ValueError):
+        FateRulesetModule().compile_fate_sheet(
+            rules=rules, class_name="Detective", gear_catalog=_catalog())
 
 
 def test_class_with_no_gear_returns_baseline_sheet():
-    mod = FateRulesetModule()
-    cfg = FateConfig(base_refresh=3, starting_gear={})
-    sheet = mod.compile_chargen_sheet(class_name="Drifter", fate_cfg=cfg, gear_catalog=_catalog())
+    sheet = FateRulesetModule().compile_fate_sheet(
+        rules=_rules({}), class_name="Drifter", gear_catalog=_catalog())
     assert sheet.aspects == [] and sheet.stunts == [] and sheet.refresh == 3
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `cd sidequest-server && uv run pytest tests/game/ruleset/test_fate_gear_compile.py -v`
-Expected: FAIL — `AttributeError: 'FateRulesetModule' object has no attribute 'compile_chargen_sheet'`.
+Expected: FAIL — `AttributeError: 'FateRulesetModule' object has no attribute 'compile_fate_sheet'`.
 
-- [ ] **Step 3: Write minimal implementation**
+- [ ] **Step 3a: Add the base default (`base.py`, beside `seed_chargen_resources` ~line 261)**
 
-In `sidequest/game/ruleset/fate.py` add imports and the method:
+```python
+    def compile_fate_sheet(self, *, rules, class_name, gear_catalog):
+        """Fate gear → FateSheet at chargen. Default: None (non-Fate rulesets
+        seed no Fate sheet). Only FateRulesetModule overrides. ADR-144 D5."""
+        return None
+```
+
+- [ ] **Step 3b: Write the Fate override (`fate.py`)**
+
+Add imports and the method:
 
 ```python
 from sidequest.game.fate_sheet import Aspect, FateSheet, Stunt  # add Stunt
 from sidequest.genre.models.gear import GearDef
-from sidequest.genre.models.rules import FateConfig
 from sidequest.telemetry.spans.fate import fate_gear_compiled_span
 ```
 
 ```python
-    def compile_chargen_sheet(
+    def compile_fate_sheet(
         self,
         *,
+        rules,
         class_name: str,
-        fate_cfg: FateConfig,
         gear_catalog: list[GearDef],
     ) -> FateSheet:
-        """Build a chargen FateSheet by compiling the chosen class's starting
-        gear into aspects/stunts (ADR-144 D5). Aspect-gear and permission-gear
-        are free; stunt-gear beyond ``free_stunts`` debits refresh (Bind the
-        Ruleset, Don't Balance It). Emits one span per gear item. Skills and
-        non-gear aspects are F4 — not seeded here."""
+        """Compile the chosen class's starting gear into a fresh FateSheet
+        (ADR-144 D5). Aspect-gear and permission-gear are free; stunt-gear beyond
+        ``free_stunts`` debits refresh (Bind the Ruleset, Don't Balance It). Emits
+        one span per gear item. Skills/non-gear aspects are F4 — not seeded here."""
+        fate = rules.fate
+        if fate is None:
+            raise ValueError(
+                "ruleset 'fate' requires a 'fate:' block in rules.yaml "
+                "(No Silent Fallbacks)"
+            )
         by_id = {g.id: g for g in gear_catalog}
-        sheet = FateSheet(refresh=fate_cfg.base_refresh, fate_points=fate_cfg.base_refresh)
+        sheet = FateSheet(refresh=fate.base_refresh, fate_points=fate.base_refresh)
         stunt_count = 0
-        for gear_id in fate_cfg.starting_gear.get(class_name, []):
+        for gear_id in fate.starting_gear.get(class_name, []):
             if gear_id not in by_id:
                 raise KeyError(
                     f"starting_gear for class {class_name!r} references unknown "
@@ -718,7 +794,7 @@ from sidequest.telemetry.spans.fate import fate_gear_compiled_span
                 )
                 added_stunts.append(gs.name)
                 stunt_count += 1
-                if stunt_count > fate_cfg.free_stunts:
+                if stunt_count > fate.free_stunts:
                     sheet.refresh = max(1, sheet.refresh - 1)  # SRD floor 1
             fate_gear_compiled_span(
                 archetype=class_name,
@@ -735,97 +811,155 @@ from sidequest.telemetry.spans.fate import fate_gear_compiled_span
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `cd sidequest-server && uv run pytest tests/game/ruleset/test_fate_gear_compile.py -v`
-Expected: PASS (4 passed)
+Expected: PASS (5 passed)
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add sidequest/game/ruleset/fate.py tests/game/ruleset/test_fate_gear_compile.py
-git commit -m "feat(114-10): FateRulesetModule.compile_chargen_sheet (gear -> FateSheet)"
+git add sidequest/game/ruleset/base.py sidequest/game/ruleset/fate.py \
+        tests/game/ruleset/test_fate_gear_compile.py
+git commit -m "feat(114-10): compile_fate_sheet base no-op + Fate override (gear -> FateSheet)"
 ```
 
 ---
 
-### Task 7: Builder wiring — attach the compiled FateSheet at chargen
+### Task 7: Builder wiring — inject the gear catalog, set `fate_sheet` at build
+
+**Architecture (pinned):** `CharacterBuilder` (`builder.py:986`) takes **no pack/world**
+— its `__init__(self, scenes, rules, backstory_tables=None, *, rng=None)` (line 994)
+holds only `self._rules` and the bound `self._ruleset = get_ruleset_module(rules.ruleset)`
+(line 1041). World-tier catalogs are resolved in `sidequest/handlers/connect.py` and
+injected via fluent `with_*()` methods (`with_classes`:1111, `with_chargen_defs`:1117,
+`with_equipment_tables`:1101). We follow that exact pattern: add `with_gear_catalog`,
+resolve+inject the merged gear in `connect.py`, and call `self._ruleset.compile_fate_sheet`
+(unconditional — base returns `None`) at the `CreatureCore(...)` build site.
 
 **Files:**
-- Modify: `sidequest/game/builder.py` (hold merged gear catalog near pack content; set `fate_sheet` in the `CreatureCore(...)` build ~line 2986-3000)
+- Modify: `sidequest/game/builder.py` — `__init__` default `self._gear_catalog: list[GearDef] = []`; add `with_gear_catalog`; set `fate_sheet` in the `CreatureCore(...)` block (lines 2987-3000)
+- Modify: `sidequest/handlers/connect.py` — merge genre+world gear, call `with_gear_catalog`, beside the existing `with_chargen_defs(...)` wiring
 - Test: `tests/game/test_builder_fate_gear_wiring.py`
 
-**This is the wiring test the suite requires** — it proves gear reaches a built character through the real builder, not just the module in isolation.
+**This is the wiring test the suite requires** — it proves gear reaches a built
+character through the real `build()` path, not just the module in isolation.
 
 - [ ] **Step 1: Write the failing wiring test**
 
 ```python
 # tests/game/test_builder_fate_gear_wiring.py
-"""Wiring test: a Fate-pack character built through CharacterBuilder carries a
-FateSheet whose aspects came from the class's starting_gear. Uses a minimal
-in-memory fate pack fixture."""
-import pytest
+"""Wiring test: a character built through CharacterBuilder.build() under a fate
+ruleset carries a FateSheet whose aspects came from the class's starting_gear.
 
-from sidequest.game.builder import CharacterBuilder  # adjust to the real entry
+Reuse the scene/choice fixture scaffold from an existing builder test — search
+tests/game/ for `CharacterBuilder(` and `.build(` and copy its scene setup +
+apply_choice calls that select a class. The NEW assertions are the last 3 lines."""
+from sidequest.genre.models.gear import GearDef
+from sidequest.genre.models.rules import RulesConfig
+from sidequest.game.builder import CharacterBuilder
 
 
-@pytest.mark.fate_pack_fixture  # see fixture note in Step 3
-def test_built_fate_character_has_gear_aspects(minimal_fate_pack):
-    builder = CharacterBuilder(pack=minimal_fate_pack)   # adjust constructor
-    char = builder.build_for_class("Detective")          # adjust to the real build API
-    sheet = char.core.fate_sheet
-    assert sheet is not None
-    assert any(a.source_gear == "trench_coat" for a in sheet.aspects)
+def test_built_fate_character_has_gear_aspects(<reused scene fixture args>):
+    rules = RulesConfig.model_validate(
+        {"ruleset": "fate",
+         "fate": {"base_refresh": 3, "free_stunts": 3,
+                  "starting_gear": {"Detective": ["trench_coat"]}}}
+    )
+    gear = [GearDef.model_validate(
+        {"id": "trench_coat", "name": "Trench Coat",
+         "grants_aspects": [{"text": "Collar Always Up"}]})]
+    builder = (
+        CharacterBuilder(scenes=<reused scenes>, rules=rules)
+        .with_classes(<a class list whose display_name == "Detective">)
+        .with_gear_catalog(gear)
+    )
+    # ... apply_choice(...) calls from the reused fixture that set class_hint=Detective ...
+    char = builder.build("Sam Spade")
+    assert char.core.fate_sheet is not None
+    assert any(a.source_gear == "trench_coat" for a in char.core.fate_sheet.aspects)
 ```
+
+> The `<reused ...>` placeholders are filled by copying an existing builder test's
+> fixture — do not hand-invent scenes. The class string the builder resolves is
+> `class_str = acc.class_hint or self._default_class or "Fighter"` (builder.py:2449),
+> matched against `ClassDef.display_name` at line 2804. The fixture's class choice
+> must set `class_hint` to a class whose `display_name == "Detective"`.
 
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `cd sidequest-server && uv run pytest tests/game/test_builder_fate_gear_wiring.py -v`
-Expected: FAIL — `char.core.fate_sheet is None` (builder doesn't compile gear yet).
+Expected: FAIL — `AttributeError: 'CharacterBuilder' object has no attribute 'with_gear_catalog'`.
 
-- [ ] **Step 3: Wire the builder**
+- [ ] **Step 3a: Add the fluent method + default (builder.py)**
 
-Where pack/world inventory is resolved for the builder, also resolve the merged
-gear catalog once and hold it:
+In `__init__` (beside the other `self._<catalog>` defaults, ~lines 1083+):
 
 ```python
-from sidequest.game.ruleset.fate import FateRulesetModule
-from sidequest.server.dispatch.gear_resolve import merge_gear_catalog
-
-# near where self._rules / world content is established in __init__:
-self._gear_catalog = merge_gear_catalog(
-    self._pack.gear,                       # genre-tier gear (Task 4 field)
-    getattr(self._world, "gear", []),      # world-tier gear, [] if no world/gear.yaml
-)
+from sidequest.genre.models.gear import GearDef  # top of builder.py
+# ...
+        self._gear_catalog: list[GearDef] = []
 ```
 
-At the `CreatureCore(...)` construction (~line 2986-3000), compute the fate sheet
-and pass it (the `fate_sheet` field already exists on `CreatureCore`):
+Add the method beside `with_classes` (~line 1111):
 
 ```python
-_fate_sheet = None
-if isinstance(self._ruleset, FateRulesetModule):
-    if self._rules.fate is None:
-        raise ValueError(
-            "ruleset 'fate' requires a 'fate:' block in rules.yaml "
-            "(No Silent Fallbacks)"
+    def with_gear_catalog(self, gear: list[GearDef]) -> CharacterBuilder:
+        """Attach the merged genre+world Fate gear catalog (ADR-144 D5). Read in
+        build() by the bound ruleset's compile_fate_sheet. Empty for non-Fate
+        packs (harmless — the base compile_fate_sheet returns None)."""
+        self._gear_catalog = list(gear)
+        return self
+```
+
+- [ ] **Step 3b: Set `fate_sheet` at the CreatureCore build site (builder.py:2987-3000)**
+
+Just before the `core=CreatureCore(...)` construction, compute the sheet
+(unconditional call; base returns `None` for non-Fate rulesets — no isinstance):
+
+```python
+        _fate_sheet = self._ruleset.compile_fate_sheet(
+            rules=self._rules,
+            class_name=class_str,          # builder.py:2449 — the chosen class
+            gear_catalog=self._gear_catalog,
         )
-    _fate_sheet = self._ruleset.compile_chargen_sheet(
-        class_name=_resolved_class_name,   # the chosen allowed_classes entry
-        fate_cfg=self._rules.fate,
-        gear_catalog=self._gear_catalog,
-    )
-
-character = Character(
-    core=CreatureCore(
-        # ... existing fields ...
-        spellcasting=wwn_spellcasting,
-        fate_sheet=_fate_sheet,            # NEW
-    ),
-    # ...
-)
 ```
 
-> Confirm the exact local that holds the chosen class name (`_resolved_class_def`
-> is in scope at the seed-resources call ~line 2866; use its name field, or the
-> accumulated class choice). Bind `_resolved_class_name` to that string.
+Add the field to the existing `CreatureCore(...)` kwargs (after `spellcasting=wwn_spellcasting,`):
+
+```python
+        core=CreatureCore(
+            name=name,
+            description=(f"{indefinite_article(race_str).capitalize()} {race_str} {class_str}"),
+            personality=acc.personality_trait or "Determined",
+            level=1,
+            xp=0,
+            inventory=Inventory(items=items, gold=0),
+            statuses=[],
+            hp=hp,
+            system_strain=system_strain,
+            effort=wwn_effort,
+            spellcasting=wwn_spellcasting,
+            acquired_advancements=[],
+            fate_sheet=_fate_sheet,        # NEW (ADR-144 D5)
+        ),
+```
+
+- [ ] **Step 3c: Wire the merge in connect.py (`sidequest/handlers/connect.py`)**
+
+Beside the existing `with_chargen_defs(...)` call, resolve the merged gear and inject it:
+
+```python
+from sidequest.server.dispatch.gear_resolve import merge_gear_catalog
+# ...
+        _world = genre_pack.worlds.get(world_slug) if world_slug else None
+        _gear_catalog = merge_gear_catalog(
+            genre_pack.gear,
+            _world.gear if _world is not None else [],
+        )
+        builder = builder.with_gear_catalog(_gear_catalog)
+```
+
+> Match the local names already in scope in connect.py for the loaded `genre_pack`
+> and `world_slug` (grep `with_chargen_defs(` in connect.py to find the exact site
+> and the surrounding variable names).
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -835,13 +969,15 @@ Expected: PASS
 - [ ] **Step 5: Run the broader builder + ruleset suite for regressions**
 
 Run: `cd sidequest-server && uv run pytest tests/game/ -k "builder or ruleset or fate" -v`
-Expected: PASS (no WN/native regressions — the fate branch is isinstance-gated).
+Expected: PASS. Non-Fate packs build unchanged — `compile_fate_sheet` returns `None`
+for them, so `fate_sheet=None` (the CreatureCore default), identical to today.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add sidequest/game/builder.py tests/game/test_builder_fate_gear_wiring.py
-git commit -m "feat(114-10): wire compiled FateSheet into chargen builder (isinstance-gated)"
+git add sidequest/game/builder.py sidequest/handlers/connect.py \
+        tests/game/test_builder_fate_gear_wiring.py
+git commit -m "feat(114-10): inject gear catalog + set fate_sheet at chargen build"
 ```
 
 ---
@@ -1013,8 +1149,15 @@ def check_fate_refresh_balance(pack_dir) -> list[str]:
     return errs
 ```
 
-Wire the three into the pack-validate aggregator alongside the existing checks
-(follow how `_validate_history_trope_refs` results are collected).
+Register the three in the aggregator `validate_pack_structure(pack_dir: Path,
+schema_path: Path) -> tuple[list[str], list[str]]` (`pack.py:1244`), beside the
+existing `all_errors.extend(...)` calls (the content-validation block at ~1302-1309):
+
+```python
+    all_errors.extend(check_no_inventory_under_fate(pack_dir))
+    all_errors.extend(check_gear_ids_resolve(pack_dir))
+    all_errors.extend(check_fate_refresh_balance(pack_dir))
+```
 
 - [ ] **Step 4: Run tests to verify they pass**
 
@@ -1034,7 +1177,7 @@ git commit -m "feat(114-10): content validator invariants for Fate gear"
 
 - [ ] **Step 1: Run the server lint + format on touched files**
 
-Run: `cd sidequest-server && uv run ruff check sidequest/genre/models/gear.py sidequest/game/ruleset/fate.py sidequest/cli/validate/pack.py sidequest/server/dispatch/gear_resolve.py`
+Run: `cd sidequest-server && uv run ruff check sidequest/genre/models/gear.py sidequest/game/ruleset/fate.py sidequest/game/ruleset/base.py sidequest/game/builder.py sidequest/handlers/connect.py sidequest/cli/validate/pack.py sidequest/server/dispatch/gear_resolve.py sidequest/genre/loader.py sidequest/genre/models/pack.py`
 Expected: no errors.
 
 - [ ] **Step 2: Run the full fate + builder + validate + genre suites**
@@ -1054,8 +1197,9 @@ git add -A && git commit -m "chore(114-10): phase-A lint/format cleanup"
 
 > Phase B has **no unit tests** — content invariants are checked by the pack
 > validator (Task 8), per the project rule "no content in unit tests." Each task's
-> "test" is `sidequest-validate <pack>` going green. Run the server from Phase A's
-> branch (the validator must include the new checks).
+> "test" is `uv run python -m sidequest.cli.validate pack <pack_dir>` (run from
+> `sidequest-server`, on Phase A's branch so the validator includes the new checks)
+> going green.
 
 **Per-pack recipe (apply to Tasks 10–13):**
 1. `rules.yaml`: set `ruleset: fate` and add a `fate:` block (`base_refresh`, `free_stunts`, `starting_gear` keyed by each `allowed_classes` entry).
@@ -1126,7 +1270,7 @@ git rm genre_packs/pulp_noir/inventory.yaml \
 - [ ] **Step 4: Validate**
 
 Run: `cd sidequest-server && uv run python -m sidequest.cli.validate pack ../sidequest-content/genre_packs/pulp_noir`
-(adjust to the real validate entry point — confirm via `uv run sidequest-validate --help`)
+(entry: `sidequest/cli/validate/__main__.py:35` registers the `pack` command.)
 Expected: no `fate-gear:` errors; no dangling gear ids; refresh balanced.
 
 - [ ] **Step 5: Commit**
@@ -1158,7 +1302,9 @@ Same recipe, with two specifics:
 
 - [ ] **Step 1: Validate all four packs**
 
-Run the validator (or `just` recipe if one exists) over `pulp_noir`, `spaghetti_western`, `tea_and_murder`, `wry_whimsy`. Expected: all green, zero `fate-gear:` errors.
+Run, from `sidequest-server`, for each of `pulp_noir`, `spaghetti_western`, `tea_and_murder`, `wry_whimsy`:
+`uv run python -m sidequest.cli.validate pack ../sidequest-content/genre_packs/<pack>`
+Expected: all green, zero `fate-gear:` errors.
 
 - [ ] **Step 2: Run the server test suite against the migrated content**
 
@@ -1188,6 +1334,6 @@ Phase B PRs target the content repo's `develop` branch (per repos.yaml). Server 
 - out-of-scope (F4 skills/aspects, UI, native deletion) → not in any task ✓
 - mid-game acquisition needs no mechanism → no task (correct; nothing to build) ✓
 
-**Placeholder scan:** Phase-A tasks carry real test + impl code. Two flagged confirmations (loader entry-point name in Task 4; chosen-class local + builder gear-catalog hold-point in Task 7) are genuine "match the real symbol" notes, not deferred work — the surrounding code is complete. Phase-B gear.yaml bodies are illustrative-but-author-complete recipes (content authoring, validator-gated) — acceptable since content is not unit-tested.
+**Placeholder scan:** All integration symbols are now pinned to exact file:line (loader entry `load_genre_pack` l.1814; config classes `GenrePack` l.407 / `World` l.274; builder `__init__` l.994, `class_str` l.2449, CreatureCore block l.2987; chargen wiring in `handlers/connect.py` beside `with_chargen_defs`; aggregator `validate_pack_structure` l.1244; `SPAN_ROUTES` registration; validate command `python -m sidequest.cli.validate pack`). The remaining `<reused scene fixture>` markers in the Task 7 wiring test are an explicit instruction to copy an existing builder test's scene scaffold (real, in-tree) — not invented work; the new assertions are spelled out. Phase-B `gear.yaml` bodies are author-complete recipes (content authoring is validator-gated, not unit-tested per project rule).
 
-**Type consistency:** `GearDef`/`GearGrantAspect`/`GearGrantStunt` (Task 1) used identically in Tasks 4, 6, 8. `FateConfig.base_refresh/free_stunts/starting_gear` (Task 3) used in Tasks 6, 7, 8. `compile_chargen_sheet(*, class_name, fate_cfg, gear_catalog)` (Task 6) called with the same kwargs in Task 7. `fate_gear_compiled_span(*, archetype, gear_id, aspects_placed, stunts_added, refresh_before, refresh_after)` (Task 5) called identically in Task 6. `source_gear` (Task 2) set in Task 6, asserted in Tasks 6, 7. Consistent.
+**Type consistency:** `GearDef`/`GearGrantAspect`/`GearGrantStunt` (Task 1) used identically in Tasks 4, 6, 7, 8. `FateConfig.base_refresh/free_stunts/starting_gear` (Task 3) read in Tasks 6, 8. `compile_fate_sheet(*, rules, class_name, gear_catalog)` — base no-op (Task 6, base.py) + Fate override (Task 6, fate.py) — called identically in Task 7. `with_gear_catalog(gear: list[GearDef])` (Task 7) matches the merge output of `merge_gear_catalog` (Task 4). `fate_gear_compiled_span(*, archetype, gear_id, aspects_placed, stunts_added, refresh_before, refresh_after)` (Task 5) called identically in Task 6. `source_gear` (Task 2) set in Task 6, asserted in Tasks 6, 7. Consistent.
