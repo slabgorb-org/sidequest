@@ -33,10 +33,10 @@ stories:
     priority: p1
     status: in_progress
     started: '2026-06-14'
-    branch: feat/108-3-denativize-wwn-combat-defs
     repos: content
     workflow: trivial
     depends_on: 108-7
+    branch: feat/108-3-denativize-wwn-combat-defs
     type: chore
   - id: 108-4
     title: 'ADR-142 doc backfill (housekeeping) — write the missing docs/adr/142-*.md recording the Without Number core extraction shipped in sidequest-server #841 (WithoutNumberRulesetModule, without_number.py, unified lethality spans, four WN modules reparented as clean siblings; tests test_142_wn_core_extraction.py / test_102_4_wn_turn_model_family.py cite it). Closes the 141->143 numbering hole. Regen ADR indexes.'
@@ -86,10 +86,12 @@ stories:
     title: "Engine core cut FOLLOW-ON — run_wn_round() must OWN the WN action set so a zero-beat WWN combat def resolves. 108-1 removed the native riders (fleeting tags/dials/Brace) but run_wn_round (server/dispatch/wn_round.py:374) + the dice path (dispatch/dice.py:407) STILL resolve the player's committed action by looking up commit.beat_id in cdef.beats and feeding that beat to _apply_committed_player_beat for the WN damage math. So with the native beats stripped (108-3), cdef.beats==[] and EVERY WWN combat commit raises DiceDispatchError: unknown beat_id ... available: [] — total combat outage (78 e2e failures: caverns_and_claudes/heavy_metal/elemental_harmony, beneath_sunden/barsoom). FIX: under a WithoutNumberRulesetModule binding, run_wn_round + dice.py must synthesize the WN action set (attack/move/item-use/cast) independent of cdef.beats — model it on the existing is_item_use_beat transient-beat synthesis (the Drink-potion beat that is NOT on cdef). Keep WN math intact (d20+hit vs AC, weapon dice from the actor's inventory, Shock, saves); emit wn.native_scaffolding_suppressed proving native is OFF. Native packs MUST keep requiring beats (isinstance gate). This is the runtime half the epic ASSUMED 108-1 delivered (108-7 desc + epic line 10) but it did not. UNBLOCKS 108-3. Seam: dispatch/dice.py ~671-676 + run_wn_round beat-resolution path; game/ruleset/without_number.py. Refs: ADR-143, ADR-142, ADR-117, ADR-139, ADR-114; wn_round.py, dice.py."
     points: 5
     priority: p1
-    status: in_progress
+    status: done
     started: '2026-06-15'
     repos: server
     workflow: tdd
+    depends_on: 108-3
+    completed: '2026-06-15'
     branch: feat/108-8-wn-round-owns-action-set
     type: refactor
-    depends_on: 108-3
+    review_verdict: approved

@@ -169,3 +169,21 @@
 - **Why it matters:** the strongest content AC verification is "does the whole world assemble without raising `GenreLoadError`" — that single load runs the opening solo/mp-coverage validators, region-ref checks, and validates every stock/saint `granted_mutations` against the MutationCatalog. A draft flag hides all of it behind a `None`.
 - **How to apply:** `shutil.copytree` the genre pack to a tempdir, `re.sub(r'(?m)^draft:\s*true\s*$','draft: false', ...)` the target world.yaml copy, then `load_genre_pack(tmp)` and assert the world is in `pack.worlds` with the expected counts (`len(w.openings)`, `len(w.archetypes)`, etc.). NEVER flip draft in the repo — it's intentional gating. For lighter checks the registry loaders take a Path + catalog directly: `load_mutation_catalog(genre/'mutations.yaml')` then `load_stock_registry(world/'stocks.yaml', cat)` / `load_saint_registry(world/'saints.yaml', cat)` — these resolve mutations on load, so a clean return == all granted ids exist in the catalog. Cross-check encounter→bestiary by id-set intersection (37/37 must match).
 - **Currency/cliché bans are grep-verifiable but watch for false positives:** the `§11` ban scan for `bottlecap|water.?currency` legitimately hits the explicit "Banned (§11): no bottlecaps" *comment* in inventory.yaml — that's the ban note, not a violation. Same for `scar` (harpoon-scarred leviathan, war "scar tissue", "the Charlestown scar" place) and banned suffixes (`drift` in a `move: "9m drift"` value is not a coined place name). Read each hit's context before flagging.
+
+## WN action-set synthesis (108-8, 2026-06-15)
+- The WN combat resolution machinery (108-1's `dice._resolve_wn_committed_action`:
+  weapon dice → ablative HP + `wwn.native_scaffolding_suppressed` span) already handles
+  ANY `damage_channel=="strike"` beat under a `WithoutNumberRulesetModule` binding. The
+  zero-beat (post-108-3) outage was PURELY the two `cdef.beats` lookups rejecting the id
+  before resolution: `dice.py:407` and `wn_round.py:374`.
+- Fix pattern = mirror item-use synthesis: add `is_wn_action_beat`/`wn_action_beat` to
+  `beat_filter.py` (pure id check + transient BeatDef factory), then intercept at BOTH
+  seams BEFORE the lookup, gated `isinstance(ruleset, WithoutNumberRulesetModule)`.
+  Both seams MUST be patched — dice.py resolves the commit, wn_round.py re-resolves it
+  inside the sealed-round walk; fixing only dice.py re-raises at the barrier close.
+- Synthesized attack BeatDef carries NO `damage_override` → weapon dice resolve from the
+  actor's inventory via `damage_roll.resolve_damage_spec_from_beat_and_actor` priority 2/3
+  (or the genre unarmed floor). `attack_bonus`/`combat_skill` default 0 (no class to-hit
+  progression on a synthesized action — matches the `wn_attack` narrator tool).
+- Gate caveat: "attack" is also an authored NATIVE beat id (test_genre). The isinstance
+  gate keeps native ids on the authored-beat lookup, so synthesis only fires under WN.

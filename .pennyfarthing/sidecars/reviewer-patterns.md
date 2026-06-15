@@ -79,3 +79,19 @@
 
 ### Span severity: content-gap = WARN, runtime-failure = ERROR — judge level by failure class, not loudness (106-1, 2026-06-13)
 - A "fail-loud" span carrying `StatusCode.ERROR` is NOT automatically correct. Per lang-review Rule #4, classify by failure type: a missing content value (e.g. an inventory.yaml entry lacking `armor_class`) is a CONTENT AUTHORING GAP → WARN (matches the sibling `chargen.starting_equipment_missing` convention); a runtime resolution failure (e.g. `equip.unresolved` — item not found mid-game) → ERROR. When a fix drops ERROR→WARN, that's correct alignment IF the span still fires and stays registered in `SPAN_ROUTES` (GM-panel visible) — No-Silent-Fallback is about the span EXISTING and being observable, not about the ERROR status tag. Confirm the route registration survived and the import (`Status`/`StatusCode`) isn't orphaned (another helper may still use it).
+
+## WN action-set synthesis review (108-8, 2026-06-15)
+- When reviewing a "synthesize an action under a bound ruleset" change, the load-bearing checks are:
+  (1) closed allowlist (frozenset) that raises loudly on unknown ids — NOT "accept anything";
+  (2) `isinstance(ruleset, WithoutNumberRulesetModule)` gate at EVERY dispatch seam (here both
+  dice.py AND wn_round.py); (3) the gate must not hijack a native pack that authors the same id
+  ("attack" is a real native beat in test_genre) — verify the native-guard test asserts the WN
+  span is ABSENT.
+- Challenge test-analyzer "vacuous pass" claims: a test that only catches-and-fails on an exception
+  is NOT vacuous if the helper (`dispatch_throw`) has no try/except — an unrelated error would FAIL
+  the test loudly, not pass it. Verify the helper before accepting the finding.
+- Fidelity gap worth catching but non-blocking: a synthesized melee attack that hardcodes STR to-hit
+  diverges from the `wn_attack` narrator tool's better-of-STR/DEX. Two entry points for the same WN
+  action should agree on the math (SOUL "Bind the Ruleset"). File as Delivery Finding, don't block.
+- "cast" hiding behind a post-lookup route: if cast_spell routing sits AFTER the cdef.beats lookup,
+  a fully zero-beat WWN combat def breaks Cast too — easy to miss when only "attack" is tested.

@@ -86,3 +86,24 @@
 - Problem: a production step fires one of N spans depending on a random content roll (e.g. `warrior_kit.armor` is a uniform 1-of-3 pick; leather→`chargen.armor_equipped`, shield/helmet→`chargen.armor_unresolved`). A fixed "AC==13" assertion through the real handler is flaky (~1/3). Seeding the handler-constructed builder's RNG is brittle (couples to slot/roll order).
 - Pattern: assert the INVARIANT that holds across all rolls — "exactly one of {span_A, span_B} fired" (the kit always produces exactly one armor item) — then BRANCH-assert the value per outcome (AC=13+equipped on span_A, AC=10+loud-fail on span_B) so it stays non-vacuous. Deterministic pass/fail on the WIRE, immune to the roll and to refactors. Add a pre-condition assert that NO target span fired before the triggering message, to prove the span is caused by THIS step.
 - Soundness check first: `grep` that the target spans are emitted ONLY inside the function under test, and that function has exactly ONE production caller. Then span-presence == wire-present is airtight (drop the call → zero spans → fail). This is the server CLAUDE.md "No Source-Text Wiring Tests" — assert the span through the real handler, never grep source.
+
+## Zero-beat WN combat RED tests (108-8, 2026-06-15)
+- To reproduce the post-108-3 "cdef.beats == []" state in a test, load the REAL
+  wwn pack (heavy_metal) via `tests.integration._wn_round_102_4.load_pack`, seat with
+  `seat_wn_combat`, then mutate `cdef.beats = []` on every `win_condition=="hp_depletion"`
+  def in `pack.rules.confrontations`. ConfrontationDef is NOT frozen and
+  `find_confrontation_def` hands dispatch the SAME object you mutate (mutation sticks).
+  Strip AFTER seating (seating still needs beats).
+- The single chokepoint is `dispatch/dice.py:407` (`beat = next(b for b in cdef.beats...)`)
+  → raises `DiceDispatchError: unknown beat_id 'attack' ... available: []`. The wire
+  handler CATCHES this and logs `dice.dispatch_error` (warning) — it does NOT crash — so
+  wire tests must assert on the ABSENCE of `wwn.round.resolved`, not on a raised exception.
+- WN attack damage source: heavy_metal ships NO `unarmed_damage` floor, so an empty-inventory
+  PC's synthesized attack has no weapon dice. Arm the PC with an item dict carrying a
+  serialised `damage` key (priority-2 in `damage_roll.resolve_damage_spec_from_beat_and_actor`):
+  `{"id":..., "name":..., "category":"weapon", "damage":{"dice":"1d8","bonus":0}}`.
+- Canonical WN action id = `"attack"` (UI: CavernActionPanel.tsx + EncounterTab.test.tsx).
+  Gotcha: `"attack"` is ALSO an authored native beat (test_genre "Wasteland Brawl"), which is
+  exactly why the WN synthesis intercept MUST be `isinstance(ruleset, WithoutNumberRulesetModule)`-gated
+  — an unconditional intercept would hijack the native beat. Good cheap native-gate guard:
+  dispatch "attack" under native test_genre, assert no `*.native_scaffolding_suppressed` span.
