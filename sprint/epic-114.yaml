@@ -56,9 +56,10 @@ stories:
     review_verdict: approved
   - id: 114-6
     title: road_warrior — bind the CWN vehicle chapter, retire bespoke Rig Composure (ADR-143)
+    description: "CANCELED 2026-06-15 (stale/mis-scoped, user-confirmed). 'Bind the CWN vehicle chapter' is already shipped by epic 86: road_warrior binds ruleset: cwn; game/vehicle_combat.py (CWN SRD §2.4.8) + game/chase_pace.py (CWN §2.6.2) exist with ~25 tests. Haiku-authored ACs invented VehicleTemplate/ChaseRound + tests/server/game/vehicles/ that don't exist; writing them would reinvent shipped CWN code (violates ADR-143 + Don't-Reinvent). The only genuine remnant — retire bespoke RigComposurePool — is part of the CWN combat cutover ADR-143 explicitly stages BEHIND the in-progress WWN cutover (epic 108), and belongs in the combat-cutover epic, not inventory epic 114. Re-file the remnant there when sequencing allows. See archived 114-6 session for full evidence."
     points: 8
     priority: p2
-    status: in_progress
+    status: canceled
     started: '2026-06-15'
     repos: server,content
     workflow: tdd
