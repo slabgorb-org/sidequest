@@ -1,0 +1,8 @@
+id: '120'
+type: epic
+title: SRD-bound genre baselines go fully verbatim (caverns_and_claudes + road_warrior unprovenanced sweep; upgrade D3 validator to verbatim-only)
+description: "Follow-on to 114-14 (Keith ruled 2026-06-15: narrow 114-14 to the declared-bespoke packs, file the rest as an epic). 114-14 added a fail-loud validator rejecting genre-tier mode:bespoke for WN-family packs and cleaned the 3 declared-bespoke packs (mutant_wasteland/neon_dystopia/road_warrior). But the REAL ADR-145 D3 rule is 'SRD-bound genre baseline = verbatim-only', and two WN-family packs still carry UNPROVENANCED (neither verbatim nor flagged-bespoke) genre items: caverns_and_claudes (31, WWN) and road_warrior (25, CWN — rig parts, mount weapons, survival gear, rig-tier vessels). This epic: (1) source each unprovenanced item verbatim from its SRD at the genre tier where an analog exists (the elemental_harmony/heavy_metal pattern — both already 100% WWN-verbatim), moving only genuinely-unique items (rig-tier vessels, plot devices) to the world tier; (2) UPGRADE the 114-14 validator from 'no genre-tier bespoke' to 'WN-family genre baseline must be mode:verbatim (or derived)'. elemental_harmony + heavy_metal already pass; space_opera has no genre inventory; native packs (pulp_noir/tea_and_murder/wry_whimsy/spaghetti_western) are exempt (no SRD to be verbatim from). Watch the world-replaces-genre starting_equipment/gold/currency trap when creating any world inventory.yaml."
+priority: p2
+status: backlog
+repos: content,server
+stories: []
