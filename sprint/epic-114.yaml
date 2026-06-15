@@ -104,3 +104,11 @@ stories:
     workflow: tdd
     depends_on: 114-3
     completed: '2026-06-14'
+  - id: 114-12
+    title: 'Complete CWN/WN inventory verbatim round-trip + harden the WN extraction CLIs (114-5 follow-ons): CatalogItem dual-AC/soak + Trauma-Target field, ranged +N damage bonus, DRY shared WN-extraction core, Path.resolve()/argparse choices in both wwn+cwn tools'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: refactor
