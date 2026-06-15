@@ -73,8 +73,11 @@ stories:
     description: "Unblocks 108-3 (content WN combat de-nativize). Today the loader REQUIRES native beats, so stripping them makes WWN packs unloadable. Two relaxations, BOTH gated on the bound ruleset owning combat (WithoutNumberRulesetModule family) so native packs keep failing loud: (1) ConfrontationDef._validate ends with an UNCONDITIONAL 'if not self.beats: raise must have at least one beat' (rules.py:~590) — a category=combat / win_condition=hp_depletion def under a WN binding must be allowed ZERO beats (the WN engine, wn_round.py, supplies attack/move/item-use/cast; 108-1). DESIGN NOTE: the pydantic model validator only sees the def, NOT the pack ruleset — so this check likely must MOVE to the loader (genre/loader.py), which knows rules.ruleset, to be gated correctly. (2) loader.py:~701 validates every allowed_classes class's encounter_beat_choices against the combat beats pool — for WN packs, classes need not declare encounter_beat_choices (allow empty/absent) since the WN engine owns the action set. Keep both guards intact for native packs (zero beats / empty class beat-choices must still raise). Tests: a beatless WN combat def + WN classes with no encounter_beat_choices LOAD; a native pack with zero beats still raises; load_genre_pack green for all three WWN packs once 108-3 strips them. After this lands, 108-3 strips the combat beats AND the now-orphaned encounter_beat_choices from WN classes, then corrects docs/superpowers/specs/2026-06-14-108-3-wwn-combat-denativize-strip-spec.md (which wrongly assumed zero-beat defs already load). ADR-143 / ADR-142."
     points: 3
     priority: p1
-    status: in_progress
+    status: done
     started: '2026-06-14'
     repos: server
     workflow: tdd
+    completed: '2026-06-14'
     type: refactor
+    review_findings: "Lint/format blocker in tests/genre/test_wn_beat_optional_loader.py (UP035 typing.Iterator + ruff format) — slipped past GREEN which only linted the 3 green-phase files. Two LOW nits: span component='genre.loader' should be 'genre'; optional doc note on WN encounter_beat_choices asymmetry. No correctness/security/design defects — green rework."
+    review_verdict: approved
