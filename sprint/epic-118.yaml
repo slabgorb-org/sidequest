@@ -29,12 +29,29 @@ stories:
     review_verdict: approved
   - id: 118-3
     title: 'F3c — 4dF roll display (dice surface): surface the 4dF result to the player — four Fudge faces {-,0,+}, ladder rating, shifts, outcome tier, succeed-with-style highlight. DEFAULT shape = flat readout in the Fate panel/narration (roll rides FATE_STATE or a small FateRollPayload). PARKED OPEN Q (Keith decides before RED): flat readout (3pt, tdd) vs extend the Rapier 3D overlay with a Fudge die derived from dice-lib d6.ts + GENRE_DICE_THEMES (5pt, superpowers, design-heavy, touches live WN/native dice path — add NEW die kind, never mutate d6). Filed at the flat default. Player sees faces+ladder+shift+tier regardless (legibility mandate).'
-    points: 3
+    description: |-
+      F3c — 4dF roll display (3D Fudge die). RESOLVED 2026-06-15 (Keith): Option B — extend the Rapier 3D dice overlay with a real Fudge die, NOT the flat readout. Player sees four Fudge faces {+,0,−}, ladder rating, shift total, outcome tier, succeed-with-style highlight (legibility mandate — Sebastien/Jade, player-UI not OTEL). ruleset=='fate'-gated; must never co-render with the WN/native ConfrontationOverlay (paired negative test required).
+
+      SCOPE = 3 repos: server, ui, dice-lib.
+      - dice-lib (~/Projects/dice-lib, @local/dice-lib, trunk-based on main; ONE shared working copy symlinked into every oq clone via file:../../dice-lib — a local edit is live in all clones instantly, source-linked, no build): add a NEW 'dF' DieKind ADDITIVELY to DIE_REGISTRY. The Fudge die is a d6 cube — reuse D6_RADIUS / D6_COLLIDER_VERTICES / geometryKind 'box'; new face→value map {+1,0,−1} ×2 each; render glyphs via the existing procedural FaceLabels + drei <Text> path (dF has no FBX, so no new 3D asset). NEVER mutate d6/d20 or any existing kind. Commit dice-lib straight to main (do NOT cut a feature branch — branching the shared working copy would switch oq-1/2/4 too). DieKind union + dieRegistry entry + dF.ts + glyph-label generalization (face carries a label string defaulting to String(number)).
+      - server: FATE_STATE / FateRollPayload spine must carry the 4dF tuple to the client (the dice tuple currently lives only on the OTEL span — F3 is NOT pure-UI; mirrors ADR-136 RELATIONSHIPS).
+      - ui: InlineDiceTray (or a fate variant) wires kind='dF', count=4, sums faces→shift, renders ladder/tier/style overlay; fate-ruleset gate + negative co-render test.
+
+      Depends on 118-1 (done). Critical path F3a->F3b already landed; F3c not gated by F4/F5.
+    points: 5
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server,ui
-    workflow: tdd
+    workflow: spdd
     depends_on: 118-1
+    acceptance_criteria:
+      - dice-lib registers an additive dF DieKind — a d6 cube (box geometry, D6_RADIUS, d6 collider) reading Fudge faces {+1,0,-1} ×2 with glyph labels, without mutating d6 or letting dieKindForSides resolve to dF.
+      - 'Server promotes the 4dF roll onto the wire: a strict FateRollPayload (four faces, ladder rating+name, shifts, tier, succeed-with-style) built from FateOutcome and carried on a routable FATE_ROLL message.'
+      - UI can route FATE_ROLL — FateRollPayload type, isFateRoll guard, MessageType.FATE_ROLL, and FateRollMessage in the TypedGameMessage union.
+      - A fate-gated FateDiceTray renders four dF dice and the legible readout (shift/ladder/tier/succeed-with-style) and renders nothing off a fate ruleset (never co-renders with the WN/native ConfrontationOverlay).
+    completed: '2026-06-15'
+    review_verdict: approved
   - id: 118-4
     title: "F3d — Invoke control: player-driven invoke from the Fate panel — an 'Invoke (+2 / reroll)' affordance per invokable aspect showing cost (free invoke if available, else 1 fate point). Resolution already rides FateActionPayload.invoke_aspect (F1d/F2a); F3d builds the control + cost display + optimistic fate-point decrement reconciled by next FATE_STATE (server is the only economy authority — No Silent Fallbacks). Surfaces the F2b invokable-aspect directive as clickable UI instead of prose."
     points: 3
