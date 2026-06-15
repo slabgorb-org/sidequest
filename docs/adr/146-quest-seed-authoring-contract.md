@@ -343,3 +343,52 @@ Epic 117, story 117-3 implements:
 
 Story 117-4 retunes/demotes `detect_unminted_objective` to the un-seeded backstop. Story
 117-5 coheres lore fragments under the now-minted `QuestEntry` (ADR-053 + ADR-100).
+
+## Addendum (Story 117-6): the un-seeded objective classifier replaces the keyword backstop
+
+117-4 hardened the **seeded** path (router `quest_offer` → `detect_unminted_objective`
+beeps keyword-free) but left the **un-seeded** case — a narrator who *improvises* an
+open-ended objective hook mid-scene with no `quest_offer` behind it — on the brittle
+13-phrase `_UNMINTED_OBJECTIVE_MARKERS` substring matcher. That matcher is the Zork
+verb-set anti-pattern (SOUL: The Zork Problem): a noir "discreet job" hook
+("Someone of mine stopped checking in… discreet work") trips zero curated phrases, so
+`narration.unminted_objective.suspected` stayed silent (the perseus_cloud failure,
+session 594dcc7e).
+
+117-6 replaces that backstop with a real classification: a single-shot Haiku tool-use
+pass (ADR-102) over the narration prose itself —
+`post_narration_classifier.classify_unseeded_objective`, run by
+`run_unseeded_objective_classifier_watcher` and wired into the post-narration block of
+`_execute_narration_turn`. On a hit it emits the existing span tagged
+`detection_method="classifier"` (vs. `"keyword"` for the retained backstop) so the GM
+panel can tell a real classification from a lucky substring match. The keyword matcher
+is **retained, not deleted** — demoted to a non-primary emergency backstop for the
+router-silent / classifier-unavailable edge; full removal is deferred until the
+classifier has soaked in playtest.
+
+### Cost analysis (SOUL: Cost Scales with Drama)
+
+A per-turn post-narration classification is not free, so the watcher **gates** before
+spending a token. No Haiku call is made unless **all** hold:
+
+1. narration is non-empty,
+2. `quest_log` is empty (nothing minted — the same gate the sync detector uses), and
+3. the turn carries **no** router `quest_offer` dispatch (the seeded 117-4 path already
+   owns that case).
+
+A quiet, already-minted, or router-seeded turn therefore costs **$0**. When it does
+fire, it is one Haiku 4.5 call with a small bare-string system prompt (well below the
+cacheable floor — no `cache_control` marker, which would be accepted and silently never
+cache: the epic-91 trap) and `max_tokens=256`.
+
+| Scenario | LLM calls | Approx. cost |
+|----------|-----------|--------------|
+| Quiet turn / combat / already-minted / router-seeded | 0 | $0 |
+| Un-seeded turn with objective-bearing prose | 1 (Haiku, ~1K in / ~50 out) | ~$0.001 |
+
+Spend is recorded under caller `unseeded_objective_classifier` (distinct from
+`intent_router`) and runs the ADR-134 pre-flight ceiling check + per-session ledger, so
+the [COST-1] forensics attribute it cleanly. Activation is **gated-always-on** (run on
+every un-seeded objective-eligible turn); a future drama-tier gate could narrow it
+further if the per-session count proves material, but at ~a-few-calls-per-session the
+brittleness it removes is worth the sub-cent cost.
