@@ -95,11 +95,14 @@ stories:
     description: "HIGH-severity security finding surfaced during 118-3 (F3c) review (Hermes/reviewer-security, high confidence). PRE-EXISTING — not introduced by 118-3 (the seat-resolution lines are unchanged by that diff) — but 118-3 amplifies it: the spoofer now receives the victim's roll result. Relates to ADR-119 (Authenticated Player Identity, partial). Filed p1 so it is not lost."
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - "Auth-bypass fix: in handlers/fate_action.py the acting player is resolved as 'acting_player_id = getattr(msg, \"player_id\", \"\") or sd.player_id'. A client can send a FATE_ACTION with a non-empty spoofed player_id pointing at another seated player, and the handler then acts AS that PC — sealing their commit, spending their fate point, or invoking their aspect. Drive seat resolution from sd.player_id (server-authenticated, Cf-Access identity bound at connect) as the SOLE source; treat msg.player_id as a server-set OUTPUT annotation, never trusted inbound identity."
       - "Add a regression test: a FATE_ACTION whose msg.player_id != the socket's authenticated identity must NOT act as the spoofed seat (it acts as the authenticated PC, or is rejected loud)."
       - 'Latent injection (LOW, ADR-047): FateActionPayload.skill is stored on FateSealedCommit (fate_conflict.py) WITHOUT sanitize_player_text — unlike aspect_text/boost.text which sanitize with explicit ADR-047 citations. No current narrator hint interpolates commit.skill, so it is latent, but apply sanitize_player_text(payload.skill) at the seal site to match the defensive posture before any future hint references it.'
+    completed: '2026-06-15'
     type: bug
+    review_verdict: approved
