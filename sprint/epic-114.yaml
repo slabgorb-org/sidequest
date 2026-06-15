@@ -112,3 +112,11 @@ stories:
     repos: server,content
     workflow: tdd
     type: refactor
+  - id: 114-13
+    title: 'road_warrior: decide + optionally let combat classes start with CWN-category weapons — widen the personal-weapon guard + strike path to accept melee_weapon/ranged_weapon, not just bespoke category:weapon (114-5 follow-on)'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: refactor
