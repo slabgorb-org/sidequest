@@ -81,3 +81,22 @@ stories:
     type: refactor
     review_findings: "Lint/format blocker in tests/genre/test_wn_beat_optional_loader.py (UP035 typing.Iterator + ruff format) — slipped past GREEN which only linted the 3 green-phase files. Two LOW nits: span component='genre.loader' should be 'genre'; optional doc note on WN encounter_beat_choices asymmetry. No correctness/security/design defects — green rework."
     review_verdict: approved
+  - id: 108-8
+    title: road_warrior CWN combat cutover (staged behind WWN per ADR-143) — retire the bespoke RigComposurePool two-pool solo-rig model; rig combat resolves purely through the already-shipped CWN vehicle_combat.py + chase_pace.py with the driver on ablative CWN HP. Re-homed from canceled 114-6.
+    description: |-
+      Re-homed from canceled 114-6 (which was stale: its ACs asked to 'bind the CWN vehicle chapter' that epic 86 already shipped). The genuine remnant, per ADR-143 (ruled 2026-06-14): under road_warrior's ruleset: cwn binding, retire the bespoke RigComposurePool — an EdgePool-derived 'composure' dial (ADR-014/078) bolted onto the rig — because it is native scaffolding on the WN combat path. Rig combat should resolve purely through the already-shipped CWN math: game/vehicle_combat.py (CWN SRD §2.4.8 vehicle HP/AC/ramming) + game/chase_pace.py (CWN §2.6.2 pace/pursuit), with the driver on live ablative CWN HP.
+
+      SERVER removal targets: RigComposurePool model + its refs in views.py (GM-panel rig_composure_current/max), protocol/models.py + protocol/base.py (wire fields), creature_core.py (rig_pool field), vessel_tags.py (pool binding), chargen_loadout.py (53-2 bind), plus ~15 tests (delete/repoint test_rig_composure_pool, test_rig_two_pool_combat, test_party_member_rig_composure, etc.). CONTENT: strip rig_composure_spec + the dormant 'Plan 2' Rig Composure prose/narrative tiers from road_warrior/rules.yaml and the composure stat on inventory.yaml vessels.
+
+      OPEN DESIGN QUESTIONS (resolve BEFORE RED — needs a design/brainstorm pass):
+      (1) Does CWN vehicle HP (§2.4.8, already in vehicle_combat.py) replace the composure pool 1:1, or was composure a distinct structural layer that needs a CWN-faithful home?
+      (2) Does the crewed WarRigHull (86-6, war_rig_combat.py — vessel-scoped Hull that reuses the rig_pool.* SPAN vocabulary but is NOT RigComposurePool) ALSO retire/convert, or stay? Epic 86 deliberately kept the two-pool model (war_rig_combat.py:25 'Solo-rig combat stays on RigComposurePool … not a replacement', spec §6); ADR-143 overrides that for the WN combat path. Removing RigComposurePool must not break WarRigHull's span routes.
+
+      SEQUENCING: staged behind the WWN cutover per ADR-143 ('swn/cwn/awn same doctrine, staged'); depends_on 108-3 (the WWN content de-nativize, the cutover's last WWN piece). OTEL: prove the bespoke composure rider no longer fires (extend wn.native_scaffolding_suppressed to the rig path). NOT inventory — does not belong to epic 114. Full evidence: sprint/archive/114-6-session.md.
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    depends_on: 108-3
+    type: refactor
