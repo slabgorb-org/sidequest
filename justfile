@@ -648,6 +648,14 @@ setup:
     else
         echo "⚠ sidequest-ui not cloned"
     fi
+    echo "--- dev tooling (tokei for 'just loc') ---"
+    if command -v tokei >/dev/null 2>&1; then
+        echo "tokei already installed ($(tokei --version))"
+    elif command -v brew >/dev/null 2>&1; then
+        brew install tokei
+    else
+        echo "⚠ tokei not installed and Homebrew not found — install tokei manually for 'just loc' (https://github.com/XAMPPRocky/tokei)"
+    fi
     echo "--- git hooks (point to .githooks/) ---"
     git -C {{root}} config core.hooksPath .githooks
     echo "=== setup complete ==="
