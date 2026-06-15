@@ -3,7 +3,7 @@ type: epic
 title: Genre→World boundary hygiene (ADR-140) — content-tier cleanup from the 2026-06-14 genre-pack-root audit
 description: 'Follow-on from the 2026-06-14 sweep of all 11 genre-pack roots (committed on chore/genre-pack-root-cleanup: removed 6 loader-dead files + 5 genre-tier cultures.yaml + junk). ADR-140: the genre tier is the rulebook only; the world owns cast and catalog. Remaining boundary items that need code coordination or a validation decision: (1) relocate caverns_and_claudes themes/ to its single world beneath_sunden; (2) reconcile pack_schema.yaml with the actual server loader allowlist; (3) decide on relocating combat_design.md/magic_design.md design docs out of runtime pack folders.'
 priority: p3
-status: backlog
+status: done
 repos: server,content
 stories:
   - id: 113-1
@@ -77,10 +77,15 @@ stories:
       DECIDE destination (suggest sidequest-content/docs/genre/<genre>/ to keep them near their pack while out of the runtime tree). Confirm nothing references the in-pack path before moving (loader is YAML-only; grep for the .md filenames across repos to be sure).
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    assigned_to: keith
+    started: '2026-06-14'
     repos: content
     workflow: trivial
     acceptance_criteria:
       - design docs moved out of genre_packs/<genre>/ into a docs location; no .md design docs remain at any pack root
       - grep confirms no code or content references the old in-pack .md paths (or references updated)
+    completed: '2026-06-14'
     type: chore
+    review_verdict: approved
+completed: '2026-06-14'

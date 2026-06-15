@@ -32,6 +32,7 @@ completed_epics:
   - '111'
   - '112'
   - '115'
+  - '113'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -662,4 +663,19 @@ completed_stories:
     epic: '115'
     title: 'Part C — teardown: delete server HTML/routes, dead spans, stale fixes (C1–C4)'
     points: 5
+    completed: '2026-06-14'
+  - id: 113-1
+    epic: '113'
+    title: Relocate caverns_and_claudes themes/ from genre root to worlds/beneath_sunden/themes/ (ADR-140)
+    points: 3
+    completed: '2026-06-14'
+  - id: 113-2
+    epic: '113'
+    title: Reconcile pack_schema.yaml with the actual server loader allowlist (drift both directions)
+    points: 3
+    completed: '2026-06-14'
+  - id: 113-3
+    epic: '113'
+    title: Relocate combat_design.md / magic_design.md out of runtime genre-pack folders into docs/
+    points: 1
     completed: '2026-06-14'
