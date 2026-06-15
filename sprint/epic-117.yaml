@@ -72,6 +72,8 @@ stories:
     title: "Render quest-related lore in QuestsPanel — surface the related_lore the server now projects (117-5) so Keith actually SEES the coherent picture. Server-side projection landed in 117-5 (server #876): the QUESTS payload carries related_lore (list of {fact_id, content}) under each quest entry, but the client drops it. Two gaps: (1) sidequest-ui src/types/payloads.ts QuestLogEntry has no related_lore field, so the typed data is invisible; (2) src/components/QuestsPanel.tsx renders only title/status/objective/anchor — needs a 'What I've learned about this job' render block listing the related lore under each quest. UI-only (sidequest-ui, base develop). This is the visible payoff of 117-5; without it the coherence is on the wire but unseen. Player-facing (per CLAUDE.md: legible mechanics in player UI). Wiring test: a QuestsMessage with related_lore renders the lore block (jsdom)."
     points: 3
     priority: p1
-    status: backlog
+    status: started
     repos: ui
     workflow: tdd
+    branch: feat/117-7-render-quest-lore
+    started: '2026-06-15'
