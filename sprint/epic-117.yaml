@@ -33,10 +33,13 @@ stories:
     title: 'Implement deterministic quest-seed minting: an authored opening/seed_trope quest_seed mints a QuestEntry into quest_log on acceptance, emitting quest.created/quest.seeded spans, so QUESTS projects to QuestsPanel without depending on the narrator calling record_quest. Author the perseus_cloud floor-boss detective hook as the first quest_seed (content). Wiring test: scripted opening → accept → quest_log non-empty → quests.emitted quests>=1.'
     points: 8
     priority: p1
-    status: backlog
+    status: done
     repos: server,content
     workflow: tdd
     depends_on: 117-2
+    completed: '2026-06-14'
+    review_findings: 'Hermes APPROVED (full data-flow + runtime-wiring verified: quest_offer in _REGISTRY, span in SPAN_ROUTES, witness #9, validator fails loud on seed removal). TEA VERIFIED 29/29, no test-gaming, no new regressions. 2 Medium findings fixed pre-PR in 055acae: (1) unknown/empty decision now fails loud (No-Silent-Fallbacks), (2) idempotent accept consumes the offer. Suite 29→37 green. 2 Lows/nit deferred.'
+    review_verdict: approved
   - id: 117-4
     title: "Harden the unminted-objective lie-detector: retire/augment the 14-phrase hardcoded keyword gate in dispatch_engagement_watcher.py (a noir 'discreet job' hook trips none of them) with intent-router-backed objective detection — the router already classifies objective-giving turns. Goal: narration.unminted_objective.suspected fires on open-ended hooks, not just curated phrasings, so the GM panel beeps when quest_log stays empty under a stated objective. Includes the span already routed in SPAN_ROUTES."
     points: 5
