@@ -1,0 +1,42 @@
+id: '119'
+type: epic
+title: Narrator inference on the Max Agent SDK credit — stop paying PAYG
+description: 'Anthropic 2026-06-15 billing split carved programmatic usage (claude -p, the Claude Agent SDK, Claude Code GitHub Actions, third-party agent apps) OUT of the flat Pro/Max pool into a separate monthly Agent SDK credit (Max 20x = 200/mo, per-user, monthly reset, no rollover; overflow to PAYG if usage credits enabled). The credit is tied to subscription/OAuth auth: an API key forfeits it (Anthropic help: Claude Platform accounts using an API key do not receive a credit). SideQuest narrator (Sonnet 4.6) + intent classifier (Haiku 4.5) both auth via ANTHROPIC_API_KEY through the SINGLE choke point build_async_anthropic() at sidequest-server/sidequest/agents/llm_factory.py:76-96, so ~150/mo of inference (Console MTD 127.56, ~5-7/day normalized; commingled with Keith personal Max 5-hr-cap overage that shows as Fable/Opus on the chart) bills full PAYG and draws NOTHING from the 200 credit. This epic moves that inference onto the credit, saving ~150-200/mo. The claude -p and ollama narrator backends are RETIRED in code (Story 61-9/ADR-101), so that path is dead. Gating spike 119-1 decides the fork: does the raw anthropic SDK over subscription OAuth qualify for the credit? GO means the cheap re-auth of the single choke point (119-2); NO-GO means porting narrator inference to the claude-agent-sdk package (119-3, mutually exclusive with 119-2). 119-4 hardens token refresh + adds cost/credit OTEL. Three billing pools: 1 flat plan interactive 5-hr cap, 2 new 200 Agent SDK credit programmatic, 3 usage-credits PAYG buffer (50.52 prepaid). Refs: Anthropic help Use the Claude Agent SDK with your Claude plan + Use Claude Code with your Pro or Max plan; ADR-101; SOUL No-Silent-Fallbacks.'
+priority: p1
+status: backlog
+repos: server
+stories:
+  - id: 119-1
+    title: 'Spike (operator-run, go/no-go): does the raw anthropic SDK authed via subscription OAuth draw the Max Agent SDK credit, or still bill PAYG? Anthropic help blesses Claude Agent SDK usage specifically, so raw-Messages-SDK-over-OAuth qualifying is UNVERIFIED. Harness (full recipe in context doc): ant auth login to the Max workspace, unset ANTHROPIC_API_KEY, export the OAuth token as ANTHROPIC_AUTH_TOKEN, fire a few tiny messages.create calls on model claude-haiku-4-5 with the oauth-2025-04-20 beta header. SIGNAL: watch the Agent SDK credit meter in subscription billing draw down (positive); absence from the Console Cost page is a WEAK signal (it commingles interactive 5-hr-cap overage). Confirm the 200 credit is not already exhausted; run from a shell not also doing interactive Claude Code. Deliverable: a written GO/NO-GO that selects 119-2 vs 119-3 plus the reusable snippet. Operator runs the login and reads the meter; agent preps the harness and records the verdict.'
+    points: 2
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
+  - id: 119-2
+    title: Conditional on 119-1 GO; mutually exclusive with 119-3. Re-auth the single Anthropic client choke point to subscription OAuth so narrator + classifier draw the Agent SDK credit instead of PAYG. Change build_async_anthropic() (llm_factory.py:76-96) to construct AsyncAnthropic via the OAuth/auth_token path (ANTHROPIC_AUTH_TOKEN plus the oauth-2025-04-20 beta header) instead of api_key=, and relax the api-key presence check in AnthropicSdkClient.__init__ (around lines 142-147) to accept token mode WITHOUT a silent fallback (fail loud if neither key nor token is present; SOUL No-Silent-Fallbacks). ANTHROPIC_API_KEY must be UNSET in the server env (a set key overrides the token and forfeits the credit; the API rejects both-set). The tool-use loop complete_with_tools (anthropic_sdk_client.py:248-705) is UNTOUCHED, still the raw Messages SDK. Because this is the single Story-91-1 choke point, narrator (Sonnet) + classifier (Haiku) + any Opus/Fable all move together. Verify the tool_use turn loop still converges. Hours of work; ~150/mo to ~0.
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 119-1
+    type: refactor
+  - id: 119-3
+    title: Conditional on 119-1 NO-GO; mutually exclusive with 119-2. Port narrator inference from the raw anthropic Messages SDK onto the Claude Agent SDK (claude-agent-sdk package) with subscription auth, the help doc explicitly-covered surface. Rewrite the ~120-line manual tool loop complete_with_tools (anthropic_sdk_client.py:248-705, which reads response.stop_reason==tool_use, appends assistant/user tool blocks, re-calls messages.create) onto the Agent SDK own tool/loop model, and re-express the Pydantic-generated tool schemas from tool_registry (tool_registry.py:225-249) as Agent SDK tools. Preserve every narration tool contract, the convergence semantics, and OTEL. Subscription/OAuth auth, ANTHROPIC_API_KEY unset, No-Silent-Fallbacks. Heavy-lift fallback, only worked if the spike rules out the cheap re-auth.
+    points: 8
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 119-1
+    type: refactor
+  - id: 119-4
+    title: 'Depends on whichever migration lands (119-2 or 119-3). Production auth durability + cost/credit observability. 1: long-running server uses an auto-refreshing ant auth login profile on the host (the print-credentials env token is short-lived and not auto-refreshed), construct the client to pick up the refreshing profile not a baked-in token; fail loud on expiry, never silently fall back to PAYG. 2: emit an OTEL span tagging which auth path / billing pool each inference draws (credit vs PAYG overflow) so the cost/GM panel can VERIFY the narrator is on the credit, a Keith/dev observability concern per the CLAUDE.md OTEL principle NOT a player surface. 3: monitor the 200 monthly credit + the pool-3 prepaid overflow buffer (currently 50.52) so mid-month exhaustion is visible before it silently bills PAYG.'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 119-2
