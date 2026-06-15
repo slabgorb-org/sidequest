@@ -58,7 +58,8 @@ stories:
     title: road_warrior — bind the CWN vehicle chapter, retire bespoke Rig Composure (ADR-143)
     points: 8
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-06-15'
     repos: server,content
     workflow: tdd
     depends_on: 114-5
