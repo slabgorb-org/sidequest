@@ -131,7 +131,10 @@ stories:
     description: "Enforce ADR-145 D3 globally: add a fail-loud genre-baseline 'no bespoke' loader validator (no allow-list, No Silent Fallbacks) AND make ALL three genre-tier-bespoke packs clean in one change — mutant_wasteland (6 relics->both worlds, 6 survival->AWN-verbatim at genre), neon_dystopia (6 bespoke->franchise_nations world), road_warrior (5 bespoke->the_circuit world). Keith ruled 2026-06-15: validator now + migrate all 3, no split brain."
     points: 13
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: content,server
     workflow: tdd
     depends_on: 114-8
+    completed: '2026-06-15'
+    review_verdict: approved
