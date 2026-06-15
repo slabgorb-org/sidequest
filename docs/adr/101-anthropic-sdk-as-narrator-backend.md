@@ -24,6 +24,13 @@ squash-merges to `develop` at the end of Phase E.
 
 ## Context
 
+> **Superseded premise (2026-06-15):** the billing rationale in this section is
+> **void** — Anthropic cancelled the metered "programmatic credit" cutover
+> described below; `claude -p` and the Agent SDK stay free on the subscription,
+> unchanged. The SDK + tool-use + caching **Decision is unaffected** (those wins
+> are billing-independent); only the economic premise and the API-key-only auth
+> consequence change. See the **Amendment (2026-06-15)** at the end of this ADR.
+
 ADR-001 mandated `claude -p` subprocess calls as the only LLM transport. On
 2026-06-15 Anthropic moves `claude -p` into a separate metered "programmatic
 credit" pool, billed at API list rates and capped per subscription tier. At
@@ -284,3 +291,61 @@ amendment promotes them to governed contracts: (1) the `CallType` taxonomy and
 cache-partition protocol with its dual-TTL (1h stable prefix / 5m volatile tail).
 ADR-112 decides *which* sections are promoted to Stable; this amendment governs
 the partition mechanism that turns that decision into cached or uncached bytes.
+
+## Amendment (2026-06-15): Billing-Premise Reversal — the Credit Split Was Cancelled; Auth Pivots to the Subscription, the SDK + Tool-Use Decision Stands
+
+**What changed.** The Decision's economic rationale (§Context: *"On 2026-06-15
+Anthropic moves `claude -p` into a separate metered 'programmatic credit'
+pool … the current path is economically unsustainable post-cutover"*) is now
+**factually void.** On 2026-06-15 Anthropic notified that the May announcement is
+**not** taking effect: *"Agent SDK, `claude -p`, and third-party app usage
+continues to work with your subscription exactly as it did before today, and
+there's no credit to claim. Your subscription limits are unchanged."* There is no
+metered "programmatic credit." `claude -p` and the Claude Agent SDK remain free on
+the Max subscription, unchanged.
+
+**What did NOT change — the Decision holds.** ADR-101's three structural wins are
+billing-independent and remain in force: tool-use replacing the ADR-039 sidecar
+(narration/mechanics divergence structurally impossible), prompt caching, and
+native OTEL (the GM-panel lie detector, ADR-103). The narrator and the entire
+mechanical spine built on tool-use (ADR-100, -102, -104, -113) stay. **This
+amendment changes the narrator's AUTH, not its SDK or its architecture.**
+
+**The one Consequence that flips.** §Consequences listed *"`ANTHROPIC_API_KEY`
+becomes a hard runtime requirement on narrator paths"* and *"the merge is a
+one-way door."* For *auth*, both are superseded: the API key is now a **cost
+regression** (full PAYG, ~$150/mo; ~$500 already sunk chasing the cancelled
+change), not a requirement. The remedy is to move the single Story-91-1 auth
+choke point (`build_async_anthropic()`, `llm_factory.py`) off the API key onto
+subscription auth. The "one-way door" still holds only for the *sidecar/CLI
+narrator* path — see the trap below.
+
+**Decision — subscription auth, three transports, ranked:**
+
+| Transport | Free on sub? | Cost to land | Keeps tool-use spine? | Story |
+|---|---|---|---|---|
+| Raw Messages SDK over OAuth (`ANTHROPIC_AUTH_TOKEN` + `oauth-2025-04-20` beta) | **Unverified** — the email blesses claude-p + Agent SDK, is silent on raw-SDK-over-OAuth | ~1 seam (see spec) | ✅ unchanged | **119-2 (primary)** |
+| Claude Agent SDK (`claude-agent-sdk`) | **Yes — email-confirmed** | 8-pt port of `complete_with_tools` | ✅ tool-use native | **119-3 (fallback)** |
+| Literal `claude -p` CLI | Yes — email-confirmed | Rollback of ADR-101/-100/-102/-103/-104/-113 | ❌ **no tool-use** | — (rejected) |
+
+**The literal-`claude -p`-CLI trap (rejected, recorded so it isn't re-proposed).**
+`claude_client.py` implements `send`/`send_with_session`/`send_stateless` — text
+in, text out. It does **not** implement `complete_with_tools`. Returning the
+narrator to the literal CLI requires either resurrecting the deleted ADR-039
+sidecar parser (un-migrating this ADR and everything built on it) or hand-rolling
+a tool loop over subprocess JSON (reinventing the Agent SDK badly). "Return to
+`claude -p`" means *return to the free subscription pool*, realized via 119-2 or
+119-3 — **not** an architectural rollback to the sidecar.
+
+**The spike (119-1) is sharpened, not moot.** With the credit gone, its signal is
+a clean binary — *does an OAuth-authed `messages.create()` draw the
+(now-confirmed-free) subscription pool, or bill PAYG?* — instead of the prior
+three-way muddle (credit meter vs Console-commingled interactive overage). The
+auth transport for 119-2 is documented (the SDK resolves `ANTHROPIC_AUTH_TOKEN` or
+an `ant auth login` profile; `oauth-2025-04-20` beta required on `/v1/messages`);
+only the billing attribution is unverified. Run the spike before committing to
+either remedy — "a month is a long time" cuts toward verifying the cheap path, not
+pre-buying the 8-point port.
+
+**Implementation guidance for the 119-2 seam:**
+`docs/superpowers/specs/2026-06-15-narrator-subscription-oauth-reauth-design.md`.
