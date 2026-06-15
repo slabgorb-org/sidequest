@@ -72,7 +72,7 @@ Each finding is one list item. Use "No upstream findings" if none.
   bespoke + **25 UNPROVENANCED**), caverns_and_claudes 31 (UNPROVENANCED).
   elemental_harmony + heavy_metal are already 100% verbatim (target). Keith ruled
   **"narrow this story, file the rest as epic"** → 114-14 = validator + the **23
-  declared-bespoke** items (3 packs); the 56 unprovenanced → **epic 119** (filed).
+  declared-bespoke** items (3 packs); the 56 unprovenanced → **epic 120** (filed).
 - **[Improvement · CORRECTS the SM finding]** The validator is **net-new**, not an
   extension of 114-3. ADR-145 says 114-3 enforces genre-tier provenance *presence*,
   but it does NOT — pulp_noir loads with 0 provenance; the swn fixture has none.
@@ -81,7 +81,7 @@ Each finding is one list item. Use "No upstream findings" if none.
   `mode: bespoke`"**, NOT "verbatim-only" — and it is **gated to the WN family**
   (`awn/cwn/wwn/swn`). NATIVE packs are EXEMPT (authored content, no SRD; protects
   homebrew/Jade authoring). The narrow rule lets caverns (31) + road_warrior (25)
-  unprovenanced items keep loading → no breakage; epic 119 upgrades to verbatim-only.
+  unprovenanced items keep loading → no breakage; epic 120 upgrades to verbatim-only.
 - **[Gap · blocking-for-Dev]** ⚠ **world-replaces-genre kit trap.**
   `resolve_inventory` takes `starting_equipment`/`starting_gold`/`currency` from a
   world's inventory.yaml WHOLESALE. The instant Dev creates
@@ -103,10 +103,10 @@ Each finding is one list item. Use "No upstream findings" if none.
   Major-Injury drug, not anti-rad; there is no Geiger/dosimeter in the gear tables —
   verified against `/tmp/awn_full.txt` Survival Gear p.85 + Modern Drugs p.87), so
   they moved to `worlds/flickering_reach` as bespoke alongside the relics.
-- **[Gap · non-blocking → epic 119]** road_warrior genre still carries 25
+- **[Gap · non-blocking → epic 120]** road_warrior genre still carries 25
   UNPROVENANCED items (rig parts, mount weapons, survival, rig-tier vessels);
   caverns_and_claudes 31. The narrow validator passes them (not `mode: bespoke`).
-  Epic 119 verbatim-only sweep.
+  Epic 120 verbatim-only sweep.
 - **[Conflict · resolved]** `test_road_warrior_combat_dispatch.py` asserted the
   personal-weapon invariant against the GENRE tier (`pack.inventory`). The weapons
   moved to the world tier (D3), so I updated 2 tests to resolve against
@@ -132,9 +132,9 @@ Each finding is one list item. Use "No upstream findings" if none.
   reviewer fix (genre kits reference only genre-catalog ids), but the stub path is
   still observability-blind. A future story should emit a span naming pack/world/
   class/item_id. Affects `sidequest-server/sidequest/server/dispatch/chargen_loadout.py`.
-- **[Gap · non-blocking → epic 119]** Reaffirmed: caverns_and_claudes (31) +
+- **[Gap · non-blocking → epic 120]** Reaffirmed: caverns_and_claudes (31) +
   road_warrior (25) UNPROVENANCED genre items remain (not bespoke → validator passes);
-  the verbatim-only sweep + validator upgrade is epic 119 (filed).
+  the verbatim-only sweep + validator upgrade is epic 120 (filed).
 
 ## Design Deviations
 
@@ -153,13 +153,13 @@ Each entry: what was changed, what the spec said, and why.
     fail-loud on genre-tier `mode: bespoke`) AND **neon_dystopia + road_warrior**
     (their declared-bespoke items move to their single worlds), not just
     mutant_wasteland. The unprovenanced verbatim-only sweep (caverns + road_warrior
-    25) is split out to **epic 119**.
+    25) is split out to **epic 120**.
   - Rationale: the validator runs for every pack at load; shipping it while
     neon_dystopia (6) and road_warrior (5) still carried genre-tier bespoke would
     fail their load (conflict with "full suite green"). Keith ruled validator + all
     declared-bespoke packs now ("no split brain, No Silent Fallbacks"), rest as epic.
   - Severity: major (scope + points change)
-  - Forward impact: epic 119 carries the verbatim-only upgrade (validator → reject
+  - Forward impact: epic 120 carries the verbatim-only upgrade (validator → reject
     unprovenanced genre items) + caverns/road_warrior provenance sweep.
 - **Validator rejects only `mode: bespoke`, not all non-verbatim (deferred to 119)**
   - Spec source: ADR-145 D3 ("genre baseline = verbatim-only") + Keith "narrow".
@@ -167,10 +167,10 @@ Each entry: what was changed, what the spec said, and why.
   - Implementation: this story's validator rejects genre-tier `mode == "bespoke"`
     for WN-family packs; it does NOT reject unprovenanced (no-provenance) genre items.
   - Rationale: enforcing full verbatim-only now breaks caverns_and_claudes (31) +
-    road_warrior (25), which Keith deferred to epic 119. The narrow rule is the
+    road_warrior (25), which Keith deferred to epic 120. The narrow rule is the
     bounded, self-consistent step (every WN pack ends with 0 declared-bespoke).
   - Severity: minor (a deliberately bounded enforcement; documented + epic-tracked)
-  - Forward impact: epic 119 upgrades the rule to verbatim-only and migrates the
+  - Forward impact: epic 120 upgrades the rule to verbatim-only and migrates the
     unprovenanced items.
 
 ### Dev (implementation)
@@ -187,16 +187,16 @@ Each entry: what was changed, what the spec said, and why.
   - Implementation: the 5 declared-bespoke personal weapons moved verbatim to `worlds/the_circuit/inventory.yaml`; CWN baseline weapons stay at genre.
   - Rationale: they were intentionally marked bespoke; re-sourcing would change their identity. Single-world pack → no duplication.
   - Severity: minor
-  - Forward impact: epic 119 may revisit whether the genre's CWN baseline duplicates any of them.
+  - Forward impact: epic 120 may revisit whether the genre's CWN baseline duplicates any of them.
 
 ### Reviewer (audit)
 - **TEA "scope expanded 5pt→13pt, 3 packs + validator"** → ✓ ACCEPTED: sound and
-  Keith-ruled. Filing epic 119 for the deferred verbatim-only sweep is the correct
+  Keith-ruled. Filing epic 120 for the deferred verbatim-only sweep is the correct
   split; the narrow validator (reject `mode: bespoke`, WN-gated) does not break the
   unprovenanced packs. Verified all 6 WN packs load clean.
 - **TEA "validator rejects only mode:bespoke, not all non-verbatim"** → ✓ ACCEPTED:
   the bounded enforcement is self-consistent (every WN pack ends with 0 declared
-  bespoke) and avoids breaking caverns/road_warrior; epic 119 tracks the upgrade.
+  bespoke) and avoids breaking caverns/road_warrior; epic 120 tracks the upgrade.
 - **Dev "rad_pills + geiger_clicker moved to world (no AWN analog)"** → ✓ ACCEPTED:
   verified against the AWN SRD extract — no anti-rad drug and no radiation-detector
   equipment entry exist; an honest world-tier bespoke beats a false verbatim claim.
@@ -288,7 +288,7 @@ asserts specific ids/categories/membership; `pytest.raises` asserts the id is na
 **world-replaces-genre kit trap** (any new world inventory.yaml MUST copy genre
 `starting_equipment`/`starting_gold`/`currency`) and the **narrow validator rule**
 (WN-family, reject `mode: bespoke` only; native exempt; verbatim-only deferred to
-epic 119). Re-run the 4 files with `SIDEQUEST_DATABASE_URL` set; then the FULL suite
+epic 120). Re-run the 4 files with `SIDEQUEST_DATABASE_URL` set; then the FULL suite
 (`SIDEQUEST_GENRE_PACKS` + `SIDEQUEST_DATABASE_URL`) for the regression baseline.
 
 ## Dev Assessment
@@ -327,7 +327,7 @@ format clean.
 **Handoff:** To verify (TEA simplify + quality-pass), then Reviewer (Westley). Note
 the two logged deviations (rad_pills/geiger moved for lack of an AWN analog;
 road_warrior weapons moved not re-sourced) and the 25/31 unprovenanced items
-deferred to **epic 119**.
+deferred to **epic 120**.
 
 ## Subagent Results
 
@@ -375,7 +375,7 @@ relocated bespoke items resolve for each world. Verified end-to-end by the new t
    world-tier `rad_pills` → fixed in-review (genre kits reference genre-catalog ids
    only). The other 3 silent-failure findings: loader `inventory is None` early
    return is correct (not a silent failure); the `provenance is None` pass-through is
-   the intentional epic-119 deferral (documented); the `_item_dict_minimal` per-item
+   the intentional epic-120 deferral (documented); the `_item_dict_minimal` per-item
    observability gap is pre-existing and logged as a Delivery Finding.
 2. `[SEC] [VERIFIED]` ADR-145 D4/D4a/D4b clean — security subagent checked 44
    instances, 0 violations: the only Sine Nomine mention in changed files is the
@@ -429,7 +429,7 @@ universal survival gear is AWN-sourced once at genre (the anti-duplication win).
 and bespoke-only — native packs and verbatim/derived items pass; verified all live
 WN packs load. **The genuine soft spot:** caverns (31) + road_warrior (25) still
 carry unprovenanced genre items — not bespoke, so the validator passes them, but they
-violate the *spirit* of D3. That is the explicit, Keith-ruled epic-119 deferral, not
+violate the *spirit* of D3. That is the explicit, Keith-ruled epic-120 deferral, not
 a hidden gap. None rises to Critical/High; the licensing check (the one that could
 truly hurt) is clean.
 
@@ -437,6 +437,6 @@ truly hurt) is clean.
 WN-gated, native-exempt, no allow-list), all 3 packs' genre baselines are bespoke-
 free, the bespoke items resolve correctly per world with kits intact, licensing
 guardrails hold, and the one latent kit trap was fixed in-review. The unprovenanced
-sweep is correctly deferred to epic 119.
+sweep is correctly deferred to epic 120.
 
 **Handoff:** To SM (Vizzini) for finish-story.

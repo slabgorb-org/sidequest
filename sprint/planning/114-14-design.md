@@ -10,7 +10,7 @@ Epic 114 · 13pt · p2 · tdd · repos: content + server · depends_on 114-8.
 > non-verbatim items across 4 SRD-bound packs, **"narrow this story, file the
 > rest as epic."** → This story = the validator + the **23 declared-bespoke**
 > items across 3 packs. The **56 unprovenanced** items (caverns_and_claudes 31,
-> road_warrior 25) are **epic 119** (verbatim-only sweep + validator upgrade).
+> road_warrior 25) are **epic 120** (verbatim-only sweep + validator upgrade).
 
 ## The rule this story enforces (and the rule it does NOT)
 
@@ -20,8 +20,8 @@ Measured genre-tier inventory state (2026-06-15):
 |------|---------|-------|----------|---------|---------|-----------|
 | mutant_wasteland | awn | 17 | 5 | **12** | 0 | **fix all 12** |
 | neon_dystopia | cwn | 72 | 66 | **6** | 0 | **fix all 6** |
-| road_warrior | cwn | 96 | 66 | **5** | 25 | **fix the 5**; 25→epic 119 |
-| caverns_and_claudes | wwn | 99 | 68 | 0 | 31 | **untouched** → epic 119 |
+| road_warrior | cwn | 96 | 66 | **5** | 25 | **fix the 5**; 25→epic 120 |
+| caverns_and_claudes | wwn | 99 | 68 | 0 | 31 | **untouched** → epic 120 |
 | elemental_harmony | wwn | 68 | 68 | 0 | 0 | ✅ already clean (the target pattern) |
 | heavy_metal | wwn | 68 | 68 | 0 | 0 | ✅ already clean |
 | space_opera | swn | — | — | — | — | ✅ no genre inventory (world-tier) |
@@ -29,7 +29,7 @@ Measured genre-tier inventory state (2026-06-15):
 
 **THE VALIDATOR (this story) = "no genre-tier `provenance.mode == 'bespoke'` in a
 WN-family pack."** It does NOT require provenance *presence* and does NOT require
-*verbatim-only* — that stricter rule is epic 119, and enforcing it now would break
+*verbatim-only* — that stricter rule is epic 120, and enforcing it now would break
 caverns (31) + road_warrior (25). Because the narrow rule only rejects *declared*
 bespoke, caverns and road_warrior's unprovenanced items pass → those packs keep
 loading → no split-brain in the bespoke dimension; the no-provenance dimension is
@@ -47,7 +47,7 @@ uniformly deferred to 119.
   (`mode: Literal["verbatim","derived","bespoke"]`). The existing 114-3 provenance
   *presence* contract is test-level only (NOT loader-enforced — pulp_noir loads
   with 0 provenance), so this loader check is net-new; place it as a sibling
-  validator. Epic 119 upgrades it to verbatim-only.
+  validator. Epic 120 upgrades it to verbatim-only.
 
 ## ⚠ Load-bearing wiring trap: world-replaces-genre kits
 
@@ -98,7 +98,7 @@ moved items. `seaboard_of_saints` already ships its own kits/gold/currency
 ### road_warrior (5 declared-bespoke → 0; single world `the_circuit`)
 - **Genre `inventory.yaml`:** delete the 5 declared-bespoke (`tire_iron`, `chain`,
   `sawed_off_shotgun`, `crossbow`, `pistol`). **LEAVE the 25 unprovenanced items**
-  (rig parts, mount weapons, survival, rig-tier vessels) at genre — epic 119.
+  (rig parts, mount weapons, survival, rig-tier vessels) at genre — epic 120.
   Net genre = 91 (66 verbatim + 25 no-prov), 0 bespoke → validator passes.
 - **`worlds/the_circuit/inventory.yaml` (NEW):** the 5 items (bespoke) **+ a full
   copy of genre `starting_equipment`+`starting_gold`+`currency`** (Fuel). Kits
@@ -139,4 +139,4 @@ moved items. `seaboard_of_saints` already ships its own kits/gold/currency
 ADR-145 D1/D3/D4 (D4a no-endorsement, D4b SRD-only). ADR-140 + epic 113. SOUL +
 claude.md: "No Silent Fallbacks", "No half-wired features", "Verify Wiring, Not
 Just Existence", "Crunch in the Genre, Flavor in the World", "Bind the Ruleset,
-Don't Balance It". Deferred verbatim-only sweep = **epic 119**.
+Don't Balance It". Deferred verbatim-only sweep = **epic 120**.
