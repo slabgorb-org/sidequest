@@ -51,10 +51,20 @@ for _ in range(5):
 - **Weak signal:** "did it appear on the Console *Cost* page." The Console commingles
   Keith's personal interactive **5-hour-cap overage** (the Fable/Opus slivers on the
   chart) with API-key spend, so absence there is *suggestive*, not conclusive.
-- **Pre-conditions:** confirm the $200 credit is **not already exhausted** this cycle (else
-  a credit-path call overflows to PAYG and looks identical to NO-GO); run from a shell that
-  is **not** simultaneously doing interactive Claude Code (so pool-1 overage doesn't
-  pollute the read).
+- **Pre-conditions (in order):**
+  1. **The credit must be CLAIMED first.** The Agent SDK credit is opt-in — eligible users
+     got a one-time "claim your credit" email; you claim once via the Claude account, then it
+     auto-refreshes each cycle. **If unclaimed, the credit is inactive and the spike falsely
+     reads NO-GO.** Verify it's claimed before running anything.
+  2. Confirm the $200 credit is **not already exhausted** this cycle (else a credit-path call
+     overflows to PAYG and looks identical to NO-GO).
+  3. Run from a shell that is **not** simultaneously doing interactive Claude Code (so pool-1
+     overage doesn't pollute the read).
+- **Where to read the meter:** the **subscription** side, not the Console. Claude Code
+  `/usage`, or claude.ai → Settings → Usage/Billing (the Agent SDK credit section). NOT the
+  Console "Credits" nav (that's the pool-3 PAYG buffer) and NOT the Console Cost page (API/PAYG).
+  Exact web path is not yet pinned in Anthropic's public docs — `/usage` in Claude Code is the
+  most reliable readout.
 
 ## Scope
 - **In scope:** the auth/billing experiment, a written GO/NO-GO verdict, and the reusable
