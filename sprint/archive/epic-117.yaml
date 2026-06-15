@@ -3,7 +3,7 @@ type: epic
 title: Quest-seed lifecycle — authored hooks mint tracked quests, and a lie-detector that actually catches silent objectives
 description: "Live perseus_cloud playtest (2026-06-14, session 594dcc7e): player took the scripted opening's floor-boss detective hook and worked it ~15 turns; quest_log stayed {} the whole time. Root cause chain: (1) the narrator never called record_quest, so the quest existed only in prose — QUESTS emitted quests=0, QuestsPanel correctly showed nothing, and 29 lore fragments had no Quest to cohere around ('knowledge has references but nothing pulls them into a coherent picture'); (2) the unminted-objective lie-detector (aa309f5d, added same day) stayed silent because it gates on a 14-phrase hardcoded keyword list that a noir detective hook never trips — a Zork-problem keyword matcher policing open-ended narration; (3) the deeper gap: a SCRIPTED opening hook has no structured quest seed — the floor-boss is authored prose (complication: in openings.yaml) with nothing machine-readable behind it, so minting depends entirely on the narrator remembering a tool call. NOTE: the OTEL GM-panel teardown (#859) did NOT collide — quest spans are all correctly routed into the typed SPAN_ROUTES feed and 'just otel' opens the React Inspector; the only drift is a stale CLAUDE.md 'just otel' line. This epic makes authored hooks mint deterministically (Tabletop-First: a DM who hands you a job has given you a quest), hardens the lie-detector to catch open-ended objective-giving, and projects the accepted quest's lore into a coherent tracked picture (ADR-053/ADR-100)."
 priority: p1
-status: in_progress
+status: done
 repos: server,content
 stories:
   - id: 117-1
@@ -65,9 +65,14 @@ stories:
     title: "Un-seeded narrator-objective classifier — detect open-ended objective-giving in narration without a keyword list. Follow-up to 117-4 (Keith ruled Option A 2026-06-14): the intent router is pre-narration and player-turn-scoped, so it has NO signal for an un-seeded narrator-introduced objective (a noir 'discreet job' hook with no pending_quest_offer). 117-4 hardened only the SEEDED path (router quest_offer signal) and retained the 13-phrase _UNMINTED_OBJECTIVE_MARKERS keyword matcher as the un-seeded backstop. This story replaces that brittle backstop with a real classification (e.g. a post-narration micro-pass) so narration.unminted_objective.suspected fires on open-ended hooks regardless of phrasing. Needs an ADR-146 addendum + cost analysis (Cost-Scales-with-Drama: a per-turn narration classification isn't free). The Zork-matcher must ultimately die."
     points: 8
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server
     workflow: tdd
+    completed: '2026-06-15'
+    branch: feat/117-6-unseeded-narrator-objective-classifier
+    review_findings: 'ruff format gate fails on websocket_session_handler.py (HIGH blocker); 3 MEDIUM: public factory returns private type not Protocol, detection_method default mislabels seeded router path as keyword, crash-span not asserted in swallow test. LOW: narration unbounded, pyright +20.'
+    review_verdict: approved
   - id: 117-7
     title: "Render quest-related lore in QuestsPanel — surface the related_lore the server now projects (117-5) so Keith actually SEES the coherent picture. Server-side projection landed in 117-5 (server #876): the QUESTS payload carries related_lore (list of {fact_id, content}) under each quest entry, but the client drops it. Two gaps: (1) sidequest-ui src/types/payloads.ts QuestLogEntry has no related_lore field, so the typed data is invisible; (2) src/components/QuestsPanel.tsx renders only title/status/objective/anchor — needs a 'What I've learned about this job' render block listing the related lore under each quest. UI-only (sidequest-ui, base develop). This is the visible payoff of 117-5; without it the coherence is on the wire but unseen. Player-facing (per CLAUDE.md: legible mechanics in player UI). Wiring test: a QuestsMessage with related_lore renders the lore block (jsdom)."
     points: 3
@@ -79,3 +84,4 @@ stories:
     completed: '2026-06-15'
     branch: feat/117-7-render-quest-lore
     review_verdict: approved
+completed: '2026-06-15'
