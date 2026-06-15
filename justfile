@@ -43,23 +43,29 @@ _log-rotate name:
     : > "$log"
     find "{{logdir}}" -maxdepth 1 -name 'sidequest-*.log.*' -type f -mtime +30 -delete 2>/dev/null || true
 
-# Private: resolve ANTHROPIC_API_KEY from env or ~/.zshrc, print to stdout.
-# Fails loud if neither has it. Anthropic SDK narrator (ADR-101) hard-requires
-# it — without it the SDK raises at first WebSocket connect, NOT at boot, so
-# every entrypoint (server / serve / up) calls this to fail-fast.
-_resolve-anthropic-key:
+# Private (epic 119 / ADR-101 Amendment 2026-06-15): the narrator is moving OFF
+# the API key onto subscription OAuth. A present ANTHROPIC_API_KEY now bills full
+# PAYG (the spend we are escaping) or trips the API's both-set rejection once an
+# OAuth token is also set. Every server entrypoint UNSETS the key, then calls this
+# guard, which CRASHES LOUD if a valid key is still resolvable — from the
+# environment / .env (re-loaded into this child by `set dotenv-load`) or a
+# `~/.zshrc` export. Fail fast at launch, never silently into PAYG (SOUL
+# No-Silent-Fallbacks). Inverse of the retired _resolve-anthropic-key, which
+# REQUIRED the key under ADR-101's now-reversed API-key auth. Until 119-2 wires
+# the OAuth path, the narrator stays down by design once the key is gone.
+_forbid-anthropic-key:
     #!/usr/bin/env bash
     set -euo pipefail
+    src=""
     if [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
-        echo "${ANTHROPIC_API_KEY}"
-        exit 0
+        src="the environment (shell export or .env)"
+    elif grep -qE '^[[:space:]]*export[[:space:]]+ANTHROPIC_API_KEY=[^[:space:]"'\'']' "$HOME/.zshrc" 2>/dev/null; then
+        src="~/.zshrc"
     fi
-    key="$(sed -nE 's/^[[:space:]]*export[[:space:]]+ANTHROPIC_API_KEY=["'\'']?([^"'\'' ]+).*/\1/p' "$HOME/.zshrc" 2>/dev/null | tail -n1)"
-    if [[ -z "$key" ]]; then
-        echo "✗ ANTHROPIC_API_KEY not set and no 'export ANTHROPIC_API_KEY=' in ~/.zshrc — Anthropic SDK narrator (ADR-101) cannot start. Export it or add it to ~/.zshrc." >&2
+    if [[ -n "$src" ]]; then
+        echo "✗ ANTHROPIC_API_KEY is still set in ${src}. The narrator runs on subscription OAuth now (epic 119 / ADR-101 Amendment 2026-06-15) — a present API key bills full PAYG or trips the both-set API rejection. Remove it there, then relaunch." >&2
         exit 1
     fi
-    echo "$key"
 
 # Private: spawn the dev server (caller handles output redirection / flags).
 # Extracted so `server` and `up` share one source of truth for the uvicorn
@@ -67,10 +73,10 @@ _resolve-anthropic-key:
 _server-cmd *flags:
     #!/usr/bin/env bash
     set -euo pipefail
-    # Split assign+export so a failed resolver propagates `set -e` — `export X=$(...)`
-    # is a builtin invocation whose exit status masks the inner failure.
-    ANTHROPIC_API_KEY="$(just _resolve-anthropic-key)"
-    export ANTHROPIC_API_KEY
+    # Epic 119: refuse to carry an API key (PAYG / both-set). Unset any inherited
+    # key, then crash if a valid one still resolves from .env / ~/.zshrc.
+    unset ANTHROPIC_API_KEY
+    just _forbid-anthropic-key
     cd {{root}}/sidequest-server
     # SIDEQUEST_DATABASE_URL (ADR-115 Postgres), INTENT_ROUTER_DEGRADE_ON_FAIL,
     # OTLP_ENDPOINT and WATCHER_AS_SPANS come from .env via `set dotenv-load`
@@ -130,8 +136,9 @@ serve *flags:
     set -euo pipefail
     just _log-rotate server
     log={{logdir}}/sidequest-server.log
-    ANTHROPIC_API_KEY="$(just _resolve-anthropic-key)"
-    export ANTHROPIC_API_KEY
+    # Epic 119: refuse to carry an API key (PAYG / both-set). See _forbid-anthropic-key.
+    unset ANTHROPIC_API_KEY
+    just _forbid-anthropic-key
     echo "▶ building UI…"
     ( cd {{root}}/sidequest-ui && npm run build )
     cd {{root}}/sidequest-server
@@ -187,14 +194,12 @@ up *flags:
     #   export SIDEQUEST_DATABASE_URL=postgresql://$USER@localhost:5432/sidequest
     : "${SIDEQUEST_DATABASE_URL:?SIDEQUEST_DATABASE_URL must be set in shell (see 'just pg-up')}"
 
-    # Anthropic SDK narrator (ADR-101) hard-requires ANTHROPIC_API_KEY — the SDK
-    # client raises at first WebSocket connect without it. Fail-fast at boot
-    # rather than mid-session. _server-cmd resolves it again internally, but
-    # this pre-flight call lets `up` refuse before backgrounding subprocesses.
-    # Split assign+export so a failed resolver propagates `set -e` (export's
-    # exit status masks command-substitution failure).
-    ANTHROPIC_API_KEY="$(just _resolve-anthropic-key)"
-    export ANTHROPIC_API_KEY
+    # Epic 119 / ADR-101 Amendment: the narrator runs on subscription OAuth now;
+    # a present API key bills PAYG or trips the both-set rejection. `up` refuses to
+    # carry one before backgrounding subprocesses — unset any inherited key, then
+    # crash if a valid one still resolves (.env / ~/.zshrc). _server-cmd guards again.
+    unset ANTHROPIC_API_KEY
+    just _forbid-anthropic-key
 
     # OTEL: by default export spans + mirror every watcher event as a synthetic
     # span to local Jaeger (:4317). The GM panel / Jaeger is the lie-detector
