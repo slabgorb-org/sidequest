@@ -1,0 +1,48 @@
+id: '122'
+type: epic
+title: Honest Layering — pure logic & utilities below the server tier
+description: Implements ADR-147 (docs/adr/147-honest-layering-pure-logic-below-server.md). Corrects layering-inversion edges where low-level domain/utility code imports UP into sidequest/server. Relocates pure helpers and pure combat-rules logic to the tier their dependencies dictate, establishes a foundation floor, and adds a CI guard enforcing the import-direction law (foundation <- {game,genre,orbital,magic,interior} <- server). Behavior-preserving refactor; no library extraction. Five independently-shippable steps; 122-5 (guard) lands last and enforcing.
+priority: p2
+status: backlog
+repos: server
+stories:
+  - id: 122-1
+    title: Foundation floor — relocate asset_urls, slug_fold, reference_anchors below server tier (kills 4 upward edges)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
+  - id: 122-2
+    title: Relocate pure combat-rules helpers (find_confrontation_def, resolve_damage_spec) out of server/dispatch into game/ruleset; drop lazy imports
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
+  - id: 122-3
+    title: Lift interior HTTP endpoint to server/rest.py; leave interior/ pure (no FastAPI imports)
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: refactor
+  - id: 122-4
+    title: Narrow orbital/intent from full Session to a 4-field read Protocol
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
+  - id: 122-5
+    title: CI guard — fail on any domain->server upward import (foundation/game/genre/orbital/magic/interior); lands last + enforcing
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore

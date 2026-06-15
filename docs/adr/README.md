@@ -248,6 +248,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-065: Protocol Message Decomposition — Split message.rs by Domain](065-protocol-message-decomposition.md) | ✓ accepted | deferred |
 | [ADR-068: Magic Literal Extraction — Domain-Scoped Constants](068-magic-literal-extraction.md) | ✓ accepted | live |
 | [ADR-088: ADR Frontmatter Schema and Auto-Generated Indexes](088-adr-frontmatter-schema.md) | ✓ accepted | live |
+| [ADR-147: Honest Layering — Pure Logic and Utilities Belong Below the Server Tier, Not Inside It](147-honest-layering-pure-logic-below-server.md) | ◇ proposed | deferred |
 
 ## Narrator Architecture
 
@@ -318,6 +319,7 @@ ADRs whose implementation is absent, partial, or deferred. See [DRIFT.md](DRIFT.
 | [ADR-144: Fate Core Binding Replaces the Native Ruleset — Two SRDs, Zero Homebrew Rulesets to Balance](144-fate-core-binding-replaces-native-ruleset.md) | deferred | docs/superpowers/specs/2026-06-14-fate-core-binding-replaces-native-design.md |
 | [ADR-145: SRD-Sourced Inventory — Bind the Equipment Catalog, Don't Author It; Per-Ruleset Reproduce-vs-Derive Licensing and CatalogItem Provenance](145-srd-sourced-inventory-model.md) | deferred | Design only — implemented by epic 114 stories 114-3 (extraction tool), 114-4/5/6/7/8 (per-ruleset pack migration), 114-9/10 (Fate gear model). Schema target: sidequest-server/sidequest/genre/models/inventory.py CatalogItem. |
 | [ADR-146: Quest-Seed Authoring Contract](146-quest-seed-authoring-contract.md) | deferred | Design only — implemented by epic 117 story 117-3 (QuestSeed model + quest_offer subsystem + minting handler + OTEL span) and 117-4 (retune the redundant keyword lie-detector). Schema target: sidequest-server/sidequest/genre/models/narrative.py (QuestSeed sub-model on Opening.tone.complication + seed_trope). Mint seam: sidequest/agents/subsystems/ (quest_offer handler). Stash seam: sidequest/server/websocket_handlers/opening_helpers.py + chargen_mixin.py:1399. |
+| [ADR-147: Honest Layering — Pure Logic and Utilities Belong Below the Server Tier, Not Inside It](147-honest-layering-pure-logic-below-server.md) | deferred | — |
 | [ADR-013: Lazy JSON Extraction](013-lazy-json-extraction.md) | **drift** | [ADR-102](102-tool-use-protocol-for-structured-output.md) |
 | [ADR-041: Genie Wish / Consequence Engine](041-genie-wish-consequence-engine.md) | **drift** | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
 | [ADR-042: OCEAN Personality Live Evolution](042-ocean-personality-live-evolution.md) | **drift** | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
