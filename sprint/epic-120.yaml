@@ -22,14 +22,16 @@ stories:
     title: 'road_warrior (CWN) genre baseline -> verbatim sweep: the 25 unprovenanced genre items (rig parts, mount weapons, survival gear, rig-tier vessels) get sourced from the CWN SRD at genre where an analog exists (mode=verbatim, srd=cwn). Genuinely-unique items with no CWN analog (rig-tier vessels, road-warrior-specific gear) MOVE to worlds/the_circuit/inventory.yaml as honest mode=bespoke -- ADD to the inventory.yaml that 114-14 created; mind the kit trap, do not drop its starting_equipment/gold/currency. End state: 0 bespoke AND 0 unprovenanced at the genre tier. Verify the_circuit kits still resolve via resolve_inventory.'
     points: 5
     priority: p2
-    status: in_progress
+    status: done
+    started: '2026-06-15'
     repos: content,server
     workflow: tdd
+    completed: '2026-06-15'
     type: refactor
-    started: '2026-06-15'
     branches:
       content: feat/120-2-road-warrior-cwn-verbatim
       server: feat/120-2-road-warrior-cwn-verbatim
+    review_verdict: approved
   - id: 120-3
     title: "Upgrade the D3 genre-baseline validator from 'no genre-tier bespoke' to 'WN-family genre baseline must be mode:verbatim (or derived)': extend _validate_genre_baseline_no_bespoke (loader.py) to ALSO reject unprovenanced (no-provenance) genre item_catalog items in awn/cwn/wwn/swn packs, fail-loud naming offenders (No Silent Fallbacks); native packs stay exempt. MUST land AFTER both 120-1 (caverns) and 120-2 (road_warrior) -- enforcing verbatim-only before both sweeps breaks their load (the exact ordering trap that narrowed 114-14). Retune the 114-14 tests that pin the narrow rule; full WN-pack regression green (SIDEQUEST_GENRE_PACKS + SIDEQUEST_DATABASE_URL)."
     points: 3
