@@ -3,7 +3,7 @@ type: epic
 title: Quest-seed lifecycle — authored hooks mint tracked quests, and a lie-detector that actually catches silent objectives
 description: "Live perseus_cloud playtest (2026-06-14, session 594dcc7e): player took the scripted opening's floor-boss detective hook and worked it ~15 turns; quest_log stayed {} the whole time. Root cause chain: (1) the narrator never called record_quest, so the quest existed only in prose — QUESTS emitted quests=0, QuestsPanel correctly showed nothing, and 29 lore fragments had no Quest to cohere around ('knowledge has references but nothing pulls them into a coherent picture'); (2) the unminted-objective lie-detector (aa309f5d, added same day) stayed silent because it gates on a 14-phrase hardcoded keyword list that a noir detective hook never trips — a Zork-problem keyword matcher policing open-ended narration; (3) the deeper gap: a SCRIPTED opening hook has no structured quest seed — the floor-boss is authored prose (complication: in openings.yaml) with nothing machine-readable behind it, so minting depends entirely on the narrator remembering a tool call. NOTE: the OTEL GM-panel teardown (#859) did NOT collide — quest spans are all correctly routed into the typed SPAN_ROUTES feed and 'just otel' opens the React Inspector; the only drift is a stale CLAUDE.md 'just otel' line. This epic makes authored hooks mint deterministically (Tabletop-First: a DM who hands you a job has given you a quest), hardens the lie-detector to catch open-ended objective-giving, and projects the accepted quest's lore into a coherent tracked picture (ADR-053/ADR-100)."
 priority: p1
-status: backlog
+status: in_progress
 repos: server,content
 stories:
   - id: 117-1
