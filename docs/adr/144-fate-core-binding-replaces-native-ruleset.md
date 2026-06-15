@@ -233,4 +233,29 @@ This is multi-epic. The governing design and the full F1–F5 decomposition live
 
 ## Amendments
 
-_None yet._
+### 2026-06-15 — Interactive Fate chargen pulled into F4 (was a non-goal)
+
+The design spec (§9 Non-goals) and the F4 sketch above scoped F4 as *content
+migration only* and deferred a player-driven Fate character-creation flow to "a later
+epic," with F4 auto-seeding a valid default `FateSheet`. **Operator decision
+(Keith, 2026-06-15): interactive Fate chargen is now in F4 scope.** A Fate-bound pack
+must let the player author their own aspects, allocate the skill ladder (pyramid /
+column method), and choose stunts at creation — not merely receive a seeded default.
+
+Consequences for the F4 decomposition (epic 121):
+
+- **F4a** stays the runnable gate — the pack-content schema (`FateConfig`) + the
+  `FateSheet` seeding/apply layer (build + validate a sheet from *explicit* choices,
+  against the existing `FateSheet` model) + builder wiring + OTEL + wiring test.
+- **F4a-design** (new) — an Architect design spec settling the real forks before the
+  chargen build is RED-ready: skill-allocation method (pyramid vs columns vs
+  point-buy), aspect method (full phase-trio vs high-concept + trouble + N free), how a
+  Fate chargen **mode** forks/coexists with the ADR-015 builder FSM and ADR-016
+  three-mode chargen (a Fate pack must not hard-require d20 stats/classes), the
+  archetype-as-editable-template role, and the UI approach.
+- **F4a2** (new, server) — the interactive chargen engine + legality validator.
+- **F4a3** (new, ui) — the Fate chargen screens, `ruleset == 'fate'`-gated.
+
+F4b–F4e (per-pack content) are unchanged in intent; their "playable" acceptance now
+implies the chargen flow exists. This does not change the F5 sequencing (native removal
+still strictly last) or the two-SRD end state.
