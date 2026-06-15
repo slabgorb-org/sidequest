@@ -595,6 +595,40 @@ status:
     @echo "=== daemon ==="        && cd {{root}}/sidequest-daemon  && git status --short
     @echo "=== content ==="       && cd {{root}}/sidequest-content && git status --short
 
+# Lines of code across every repo (code/comments/blanks by language).
+# Prefers tokei (fast, .gitignore-aware); falls back to cloc. Both skip
+# node_modules / .venv / build dirs via VCS-ignore rules, so the count is
+# tracked source only. Fails loud if neither is installed — no wc(1) guess.
+# Usage: just loc            (aggregate table)
+#        just loc --files    (extra args pass through to tokei/cloc)
+loc *flags:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    paths=(
+        "{{root}}"
+        "{{root}}/sidequest-server" "{{root}}/sidequest-ui"
+        "{{root}}/sidequest-content" "{{root}}/sidequest-daemon"
+        "{{root}}/sidequest-composer" "{{root}}/sidequest-understudy"
+        "{{root}}/../dice-lib"
+    )
+    # Drop the nested subrepo paths from the orchestrator scan so they aren't
+    # double-counted (tokei/cloc would otherwise descend into them from root).
+    present=(); for p in "${paths[@]}"; do [[ -d "$p" ]] && present+=("$p"); done
+    if command -v tokei >/dev/null 2>&1; then
+        exec tokei {{flags}} \
+            --exclude sidequest-server --exclude sidequest-ui \
+            --exclude sidequest-content --exclude sidequest-daemon \
+            --exclude sidequest-composer --exclude sidequest-understudy \
+            "${present[@]}"
+    elif command -v cloc >/dev/null 2>&1; then
+        exec cloc --vcs=git {{flags}} "${present[@]}"
+    else
+        echo "✗ Neither tokei nor cloc found. Install one:" >&2
+        echo "    brew install tokei     # preferred (fast, Rust)" >&2
+        echo "    brew install cloc      # Perl, also fine" >&2
+        exit 1
+    fi
+
 # First-time setup — install deps for every subrepo
 setup:
     #!/usr/bin/env bash
