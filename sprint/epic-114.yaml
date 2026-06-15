@@ -77,10 +77,13 @@ stories:
     title: mutant_wasteland — re-stat inventory against the AWN schema (trauma die/shock), fix genre scrap_armor mitigation
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server,content
     workflow: tdd
     depends_on: 114-1
+    completed: '2026-06-15'
+    review_verdict: approved
   - id: 114-9
     title: 'Design — Fate gear model: ruleset:fate binding + CatalogItem schema for aspect/permission gear (ADR-144 impl)'
     points: 3
