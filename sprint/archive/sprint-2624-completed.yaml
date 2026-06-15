@@ -33,6 +33,7 @@ completed_epics:
   - '112'
   - '115'
   - '113'
+  - '116'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -679,3 +680,23 @@ completed_stories:
     title: Relocate combat_design.md / magic_design.md out of runtime genre-pack folders into docs/
     points: 1
     completed: '2026-06-14'
+  - id: 116-1
+    epic: '116'
+    title: 'F2a — Fate action classifier: Intent Router classifies a freeform action in a ruleset:fate pack with an active conflict into a fate_action subsystem dispatch routed to dispatch_fate_action (F1d), emitting fate.action.classified. New agents/subsystems/fate_action.py + _register_defaults; _build_fate_summary router enrichment + FATE_ROUTING_RULES; precondition-gate to active conflicts. DELIVERED: PR #861 squash-merged to sidequest-server develop (1f328271). Renumbered from local 113-1 after an epic-number collision. Plan: docs/superpowers/plans/2026-06-14-f2a-fate-action-classifier.md'
+    points: 5
+    completed: '2026-06-14T16:30:00Z'
+  - id: 116-2
+    epic: '116'
+    title: 'F2b — Aspects-as-prompt + invoke surfacing + compel proposal: register Fate narrator prompt sections (character/scene aspects, fate points, invokable aspects) reusing _build_fate_summary as one source of truth; add propose_fate_compel narrator tool firing fate.compel.offered; invokable-aspect directive. Depends F1b/F2a (merged). Plan: docs/superpowers/plans/2026-06-14-f2b-fate-narrator-aspects.md (to author).'
+    points: 5
+    completed: '2026-06-14'
+  - id: 116-3
+    epic: '116'
+    title: 'F2d — Deterministic opponent AI: game/fate_opponent.py decision fn + auto-commit hook so an undefeated opponent takes proactive Fate actions (mirrors WN _resolve_opponent_reprisal at dice.py:2011), emitting fate.opponent.decided. Closes the inert-opponent gap — fate_conflict.py rolls reactive defense only and skips uncommitted opponent slots. Deterministic, no LLM call. Depends F1c/F2a (merged). Plan: docs/superpowers/plans/2026-06-14-f2d-fate-opponent-ai.md (to author).'
+    points: 5
+    completed: '2026-06-14'
+  - id: 116-4
+    epic: '116'
+    title: 'F2c — Create-advantage rendering + Fate honesty lie-detector: surface F1c situation aspects into the prompt + narration; add fate_engagement_watcher mirroring dispatch_engagement_watcher; emit fate.narration.mismatch when prose claims a Fate outcome (advantage created / foe taken out) the engine never produced. Depends F2b (renders into its prompt sections) + F2a. Plan: docs/superpowers/plans/2026-06-14-f2c-fate-advantage-honesty.md (to author).'
+    points: 5
+    completed: '2026-06-15'
