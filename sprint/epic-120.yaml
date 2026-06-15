@@ -5,4 +5,29 @@ description: "Follow-on to 114-14 (Keith ruled 2026-06-15: narrow 114-14 to the 
 priority: p2
 status: backlog
 repos: content,server
-stories: []
+stories:
+  - id: 120-1
+    title: 'caverns_and_claudes (WWN) genre baseline -> 100% verbatim: source the 31 unprovenanced genre item_catalog items from the WWN SRD at the genre tier where an analog exists (mode=verbatim, srd=wwn, license=wn-free, srd_ref -- the elemental_harmony/heavy_metal pattern, both already 100% WWN-verbatim). MOVE genuinely-unique items with no WWN analog (plot devices) to the world tier as honest mode=bespoke (the mutant_wasteland rad_pills/geiger precedent), logging each as a deviation. WARN world-replaces-genre kit trap: any NEW worlds/<w>/inventory.yaml MUST copy genre starting_equipment/starting_gold/currency verbatim or classes ship empty kits. Verify resolve_inventory(pack, world) resolves every kit id across caverns worlds. Does NOT touch the validator (that is 120-3).'
+    points: 8
+    priority: p2
+    status: backlog
+    repos: content,server
+    workflow: tdd
+    type: refactor
+  - id: 120-2
+    title: 'road_warrior (CWN) genre baseline -> verbatim sweep: the 25 unprovenanced genre items (rig parts, mount weapons, survival gear, rig-tier vessels) get sourced from the CWN SRD at genre where an analog exists (mode=verbatim, srd=cwn). Genuinely-unique items with no CWN analog (rig-tier vessels, road-warrior-specific gear) MOVE to worlds/the_circuit/inventory.yaml as honest mode=bespoke -- ADD to the inventory.yaml that 114-14 created; mind the kit trap, do not drop its starting_equipment/gold/currency. End state: 0 bespoke AND 0 unprovenanced at the genre tier. Verify the_circuit kits still resolve via resolve_inventory.'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: content,server
+    workflow: tdd
+    type: refactor
+  - id: 120-3
+    title: "Upgrade the D3 genre-baseline validator from 'no genre-tier bespoke' to 'WN-family genre baseline must be mode:verbatim (or derived)': extend _validate_genre_baseline_no_bespoke (loader.py) to ALSO reject unprovenanced (no-provenance) genre item_catalog items in awn/cwn/wwn/swn packs, fail-loud naming offenders (No Silent Fallbacks); native packs stay exempt. MUST land AFTER both 120-1 (caverns) and 120-2 (road_warrior) -- enforcing verbatim-only before both sweeps breaks their load (the exact ordering trap that narrowed 114-14). Retune the 114-14 tests that pin the narrow rule; full WN-pack regression green (SIDEQUEST_GENRE_PACKS + SIDEQUEST_DATABASE_URL)."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 120-2
+    type: refactor
