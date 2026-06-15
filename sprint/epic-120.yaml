@@ -11,11 +11,13 @@ stories:
     description: "BLOCKED on 120-4 (world-tier equipment_tables override) — re-scoped 2026-06-15 after Dev hit the chargen cascade; Keith ruled Option B. WIP already on branch feat/120-1-caverns-wwn-verbatim-baseline (uncommitted in content; TEA's 5 RED tests committed in server): genre inventory.yaml is 100% WWN-verbatim (20 dup deletes + Delver kit repoint), and worlds/beneath_sunden/inventory.yaml created (11 bespoke items + kit-trap copies). REMAINING (rides on 120-4's capability): (1) genre equipment_tables.yaml -> SRD-pure (repoint 17 to wwn_*, drop the 7 world items + the genre potion grant); (2) NEW worlds/beneath_sunden/equipment_tables.yaml (dungeon-flavor kit slots + guaranteed_grants potion); (3) update the ~6 caverns chargen tests pinned to legacy ids (test_106_1_caverns_armor_content, test_cc_class_kits, test_cc_chargen_e2e, test_chargen_dispatch, test_chargen_persist_and_play, the equipment_tables wiring test). Full plan + decision: .session/120-1-session.md (Dev note). RESUME after 120-4 merges. Original scope (genre item_catalog verbatim) unchanged in the title above."
     points: 8
     priority: p2
-    status: backlog
+    status: done
     started: '2026-06-15'
     repos: content,server
     workflow: tdd
+    completed: '2026-06-15'
     type: refactor
+    review_verdict: approved
   - id: 120-2
     title: 'road_warrior (CWN) genre baseline -> verbatim sweep: the 25 unprovenanced genre items (rig parts, mount weapons, survival gear, rig-tier vessels) get sourced from the CWN SRD at genre where an analog exists (mode=verbatim, srd=cwn). Genuinely-unique items with no CWN analog (rig-tier vessels, road-warrior-specific gear) MOVE to worlds/the_circuit/inventory.yaml as honest mode=bespoke -- ADD to the inventory.yaml that 114-14 created; mind the kit trap, do not drop its starting_equipment/gold/currency. End state: 0 bespoke AND 0 unprovenanced at the genre tier. Verify the_circuit kits still resolve via resolve_inventory.'
     points: 5
