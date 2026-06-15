@@ -88,9 +88,10 @@ stories:
     title: 'Design — Fate gear model: ruleset:fate binding + CatalogItem schema for aspect/permission gear (ADR-144 impl)'
     points: 3
     priority: p2
-    status: backlog
+    status: done
     repos: server,content
     workflow: superpowers
+    completed: '2026-06-15'
     type: chore
   - id: 114-10
     title: Apply Fate gear model to pulp_noir, spaghetti_western, tea_and_murder, wry_whimsy
