@@ -10,9 +10,12 @@ stories:
     title: "F3a — FATE_STATE reactive projection + wire message (the spine): promote build_fate_projection into a full client payload (per-PC fate_points/refresh, skills->ladder, all aspects+kind+free-invoke counts, stress boxes, consequence slots; scene situation aspects+boosts; conflict sides/turn order). Add FATE_STATE GameMessage+payload (model on RELATIONSHIPS/QUESTS in protocol/), an on-change emitter gated pack.rules.ruleset=='fate' (Cost-Scales-with-Drama, NOT per-turn), and fate.projection.emitted OTEL span. No UI. Mirrors ADR-136 RELATIONSHIPS. Files: game/ruleset/fate_projection.py, game/fate_sheet.py, protocol/, telemetry/spans/fate.py."
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server
     workflow: tdd
+    completed: '2026-06-15'
+    review_verdict: approved
   - id: 118-2
     title: 'F3b — Fate panel (read surface): new FatePanel.tsx (dockview, mirror RelationshipsPanel/QuestsPanel) rendering per-PC fate-point count, aspect list grouped by kind (high-concept/trouble/character/situation/boost/consequence) with free-invoke pips, skills on the ladder (Terrible -2 .. Legendary +8, labels + numeric), consequence slots (mild/moderate/severe/extreme, filled vs open). Wire a fateState slice into useStateMirror + GameStateProvider (idempotent full-replace, null-guard, No-Silent-Fallback malformed-payload log) and register in GameBoard. Genre-themed CSS custom props. THE mechanics-legibility surface for Sebastien/Jade — all numbers labeled.'
     points: 5
