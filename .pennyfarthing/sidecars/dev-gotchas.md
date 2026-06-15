@@ -420,3 +420,52 @@
   and polluted the diff. Format ONLY your changed files by explicit path:
   `uv run ruff format path/a.py path/b.py`. Same for `ruff check --fix` — scope it.
   Recovery: `git status --short | awk '{print $2}' | grep -vxF -f keep.txt | xargs git checkout HEAD --`.
+
+## Monster Manual authored-cast seeding gate (2026-06-14, wry_whimsy/oz fix)
+
+- **`_seed_authored_npcs` was only reachable via `seed_manual`, which `ensure_loaded`
+  gates behind `manual.needs_seeding()`** (monster_manual_inject.py). An existing on-disk
+  Manual (>=4 NPCs + an encounter) never re-seeds, so the world's authored `npcs.yaml`
+  cast (the oz canonical companions) never entered the pool on a prior save — the road
+  surfaced only random-minted walk-ons. FIX: call `_seed_authored_npcs` UNCONDITIONALLY
+  in `ensure_loaded` after the needs_seeding block. It's an in-memory insert+upsert
+  (add_npc dedups by name, tags are upserted), so it's safe to run every load — returns
+  >0 only when something changed → save + `monster_manual.authored_backfill` span then.
+  On the fresh-seed path it's a harmless 0-change no-op (seed_manual already inserted),
+  so no double-save / no duplicate span. The injection cache must be wiped for the fix to
+  reach an existing save: `rm ~/.sidequest/manuals/<genre>_<world>.json`.
+- **Stale on-disk Manual keeps old `location_tags` forever** because `add_npc` dedups by
+  name and returns early. A re-seed must UPSERT tags onto the existing entry, not just
+  skip it. Return the insert+refresh count so the caller knows to persist.
+- **`getattr(world_obj, "authored_npcs", None) or []` masks a field rename** as an empty
+  roster (silent fallback). A real `World` always has `authored_npcs` (default_factory);
+  access it directly so a rename crashes loud. Keep the `getattr(pack, "worlds", None)`
+  guard only for the None-pack (load-failed) case the caller already warned on. A
+  world-key absent from a real `worlds` mapping is a config error → WARN, don't return 0
+  silently.
+- **Real-loader wiring test, not SimpleNamespace:** copytree a fixture pack to tmp_path,
+  write a `npcs.yaml` with `location_tags`, `load_genre_pack(tmp)`, assert
+  `pack.worlds[w].authored_npcs[0].location_tags`. The wwn_test_pack's shipped npcs.yaml
+  uses a STALE schema (`authored_npcs:` key + fields not on the AuthoredNpc model) so the
+  loader reads 0 from it — write your own roster.
+
+## Authored-cast dedup must be EXACT, not fuzzy (2026-06-14, wry_whimsy/oz review rework)
+
+- **`find_npc_by_name` is fuzzy bidirectional substring** (`name in npc.name or npc.name in name`).
+  Reusing it to dedup the AUTHORED cast lets a canonical NPC collide with a substring
+  walk-on: "Lion" matches a pre-seeded "Cowardly Lion" → the authored NPC is silently
+  dropped (re-introducing the bug this story fixes) OR its tags overwrite the wrong
+  entry. FIX: added `find_npc_by_exact_name` + `add_npc(..., exact=True)`; the authored
+  seed path (`_seed_authored_npcs`) uses exact for BOTH the upsert lookup and the insert.
+  Generated walk-ons keep the fuzzy default. Reviewer (Avasarala) blocked the merge on
+  this — it's the exact mechanism the story exists to make correct, and homebrew authoring
+  makes colliding names plausible.
+- **Upsert dirty-check on `list != list` is order-sensitive.** `["a","b"] != ["b","a"]` is
+  True → a reordered-but-equivalent YAML fires a spurious save + OTEL span EVERY load. Use
+  `set(a) != set(b)` for the dirty check, still assign the list to preserve author order.
+  Span noise pollutes the GM-panel lie-detector the whole project leans on.
+- **Collapse repeated `available_at_location` calls:** inject() was recomputing it a 3rd
+  time just to count placed-eligible for the span. Return the uncapped eligible count from
+  `_npc_patches_for_available_humans` (4-tuple) so eligible/matched/dropped are one
+  consistent snapshot — and update the comment-reference in `agents/npc_context.py` if you
+  change the helper's contract.
