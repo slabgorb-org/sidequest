@@ -58,3 +58,11 @@ stories:
       - Full server suite green; existing genre-only chargen tests (test_chargen_dispatch, test_cc_class_kits, etc.) are NOT broken by the additive capability — caverns-specific updates are 120-1's job.
     completed: '2026-06-15'
     review_verdict: approved
+  - id: 120-5
+    title: '120-2 review fast-follows (3 non-blocking test-hardening findings, all sidequest-server, no production code): (1) ruff-format tests/genre/test_120_2_road_warrior_verbatim_baseline.py — the parenthesized assert at :146 reflows to a one-liner (ungated by server-check, no logic change); (2) tests/genre/test_road_warrior_vessel_calibration.py::test_starting_mounted_weapons_fit_in_starting_rig_slots builds its catalog from the world tier only, so the repointed cwn_* kit ids resolve to {} via silent .get(i,{}) — rebuild catalog from resolve_inventory(pack, "the_circuit") (merged genre+world) so genre-tier kit ids are visible; (3) test_120_2_road_warrior_verbatim_baseline.py::test_road_warrior_circuit_kits_resolve_no_dangling_ids loops resolved.starting_equipment.items() with no non-empty guard (vacuous if ever empty) — add assert resolved.starting_equipment before the loop. Keep all assertions meaningful; verify the suite stays green.'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
