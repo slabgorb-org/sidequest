@@ -31,8 +31,9 @@ stories:
     description: "BLOCKED on 108-7 (server: make WN combat beat-optional). Content de-nativize WWN combat defs (ADR-143 / ADR-139 Inv-3). For each WWN pack COMBAT def (win_condition:hp_depletion) in genre rules.yaml: strip resolution_mode:beat_selection, the entire native beats list (strike/cast_spell/brace/committed_blow/break_contact + guard/yield variants), edge_config if present, momentum/dial metrics. ALSO strip the now-orphaned encounter_beat_choices from each WN class in classes.yaml. Result: combat def = win_condition:hp_depletion + opponent_default_stats (six abilities + hp/armor_class/dexterity) + opponent_damage DamageSpec only; WN engine (wn_round.py) supplies the action set. Targets: caverns_and_claudes 'Dungeon Combat' (verify beneath_sunden), heavy_metal 'Blade-work' (verify evropi/long_foundry/barsoom), elemental_harmony 'Martial Exchange'. LEAVE chase/negotiation DIAL defs untouched. Then correct strip-spec docs/superpowers/specs/2026-06-14-108-3-wwn-combat-denativize-strip-spec.md (zero-beat premise was wrong pre-108-7). Content-only -> gm VALIDATED (load_genre_pack). gm verified 2026-06-14: cannot start until 108-7 merges. depends_on set to 108-7 (the live blocker; the 108-1 engine cut it formerly listed is already done). The 107-2 Torchdeep/Torchhold/Bileden rider descoped (names absent from content; likely procedural/server, ADR-106)."
     points: 5
     priority: p1
-    status: backlog
+    status: in_progress
     started: '2026-06-14'
+    branch: feat/108-3-denativize-wwn-combat-defs
     repos: content
     workflow: trivial
     depends_on: 108-7
