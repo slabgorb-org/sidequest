@@ -1,7 +1,7 @@
 # Fate Gear Model — `ruleset: fate` Binding + Gear-as-Aspect Compilation
 
 - **Date:** 2026-06-15
-- **Status:** Design (brainstormed; pending Keith review)
+- **Status:** Design — approved (Keith, 2026-06-15)
 - **Story:** 114-9 (design) → 114-10 (apply to the four packs)
 - **Implements:** ADR-144 §D5-seam, ADR-145 §D5 (Fate gear deferred here)
 - **Repos:** `sidequest-server` (models + chargen compile + OTEL), `sidequest-content` (the four Fate packs)
@@ -326,17 +326,18 @@ depend on it.
 - **No implied publisher endorsement / SRD-only sourcing** (ADR-145 §D4a/D4b) still binds any
   Fate-Core-SRD attribution in code or README — factual sourcing only.
 
-## Open Questions (Keith to rule)
+## Resolved decisions (Keith ruled, 2026-06-15)
 
-1. **Pre-authored findable items?** Should `GearDef` carry an optional `findable: true` for
-   narrator-consistent named loot (the silver shoes as data), or is mid-game narrator
-   placement (no block) sufficient? Recommendation: **mid-game placement only** for 114-9;
-   add `findable` later if a world wants deterministic named loot.
-2. **À-la-carte gear at chargen (K-ii)?** Confirm we ship **archetype-bundled only** (K-i)
-   for 114-9/114-10, leaving player gear-selection to a later story. Recommendation: **yes,
-   K-i only now.**
-3. **`base_refresh` / `free_stunts` per pack vs. global SRD default.** Confirm packs may
-   declare these (recommended, for genre-distinct tone) vs. hardcoding the SRD 3/3.
+1. **No pre-authored findable items.** `GearDef` carries **no `findable` flag** in 114-9.
+   Notable named loot (the silver shoes) is placed by the narrator mid-game via
+   `create-an-advantage`; deterministic named loot can be added later, paradigm-neutral, if a
+   world wants it. `gear.yaml` is **chargen starting gear only.**
+2. **Archetype-bundled only (K-i).** 114-9/114-10 ship gear bundled into archetypes; there is
+   **no à-la-carte chargen gear step.** Player gear-selection (K-ii/K-iii) remains
+   expressible later with no schema change and is **not built now.**
+3. **Packs declare `base_refresh` / `free_stunts`.** The `fate:` block in `rules.yaml`
+   carries these per pack (genre-distinct tone), defaulting to the SRD 3/3 when omitted —
+   not hardcoded globally. The refresh invariant reads them from the pack.
 
 ## Out of scope (explicitly)
 
