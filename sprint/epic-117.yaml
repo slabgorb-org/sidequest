@@ -44,9 +44,12 @@ stories:
     title: "Harden the unminted-objective lie-detector: retire/augment the 14-phrase hardcoded keyword gate in dispatch_engagement_watcher.py (a noir 'discreet job' hook trips none of them) with intent-router-backed objective detection — the router already classifies objective-giving turns. Goal: narration.unminted_objective.suspected fires on open-ended hooks, not just curated phrasings, so the GM panel beeps when quest_log stays empty under a stated objective. Includes the span already routed in SPAN_ROUTES."
     points: 5
     priority: p2
-    status: backlog
+    status: done
     repos: server
     workflow: tdd
+    completed: '2026-06-14'
+    review_findings: "Hermes APPROVED after one REJECT round-trip. REJECT caught a real HIGH false-positive: router-backed path fired unminted_objective.suspected on DECLINED offers (GM-panel flood). Fixed in 36945f28: gate on decision=='accept' (_package_accepted_quest_offer), exclude decline (honest non-mint) + unknown_decision (owned by quest_offer.mismatch); +2 decline regression tests. 22/22 green. Scope = Option A (seeded path hardened, keyword backstop retained provisional pending 117-6). TEA VERIFIED. 1 LOW cosmetic nit deferred."
+    review_verdict: approved
   - id: 117-5
     title: "Coherence: project the accepted quest's lore into a tracked picture. Persisted lore fragments / known facts that relate to an active quest_log entry must surface under that quest (clue-graph/journal projection per ADR-053 partial + ADR-100) so the player sees 'what I've learned about this job', not scattered references. Directly addresses Keith's symptom: 'knowledge has multiple references but nothing pulls them into a coherent picture.'"
     points: 5
@@ -55,3 +58,10 @@ stories:
     repos: server
     workflow: tdd
     depends_on: 117-3
+  - id: 117-6
+    title: "Un-seeded narrator-objective classifier — detect open-ended objective-giving in narration without a keyword list. Follow-up to 117-4 (Keith ruled Option A 2026-06-14): the intent router is pre-narration and player-turn-scoped, so it has NO signal for an un-seeded narrator-introduced objective (a noir 'discreet job' hook with no pending_quest_offer). 117-4 hardened only the SEEDED path (router quest_offer signal) and retained the 13-phrase _UNMINTED_OBJECTIVE_MARKERS keyword matcher as the un-seeded backstop. This story replaces that brittle backstop with a real classification (e.g. a post-narration micro-pass) so narration.unminted_objective.suspected fires on open-ended hooks regardless of phrasing. Needs an ADR-146 addendum + cost analysis (Cost-Scales-with-Drama: a per-turn narration classification isn't free). The Zork-matcher must ultimately die."
+    points: 8
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
