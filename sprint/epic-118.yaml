@@ -20,10 +20,13 @@ stories:
     title: 'F3b — Fate panel (read surface): new FatePanel.tsx (dockview, mirror RelationshipsPanel/QuestsPanel) rendering per-PC fate-point count, aspect list grouped by kind (high-concept/trouble/character/situation/boost/consequence) with free-invoke pips, skills on the ladder (Terrible -2 .. Legendary +8, labels + numeric), consequence slots (mild/moderate/severe/extreme, filled vs open). Wire a fateState slice into useStateMirror + GameStateProvider (idempotent full-replace, null-guard, No-Silent-Fallback malformed-payload log) and register in GameBoard. Genre-themed CSS custom props. THE mechanics-legibility surface for Sebastien/Jade — all numbers labeled.'
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: ui
     workflow: tdd
     depends_on: 118-1
+    completed: '2026-06-15'
+    review_verdict: approved
   - id: 118-3
     title: 'F3c — 4dF roll display (dice surface): surface the 4dF result to the player — four Fudge faces {-,0,+}, ladder rating, shifts, outcome tier, succeed-with-style highlight. DEFAULT shape = flat readout in the Fate panel/narration (roll rides FATE_STATE or a small FateRollPayload). PARKED OPEN Q (Keith decides before RED): flat readout (3pt, tdd) vs extend the Rapier 3D overlay with a Fudge die derived from dice-lib d6.ts + GENRE_DICE_THEMES (5pt, superpowers, design-heavy, touches live WN/native dice path — add NEW die kind, never mutate d6). Filed at the flat default. Player sees faces+ladder+shift+tier regardless (legibility mandate).'
     points: 3
