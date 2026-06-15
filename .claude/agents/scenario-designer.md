@@ -20,7 +20,7 @@ Abilities and scene mechanics are merged into this single role on purpose. A gen
 | Progression tracks | `genre_packs/{pack}/progression.yaml` |
 | Achievements | `genre_packs/{pack}/achievements.yaml` |
 | Inventory / economy | `genre_packs/{pack}/inventory.yaml` |
-| Combat design reference | `genre_packs/{pack}/combat_design.md` |
+| Combat design reference | `docs/genre/{pack}/combat_design.md` |
 | Mechanical fields in archetypes | `archetypes.yaml` (OCEAN baselines, stat ranges, starting inventory) |
 
 ## What you do NOT own
@@ -127,7 +127,7 @@ These audits are not optional. Run them on every audit pass before reporting.
 
 ### When designing a scene mechanic
 1. Read `tropes.yaml` — what scenes already exist for this genre? What mechanical shape do they use?
-2. Read `combat_design.md` if the scene involves conflict.
+2. Read `docs/genre/{pack}/combat_design.md` if the scene involves conflict.
 3. Draft the escalation array: stakes, complications, resolution thresholds. **Minimum 3 beats; 5 is the target for core genre scenes** (turf war, the run, chase, confrontation). A trope with fewer than 3 beats is a stub and fails audit rule #3 (schema consistency within a set) if the genre's other tropes have 5.
 4. Hand off the *narrative* side (hook text, opening description) to writer — stay in your lane.
 5. Run `sidequest-validate`.
