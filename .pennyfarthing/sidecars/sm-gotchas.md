@@ -226,3 +226,14 @@ During the 59-30 peloton finish I tried to merge the server PR against `main` an
 - **What happened:** 107-1's `repos: server` (server-only). `sm-setup` (setup mode) created `feat/107-1-...` by switching the **orchestrator** (`.`) onto a feature branch — leaving oq-1's root on `feat/...` with the context/session edits as working-tree changes, and creating NO branch in `sidequest-server` at all. The orchestrator targets `main` (per repos.yaml) and should stay there; the code feature branch belongs in the repo(s) on the session's `Repos:` line, off each repo's base (`develop` for the subrepos). 107-2's precedent confirms: the feat branch lived in the code repos (server+content), while sprint/context/session changes ride orchestrator `main`.
 - **How to apply:** after sm-setup, check `git -C . branch --show-current` (should be `main`) and `git -C <code-repo> branch --show-current` (should be `feat/<story>-...`). If reversed: `git -C . switch main` (uncommitted context/session edits carry over cleanly since no commits diverged), `git -C . branch -D feat/<story>-...`, then in each code repo `git switch <base> && git switch -c feat/<story>-...`. Record the correction in the SM Assessment.
 - **Also:** the gate's `resolve-gate`/`complete-phase` arg-inference from the session file is fragile — after hand-editing the session (e.g. adding `## Sm Assessment`), inference broke with "missing story/workflow/phase fields." Just pass args explicitly: `pf handoff resolve-gate <id> tdd setup`, `pf handoff complete-phase <id> tdd setup`.
+
+## `pf sprint story finish` may leave the PR OPEN (2026-06-15, 108-8)
+- The finish script ran all 7 steps (archive/merge_pr/jira/yaml/demo/epics/cleanup) and marked the
+  story `done`, but PR #878 was still OPEN (mergedAt null) afterward. The `merge_pr` step did NOT
+  actually merge. ALWAYS verify post-finish: `gh pr view <n> -R slabgorb-org/<repo> --json state,mergedAt`.
+  If OPEN + MERGEABLE/CLEAN, merge manually: `gh pr merge <n> -R ... --squash --delete-branch`.
+- The finish also leaves the ORCHESTRATOR repo on a feature branch (git_cleanup created
+  `feat/<story>-...` holding the activation + completion commits), 2 commits ahead of main. Get them
+  onto main: `git checkout main && git pull --rebase origin main && git merge --ff-only <branch> ...`
+  then push. Remote main moves fast (oq-2 / other clones push) — expect to rebase. Force-delete the
+  local feature branch after (`git branch -D`) since rebase changes the hashes.
