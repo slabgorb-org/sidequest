@@ -10,10 +10,13 @@ stories:
     title: Foundation floor — relocate asset_urls, slug_fold, reference_anchors below server tier (kills 4 upward edges)
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server
     workflow: tdd
+    completed: '2026-06-15'
     type: refactor
+    review_verdict: approved
   - id: 122-2
     title: Relocate pure combat-rules helpers (find_confrontation_def, resolve_damage_spec) out of server/dispatch into game/ruleset; drop lazy imports
     points: 3
