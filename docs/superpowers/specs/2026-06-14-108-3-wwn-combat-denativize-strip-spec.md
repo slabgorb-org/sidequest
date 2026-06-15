@@ -1,6 +1,6 @@
 # 108-3 — WWN Combat De-Nativize: Content Strip-Spec
 
-> **⚠ CORRECTION (2026-06-14, gm).** This spec's central premise — that a de-nativized WWN combat def can author **zero beats** — is FALSE against the current server model. The loader **requires ≥1 beat** per confrontation (`rules.py:590`, unconditional) and validates each `allowed_classes` class's `encounter_beat_choices` against the **combat beats pool** (`loader.py:701`). Stripping the beats today makes all three WWN packs fail to load. 108-3 is therefore **BLOCKED on new server story 108-7** (gate both invariants on the bound ruleset so WN packs may author zero combat beats). Revise this spec once 108-7 lands. Everything below about the *per-pack targets* and the *do-not-touch DIAL defs* remains correct; only the "no beats needed / strip the line" mechanics are premature.
+> **✓ RESOLVED (2026-06-15, gm).** 108-7 landed (`feat(108-7): WN combat defs go beat-optional in the loader`, #872) and 108-8 followed (`feat(108-8): WN round owns the WN action set — synthesize attack on zero-beat defs`). The loader's beat-count gate is now **WN-conditional**: `_validate_confrontation_beats` (`loader.py:702`) allows a `category=combat` / `win_condition=hp_depletion` def under a bound Without Number ruleset to author **zero beats** (and fires the `wn_beat_optional` watcher span as proof the gate engaged), and `_validate_class_filter_refs` (`loader.py:723`) lets a WN class carry an **empty** `encounter_beat_choices`. The zero-beat premise below is therefore now CORRECT. **One sharpening the original spec missed:** `encounter_beat_choices` mixes combat beats *and* chase/negotiation DIAL beats, and the loader validates them against the pool of **all** confrontations' beats. Because the DIAL defs are left intact (their beats survive), only the **combat-beat** entries are orphaned — and the loader's asymmetry note (`loader.py:753`) is explicit: an *empty* list is skipped, but a WN class still carrying **stale** combat-beat refs against the now-empty combat pool **fails loud**. So the fix is to remove the combat-beat entries from each class's `encounter_beat_choices` while **keeping** the chase/negotiation entries — not to empty the field. Implemented and validated 2026-06-15: all three packs `load_genre_pack` clean with `beats=0`.
 
 **Author:** Architect (The Man in Black) · **Date:** 2026-06-14
 **Story:** 108-3 (content-only; routes to **gm** for VALIDATION, not a TDD RED phase)
@@ -80,6 +80,12 @@ All three packs are `ruleset: wwn`. Crunch loads from the **genre tier**; world-
 
 ---
 
+## ✓ Resolved — the 107-2 stub rider was DESCOPED
+
+> **Resolution (2026-06-15):** Recommendation 1 below was taken — the 107-2 Torchdeep/Torchhold/Bileden rider is **descoped** from 108-3. The names do not exist in the content tree (confirmed); the symptom, if real, is a server/procedural-generation artifact (Sünden Deep, ADR-106) outside this content-repo story's scope. No phantom rooms were authored. Re-file under a `repos: server` story if a live beneath_sunden descent reproduces the null-stat symptom.
+
+### Original analysis (retained for the record)
+
 ## ⚠ Open question — the 107-2 stub rider rests on a stale premise
 
 The story also asks to "fix the 107-2 content stubs: Torchdeep/Torchhold/Bileden have `creature_id=None`/`threat=None`/`abilities=[]` … and the 'Dungeon Names' naming-source leak into the description field."
@@ -110,3 +116,5 @@ Content-only → **VALIDATE, do not TDD-RED**:
 ## Housekeeping (SM's lever, flagged not fixed)
 
 Story 108-3 carries `workflow: superpowers`, which is **not a registered pf workflow** (`pf workflow type superpowers` → not found). It must be reconciled to a valid tag or the content→gm validation path before setup completes. Architect does not edit sprint YAML.
+
+> **Resolution (2026-06-15):** Reconciled to `workflow: trivial` — the registered content→gm validation path (no TDD RED phase). Setup completed under that tag.

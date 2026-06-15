@@ -34,6 +34,7 @@ completed_epics:
   - '115'
   - '113'
   - '116'
+  - '108'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -698,5 +699,45 @@ completed_stories:
   - id: 116-4
     epic: '116'
     title: 'F2c — Create-advantage rendering + Fate honesty lie-detector: surface F1c situation aspects into the prompt + narration; add fate_engagement_watcher mirroring dispatch_engagement_watcher; emit fate.narration.mismatch when prose claims a Fate outcome (advantage created / foe taken out) the engine never produced. Depends F2b (renders into its prompt sections) + F2a. Plan: docs/superpowers/plans/2026-06-14-f2c-fate-advantage-honesty.md (to author).'
+    points: 5
+    completed: '2026-06-15'
+  - id: 108-1
+    epic: '108'
+    title: "Engine core cut — run_wn_round() resolves the player's WN action without native apply_beat() scaffolding under a WN binding: no fleeting-tag grant (Opening/Counter Stance), no dial-metric advance, no composure rider, no Brace as an action. Resolve the committed action as a WN action (attack/full-defense/move/item-use/cast) with WN math (d20+hit vs AC, weapon dice, Shock, saves). Add OTEL wn.native_scaffolding_suppressed proving the native riders did NOT fire under the WN binding (lie-detector: native engine is OFF). Seam: dispatch/dice.py ~671-676 + run_wn_round() beat-resolution path; isinstance(WithoutNumberRulesetModule) gate. Do NOT regress the native module for native packs."
+    points: 5
+    completed: '2026-06-14'
+  - id: 108-2
+    epic: '108'
+    title: 107-2 — the WN round seats its Other from the bound room roster, not an improvised opponent. Under a WN binding the opponent-seater (ADR-116 single room-sourced chokepoint) MUST prefer a bound Monster-Manual creature at the acting PC's location (npcs entries with manual_origin:true, resolution_tier:spawn, bound via location) over a narrator-invented placeholder ('aquatic creature…', 'Unknown Adversary'). Verify participant.joined{source,side} OTEL shows the bound source. Engine seater half of 107-2 (content stub-fix half is 108-3). Preserves ADR-139 mechanically-capable-Other (authored opponent_damage).
+    points: 5
+    completed: '2026-06-14'
+  - id: 108-3
+    epic: '108'
+    title: "Content de-nativize WWN combat defs — strip resolution_mode:beat_selection, native beat lists (strike/brace/push/angle/committed_blow/break_contact), edge_config, combat momentum metrics, and the Brace action from the COMBAT confrontation defs across the WWN packs (beneath_sunden primary verify target; heavy_metal evropi+long_foundry, elemental_harmony, heavy_metal/barsoom swept the same way). WWN combat defs express only win_condition:hp_depletion + opponent stats + authored opponent_damage DamageSpec (ADR-139 Inv-3). Chase/negotiation DIAL defs untouched. Also fix the 107-2 content stubs: Torchdeep/Torchhold/Bileden have creature_id=None/threat=None/abilities=[] (give real stat blocks) and the 'Dungeon Names' naming-source leak into the description field. → gm agent."
+    points: 5
+    completed: '2026-06-15'
+  - id: 108-4
+    epic: '108'
+    title: 'ADR-142 doc backfill (housekeeping) — write the missing docs/adr/142-*.md recording the Without Number core extraction shipped in sidequest-server #841 (WithoutNumberRulesetModule, without_number.py, unified lethality spans, four WN modules reparented as clean siblings; tests test_142_wn_core_extraction.py / test_102_4_wn_turn_model_family.py cite it). Closes the 141->143 numbering hole. Regen ADR indexes.'
+    points: 1
+    completed: '2026-06-13'
+  - id: 108-5
+    epic: '108'
+    title: 'WN combat player action surface — WN action buttons (Attack / Use Item / Move-Disengage / Cast) replace the native beat menu; NO Brace/total-defense button (not a WWN action — defense is passive AC). Each button fires a real WN roll via the bound WithoutNumberRulesetModule (108-1 resolution path), rendered in the ADR-074 dice tray. Retain DICE_THROW.player_action as the RP-flavor rider — narrator hook only, ZERO mechanics (the chandelier swing) — and enforce that a bare combat free-text (no action button) does NOT resolve to a combat outcome. Add wn.action.flavor_rider{affected_mechanics=false} OTEL proving the rider stayed flavor-only. Spec: docs/superpowers/specs/2026-06-14-wn-combat-action-surface-design.md'
+    points: 5
+    completed: '2026-06-14'
+  - id: 108-6
+    epic: '108'
+    title: 'WWN dying/down window + solo-actuator gap (BRAINSTORM-FLAGGED) — emit a real WWN mortally-wounded → d6-round stabilize → dead window under the WN round, not terminal-dead-only. The solo-actuator gap is an OPEN design problem (in solo play nothing can advance or act on the stabilize clock — input is disabled once the PC is out of the action) and MUST be brainstormed before implementation: a clock nothing can advance is worse than no clock. Server #846 already removed the dual-status CONTRADICTION (terminal-dead shows one coherent status); this story is the actionable WINDOW, not the contradiction fix. Re-homes the cancelled 106-5 dying-window work the cancellation commit (e5ae1fc8) promised would fold into this rework but never did. Refs: gm-decisions 2026-06-13/14, ADR-114, ADR-143.'
+    points: 5
+    completed: '2026-06-14'
+  - id: 108-7
+    epic: '108'
+    title: WN combat defs go beat-optional — gate the ≥1-beat ConfrontationDef invariant and the encounter_beat_choices↔combat-beats coupling on the bound ruleset so Without Number packs can author zero combat beats (unblocks 108-3)
+    points: 3
+    completed: '2026-06-14'
+  - id: 108-8
+    epic: '108'
+    title: "Engine core cut FOLLOW-ON — run_wn_round() must OWN the WN action set so a zero-beat WWN combat def resolves. 108-1 removed the native riders (fleeting tags/dials/Brace) but run_wn_round (server/dispatch/wn_round.py:374) + the dice path (dispatch/dice.py:407) STILL resolve the player's committed action by looking up commit.beat_id in cdef.beats and feeding that beat to _apply_committed_player_beat for the WN damage math. So with the native beats stripped (108-3), cdef.beats==[] and EVERY WWN combat commit raises DiceDispatchError: unknown beat_id ... available: [] — total combat outage (78 e2e failures: caverns_and_claudes/heavy_metal/elemental_harmony, beneath_sunden/barsoom). FIX: under a WithoutNumberRulesetModule binding, run_wn_round + dice.py must synthesize the WN action set (attack/move/item-use/cast) independent of cdef.beats — model it on the existing is_item_use_beat transient-beat synthesis (the Drink-potion beat that is NOT on cdef). Keep WN math intact (d20+hit vs AC, weapon dice from the actor's inventory, Shock, saves); emit wn.native_scaffolding_suppressed proving native is OFF. Native packs MUST keep requiring beats (isinstance gate). This is the runtime half the epic ASSUMED 108-1 delivered (108-7 desc + epic line 10) but it did not. UNBLOCKS 108-3. Seam: dispatch/dice.py ~671-676 + run_wn_round beat-resolution path; game/ruleset/without_number.py. Refs: ADR-143, ADR-142, ADR-117, ADR-139, ADR-114; wn_round.py, dice.py."
     points: 5
     completed: '2026-06-15'
