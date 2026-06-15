@@ -56,10 +56,12 @@ stories:
     title: "F3d — Invoke control: player-driven invoke from the Fate panel — an 'Invoke (+2 / reroll)' affordance per invokable aspect showing cost (free invoke if available, else 1 fate point). Resolution already rides FateActionPayload.invoke_aspect (F1d/F2a); F3d builds the control + cost display + optimistic fate-point decrement reconciled by next FATE_STATE (server is the only economy authority — No Silent Fallbacks). Surfaces the F2b invokable-aspect directive as clickable UI instead of prose."
     points: 3
     priority: p3
-    status: backlog
+    status: in-progress
     repos: ui
     workflow: tdd
     depends_on: 118-2
+    started: '2026-06-15'
+    branch: feat/118-4-f3d-fate-invoke-control
   - id: 118-5
     title: "F3e — Compel accept/refuse round-trip (closes the F2b deferral): F2b's propose_fate_compel fires fate.compel.offered but the engine never persisted a PendingCompel (F2b plan suggested one; shipped flow is stateless). F3e adds the accept/refuse routing seam (server) + the player surface (ui): Accept -> module.accept_compel (+1 fate point, fires fate.compel.accepted); Refuse -> pay 1 fate point to decline (SRD). Show the fate-point delta on resolve. PARKED OPEN Q (Keith decides before RED): carrier = ADR-107 aside channel vs dedicated in-panel control."
     points: 5
