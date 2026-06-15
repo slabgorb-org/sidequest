@@ -1,188 +1,144 @@
 id: '114'
 type: epic
-title: "SRD-sourced inventory \u2014 bind the equipment catalog, don't author it (inventory\
-  \ audit 2026-06-14)"
-description: "From the 2026-06-14 cross-pack inventory audit (docs/inventory-audit-2026-06-14.md).\
-  \ No pack sources gear from its bound SRD's equipment chapter \u2014 all 11 packs\
-  \ hand-author bespoke items with a ruleset-shaped mechanical envelope bolted on.\
-  \ This is the inventory analogue of the ADR-143/144 'bind the ruleset, don't balance\
-  \ it' doctrine: if a genre binds WWN, the gear should BE WWN gear. Licensing reality:\
-  \ WWN is CC0 (verbatim-reproducible); CWN likely CC0 (verify); SWN/AWN free editions\
-  \ carry no open license (derive-only); Fate Core has no equipment economy at all.\
-  \ Epic brings inventory in line with each bound ruleset world-by-world and resolves\
-  \ the standalone mechanical defects. Coordinates with epic-113 (ADR-140 genre->world\
-  \ boundary hygiene) \u2014 SRD-sourcing naturally yields the correct genre-baseline\
-  \ + world-override placement."
+title: "SRD-sourced inventory — bind the equipment catalog, don't author it (inventory audit 2026-06-14)"
+description: "From the 2026-06-14 cross-pack inventory audit (docs/inventory-audit-2026-06-14.md). No pack sources gear from its bound SRD's equipment chapter — all 11 packs hand-author bespoke items with a ruleset-shaped mechanical envelope bolted on. This is the inventory analogue of the ADR-143/144 'bind the ruleset, don't balance it' doctrine: if a genre binds WWN, the gear should BE WWN gear. Licensing reality: WWN is CC0 (verbatim-reproducible); CWN likely CC0 (verify); SWN/AWN free editions carry no open license (derive-only); Fate Core has no equipment economy at all. Epic brings inventory in line with each bound ruleset world-by-world and resolves the standalone mechanical defects. Coordinates with epic-113 (ADR-140 genre->world boundary hygiene) — SRD-sourcing naturally yields the correct genre-baseline + world-override placement."
 priority: p1
 status: in_progress
 repos: server,content
 stories:
-- id: 114-1
-  title: "Design ADR \u2014 SRD-sourced inventory model, schema extensions, and licensing\
-    \ policy"
-  points: 3
-  priority: p1
-  status: done
-  repos: server,content
-  workflow: superpowers
-  completed: '2026-06-14'
-  type: chore
-- id: 114-2
-  title: Land standalone inventory defect fixes (evropi damage/AC, seaboard power_glove,
-    caverns armor) + neon orphan loadout keys
-  points: 2
-  priority: p1
-  status: done
-  repos: content
-  workflow: trivial
-  completed: '2026-06-14'
-  type: bug
-- id: 114-3
-  title: "WWN CC0 equipment extraction tool \u2014 SRD chapter to canonical baseline\
-    \ catalog"
-  points: 5
-  priority: p2
-  status: done
-  repos: server
-  workflow: tdd
-  depends_on: 114-1
-  completed: '2026-06-14'
-- id: 114-4
-  title: WWN baseline catalog + wire caverns_and_claudes, elemental_harmony, heavy_metal;
-    de-duplicate barsoom/long_foundry
-  points: 5
-  priority: p2
-  status: done
-  started: '2026-06-14'
-  repos: server,content
-  workflow: tdd
-  depends_on: 114-3
-  completed: '2026-06-14'
-- id: 114-5
-  title: CWN extraction + neon_dystopia and road_warrior personal gear; cyberware
-    system_strain as a typed field
-  points: 5
-  priority: p2
-  status: done
-  started: '2026-06-14'
-  repos: server,content
-  workflow: tdd
-  depends_on: 114-3
-  completed: '2026-06-14'
-  review_verdict: approved
-- id: 114-6
-  title: "road_warrior \u2014 bind the CWN vehicle chapter, retire bespoke Rig Composure\
-    \ (ADR-143)"
-  description: "CANCELED 2026-06-15 (stale/mis-scoped, user-confirmed). 'Bind the\
-    \ CWN vehicle chapter' is already shipped by epic 86: road_warrior binds ruleset:\
-    \ cwn; game/vehicle_combat.py (CWN SRD \xA72.4.8) + game/chase_pace.py (CWN \xA7\
-    2.6.2) exist with ~25 tests. Haiku-authored ACs invented VehicleTemplate/ChaseRound\
-    \ + tests/server/game/vehicles/ that don't exist; writing them would reinvent\
-    \ shipped CWN code (violates ADR-143 + Don't-Reinvent). The only genuine remnant\
-    \ \u2014 retire bespoke RigComposurePool \u2014 is part of the CWN combat cutover\
-    \ ADR-143 explicitly stages BEHIND the in-progress WWN cutover (epic 108), and\
-    \ belongs in the combat-cutover epic, not inventory epic 114. Re-file the remnant\
-    \ there when sequencing allows. See archived 114-6 session for full evidence."
-  points: 8
-  priority: p2
-  status: canceled
-  started: '2026-06-15'
-  repos: server,content
-  workflow: tdd
-  depends_on: 114-5
-- id: 114-7
-  title: "space_opera \u2014 de-triplicate world catalogs, hoist shared core, add\
-    \ world-distinct gear, backfill SWN tech levels"
-  points: 3
-  priority: p3
-  status: in_review
-  started: '2026-06-15'
-  repos: content,server
-  workflow: tdd
-  depends_on: 114-1
-  type: refactor
-  review_findings: 'HIGH: multifocal_laser id reused for a personal sidearm; the original
-    is a ship weapon (AP 20) wired into the rules.yaml dogfight confrontation (dogfight_shot.py
-    resolves the id to the CatalogItem and consumes damage/armor_piercing). Fix: restore
-    the bespoke ship weapon at the world tier; drop/rename the sidearm. Add a regression
-    test pinning confrontation-weapon resolution.'
-  review_verdict: approved
-- id: 114-8
-  title: "mutant_wasteland \u2014 re-stat inventory against the AWN schema (trauma\
-    \ die/shock), fix genre scrap_armor mitigation"
-  points: 3
-  priority: p3
-  status: done
-  started: '2026-06-15'
-  repos: server,content
-  workflow: tdd
-  depends_on: 114-1
-  completed: '2026-06-15'
-  review_verdict: approved
-- id: 114-9
-  title: "Design \u2014 Fate gear model: ruleset:fate binding + CatalogItem schema\
-    \ for aspect/permission gear (ADR-144 impl)"
-  points: 3
-  priority: p2
-  status: done
-  repos: server,content
-  workflow: superpowers
-  completed: '2026-06-15'
-  type: chore
-- id: 114-10
-  title: Apply Fate gear model to pulp_noir, spaghetti_western, tea_and_murder, wry_whimsy
-  points: 5
-  priority: p3
-  status: backlog
-  repos: server,content
-  workflow: tdd
-  depends_on: 114-9
-- id: 114-11
-  title: "Union-by-id per-field inventory merge \u2014 genre baseline non-droppable,\
-    \ world overrides presentation only, verbatim-field-lock validator (ADR-145 D3)"
-  points: 5
-  priority: p2
-  status: done
-  repos: server
-  workflow: tdd
-  depends_on: 114-3
-  completed: '2026-06-14'
-- id: 114-12
-  title: 'Complete CWN/WN inventory verbatim round-trip + harden the WN extraction
-    CLIs (114-5 follow-ons): CatalogItem dual-AC/soak + Trauma-Target field, ranged
-    +N damage bonus, DRY shared WN-extraction core, Path.resolve()/argparse choices
-    in both wwn+cwn tools'
-  points: 5
-  priority: p2
-  status: backlog
-  repos: server,content
-  workflow: tdd
-  type: refactor
-- id: 114-13
-  title: "road_warrior: decide + optionally let combat classes start with CWN-category\
-    \ weapons \u2014 widen the personal-weapon guard + strike path to accept melee_weapon/ranged_weapon,\
-    \ not just bespoke category:weapon (114-5 follow-on)"
-  points: 2
-  priority: p3
-  status: backlog
-  repos: server,content
-  workflow: tdd
-  type: refactor
-- id: 114-14
-  title: Relocate mutant_wasteland genre-tier bespoke to world tier; enforce ADR-145
-    D3 genre-baseline-verbatim
-  description: "Enforce ADR-145 D3 globally: add a fail-loud genre-baseline 'no bespoke'\
-    \ loader validator (no allow-list, No Silent Fallbacks) AND make ALL three genre-tier-bespoke\
-    \ packs clean in one change \u2014 mutant_wasteland (6 relics->both worlds, 6\
-    \ survival->AWN-verbatim at genre), neon_dystopia (6 bespoke->franchise_nations\
-    \ world), road_warrior (5 bespoke->the_circuit world). Keith ruled 2026-06-15:\
-    \ validator now + migrate all 3, no split brain."
-  points: 13
-  priority: p2
-  status: done
-  started: '2026-06-15'
-  repos: content,server
-  workflow: tdd
-  depends_on: 114-8
-  completed: '2026-06-15'
-  review_verdict: approved
+  - id: 114-1
+    title: "Design ADR — SRD-sourced inventory model, schema extensions, and licensing policy"
+    points: 3
+    priority: p1
+    status: done
+    repos: server,content
+    workflow: superpowers
+    completed: '2026-06-14'
+    type: chore
+  - id: 114-2
+    title: Land standalone inventory defect fixes (evropi damage/AC, seaboard power_glove, caverns armor) + neon orphan loadout keys
+    points: 2
+    priority: p1
+    status: done
+    repos: content
+    workflow: trivial
+    completed: '2026-06-14'
+    type: bug
+  - id: 114-3
+    title: "WWN CC0 equipment extraction tool — SRD chapter to canonical baseline catalog"
+    points: 5
+    priority: p2
+    status: done
+    repos: server
+    workflow: tdd
+    depends_on: 114-1
+    completed: '2026-06-14'
+  - id: 114-4
+    title: WWN baseline catalog + wire caverns_and_claudes, elemental_harmony, heavy_metal; de-duplicate barsoom/long_foundry
+    points: 5
+    priority: p2
+    status: done
+    started: '2026-06-14'
+    repos: server,content
+    workflow: tdd
+    depends_on: 114-3
+    completed: '2026-06-14'
+  - id: 114-5
+    title: CWN extraction + neon_dystopia and road_warrior personal gear; cyberware system_strain as a typed field
+    points: 5
+    priority: p2
+    status: done
+    started: '2026-06-14'
+    repos: server,content
+    workflow: tdd
+    depends_on: 114-3
+    completed: '2026-06-14'
+    review_verdict: approved
+  - id: 114-6
+    title: "road_warrior — bind the CWN vehicle chapter, retire bespoke Rig Composure (ADR-143)"
+    description: "CANCELED 2026-06-15 (stale/mis-scoped, user-confirmed). 'Bind the CWN vehicle chapter' is already shipped by epic 86: road_warrior binds ruleset: cwn; game/vehicle_combat.py (CWN SRD §2.4.8) + game/chase_pace.py (CWN §2.6.2) exist with ~25 tests. Haiku-authored ACs invented VehicleTemplate/ChaseRound + tests/server/game/vehicles/ that don't exist; writing them would reinvent shipped CWN code (violates ADR-143 + Don't-Reinvent). The only genuine remnant — retire bespoke RigComposurePool — is part of the CWN combat cutover ADR-143 explicitly stages BEHIND the in-progress WWN cutover (epic 108), and belongs in the combat-cutover epic, not inventory epic 114. Re-file the remnant there when sequencing allows. See archived 114-6 session for full evidence."
+    points: 8
+    priority: p2
+    status: canceled
+    started: '2026-06-15'
+    repos: server,content
+    workflow: tdd
+    depends_on: 114-5
+  - id: 114-7
+    title: "space_opera — de-triplicate world catalogs, hoist shared core, add world-distinct gear, backfill SWN tech levels"
+    points: 3
+    priority: p3
+    status: done
+    started: '2026-06-15'
+    repos: content,server
+    workflow: tdd
+    depends_on: 114-1
+    completed: '2026-06-15'
+    type: refactor
+    review_findings: 'HIGH: multifocal_laser id reused for a personal sidearm; the original is a ship weapon (AP 20) wired into the rules.yaml dogfight confrontation (dogfight_shot.py resolves the id to the CatalogItem and consumes damage/armor_piercing). Fix: restore the bespoke ship weapon at the world tier; drop/rename the sidearm. Add a regression test pinning confrontation-weapon resolution.'
+    review_verdict: approved
+  - id: 114-8
+    title: "mutant_wasteland — re-stat inventory against the AWN schema (trauma die/shock), fix genre scrap_armor mitigation"
+    points: 3
+    priority: p3
+    status: done
+    started: '2026-06-15'
+    repos: server,content
+    workflow: tdd
+    depends_on: 114-1
+    completed: '2026-06-15'
+    review_verdict: approved
+  - id: 114-9
+    title: "Design — Fate gear model: ruleset:fate binding + CatalogItem schema for aspect/permission gear (ADR-144 impl)"
+    points: 3
+    priority: p2
+    status: done
+    repos: server,content
+    workflow: superpowers
+    completed: '2026-06-15'
+    type: chore
+  - id: 114-10
+    title: Apply Fate gear model to pulp_noir, spaghetti_western, tea_and_murder, wry_whimsy
+    points: 5
+    priority: p3
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    depends_on: 114-9
+  - id: 114-11
+    title: "Union-by-id per-field inventory merge — genre baseline non-droppable, world overrides presentation only, verbatim-field-lock validator (ADR-145 D3)"
+    points: 5
+    priority: p2
+    status: done
+    repos: server
+    workflow: tdd
+    depends_on: 114-3
+    completed: '2026-06-14'
+  - id: 114-12
+    title: 'Complete CWN/WN inventory verbatim round-trip + harden the WN extraction CLIs (114-5 follow-ons): CatalogItem dual-AC/soak + Trauma-Target field, ranged +N damage bonus, DRY shared WN-extraction core, Path.resolve()/argparse choices in both wwn+cwn tools'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: refactor
+  - id: 114-13
+    title: "road_warrior: decide + optionally let combat classes start with CWN-category weapons — widen the personal-weapon guard + strike path to accept melee_weapon/ranged_weapon, not just bespoke category:weapon (114-5 follow-on)"
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: refactor
+  - id: 114-14
+    title: Relocate mutant_wasteland genre-tier bespoke to world tier; enforce ADR-145 D3 genre-baseline-verbatim
+    description: "Enforce ADR-145 D3 globally: add a fail-loud genre-baseline 'no bespoke' loader validator (no allow-list, No Silent Fallbacks) AND make ALL three genre-tier-bespoke packs clean in one change — mutant_wasteland (6 relics->both worlds, 6 survival->AWN-verbatim at genre), neon_dystopia (6 bespoke->franchise_nations world), road_warrior (5 bespoke->the_circuit world). Keith ruled 2026-06-15: validator now + migrate all 3, no split brain."
+    points: 13
+    priority: p2
+    status: done
+    started: '2026-06-15'
+    repos: content,server
+    workflow: tdd
+    depends_on: 114-8
+    completed: '2026-06-15'
+    review_verdict: approved
