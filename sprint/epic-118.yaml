@@ -54,13 +54,14 @@ stories:
     review_verdict: approved
   - id: 118-4
     title: "F3d — Invoke control: player-driven invoke from the Fate panel — an 'Invoke (+2 / reroll)' affordance per invokable aspect showing cost (free invoke if available, else 1 fate point). Resolution already rides FateActionPayload.invoke_aspect (F1d/F2a); F3d builds the control + cost display + optimistic fate-point decrement reconciled by next FATE_STATE (server is the only economy authority — No Silent Fallbacks). Surfaces the F2b invokable-aspect directive as clickable UI instead of prose."
+    description: 'BLOCKED (2026-06-15, Architect+Bossmang ruling): original spec unbuildable — server has no standalone invoke, no kind/aspect_id, no reroll-over-wire (invoke_aspect is a +2 text-rider on a seated proactive action, encounter-gated, economy server-authoritative). DEPENDS ON 118-10 (invoke_mode/reroll wire support) + a PM/UX action-host decision (Architect rec: compose into natural-language InputBar; no new message type). RE-SCOPE on return = Shape A: clickable invoke-composer affordance in FatePanel, key on aspect TEXT, identity server-authenticated (118-8), NO optimistic fate-point decrement (panel reflects FATE_STATE), reroll via 118-10. Negative tests: non-Fate guard, sealed-commit-barrier disable, no-points disable. Full ruling in archived 118-4 session.'
     points: 3
     priority: p3
-    status: in-progress
+    status: backlog
+    started: '2026-06-15'
     repos: ui
     workflow: tdd
     depends_on: 118-2
-    started: '2026-06-15'
     branch: feat/118-4-f3d-fate-invoke-control
   - id: 118-5
     title: "F3e — Compel accept/refuse round-trip (closes the F2b deferral): F2b's propose_fate_compel fires fate.compel.offered but the engine never persisted a PendingCompel (F2b plan suggested one; shipped flow is stateless). F3e adds the accept/refuse routing seam (server) + the player surface (ui): Accept -> module.accept_compel (+1 fate point, fires fate.compel.accepted); Refuse -> pay 1 fate point to decline (SRD). Show the fate-point delta on resolve. PARKED OPEN Q (Keith decides before RED): carrier = ADR-107 aside channel vs dedicated in-panel control."
@@ -121,3 +122,10 @@ stories:
       - 'fate_conflict: sanitize payload.target via sanitize_player_text at the seal site in dispatch_fate_action (or commit.target at the _resolve_attack hint sites), with a test proving an injection-bearing target name is neutralized in the stored/hinted value.'
       - 'fate_conflict: sanitize payload.aspect_text at the seal site to remove the raw-on-struct surface, keeping the existing hint-time + projection-time sanitization as defense-in-depth; test that the stored commit.aspect_text is sanitized.'
     type: bug
+  - id: 118-10
+    title: 'F3d-pre (server) — Fate invoke_mode (bonus|reroll) over the wire: add invoke_mode to FateActionPayload + thread through dispatch_fate_action (currently hardcodes bonus) into ruleset.invoke_aspect, mirror via F1d handler + F2a subsystem, extend fate_aspect_invoked OTEL span with mode; optional stable aspect_id in FATE_STATE projection. Unblocks the reroll half of F3d (118-4).'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
