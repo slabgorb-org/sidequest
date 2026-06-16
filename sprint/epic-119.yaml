@@ -51,3 +51,11 @@ stories:
     repos: server
     workflow: tdd
     depends_on: 119-3
+  - id: 119-5
+    title: "119-3 transport-port cleanup (OQ-17): remove or re-home the now-vestigial Intent-Router cache-floor guard and restore coverage. The agent-SDK path emits no cache_control markers, so IntentRouterCacheFloorError / HAIKU_CACHEABLE_PREFIX_FLOOR_TOKENS / _INTENT_ROUTER_CACHE_TTL / _estimate_intent_router_prefix_tokens + the build_intent_router_llm floor check (llm_factory.py:646-667) now guard a trap the code can no longer spring; it is live-but-uncovered after 119-3's full-replace deleted test_haiku_cache_control.py. Either delete the guard wholesale or re-home it onto an SDK-exposed cache signal, and add a test asserting the chosen behavior (No Silent Fallbacks). While in this module also: (a) register an atexit cleanup for _neutral_cwd()'s mkdtemp temp dir (anthropic_sdk_client.py:156, one empty dir per process leak); (b) add a gated LIVE isolation smoke since the AC1 contamination regression mocks the query seam and cannot catch a real-SDK context-absorption regression (gate scripts/spike_119_3_agentsdk_subscription.py in ops/CI)."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
