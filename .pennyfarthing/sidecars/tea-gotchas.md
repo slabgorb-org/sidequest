@@ -1,5 +1,11 @@
 ## TEA Gotchas
 
+### Ground a story's ACs against the migration that ACTUALLY SHIPPED, not the title's premise — a "depends on whichever lands" story can be half-void on arrival (119-4 RED, 2026-06-16)
+- 119-4's title said "depends on whichever migration lands (119-2 or 119-3)" and named three ACs: (1) swap the static `ANTHROPIC_AUTH_TOKEN` env token for an auto-refreshing `ant auth login` profile + fail loud on expiry; (2) OTEL span tagging credit-vs-PAYG billing pool; (3) monitor the "200 monthly credit + 50.52 prepaid overflow buffer before it silently bills PAYG." If you write tests straight off that, you test **fiction**: 119-2 (static token) never shipped — **119-3 (claude-agent-sdk) did**, and its transport already resolves the host's auto-refreshing OAuth login (no static token exists in that path; `assert_subscription_auth()` *requires* the token UNSET). AND the epic was reframed 2026-06-15: the "Agent SDK credit" was CANCELLED, so there is no $200 credit and no $50.52 buffer, and 119-3 fails loud (no silent PAYG to monitor "before"). ~2 of 3 headline ACs referenced a dead premise.
+- **The tell:** the story title predates the epic reframe / the sibling migration that won. Before designing RED, read (a) the epic context's `## Overview` for any "REFRAMED <date>" / "CANCELLED" / "VOID" language, (b) `git log` of the dep to see which mutually-exclusive sibling actually merged (PR #908 = 119-3 here), and (c) the dep's design spec for an explicit "119-N owns X" boundary (the 119-2 spec §6 literally scoped 119-4 as the token-swap — but only *if 119-2 had shipped*). Grep the live code for the AC's named mechanism (`grep auth_path|ratelimit|credit`) — if the thing the AC says to "swap/monitor" isn't there, the premise moved.
+- **Don't silently reinterpret — surface the fork to the user, THEN log deviations.** When a money/infra story's ACs are half-void, that's a scope decision the user owns (I used AskUserQuestion: "build the real subset" vs "minimal" vs "re-spec"). After they pick, log each descope/reframe as a 6-field Design Deviation (severity major for a dropped headline AC) and capture the residuals as Delivery Findings. Writing tests against the void premise, OR quietly swapping the AC without telling them, both violate No Silent Fallbacks — applied to your own communication.
+- **Watch your OWN option text for unverified claims:** I pitched AC3' as "monitor from the anthropic-ratelimit headers we already capture" — then grep proved we DON'T capture them (`llm_request_span` documents `llm.ratelimit_input_tokens_remaining` but no code populates it; the agent-SDK is a subprocess returning a `ResultMessage`, not HTTP headers). The honest available signal was `ResultMessage.total_cost_usd` (surface as `sdk_reported_cost_usd`). Verify the mechanism exists in code before you offer it as an option.
+
 ### A dependency that looks "missing" is usually a STALE LOCAL CHECKOUT — `git fetch` + check `origin/<base>` before you declare it absent (121-2 RED, 2026-06-15)
 - 121-2 (F4b) depended on 121-1 (F4a engine spine). It looked entirely absent on the local `sidequest-server` working tree: no `FateConfig` in `genre/models/rules.py`, no `seed_chargen_resources` on `FateRulesetModule`, no `ChargenResources.fate_sheet`, no F4a test file. I (TEA) checked `git log --oneline -8`, local branches, and stash — all came up empty — and wrongly concluded F4a never merged (blamed the `merge_pr` no-op gotcha). **That was wrong.** SM then checked the remote: PR #884 was `MERGED` into `origin/develop` (commit `f527ddb7`); local `develop` was simply **3 commits behind** (0 ahead, 3 behind). A `git pull --ff-only` brought every F4a symbol in. The dependency was satisfied the whole time.
 - **The miss:** `git log --all` and `git branch -a` only see refs you've already fetched. A story can merge on GitHub minutes before you look; your local mirror won't show it until you `git fetch`. Checking the working tree proves what YOU have, not what `origin` has.
@@ -235,3 +241,35 @@ is your deliverable. Trust the session ACs over a sub-agent's scope inference.
   already; the new negatives to add are "no control when `pending_compels` empty." The
   board-level production-path wiring test reuses the `renderBoard` harness from
   `GameBoard-fate-tab.test.tsx` (no R3F mocks needed if you don't pass a `fateRoll`).
+
+## When a Reviewer offers an either/or fix for a dishonest error path, pin the STRONG option by ERROR ORIGIN, not exception type (119-4 RED rework, 2026-06-16)
+
+119-4's broad `except Exception` in `complete_with_tools` re-raised ANY in-loop error
+(a parse `IndexError`, a `CLINotFoundError`, a timeout) as
+`AgentSdkAuthUnavailable("subscription login absent or expired")` + a
+`narrator.auth_unavailable` event — a false "login expired" on the very GM panel the
+story exists to make honest. The Reviewer offered an **OR**: narrow the catch *or* keep
+it broad with a non-committal message. Two RED-design lessons:
+
+- **Forbid the weak option deliberately.** "Keep it broad + soften the *message*" still
+  leaves the event NAME (`narrator.auth_unavailable`) and the exception TYPE
+  (`AgentSdkAuthUnavailable`) asserting auth — the panel still shows an auth event for a
+  parse bug. So the honest contract is: a non-auth/internal error must emit **no auth
+  event and no `AgentSdkAuthUnavailable` at all.** Pin that (assert NOT isinstance auth +
+  assert the event never fired). It forces the strong fix and rules out the cosmetic one.
+- **Discriminate by ORIGIN (transport vs our loop body), not by exception TYPE.** The
+  existing fakes raise a bare `RuntimeError` to mean "the `query()` transport failed = an
+  absent login (OQ-5 → maps to auth)." A *type*-narrowed catch (`except ClaudeSDKError`)
+  would stop catching that `RuntimeError` and break the AC1' query-raised test. The
+  reconcilable contract: **transport boundary raises → auth+event (AC1'); our own
+  message-processing raises → propagates raw, no auth signal.** To pin "our body raised,"
+  monkeypatch the first per-message call (`_is_agent_result_message`) to raise a sentinel
+  `ValueError` — an unambiguously INTERNAL fault the transport-catch must let escape. This
+  also tells Dev the fix is a **loop restructure** (separate `__anext__` from body
+  processing), not a type-narrow.
+- **Comment-honesty fixes are NOT test-pinnable** (no source-text grep — house rule). Flag
+  them as a Delivery Finding so Dev applies the Reviewer's [LOW] DOC cluster by hand; a
+  green suite will not catch a stale comment.
+- **Assert cause survival robustly:** `isinstance(raised, ValueError) or
+  isinstance(raised.__cause__, ValueError)` accepts either a raw propagate or an honest
+  `raise NonAuthError(...) from exc` wrap — don't over-pin the exact wrapper type.

@@ -245,3 +245,21 @@ During the 59-30 peloton finish I tried to merge the server PR against `main` an
   1. **The `sm-finish` PHASE=preflight subagent opened both PRs (content #465, server #887) as `isDraft: true`.** A draft PR is MERGEABLE-but-unmergeable — `gh pr merge` / the finish `merge_pr` step silently no-op on it. This is a concrete cause of the "merge_pr no-op" family. Fix: `gh pr ready <n> --repo slabgorb-org/<repo>` FIRST, then `gh pr merge <n> --repo ... --squash --delete-branch`, then verify `mergedAt` is non-null. Check `isDraft` in your `gh pr view --json` before merging.
   2. **There is NO `pf sprint story update --repos` flag** — you cannot correct a mis-scoped cross-repo story's `repos` field via CLI. `pf sprint story finish --dry-run` then reports "No PR to merge / Delete local branch: None" (it only knows the YAML repos field). Doesn't matter for completion as long as YOU create+merge each repo's PR manually (dependency repo first — content before the server test that loads it) and verify each `mergedAt`. Then run `pf sprint story finish` for bookkeeping only.
 - Whole 121-2 finish that worked: preflight (GO) → `gh pr ready`+squash-merge+verify content #465 → same for server #887 → `pf sprint story finish 121-2` (merge_pr no-op, harmless) → commit `sprint/` to orchestrator `main` (needed a `git pull --rebase` — concurrent clone) → `git checkout develop && git pull --ff-only` on BOTH subrepos to kill the stale checkout.
+
+## `pf sprint story finish` cannot merge a SUBREPO PR — it runs `gh pr merge` from the orchestrator root with no `-R` (119-4, 2026-06-16)
+
+Story 119-4 was server-only (`slabgorb-org/sidequest-server`, github-flow → develop). The Dev pushed the branch; PR creation is the SM's job at finish. Two traps hit in sequence:
+
+1. **`finish` does not create the PR — it only merges an existing one.** `gh pr list --head <branch>` returning a PR is NOT enough: `finish` resolves the PR from the session's `**PR:**` field (`_extract_pr_number`), and its branch fallback (`gh pr list --head`) leaves the markdown **backticks** on the branch value (`_extract_branch` only strips ` (pushed)`, not `` ` ``), so the lookup silently finds nothing → "No PR to merge". **Fix:** create the PR yourself (`gh pr create -R slabgorb-org/<repo> --base develop --head <branch>`), then add a clean `**PR:** #<n> - <desc>` line to the session so `_extract_pr_number` resolves it. Dry-run until step 2 reads "Merge PR #<n>".
+
+2. **Even with the PR registered, the auto-merge fails for a subrepo.** `finish` runs `_run(["gh","pr","merge", pr_number, "--squash","--delete-branch"])` with NO `-R` and cwd = orchestrator root, so `gh` resolves the ORCHESTRATOR repo and dies: "Could not resolve to a PullRequest with the number of N." The guardrail then **correctly refuses to mark the story done** (good — it verifies the code actually landed). The same blind spot affects its post-merge `_pr_is_merged` check (`gh pr view` with no `-R`).
+
+**The working recipe for a subrepo story (merge mode `auto`):**
+  a. `gh pr create -R slabgorb-org/<repo> --base develop --head <branch> ...`
+  b. `gh pr merge <n> -R slabgorb-org/<repo> --squash --delete-branch`  ← do the merge yourself, in the right repo
+  c. verify: `gh pr view <n> -R slabgorb-org/<repo> --json state,mergedAt` → state MERGED
+  d. demote the session `**PR:**` line to a non-matching form (e.g. `PR (MERGED ...): #n`) so `finish` reports "No PR to merge" and does NOT re-attempt the repo-broken merge
+  e. `pf sprint story finish <story>` → archives, marks done, deletes the local branch, removes the session
+  f. commit `sprint/archive/<story>-session.md` + `sprint/current-sprint.yaml` to the orchestrator (targets `main`, NOT develop — the finish-flow template's "push origin develop" is wrong for this orchestrator)
+
+This is an upstream `pf` limitation, not a per-story quirk — it will bite every subrepo finish until `finish`/`_run` thread the repo through to the `gh` calls. Worth a Pennyfarthing patch.

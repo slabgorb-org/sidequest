@@ -1,5 +1,12 @@
 ## Dev Gotchas
 
+### The per-session cost OTEL surfaces are split across TWO modules — adding a field to "all cost events" means editing both (119-4 green, 2026-06-16)
+- ADR-134 cost telemetry lives in two files, and which module emits a given event is non-obvious: `narrator.sdk.usage` and `session.cost_running_total` fire from `anthropic_sdk_client.py` (the narrator client's own methods); `session.cost_ceiling_exceeded` and `cost_runaway_suspected` fire from `cost_safety.py` (`SessionCostLedger.update_cumulative` / `check_and_emit_runaway`, which the client *delegates* to — story 91-4 moved the ledger out of the client). So a task like "label every cost figure `cost_basis='notional'`" requires edits in BOTH modules; touching only `anthropic_sdk_client.py` silently misses the ceiling/runaway events. The tell: `grep -rn '_watcher_publish_event(' sidequest/agents/anthropic_sdk_client.py sidequest/agents/cost_safety.py` enumerates every emit site before you start.
+- Constant-sharing caveat: `cost_safety` is imported BY `anthropic_sdk_client` at module top, so you CANNOT import a label constant the other way (cycle). Use a module-local constant in the client and the bare literal in `cost_safety` (or vice-versa) — don't reach across.
+
+### When wrapping an `async for x in query(...)` loop to map raised transport errors to a typed error, re-raise the already-typed error FIRST (119-4 green, 2026-06-16)
+- Pattern for mapping a raised SDK/transport exception (absent/expired login surfaces as a raised `query()` exception, OQ-5) to a typed domain error without double-wrapping: order the handlers `except AgentSdkAuthUnavailable: raise` BEFORE `except Exception as exc: ...raise AgentSdkAuthUnavailable(...) from exc`. The broad handler must use `from exc` (preserve the cause) and emit the GM-panel event BEFORE the raise (No Silent Fallbacks — the failure must be *visible*, not just loud). Re-indenting the loop body under the new `try:` is an unavoidable but mechanical diff; ruff-format it after and the only real change is the wrapper.
+
 ### A stored-but-unread field (and any docstring/comment claiming behavior the code doesn't do) is a HONESTY rejection even when the feature works green end-to-end (2026-06-16, 118-5 green-rework)
 - 118-5 was functionally correct, fully wired, Fate suite green — and Reviewer REJECTED it. Not a functional rejection: a **quality/honesty** one. AC-1 said "store the offered fate point delta", so Dev added `PendingCompel.offered_delta` (default 1) — but `fate_projection` dropped it and the UI button hardcoded `Accept (+1 FP)`. The field was **stored but never projected or read** (No Stubbing / dead-code violation) and its docstring claimed "the fate point the player GAINS by accepting" — a lie, because nothing read it. A hardcoded display literal shadowing a stored field is also a **divergence vector** the OTEL lie-detector doctrine forbids (engine could grant X while UI shows a stale literal — the El Dorado lie).
 - **Rule — when an AC says "store X", wire X end-to-end: store → project → display.** The displayed value must READ the real datum (`+{c.offered_delta}`), never a hardcoded literal that can drift. If a field is genuinely forward-only/unused, that contradicts the AC — escalate; don't leave it dead. Adding the field is half the work; reading it is the other half.
@@ -595,3 +602,46 @@ check, so an inherited `I001` on a file you touched blocks handoff anyway.)
 - **GOTCHA — the content sibling.** `tests/_helpers/genre_paths.py` sets `_REPO_ROOT = Path(__file__).resolve().parents[3]` then `CONTENT_ROOT = _REPO_ROOT / "sidequest-content"`. A `/tmp` worktree's `parents[3]` is `/tmp`, so `GENRE_PACKS_DIR` doesn't exist → every pack-dependent test is **SKIPPED, not run** (you'll see "11 skipped" and wrongly conclude the base is green). Fix: `ln -sfn <real>/sidequest-content /tmp/sidequest-content` so the worktree resolves packs. (Or put the worktree under the oq root so the real sibling resolves.) The enum/protocol tests need no content and run anywhere — use those for the instant proof, the pack-gated ones need the symlink.
 - **Cheap pre-check before the worktree:** `{ git diff --name-only; git diff --cached --name-only; git diff <base>...HEAD --name-only; } | sort -u | grep -iE "<suspect subsystem files>"`. If your diff touches none of the failing subsystem's files AND the change is purely additive (new pydantic field w/ default_factory, new model, new method), there is no causal path — the worktree run then just confirms it. Capture the result as a Delivery Finding (Gap, non-blocking, names the owning epic), don't silently move on.
 - **Stale sibling test from an earlier story in the same epic:** 118-7 (F3g) changed `FateActionHandler` to BROADCAST the roll via `sd._room` and `return []`, but the 118-6 invoke test's `_fate_session` mock never added `_room` and still asserted `len(out)==1` → it had been red since 118-7 merged. When a test in YOUR path is red because a sibling story moved the contract, repair it to the NEW documented contract (add the `_room` capture double, assert the broadcast + `[]` return) — that's "fix what you see," not scope creep. Distinguish it sharply (in the deviation log) from the separate-epic failures you legitimately can't touch.
+
+## To stop a transport-error handler from swallowing your OWN bugs, drive the async iterator by hand — wrap only `anext()` (119-4 green rework, 2026-06-16)
+
+119-4's narrator loop was `async for message in query(...)` inside one broad
+`except Exception` that mapped anything raised to `AgentSdkAuthUnavailable` + a
+`narrator.auth_unavailable` event. That catch couldn't tell "the SDK transport
+failed (= absent login, OQ-5 → really is auth)" from "our message-processing
+raised (a parse `IndexError`)" — both are inside the `async for`, so a parser bug
+lit the GM panel red for "login expired." The Reviewer killed it as a dishonest
+signal on the lie-detector panel.
+
+**The fix is structural, not a type-narrow.** A `except ClaudeSDKError` narrow
+fails the AC1' tests, whose fakes raise a bare `RuntimeError` to mean "the
+transport boundary raised." Instead, drive the iterator manually so the catch
+wraps ONLY the boundary:
+
+```python
+stream = aiter(query(prompt=prompt, options=options))
+while True:
+    try:
+        message = await anext(stream)        # transport boundary ONLY
+    except StopAsyncIteration:
+        break
+    except Exception as exc:                  # transport failed → map to auth
+        emit_auth_event(reason="query_raised", ...)
+        raise AgentSdkAuthUnavailable("... login absent/expired OR a transport "
+                                      "error ...") from exc
+    # --- OUR processing, OUTSIDE the catch: its bugs propagate RAW ---
+    process(message)                          # IndexError here is NEVER auth
+```
+
+- `aiter()`/`anext()` are builtins (≥3.10); the server runs 3.14. An async
+  generator is its own iterator, so `aiter(query(...))` then `anext(...)` works
+  for the real SDK and the `FakeQuery`/`RaisingFakeQuery` seams alike.
+- The boundary catch still maps a transport raise to auth (AC1' wants the typed,
+  panel-visible signal), but the HEADLINE must name the alternative ("...or a
+  transport error") — never assert a diagnosis the boundary can't prove.
+- Verify the wrapping context manager **re-raises** (doesn't suppress): our
+  `llm_request_span` does `except Exception: record; raise`, so an internal error
+  escapes cleanly. Check that before relying on propagation.
+- Regression matters: the restructure touches the hot narrator path. Full
+  `tests/agents/` (1975 tests) stayed green — run the whole blast radius, not just
+  the story file, after an iteration-mechanics change.

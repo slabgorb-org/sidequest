@@ -1,5 +1,10 @@
 ## Reviewer Gotchas
 
+### "Loud but mislabeled" is a HONESTY reject, not a No-Silent-Fallbacks pass — a broad `except` that re-raises a SPECIFIC-cause error/OTEL event lies even though it doesn't swallow (119-4 review, 2026-06-16)
+- 119-4 added `try: async for m in query(...): <body> except Exception as exc: emit narrator.auth_unavailable(reason="query_raised"); raise AgentSdkAuthUnavailable("subscription login absent or expired") from exc`. The preflight/Dev framed it as No-Silent-Fallbacks-compliant: it re-raises (no swallow), chains `from exc`, emits first. **That defense is incomplete.** No-Silent-Fallbacks has two halves: fail LOUD *and* fail LEGIBLE/ACCURATE. A broad `except Exception` wrapping the whole loop body catches non-auth errors (a parse `IndexError`, an SDK `CLINotFoundError`) and stamps them with a *specific* false diagnosis — "subscription login expired" — on the GM panel, the literal lie detector this kind of story exists to make honest. The chained cause is in the LOGS; the panel shows the wrong `reason`. That is the El-Dorado illusion (convincing signal, wrong mechanical backing) the OTEL doctrine names. lang-review #1's "catch specifically when the type is known" + the HONESTY rule make it a VIOLATION, not a stylistic note.
+- **Review heuristic:** when you see `except <Broad>: ... raise <SpecificTypedError>(<specific-cause string>)` or `emit(reason=<specific cause>)`, check whether the catch scope can produce causes OTHER than the one the label asserts. If yes → blocking. The honest fixes: (a) narrow the catch to the cause's real exception type(s), or (b) keep it broad but make the label/`reason`/message non-committal ("query failed — auth absent/expired OR transport error") so the truth lives in `detail`/`from exc`, not a false headline. Either is cheap; the false headline is not.
+- **Pair it with the test check:** the mislabel is almost always untested (the RED test uses a deliberately auth-flavored `RuntimeError("...login expired")`, which masks that ANY exception would be caught). Demand a non-auth-exception test (e.g. `ValueError`) asserting the cause is chained + `detail` honest. And check both branches of a two-path AC are event-verified — 119-4 tested the `is_error` emit but not the `query_raised` emit (half the load-bearing AC1' was unpinned).
+
 ### On a re-review, a computed-but-test-only RETURN VALUE is not the same sin as a dead FIELD — and don't re-reject pre-existing code the rework didn't touch (2026-06-16, 118-5 re-review)
 - 118-5 round 1 was rejected for `PendingCompel.offered_delta`: a stored field read by NOTHING (projection dropped it, UI hardcoded "+1"), with a docstring claiming the player "GAINS" it — a true dead/lying field + divergence vector. On re-review the rule-checker flagged `FateDispatchResult.fate_point_delta` as the "same" pattern (computed at dispatch, asserted in tests, but `fate_action.py` returns `[]` on compel paths without reading it). It is NOT the same: (a) it's a computed RETURN VALUE (`resolve_compel` returns the ±1), not dead storage; (b) it has test consumers pinning the contract; (c) the player-facing delta IS surfaced — via the now-correct control labels (`+{offered_delta}` / SRD −1) + the next FATE_STATE re-emit of the new total; (d) it's ORIGINAL-GREEN code the rework never touched and that I had VERIFIED in round 1. Its only blemish was a slightly aspirational docstring → non-blocking improvement, not a re-rejection.
 - **Rule:** a re-review verifies the rework closed your findings + checks for NEW problems the rework introduced. Before re-rejecting on a field, run `git show <rework-sha> --stat` / `git log <base>..HEAD -- <file>` — if the file is untouched by the rework and you already reviewed it, re-opening it is goalpost-moving unless you now have proof your earlier pass was wrong. And distinguish "dead field" (read by nothing) from "test-only-consumed return value whose effect is surfaced elsewhere" — the honesty bar is about whether the player/consumer actually sees the truth, not whether one specific struct field has a production reader.
@@ -134,3 +139,32 @@
 - After setting `--review-verdict rejected`, `resolve-gate` still returns `gate_type: approval, next_phase: finish` with a separate `recovery_config: {reviewer-verdict: {action: rework, target_phase: green}}`. The recovery is the AGENT's to act on — `complete-phase` does NOT auto-apply it. Running bare `pf handoff complete-phase` infers to-phase from resolve-gate (= `finish`) and advances review→finish (the approval path), leaving a rejected story sitting in SM's finish phase. Wrong.
 - **Do this for a rejection:** `pf handoff complete-phase <story> <wf> review green rework` (the reviewer `<exit>` documents exactly this; the 4th/5th args force to-phase=green, gate=rework). Then `pf handoff marker dev`.
 - **If you already advanced to finish by mistake:** correct it with `pf handoff complete-phase <story> <wf> finish green rework` — complete-phase trusts the explicit FROM/TO args and rewrites the session Phase line + history. Verify with `grep '^\*\*Phase:\*\*' .session/<story>-session.md` and `pf workflow phase-check <wf> green` (→ should print `dev`). Note: the rework target is `green` (Dev) in this TDD workflow even when some findings are missing-tests — Dev writes them during the fix; it does not bounce to TEA/red.
+
+## A comment-honesty fix can over-correct — trace WHERE the labeled event fires before accepting the new wording (119-4 re-review, 2026-06-16)
+
+Round 1 I rejected 119-4 partly for a [LOW] comment cluster, incl. "every inference
+drew the free pool" → I suggested "every **successful** inference." Round 2 Dev applied
+exactly that — and the comment-analyzer caught that "successful" is ALSO wrong: the
+`narrator.sdk.usage` event (carrying `auth_path='subscription'`) fires INSIDE the
+`with llm_request_span` block (`anthropic_sdk_client.py:532`), which is BEFORE the
+`is_error` gate (`:568`). So an is_error/auth-failure result emits the usage+auth_path
+label too — the accurate frame is "every **transport-completed** inference," not
+"successful." **Lesson:** when reviewing a one-word honesty fix, trace where the labeled
+event actually emits relative to the success/error gate; don't rubber-stamp "new word
+beats old word." My own round-1 suggestion was imprecise.
+
+**Calibration that mattered more:** a [LOW] comment imprecision NEWLY introduced during a
+rework does NOT justify a second rejection when every round-1 BLOCKING (High) issue is
+verified fixed. The honest move is APPROVE + capture the [LOW] as a Delivery Finding — a
+full TEA→Dev→Reviewer round-trip for a one-word comment is the over-blocking the severity
+table exists to prevent ("Any Critical or High = REJECT"; LOW/MEDIUM do not block). Reserve
+rejection for a signal that actually lies on the panel, which round 1 was and round 2 is not.
+
+**Two non-findings worth recording so they're not re-litigated:**
+- `cost_safety.py:314` bare `"notional"` vs `_COST_BASIS_NOTIONAL`: the constant lives in
+  `anthropic_sdk_client.py`, which already imports `cost_safety` — so importing the constant
+  back would be a CIRCULAR import. The "use the constant" suggestion is wrong as stated; a
+  real fix needs a shared constants module. Pre-existing (round-1), not a round-2 regression.
+- The hand-driven `aiter()/anext()` loop not calling `aclose()` on the generator is NOT a
+  regression: the prior `async for message in query(...)` also never aclose()'d it (async-for
+  relies on GC too). Neutral change; `contextlib.aclosing()` would be a nice-to-have, not a fix.
