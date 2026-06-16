@@ -66,10 +66,14 @@ stories:
     title: Rename asset_url OTEL span server.asset_url.resolved -> foundation.asset_url.resolved to match emitting tier (ADR-147 honesty follow-up); update the two asserting tests in tests/server/test_asset_urls.py
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-16'
     repos: server
     workflow: trivial
+    completed: '2026-06-16'
     type: chore
+    review_findings: "LOW/DOC: module docstring in sidequest/telemetry/spans/asset_url.py:1 still says 'the server emits' — contradicts the span's re-tiering to foundation.*. One-line in-branch fix required. Rest of diff clean (4 subagents, rename complete, 18/18 green)."
+    review_verdict: approved
   - id: 122-7
     title: Import-direction guard hardening — drop>=len root-escape boundary, except OSError in _parse_module, assert SIDEQUEST_PKG identity (ADR-147 122-5 review follow-up)
     points: 1
@@ -86,3 +90,11 @@ stories:
     repos: server
     workflow: tdd
     type: refactor
+  - id: 122-9
+    title: Sweep pre-existing ruff I001 import-order debt across 8 server test files (ruff 0.15.11 flags them under uv-locked config; develop server-check currently red independent of any story)
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
