@@ -55,9 +55,10 @@ stories:
     title: "F4a-design — Interactive Fate chargen design spec (Architect; gates F4a2/F4a3): the 2026-06-15 Operator decision pulled interactive Fate chargen INTO F4 (ADR-144 + design spec had it as a later-epic non-goal). Decide and document: skill-allocation method (Fate Core pyramid vs columns vs point-buy), aspect method (full phase-trio vs HC+trouble+N free), how a Fate chargen MODE forks/coexists with the ADR-015 builder FSM + ADR-016 three-mode chargen (a fate pack must not hard-require d20 stats/classes), archetype-as-editable-template role (the 4 packs ship archetypes.yaml), refresh/stunt economy at creation, and the UI approach (extend CharacterCreation screen vs parallel Fate screen, ruleset=='fate'-gated). Output: design spec in docs/superpowers/specs/ + ADR-144 amendment. No code."
     points: 3
     priority: p2
-    status: backlog
+    status: done
     repos: orchestrator
     workflow: superpowers
+    completed: '2026-06-16'
     type: chore
   - id: 121-7
     title: "F4a2 — Interactive Fate chargen engine + validator (server; DESIGN-GATED by F4a-design): the chargen flow that produces explicit Fate choices for F4a's seeding to apply — skill allocation per the chosen method with legality validation (pyramid/column shape), mandatory aspects (high concept + trouble) + free aspects, stunt selection with refresh accounting, ruleset=='fate' chargen mode that does NOT require d20 stats/classes. Emits fate.chargen.* OTEL spans. Wiring test: a real fate-pack chargen run yields a legal FateSheet (valid pyramid, refresh==3-stunts_over_free) through the production builder path. Depends F4a-design + F4a (121-1)."
