@@ -40,10 +40,13 @@ stories:
     title: Narrow orbital/intent from full Session to a 4-field read Protocol
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server
     workflow: tdd
+    completed: '2026-06-15'
     type: refactor
+    review_verdict: approved
   - id: 122-5
     title: CI guard — fail on any domain->server upward import (foundation/game/genre/orbital/magic/interior); lands last + enforcing
     points: 2
