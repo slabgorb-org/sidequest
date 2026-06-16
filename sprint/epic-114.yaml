@@ -121,8 +121,8 @@ stories:
     status: done
     started: '2026-06-15'
     repos: server,content
-    workflow: tdd
-    completed: '2026-06-15'
+    workflow: trivial
+    completed: '2026-06-16'
     type: refactor
     review_verdict: approved
   - id: 114-13
