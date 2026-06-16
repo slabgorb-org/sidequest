@@ -11,7 +11,9 @@ stories:
     description: "The Tufte design splits per-turn tokens-in into cached (faded) vs fresh (solid) stacked bars, adds a cache-hit-rate sparkline with cold-start misses flagged in accent, and a 'served from cache' savings summary. BLOCKER at redesign time: cache_read / cache_hit / cold are NOT on the turn_complete event (TurnCompleteFields) — they live on prompt_assembled (PromptFields.cache_usage), which the Prompt tab already surfaces. Wiring options: (a) add a per-turn cache field to turn_complete server-side, or (b) join prompt_assembled cache_usage to turns by turn_number in the dashboard telemetryAdapter. Then extend charts/TokenBarChart.tsx to stack cached+fresh on the shared scale and add the hit-rate track. cache_usage can be null (non-SDK backends) — render only what's present, no fabrication (No Silent Fallbacks)."
     points: 5
     priority: p3
-    status: backlog
+    status: done
+    assigned_to: dev
+    started: '2026-06-16'
     repos: server,ui
     workflow: tdd
     acceptance_criteria:
@@ -19,6 +21,8 @@ stories:
       - TokenBarChart renders stacked cached(faded)+fresh(solid) in-bars on the shared honest scale
       - cache-hit-rate sparkline with cold-start turns flagged in accent + a cache-savings summary line
       - null cache_usage (non-SDK turns) renders honestly with no fabricated estimate
+    completed: '2026-06-16'
+    review_verdict: approved
   - id: 124-2
     title: Dependency-aware flame chart — emit + render span hierarchy
     description: 'The Tufte design renders the flame chart with dependency nesting: spans nested caller ▸ callee (containment = depth), faded container spans vs solid leaf work (Tufte layering), and the critical span outlined in accent. BLOCKER at redesign time: TurnSpan is FLAT (name, component, start_ms, duration_ms) — no parent/depth/leaf. The shipped FlameChart is therefore an honest time-proportional Gantt (one row per span, slowest outlined), NOT nested. To get nesting the server must emit span hierarchy (parent id or depth, and a leaf flag) on the turn_complete spans payload; charts/FlameChart.tsx then lays rows out by depth with container-vs-leaf opacity layering and keeps the accent outline on the critical span.'
