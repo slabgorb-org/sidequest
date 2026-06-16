@@ -31,7 +31,8 @@ stories:
     description: 'ACTIVATED 2026-06-15 by 119-1 spike NO-GO (raw anthropic Messages SDK over subscription OAuth -> 400 credit-balance-too-low; routes to the metered API-platform ledger, NOT the subscription). claude-agent-sdk over the subscription login (ANTHROPIC_API_KEY and ANTHROPIC_AUTH_TOKEN both UNSET) = clean Sonnet inference, service_tier=standard, draws the subscription pool = GO/derisked. Reusable harness: scripts/spike_119_3_agentsdk_subscription.py (the NO-GO counterpart is scripts/spike_119_1_oauth_billing.py). PORT LANDMINE: claude-agent-sdk inherits project context from cwd — the spike smoke test replied IN AN SM PERSONA, having absorbed CLAUDE.md. The narrator port MUST pin system_prompt + cwd + setting_sources so the SDK does not silently absorb repo project context (SOUL No-Silent-Fallbacks). Still: preserve every narration tool contract, the complete_with_tools convergence semantics (anthropic_sdk_client.py:248-705), the Pydantic tool schemas from tool_registry (tool_registry.py:225-249), and OTEL. Verdict in memory: agent-sdk-credit-needs-subscription-auth-not-api-key.'
     points: 13
     priority: p1
-    status: ready
+    status: in_progress
+    started: '2026-06-16'
     repos: server
     workflow: sdd
     depends_on: 119-1
