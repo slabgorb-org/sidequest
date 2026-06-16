@@ -31,7 +31,7 @@ stories:
     description: 'ACTIVATED 2026-06-15 by 119-1 spike NO-GO (raw anthropic Messages SDK over subscription OAuth -> 400 credit-balance-too-low; routes to the metered API-platform ledger, NOT the subscription). claude-agent-sdk over the subscription login (ANTHROPIC_API_KEY and ANTHROPIC_AUTH_TOKEN both UNSET) = clean Sonnet inference, service_tier=standard, draws the subscription pool = GO/derisked. Reusable harness: scripts/spike_119_3_agentsdk_subscription.py (the NO-GO counterpart is scripts/spike_119_1_oauth_billing.py). PORT LANDMINE: claude-agent-sdk inherits project context from cwd — the spike smoke test replied IN AN SM PERSONA, having absorbed CLAUDE.md. The narrator port MUST pin system_prompt + cwd + setting_sources so the SDK does not silently absorb repo project context (SOUL No-Silent-Fallbacks). Still: preserve every narration tool contract, the complete_with_tools convergence semantics (anthropic_sdk_client.py:248-705), the Pydantic tool schemas from tool_registry (tool_registry.py:225-249), and OTEL. Verdict in memory: agent-sdk-credit-needs-subscription-auth-not-api-key.'
     points: 13
     priority: p1
-    status: in_progress
+    status: done
     started: '2026-06-16'
     repos: server
     workflow: sdd
@@ -40,7 +40,9 @@ stories:
       - Agent SDK client pins system_prompt, cwd, and setting_sources so it does NOT inherit project CLAUDE.md / repo context from the launch cwd (the 119-3 spike smoke test absorbed an SM persona); covered by a test asserting narrator output is not contaminated by repo project context.
       - ANTHROPIC_API_KEY and ANTHROPIC_AUTH_TOKEN both unset in server env; auth resolves via the subscription login profile, fail-loud if absent (no silent PAYG fallback).
       - Haiku callers (Intent Router, aside, classifier, archetype) ALSO move off PAYG onto the subscription via claude-agent-sdk in this story — not just the Sonnet narrator. The single-shot forced-tool_choice / tool_choice=none patterns are re-expressed on the Agent SDK surface (or an explicitly-justified equivalent), preserving each call site contract; no caller is left on the raw api_key/PAYG path.
+    completed: '2026-06-16'
     type: refactor
+    review_verdict: approved
   - id: 119-4
     title: 'Depends on whichever migration lands (119-2 or 119-3). Production auth durability + cost/credit observability. 1: long-running server uses an auto-refreshing ant auth login profile on the host (the print-credentials env token is short-lived and not auto-refreshed), construct the client to pick up the refreshing profile not a baked-in token; fail loud on expiry, never silently fall back to PAYG. 2: emit an OTEL span tagging which auth path / billing pool each inference draws (credit vs PAYG overflow) so the cost/GM panel can VERIFY the narrator is on the credit, a Keith/dev observability concern per the CLAUDE.md OTEL principle NOT a player surface. 3: monitor the 200 monthly credit + the pool-3 prepaid overflow buffer (currently 50.52) so mid-month exhaustion is visible before it silently bills PAYG.'
     points: 3
