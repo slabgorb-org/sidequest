@@ -21,10 +21,13 @@ stories:
     title: Relocate pure combat-rules helpers (find_confrontation_def, resolve_damage_spec) out of server/dispatch into game/ruleset; drop lazy imports
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server
     workflow: tdd
+    completed: '2026-06-15'
     type: refactor
+    review_verdict: approved
   - id: 122-3
     title: Lift interior HTTP endpoint to server/rest.py; leave interior/ pure (no FastAPI imports)
     points: 2
