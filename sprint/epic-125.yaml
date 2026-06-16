@@ -33,3 +33,27 @@ stories:
     repos: ui
     workflow: trivial
     type: chore
+  - id: 125-4
+    title: "F3g follow-up (118-7): animate the FateDiceTray 3D Fudge dice to the rolled faces (throw_params/seed) + align the dF blank-face label to '0'"
+    description: |-
+      Deferred from story 118-7 (ADR-144 F3g) — captured by TEA + Dev + Reviewer as non-blocking findings. Two coupled changes that together make the FateDiceTray's 3D Fudge dice show the ACTUAL rolled faces:
+
+      (AC5 — the substantive half) Carry throw_params + seed on the FATE_ROLL message/payload (mirroring DICE_RESULT) so the 3D dice in FateDiceTray animate to the rolled faces instead of rendering the idle pickup row (throwParams=null). Touches: sidequest-server FateRollPayload (protocol/models.py) + build_fate_roll_payload (game/ruleset/fate_projection.py) to emit throw_params/seed; sidequest-ui FateDiceTray.tsx to pass throwParams through to DiceScene. NOTE: FateRollPayload is model_config extra='forbid' — adding fields is a deliberate protocol change.
+
+      (AC4 — the 1-line coupled half) Align the dF die's blank-face label to '0'. The UI text readout already renders faceGlyph(0)='0' (pinned by a test in 118-7); the dice-lib die still labels its two blank Fudge faces '' (../dice-lib/src/dF.ts:22-23). Change those labels '' -> '0' so the 3D die and the text readout agree once the dice show real faces. Touches: ../dice-lib/src/dF.ts (+ a dice-lib test). Not player-visible until AC5 lands (dice are decorative/idle today), which is why they're bundled.
+
+      Player-UI legibility mandate (Sebastien/Jade): the dice should show what was actually rolled. See 118-7 session archive (sprint/archive/118-7-session.md) Delivery Findings — TEA (test design) + Reviewer (code review).
+    points: 3
+    priority: p3
+    status: backlog
+    repos: dice-lib,server,ui
+    workflow: tdd
+  - id: 125-5
+    title: 'Harden the FATE_ROLL boundary guard (118-7): validate Fudge face values in {-1,0,1}, not just dice-tuple length'
+    description: "Deferred from story 118-7 (ADR-144 F3g) — flagged independently by the Reviewer's own analysis AND the reviewer-security subagent as a defense-in-depth gap (NOT a security vulnerability). The useStateMirror FATE_ROLL boundary guard (sidequest-ui/src/hooks/useStateMirror.ts) validates that p.dice is a 4-element array (!Array.isArray(p.dice) || p.dice.length !== 4) but does NOT validate that each face is in {-1,0,1}. A corrupted/replayed payload with valid-length but out-of-range faces renders a wrong glyph (FateDiceTray.faceGlyph degrades any out-of-range value to '0') — it cannot crash, exfiltrate, or escalate, and the server always emits valid faces via build_fate_roll_payload, so the realistic surface is nil today. Optional hardening: tighten the guard to also require p.dice.every(d => d === -1 || d === 0 || d === 1), dropping (console.error) a malformed roll the same way the missing-dice case is dropped. Add a regression test: a roll with a face of 2 (or -5) is rejected, not stored. Affects sidequest-ui/src/hooks/useStateMirror.ts (FATE_ROLL branch). See sprint/archive/118-7-session.md Delivery Findings — Reviewer (code review)."
+    points: 1
+    priority: p3
+    status: backlog
+    repos: ui
+    workflow: trivial
+    type: chore
