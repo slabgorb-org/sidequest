@@ -32,11 +32,13 @@ stories:
     title: Lift interior HTTP endpoint to server/rest.py; leave interior/ pure (no FastAPI imports)
     points: 2
     priority: p3
-    status: started
+    status: done
     started: '2026-06-16'
     repos: server
     workflow: trivial
+    completed: '2026-06-16'
     type: refactor
+    review_verdict: approved
   - id: 122-4
     title: Narrow orbital/intent from full Session to a 4-field read Protocol
     points: 3

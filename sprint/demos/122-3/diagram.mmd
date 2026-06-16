@@ -1,0 +1,4 @@
+graph LR
+  A["Client"] --> B["API Gateway"]
+  B --> C["Lift interior HTTP endpoint to server/rest.py; leave interior/ pure (no FastAPI imports)"]
+  C --> D["Database"]
