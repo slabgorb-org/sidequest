@@ -1,0 +1,16 @@
+id: '123'
+type: epic
+title: Server test-suite health — restore an honest CI baseline
+description: The server suite carries a large pre-existing failure baseline (~171 failures on a full run, surfaced during 114-15 and verified to be unrelated to it). The dominant cause is SDK-hermeticity (~174 LlmClientError from build_async_anthropic — tests reach the real Anthropic SDK without installing a fake, tripping the autouse _no_real_anthropic_sdk guard from story 93-1), plus a snapshot-field governance miss (pending_quest_offers, 117-3) and DB-state integration failures. A noisy baseline masks real regressions on every story (subagents mislabel real breakage as 'pre-existing'). This epic root-causes the buckets (local-env/stale-tree vs a genuine develop regression FIRST), fixes the non-deliberate ones, and quarantines or documents the deliberate in-flight ones (the WWN class beat-pool loader failures belong to epic-108 de-nativization, not here).
+priority: p2
+status: backlog
+repos: server
+stories:
+  - id: 123-1
+    title: "Triage and restore the server-test baseline — characterize the ~171 pre-existing full-suite failures surfaced during 114-15 (NONE caused by 114-15; verified by my-surface grep). Step 1 (root-cause, do FIRST): determine whether the dominant bucket — ~174 LlmClientError from build_async_anthropic (tests reach the REAL Anthropic SDK without installing a fake, so the autouse _no_real_anthropic_sdk guard at conftest.py:539 fires) — is a dev-env/stale-tree artifact or a real develop regression: FF-pull both server+content trees, re-run with a clean env (ANTHROPIC_API_KEY unset), and compare. Step 2: fix the snapshot-field governance miss (pending_quest_offers added in 117-3 never registered in ADR-110 session_helpers governance → test_snapshot_field_governance::test_every_snapshot_field_is_categorized; ~one-liner). Step 3: triage tests/integration DB-state failures (needs a migrated PG). OUT OF SCOPE (deliberate, in-flight): the WWN class beat-pool loader PackErrors (class_filter / encounter_beat_choices 'not in pool' on caverns_and_claudes / heavy_metal / elemental_harmony) — epic-108 WWN de-nativization, resolves when 108-3 lands. Deliverable: a categorized baseline-failure manifest committed to the repo + fixes for the non-deliberate buckets + a green-or-explicitly-quarantined suite so future stories get honest CI signal."
+    points: 8
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: chore
