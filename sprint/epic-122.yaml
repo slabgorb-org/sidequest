@@ -10,18 +10,24 @@ stories:
     title: Foundation floor — relocate asset_urls, slug_fold, reference_anchors below server tier (kills 4 upward edges)
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server
     workflow: tdd
+    completed: '2026-06-15'
     type: refactor
+    review_verdict: approved
   - id: 122-2
     title: Relocate pure combat-rules helpers (find_confrontation_def, resolve_damage_spec) out of server/dispatch into game/ruleset; drop lazy imports
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server
     workflow: tdd
+    completed: '2026-06-15'
     type: refactor
+    review_verdict: approved
   - id: 122-3
     title: Lift interior HTTP endpoint to server/rest.py; leave interior/ pure (no FastAPI imports)
     points: 2
@@ -42,6 +48,14 @@ stories:
     title: CI guard — fail on any domain->server upward import (foundation/game/genre/orbital/magic/interior); lands last + enforcing
     points: 2
     priority: p2
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
+  - id: 122-6
+    title: Rename asset_url OTEL span server.asset_url.resolved -> foundation.asset_url.resolved to match emitting tier (ADR-147 honesty follow-up); update the two asserting tests in tests/server/test_asset_urls.py
+    points: 1
+    priority: p3
     status: backlog
     repos: server
     workflow: trivial

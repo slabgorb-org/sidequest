@@ -118,10 +118,13 @@ stories:
     title: 'Complete CWN/WN inventory verbatim round-trip + harden the WN extraction CLIs (114-5 follow-ons): CatalogItem dual-AC/soak + Trauma-Target field, ranged +N damage bonus, DRY shared WN-extraction core, Path.resolve()/argparse choices in both wwn+cwn tools'
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server,content
     workflow: tdd
+    completed: '2026-06-15'
     type: refactor
+    review_verdict: approved
   - id: 114-13
     title: "road_warrior: decide + optionally let combat classes start with CWN-category weapons — widen the personal-weapon guard + strike path to accept melee_weapon/ranged_weapon, not just bespoke category:weapon (114-5 follow-on)"
     points: 2
