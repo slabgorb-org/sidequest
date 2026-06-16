@@ -32,7 +32,8 @@ stories:
     title: Lift interior HTTP endpoint to server/rest.py; leave interior/ pure (no FastAPI imports)
     points: 2
     priority: p3
-    status: backlog
+    status: started
+    started: '2026-06-16'
     repos: server
     workflow: trivial
     type: refactor
