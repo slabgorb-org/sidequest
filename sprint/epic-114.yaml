@@ -129,10 +129,13 @@ stories:
     title: "road_warrior: decide + optionally let combat classes start with CWN-category weapons — widen the personal-weapon guard + strike path to accept melee_weapon/ranged_weapon, not just bespoke category:weapon (114-5 follow-on)"
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-15'
     repos: server,content
     workflow: tdd
+    completed: '2026-06-15'
     type: refactor
+    review_verdict: approved
   - id: 114-14
     title: Relocate mutant_wasteland genre-tier bespoke to world tier; enforce ADR-145 D3 genre-baseline-verbatim
     description: "Enforce ADR-145 D3 globally: add a fail-loud genre-baseline 'no bespoke' loader validator (no allow-list, No Silent Fallbacks) AND make ALL three genre-tier-bespoke packs clean in one change — mutant_wasteland (6 relics->both worlds, 6 survival->AWN-verbatim at genre), neon_dystopia (6 bespoke->franchise_nations world), road_warrior (5 bespoke->the_circuit world). Keith ruled 2026-06-15: validator now + migrate all 3, no split brain."
