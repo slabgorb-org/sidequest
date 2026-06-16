@@ -54,10 +54,14 @@ stories:
     title: CI guard — fail on any domain->server upward import (foundation/game/genre/orbital/magic/interior); lands last + enforcing
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-16'
     repos: server
     workflow: trivial
+    completed: '2026-06-16'
     type: chore
+    review_findings: "HIGH: relative-import upward edges (from ..server) evade the AST guard (node.module is relative suffix, not sidequest.server) — defeats 'fail on any upward import'. MEDIUM: unguarded ast.parse/read_text crashes suite opaquely on malformed/non-utf8 file. Dynamic imports accepted as documented limitation."
+    review_verdict: approved
   - id: 122-6
     title: Rename asset_url OTEL span server.asset_url.resolved -> foundation.asset_url.resolved to match emitting tier (ADR-147 honesty follow-up); update the two asserting tests in tests/server/test_asset_urls.py
     points: 1
