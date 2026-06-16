@@ -38,6 +38,7 @@ completed_epics:
   - '117'
   - '120'
   - '123'
+  - '114'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -814,3 +815,78 @@ completed_stories:
     title: "Triage and restore the server-test baseline — characterize the ~171 pre-existing full-suite failures surfaced during 114-15 (NONE caused by 114-15; verified by my-surface grep). Step 1 (root-cause, do FIRST): determine whether the dominant bucket — ~174 LlmClientError from build_async_anthropic (tests reach the REAL Anthropic SDK without installing a fake, so the autouse _no_real_anthropic_sdk guard at conftest.py:539 fires) — is a dev-env/stale-tree artifact or a real develop regression: FF-pull both server+content trees, re-run with a clean env (ANTHROPIC_API_KEY unset), and compare. Step 2: fix the snapshot-field governance miss (pending_quest_offers added in 117-3 never registered in ADR-110 session_helpers governance → test_snapshot_field_governance::test_every_snapshot_field_is_categorized; ~one-liner). Step 3: triage tests/integration DB-state failures (needs a migrated PG). OUT OF SCOPE (deliberate, in-flight): the WWN class beat-pool loader PackErrors (class_filter / encounter_beat_choices 'not in pool' on caverns_and_claudes / heavy_metal / elemental_harmony) — epic-108 WWN de-nativization, resolves when 108-3 lands. Deliverable: a categorized baseline-failure manifest committed to the repo + fixes for the non-deliberate buckets + a green-or-explicitly-quarantined suite so future stories get honest CI signal."
     points: 8
     completed: '2026-06-16'
+  - id: 114-1
+    epic: '114'
+    title: "Design ADR — SRD-sourced inventory model, schema extensions, and licensing policy"
+    points: 3
+    completed: '2026-06-14'
+  - id: 114-2
+    epic: '114'
+    title: Land standalone inventory defect fixes (evropi damage/AC, seaboard power_glove, caverns armor) + neon orphan loadout keys
+    points: 2
+    completed: '2026-06-14'
+  - id: 114-3
+    epic: '114'
+    title: "WWN CC0 equipment extraction tool — SRD chapter to canonical baseline catalog"
+    points: 5
+    completed: '2026-06-14'
+  - id: 114-4
+    epic: '114'
+    title: WWN baseline catalog + wire caverns_and_claudes, elemental_harmony, heavy_metal; de-duplicate barsoom/long_foundry
+    points: 5
+    completed: '2026-06-14'
+  - id: 114-5
+    epic: '114'
+    title: CWN extraction + neon_dystopia and road_warrior personal gear; cyberware system_strain as a typed field
+    points: 5
+    completed: '2026-06-14'
+  - id: 114-6
+    epic: '114'
+    title: "road_warrior — bind the CWN vehicle chapter, retire bespoke Rig Composure (ADR-143)"
+    points: 8
+    completed: '2026-06-16'
+  - id: 114-7
+    epic: '114'
+    title: "space_opera — de-triplicate world catalogs, hoist shared core, add world-distinct gear, backfill SWN tech levels"
+    points: 3
+    completed: '2026-06-15'
+  - id: 114-8
+    epic: '114'
+    title: "mutant_wasteland — re-stat inventory against the AWN schema (trauma die/shock), fix genre scrap_armor mitigation"
+    points: 3
+    completed: '2026-06-15'
+  - id: 114-9
+    epic: '114'
+    title: "Design — Fate gear model: ruleset:fate binding + CatalogItem schema for aspect/permission gear (ADR-144 impl)"
+    points: 3
+    completed: '2026-06-15'
+  - id: 114-10
+    epic: '114'
+    title: Apply Fate gear model to pulp_noir, spaghetti_western, tea_and_murder, wry_whimsy
+    points: 5
+    completed: '2026-06-16'
+  - id: 114-11
+    epic: '114'
+    title: "Union-by-id per-field inventory merge — genre baseline non-droppable, world overrides presentation only, verbatim-field-lock validator (ADR-145 D3)"
+    points: 5
+    completed: '2026-06-14'
+  - id: 114-12
+    epic: '114'
+    title: 'Complete CWN/WN inventory verbatim round-trip + harden the WN extraction CLIs (114-5 follow-ons): CatalogItem dual-AC/soak + Trauma-Target field, ranged +N damage bonus, DRY shared WN-extraction core, Path.resolve()/argparse choices in both wwn+cwn tools'
+    points: 5
+    completed: '2026-06-16'
+  - id: 114-13
+    epic: '114'
+    title: "road_warrior: decide + optionally let combat classes start with CWN-category weapons — widen the personal-weapon guard + strike path to accept melee_weapon/ranged_weapon, not just bespoke category:weapon (114-5 follow-on)"
+    points: 2
+    completed: '2026-06-15'
+  - id: 114-14
+    epic: '114'
+    title: Relocate mutant_wasteland genre-tier bespoke to world tier; enforce ADR-145 D3 genre-baseline-verbatim
+    points: 13
+    completed: '2026-06-15'
+  - id: 114-15
+    epic: '114'
+    title: 'space_opera ship weapons — give the bespoke dogfight weapon a D3-legal home so multifocal_laser stops re-duplicating across all 3 worlds. 114-7 review follow-up: a bespoke ship weapon (multifocal_laser, 1d4/AP20, ship-weapon) is referenced by the genre-tier rules.yaml dogfight (player_weapon/opponent_weapon, resolved by dogfight_shot.py against resolve_inventory(world).item_catalog), but ADR-145 D3 forbids bespoke at the genre tier — so 114-7 had to copy it identically into aureate_span/coyote_star/perseus_cloud. Resolve the home: preferred = SWN-source ship/vehicle weapons VERBATIM from the SWN starship weapons schema (mode=verbatim makes them genre-tier-legal, single source, no per-world dup); alt = a dedicated ship-weapon catalog/tier the dogfight resolves against; or accept the dup. Architect/TEA picks in RED. Then de-duplicate the 3 worlds and add a regression test that the dogfight weapon resolves with armor_piercing intact.'
+    points: 5
+    completed: '2026-06-15'

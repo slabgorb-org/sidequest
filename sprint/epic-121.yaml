@@ -31,7 +31,7 @@ stories:
     title: 'F4c — tea_and_murder Fate migration: cozy-mystery skill list (overcome/create-advantage heavy, combat rare — Investigate/Empathy/Rapport/Notice/Will/Deceive/...), aspect templates, light stunts; reconcile magic.yaml + strip native config; bind ruleset: fate. Same acceptance gate as F4b (loads + validate + populated FateSheet + routes to fate_conflict). Depends F4a (121-1).'
     points: 5
     priority: p3
-    status: backlog
+    status: canceled
     repos: content
     workflow: tdd
     depends_on: 121-1
@@ -39,7 +39,7 @@ stories:
     title: 'F4d — wry_whimsy Fate migration: comedy skill list + compel-forward aspects/stunts (the genre runs on aspects+compels per ADR-144); reconcile classes.yaml (native classes -> Fate skills+stunts) + strip native config; bind ruleset: fate. Same acceptance gate as F4b. Depends F4a (121-1).'
     points: 5
     priority: p3
-    status: backlog
+    status: canceled
     repos: content
     workflow: tdd
     depends_on: 121-1
@@ -47,7 +47,7 @@ stories:
     title: 'F4e — spaghetti_western Fate migration: Leone-standoff skills (Shoot/Ride/Physique/Provoke/Notice/Will — the standoff is a Contest of nerve+reputation, not HP attrition); reconcile classes.yaml + magic.yaml + strip native config; bind ruleset: fate. Fate Core ships western support so this adopts the SRD, not invents a fit. Same acceptance gate as F4b. Depends F4a (121-1).'
     points: 5
     priority: p3
-    status: backlog
+    status: canceled
     repos: content
     workflow: tdd
     depends_on: 121-1

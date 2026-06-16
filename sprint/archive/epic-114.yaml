@@ -3,7 +3,7 @@ type: epic
 title: "SRD-sourced inventory — bind the equipment catalog, don't author it (inventory audit 2026-06-14)"
 description: "From the 2026-06-14 cross-pack inventory audit (docs/inventory-audit-2026-06-14.md). No pack sources gear from its bound SRD's equipment chapter — all 11 packs hand-author bespoke items with a ruleset-shaped mechanical envelope bolted on. This is the inventory analogue of the ADR-143/144 'bind the ruleset, don't balance it' doctrine: if a genre binds WWN, the gear should BE WWN gear. Licensing reality: WWN is CC0 (verbatim-reproducible); CWN likely CC0 (verify); SWN/AWN free editions carry no open license (derive-only); Fate Core has no equipment economy at all. Epic brings inventory in line with each bound ruleset world-by-world and resolves the standalone mechanical defects. Coordinates with epic-113 (ADR-140 genre->world boundary hygiene) — SRD-sourcing naturally yields the correct genre-baseline + world-override placement."
 priority: p1
-status: in_progress
+status: done
 repos: server,content
 stories:
   - id: 114-1
@@ -101,10 +101,14 @@ stories:
     title: Apply Fate gear model to pulp_noir, spaghetti_western, tea_and_murder, wry_whimsy
     points: 5
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-16'
     repos: server,content
     workflow: tdd
     depends_on: 114-9
+    completed: '2026-06-16'
+    review_findings: "RT2: 'merged' over-claim STILL not fully purged — exhaustive grep found 2 production (game/ruleset/fate_gear.py:39 GearCompileError docstring; cli/validate/fate_gear.py:14 module docstring) + 3 test design-recounts (test_fate_gear_validator.py:11, test_fate_gear_compile.py:5,:30). Plus MEDIUM: gear_ids emitted on span but absent from SPAN_ROUTES projection. Green rework with a grep acceptance gate."
+    review_verdict: approved
   - id: 114-11
     title: "Union-by-id per-field inventory merge — genre baseline non-droppable, world overrides presentation only, verbatim-field-lock validator (ADR-145 D3)"
     points: 5
@@ -159,3 +163,4 @@ stories:
     completed: '2026-06-15'
     type: refactor
     review_verdict: approved
+completed: '2026-06-16'

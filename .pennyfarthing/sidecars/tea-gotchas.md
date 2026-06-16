@@ -185,3 +185,21 @@
   case); gate = `_playing_session`/`_action_msg`/`_ReachedNarrationPath` sentinel from
   test_player_action_incapacitated_gate.py; stabilize tool = `pg_store_with` +
   `default_registry._tools[...]` direct-handler call.
+## Verify pack disk-state before trusting a design's "the packs are migrated" claim (114-10)
+
+The 114-9 design said "apply the Fate gear model to the four packs" and its migration
+section assumed all four were already `ruleset: fate`. On disk only **pulp_noir** was —
+spaghetti_western / tea_and_murder / wry_whimsy were still native d20 (point-buy,
+`stat_ranges`, `typical_classes`), and their fate migrations (121-3/4/5) + the
+Fate-archetype shape (121-7) were all backlog. Always `grep ^ruleset:` the real
+`rules.yaml` (and check `archetypes.yaml` shape) before writing migration tests; a
+"5-point apply" story can hide a ~30-point absorbed migration. Surface it as a blocking
+Delivery Finding + ask the Operator the scope question — don't silently pick.
+
+## Pin validator invariants as PURE functions when the model they validate doesn't exist yet
+
+114-10's refresh-invariant / dangling-id checks validate a Fate-archetype shape that is
+121-7 territory and undefined on disk. Writing `check_refresh_invariant(*, authored_refresh,
+base_refresh, free_stunts, total_stunts) -> str|None` over primitives (not over an archetype
+object) kept the tests refactor-stable and let Dev choose field names. Prove the wiring
+separately via an integration test that runs the real validator on real content.

@@ -483,3 +483,70 @@
   `_npc_patches_for_available_humans` (4-tuple) so eligible/matched/dropped are one
   consistent snapshot — and update the comment-reference in `agents/npc_context.py` if you
   change the helper's contract.
+## Migrating packs native→fate has a large hidden test blast radius — diff against a baseline (114-10)
+
+Flipping a genre pack from native d20 to Fate (drop inventory.yaml/classes.yaml/power_tiers,
+strip allowed_classes/ability_score_names, remove the native confrontations block) breaks
+PRE-EXISTING tests that asserted the old state — d20 class kits, equipment economy, native
+verbal confrontations, intent-router verbal vocabulary. A naive full-suite run looked like
+276 failures; the real net was 16.
+
+The develop baseline already had **260 failing tests** (WN-owns-the-round in-flight per
+ADR-143/114; `_FakeClaudeClient` missing `send_stateless`). NEVER trust a raw failure count
+or a runner's "cascade" attribution. Establish the baseline and diff node-ids:
+1. Commit your work (safety). `find_pack_path` reads the live `oq-1/sidequest-content`
+   (hardcoded `parents[3]`), so a server worktree won't isolate content — you must
+   `git checkout <base>` BOTH sidequest-server (merge-base) AND sidequest-content (pre-migration)
+   to measure baseline, then restore (trap on EXIT).
+2. `pytest --tb=no -q -rf | grep -E '^FAILED|^ERROR' | sed -E 's/ - .*//' | sort` on baseline and on your tree.
+3. `comm -23 mine.txt base.txt` = the failures YOU introduced. That's your reconciliation list.
+
+Reconciliation moves: delete tests whose subject is intentionally removed (d20 class-kits →
+no Fate analog; mirrors caverns WWN commit 13604312); restore over-removed content (a migration
+subagent deleted wry_whimsy's confrontations block — native machinery stays under ADR-144 F5).
+
+## Commit reconciliation edits IMMEDIATELY — subagents can revert uncommitted deletions
+
+A testing-runner told "don't modify files" still ran `git checkout`/`stash` to investigate a
+"pre-existing" failure and silently restored a file I had `git rm`'d. The deletion reappeared
+in the next full run. Commit (or at least stage-and-verify) destructive reconciliation edits
+before spawning any further subagent that might touch git state.
+
+## e2e+OTEL tests flake under pytest-xdist — confirm in isolation before blaming your change
+
+`test_space_opera_melee_e2e::test_melee_resolves_on_hp_depletion_with_otel` appeared as a
+"new" failure in one parallel full-suite run but passed serially (`-n0`) twice and touched a
+pack I never modified. Run a suspect failure with `-p no:randomly -n0 <nodeid>` before
+attributing it to your diff.
+
+## Fix the CLASS, not the cited line — grep-gate doc/string/pattern findings (114-10 rt1→rt3)
+
+A reviewer flagged a docstring over-claiming a "merged" (genre+world) gear set that the
+loader never performs. The reject table cited specific line numbers. I fixed exactly those
+lines — three round-trips in a row — because each round the reviewer cited the *next* instance
+it happened to find, and I fixed only what was cited. An exhaustive `grep -rn "merged"` over
+the gear surface on round 3 found **5** instances (2 production docstrings incl. a runtime-visible
+exception docstring, 3 test docstrings) — all the same over-claim. Three review cycles for what
+was one `grep` + five one-line edits.
+
+**Rule:** when a finding is a *class* (a word/phrase/pattern that's wrong — over-claiming docs,
+a renamed term, a deprecated call, a stale path), do NOT fix only the cited line. `grep -rn`
+the term across the whole relevant surface, fix every genuine instance in one pass, then re-run
+the same grep as an acceptance gate (must return zero). Put the grep command in your assessment
+so the reviewer can verify convergence. This applies to both Dev (fix exhaustively) and Reviewer
+(cite the class + a grep gate, not a line number — a line-number instruction invites a
+line-number fix). Cost of not doing this: N round-trips where N = number of scattered instances.
+
+## "ruff clean" needs `ruff check` AND `ruff format` — format does NOT sort imports (114-10 rt1)
+
+A green-phase Dev Assessment claimed "ruff check + format clean," but a round-trip-1
+re-check found a pre-existing `I001` (unsorted imports) on two TEA-authored test files.
+Cause: `ruff format` normalizes whitespace/line-wrapping but does NOT reorganize import
+blocks — only `ruff check` (with the `I` rule) flags `I001`, and only `ruff check --fix`
+sorts them. A `# NEW in 114-10` comment placed BETWEEN import groups is exactly what
+isort wants to merge, so any comment-separated import block trips `I001`. Running only
+`ruff format` leaves it and you'll falsely report clean. **Before claiming ruff-clean on
+your changed files, run BOTH (scoped to your files): `ruff check <files>` then
+`ruff format <files>`.** The `--fix` for `I001` keeps a comment attached to its import,
+so it lands leading the new symbol — semantically harmless. (The dev-exit gate runs the
+check, so an inherited `I001` on a file you touched blocks handoff anyway.)
