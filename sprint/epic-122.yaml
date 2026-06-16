@@ -70,3 +70,19 @@ stories:
     repos: server
     workflow: trivial
     type: chore
+  - id: 122-7
+    title: Import-direction guard hardening — drop>=len root-escape boundary, except OSError in _parse_module, assert SIDEQUEST_PKG identity (ADR-147 122-5 review follow-up)
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
+  - id: 122-8
+    title: Relocate _KIND_TO_MESSAGE_CLS from server/session_handler to protocol tier; delete the validator.py grandfathered edge + its GRANDFATHERED guard entry (ADR-147 honesty — kills the last upward edge the guard grandfathers)
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
