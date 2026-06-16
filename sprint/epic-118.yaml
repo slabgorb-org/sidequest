@@ -128,6 +128,8 @@ stories:
     description: "Server prerequisites for the Fate conflict surface (118-6) + invoke (F3d/118-4). TWO additions to FateActionPayload + dispatch: (a) invoke_mode: Literal['bonus','reroll']='bonus' threaded through dispatch_fate_action (currently hardcodes mode='bonus') into ruleset.invoke_aspect; mirror via F1d handler + F2a subsystem; extend fate_aspect_invoked OTEL span with mode. (b) player_action: str='' freeform action-text rider mirroring DiceThrowPayload.player_action — thread into the narrator's player_action context (orchestrator player_action_text) so 'I swing from the chandelier and fire' + the mechanical Fate action reach the prose together ('chandelier for free'). Optional: stable aspect_id in FATE_STATE projection. Unblocks reroll + freeform-rides-action for F3d."
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-16'
     repos: server
     workflow: tdd
+    completed: '2026-06-16'
