@@ -69,3 +69,14 @@ stories:
     completed: '2026-06-15'
     type: chore
     review_verdict: approved
+  - id: 120-6
+    title: '120-5 review follow-ups: refresh 4 stale RED-status docstrings in tests/genre/test_road_warrior_vessel_calibration.py to GREEN (parser + damage content shipped in 86-5/120-2, tests pass) and add a clarifying inline comment on the parse_vessel_tags(item.model_dump()) dict-bridge; test-file/comment-only, NO production code, NO logic change'
+    points: 1
+    priority: p3
+    status: done
+    started: '2026-06-15'
+    repos: server
+    workflow: trivial
+    completed: '2026-06-15'
+    type: chore
+    review_verdict: approved
