@@ -11,16 +11,17 @@ stories:
     description: 'REFRAMED 2026-06-15 (ADR-101 Amendment): the "Agent SDK credit" was CANCELLED — there is NO credit meter to watch (the title still says "credit"; CLI cannot edit titles — trust this note + the ADR amendment). The spike is SHARPENED, not dead: clean binary — does an OAuth-authed messages.create() draw the FREE subscription pool, or bill PAYG? SIGNAL = watch for a PAYG line on the Console (the credit-meter / 5-hr-overage discount language in the title is void). Operator recipe unchanged: ant auth login to Max -> unset ANTHROPIC_API_KEY -> export ANTHROPIC_AUTH_TOKEN -> fire a few claude-haiku-4-5 messages.create with the oauth-2025-04-20 beta. Auth transport is CONFIRMED supported (claude-api skill: SDK resolves ANTHROPIC_AUTH_TOKEN / ant profile); only billing attribution is open. Deliverable: written GO/NO-GO selecting 119-2 (GO) vs 119-3 (NO-GO).'
     points: 2
     priority: p1
-    status: backlog
+    status: done
     repos: server
     workflow: trivial
+    completed: '2026-06-15'
     type: chore
   - id: 119-2
     title: Conditional on 119-1 GO; mutually exclusive with 119-3. Re-auth the single Anthropic client choke point to subscription OAuth so narrator + classifier draw the Agent SDK credit instead of PAYG. Change build_async_anthropic() (llm_factory.py:76-96) to construct AsyncAnthropic via the OAuth/auth_token path (ANTHROPIC_AUTH_TOKEN plus the oauth-2025-04-20 beta header) instead of api_key=, and relax the api-key presence check in AnthropicSdkClient.__init__ (around lines 142-147) to accept token mode WITHOUT a silent fallback (fail loud if neither key nor token is present; SOUL No-Silent-Fallbacks). ANTHROPIC_API_KEY must be UNSET in the server env (a set key overrides the token and forfeits the credit; the API rejects both-set). The tool-use loop complete_with_tools (anthropic_sdk_client.py:248-705) is UNTOUCHED, still the raw Messages SDK. Because this is the single Story-91-1 choke point, narrator (Sonnet) + classifier (Haiku) + any Opus/Fable all move together. Verify the tool_use turn loop still converges. Hours of work; ~150/mo to ~0.
     description: 'REFRAMED 2026-06-15: "draw the Agent SDK credit" -> "draw the FREE subscription pool" (credit cancelled, ADR-101 Amendment). DESIGN SPEC (Architect): docs/superpowers/specs/2026-06-15-narrator-subscription-oauth-reauth-design.md — scopes the seam and flags the risk the "one-line" framing hides: the oauth-2025-04-20 beta must COEXIST with the existing extended-cache-ttl-2025-04-11 beta on a comma-joined anthropic-beta header. A naive client-default header gets clobbered per-request -> silently kills OAuth (back to PAYG) or caching (cost regression). Contract: dual-mode fail-loud credential selector (both key+token set -> raise; neither -> raise; one -> use it); ANTHROPIC_API_KEY unset in server env. Verify BOTH betas on the wire AND cache_read_input_tokens>0 post-swap — NOT just "narrator still talks". complete_with_tools (anthropic_sdk_client.py:248-705) UNTOUCHED. 119-4 owns the static-token -> auto-refreshing-ant-profile durability. (Title still says "credit" — trust this note + the spec.)'
     points: 3
     priority: p1
-    status: backlog
+    status: canceled
     repos: server
     workflow: tdd
     depends_on: 119-1
@@ -29,7 +30,7 @@ stories:
     title: Conditional on 119-1 NO-GO; mutually exclusive with 119-2. Port narrator inference from the raw anthropic Messages SDK onto the Claude Agent SDK (claude-agent-sdk package) with subscription auth, the help doc explicitly-covered surface. Rewrite the ~120-line manual tool loop complete_with_tools (anthropic_sdk_client.py:248-705, which reads response.stop_reason==tool_use, appends assistant/user tool blocks, re-calls messages.create) onto the Agent SDK own tool/loop model, and re-express the Pydantic-generated tool schemas from tool_registry (tool_registry.py:225-249) as Agent SDK tools. Preserve every narration tool contract, the convergence semantics, and OTEL. Subscription/OAuth auth, ANTHROPIC_API_KEY unset, No-Silent-Fallbacks. Heavy-lift fallback, only worked if the spike rules out the cheap re-auth.
     points: 8
     priority: p1
-    status: backlog
+    status: ready
     repos: server
     workflow: tdd
     depends_on: 119-1
@@ -41,4 +42,4 @@ stories:
     status: backlog
     repos: server
     workflow: tdd
-    depends_on: 119-2
+    depends_on: 119-3  # repointed from 119-2 on 2026-06-15: 119-1 spike NO-GO canceled 119-2; 119-4 hardens whichever migration lands, now 119-3 (agent-sdk port). No --depends-on CLI flag, deliberate hand-edit.
