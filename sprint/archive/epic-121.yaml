@@ -3,7 +3,7 @@ type: epic
 title: F4 — Fate Core content migration (ADR-144)
 description: 'ADR-144 F4 slice: migrate the four native-bound narrative packs (pulp_noir, tea_and_murder, wry_whimsy, spaghetti_western) onto ruleset: fate. KEY FINDING (Neo Architect, 2026-06-15): F4 is NOT pure-content — same shape as F3 was not pure-UI. F1 built the FateSheet model + attached it to CreatureCore.fate_sheet, but NOTHING constructs one: the RulesetModule chargen seam (seed_chargen_resources -> ChargenResources, builder.py:2866) is WN-shaped (effort/spellcasting/system_strain only, no fate_sheet slot), the genre loader has no FateConfig (rules.py has Swn/Cwn/Awn/Wwn, no fate arm), and FateRulesetModule overrides no chargen hook. Binding ruleset: fate today yields PCs with fate_sheet=None — zero skills, every resolve_action at Mediocre. So F4 needs an ENGINE SPINE first (F4a) before any pack content lands, mirroring F3a. SCOPE BOUNDARY (Neo call, veto-able): F4a seeds a VALID DEFAULT sheet from pack config so packs are immediately playable; interactive Fate chargen (player authors aspects, allocates skill pyramid, picks stunts) is OUT of F4 — later epic. Skill seeding mandatory; default aspects seeded + refined in play. Sequencing: F4a gates all; F4b (pulp_noir, Fate ancestral home) is the pilot proving F4a end-to-end, then F4c-e fan out. F4 gates F5 (native removal). Design: docs/superpowers/specs/2026-06-14-fate-core-binding-replaces-native-design.md S5; ADR-144.'
 priority: p2
-status: backlog
+status: done
 repos: server,content
 stories:
   - id: 121-1
@@ -76,10 +76,15 @@ stories:
     title: "F4a3 — Fate chargen UI (ui; DESIGN-GATED by F4a-design): player-facing Fate creation screens — aspect authoring inputs (high concept + trouble + free), skill-pyramid allocation widget with live legality feedback, stunt picker with refresh readout, the ladder labels; ruleset=='fate'-gated so it never co-renders with the d20/WN chargen screen (paired negative test). Consumes the F4a2 wire contract; server remains the validation authority (No Silent Fallbacks — client mirrors, does not adjudicate). Depends F4a2 (121-7)."
     points: 8
     priority: p2
-    status: backlog
+    status: done
+    assigned_to: keith
+    started: '2026-06-16'
     repos: ui
     workflow: tdd
     depends_on: 121-7
+    completed: '2026-06-16'
+    review_findings: 'HIGH: default chargen flow (free aspects left blank) submits an illegal sheet that reaches build(); FateChargenError is uncaught by _chargen_confirmation (BuilderError-only) and handle_message has no try-wrap -> chargen dead-ends. Plus MED: {exc!r} info-leak, unbounded fate inputs, discarded rung counts. Fix: catch fate build() raise + re-prompt aspects/stunts at the step + resolve UI optional/required free-aspect contract.'
+    review_verdict: approved
   - id: 121-9
     title: "F4b test-template hardening (do before F4c-e copy it): strengthen AC5 into a real-pack fate.chargen.seeded OTEL wiring assertion (mirror F4a's InMemorySpanExporter+injected _tracer, against real pulp_noir content); de-tautologize test_fate_sheet_skills_match_pack_config by pinning a concrete value (e.g. Investigate==4) so a seed truncate/reorder is caught; AC4 also assert the BUILT character has no d20 attribute pool (not just pack config); give _load_pack/_build_pulp_noir_character real return types (GenrePack/Character) instead of object + guard lines 146/161 fate access; reframe the now-stale 'RED today' module docstring; optionally strip the consumer-less encounter_base_tension dead config from pulp_noir rules.yaml. Source: 121-2 Reviewer findings."
     points: 2
@@ -92,3 +97,4 @@ stories:
     type: refactor
     branch: feat/121-9-f4b-test-template-hardening
     review_verdict: approved
+completed: '2026-06-16'

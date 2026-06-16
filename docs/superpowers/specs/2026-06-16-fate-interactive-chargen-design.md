@@ -397,3 +397,61 @@ This design and the gear model both touch `FateConfig`, archetypes, and chargen.
 2. **race/class optionality (§6):** make `Character.race`/`char_class` truly optional vs
    HC-as-display-label fallback. F4a2 picks the least-invasive change that keeps no d20 default
    on a Fate sheet.
+
+---
+
+## Implementation reconciliation (2026-06-16, Architect — story 121-8 readiness)
+
+The design gate (121-6) is **satisfied**: §7 (UI + wire contract), §8 (OTEL + wiring tests),
+and the decomposition above fully specify 121-8. No new design is required. **One scope
+correction**, recorded here because it diverges from the decomposition's repo split:
+
+**121-8 is `server,ui`, not `ui`-only.** 121-7 (done) shipped the *submission* contract
+(`FateChargenChoices` / `record_fate_chargen` / `apply_fate_chargen`) and the bare
+`input_type` *surface* (so the §7 paired-negative gate holds), but **deliberately deferred the
+server→UI render payload** — the rich per-step fields of §7's wire contract — to its UI
+consumer. See `builder.py::_render_fate_step_message` (docstring: *"The rich per-step payload
+fields … land with their UI consumer in story 121-8"*). Today `CharacterCreationPayload`
+(`protocol/messages.py:390`) carries only the `roll_the_bones` rich fields (`rolled_stats`,
+`reroll_budget_remaining`) — **no** Fate fields. The UI cannot render aspect slots, the pyramid
+widget, or the stunt picker until the server emits them. So 121-8 completes the **server half**
+of the §7 wire contract *and* builds the three renderers. (This is the same "not pure-UI / not
+pure-content" trap the epic flagged for F4 as a whole.)
+
+### Extension points (verified 2026-06-16)
+
+**Server (`sidequest-server`):**
+- `protocol/messages.py:390` `CharacterCreationPayload` — add the §7 Fate fields, additive,
+  `| None = None`, mirroring the `rolled_stats`/`reroll_budget_remaining` precedent
+  (`fate_aspect_slots`, `fate_available_skills`, `fate_pyramid`, `fate_apex_rating`,
+  `fate_current_allocation`, `fate_ladder_labels`, `fate_available_stunts`,
+  `fate_selected_stunts`, `fate_free_stunts`, `fate_base_refresh`, `fate_current_refresh`,
+  `fate_legal`, `fate_violations`).
+- `builder.py:1793` `_render_fate_step_message` — populate those per step from `self._rules`
+  (FateConfig: `skills`, `chargen_pyramid`, `chargen_apex_rating`, ladder, `free_aspect_count`,
+  stunt catalog, `free_stunts`, base refresh) + `self._fate_choices` (archetype seed /
+  in-progress allocation), running `validate_fate_sheet` (`ruleset/fate_chargen.py:79`) to fill
+  `legal`/`violations`. Pattern: `_render_bones_message` (`builder.py:1843`).
+- **Server stays the validation authority** — the UI's live legality is a *mirror* of the same
+  `validate_fate_sheet`; the server re-validates on submit and on `build()` (No Silent Fallbacks).
+
+**UI (`sidequest-ui`):**
+- `types/payloads.ts` `CreationScene` — add the matching optional fields.
+- `components/CharacterCreation/CharacterCreation.tsx` — three new `input_type` render blocks
+  (`fate_aspects`, `fate_skill_pyramid`, `fate_stunts`), each an early-return block mirroring
+  `stat_arrange` (:260), `roll_the_bones` (:307), and `stock` (:355).
+
+### Design clarification — the ruleset gate is structural, not a renderer check
+
+The story title's "ruleset=='fate'-gated" phrasing is loose; **§7 (lines 270-272) is
+authoritative**: do **not** add a `ruleset=='fate'` conditional in the renderer. The gate is
+satisfied by *which `input_type`s the pack emits* (a fate pack emits only `fate_*`; a d20/WN
+pack emits only `roll_the_bones`/`stat_arrange`/…). 121-8 implements the **paired negative
+test** (a Fate-pack chargen run emits no d20 `input_type`; a d20/WN run emits no `fate_*`), not
+a ruleset branch in `CharacterCreation.tsx`.
+
+### OTEL
+
+The `fate.chargen.*` spans (§8) are server-side and shipped under 121-7. 121-8's wiring proof
+is the paired-negative `input_type` test (§8.4) plus a real-pack render test (a pulp_noir Guided
+walk emits each `fate_*` scene with a populated, legal payload) — not new UI spans.
