@@ -259,3 +259,42 @@ Consequences for the F4 decomposition (epic 121):
 F4b–F4e (per-pack content) are unchanged in intent; their "playable" acceptance now
 implies the chargen flow exists. This does not change the F5 sequencing (native removal
 still strictly last) or the two-SRD end state.
+
+### 2026-06-16 — Interactive Fate chargen design settled (F4a-design / story 121-6)
+
+The 2026-06-15 amendment opened the forks; story 121-6 settles them. Full design and
+schema in `docs/superpowers/specs/2026-06-16-fate-interactive-chargen-design.md`. The
+decisions (Keith, 2026-06-16):
+
+- **No new mode, no parallel pipeline.** Interactive Fate chargen is the **existing
+  ADR-015 builder FSM walking Fate-authored scenes**, mapped onto the ADR-016 three
+  modes: **Menu** = the F4a default-seed (unchanged), **Guided** = the interactive
+  authoring path (archetype → aspects → pyramid → stunts), **Freeform** = LLM-extract →
+  **validate to a legal sheet** (corrected/re-prompted, never silently accepted). The
+  fork is **data-driven by which scenes a pack authors** — no `if ruleset == 'fate'` in
+  the builder loop. The builder is already ruleset-agnostic (no hard d20 stats/classes).
+- **Skill allocation: pyramid**, shape pack-configurable (`chargen_pyramid` default
+  `[1,2,3,4]`, `chargen_apex_rating` default 4). Legality is a column-count check; skills
+  drawn from the genre list (`FateConfig.skills`).
+- **Aspects: High Concept + Trouble + N free** (`free_aspect_count` default 3), seeded
+  from the archetype and editable; HC+Trouble must be confirmed. The full phase-trio is a
+  YAGNI-deferred non-goal.
+- **Archetype = hybrid seed-then-edit**, authored as an additive **`fate:` block on the
+  existing `archetypes.yaml`** (reuse, not a new file; NPC generation ignores it). It
+  seeds skills/stunts/suggested aspects; the player edits all.
+- **Refresh/stunt economy: standard Fate, pack-tunable** — default 3 refresh / 3 free
+  stunts; `refresh == base_refresh − max(0, total_stunts − free_stunts)` (floor 1). This
+  is the **same invariant and the same `free_stunts`/base-refresh fields** as the Fate
+  Gear Model spec (114-9/114-10); the two specs compose, neither double-defines.
+- **UI: extend** the generic `input_type`-driven `CharacterCreation` screen (three new
+  input_types: `fate_aspects`, `fate_skill_pyramid`, `fate_stunts`) — **not** a parallel
+  Fate screen. The `ruleset=='fate'` gate is **structural** (a Fate pack only emits
+  `fate_*` input_types); enforced by a paired negative test. Server is the validation
+  authority; the client mirrors, never adjudicates.
+- **No d20 identity on a Fate sheet.** Fate chargen never collects race/class; the High
+  Concept is the identity; `Character.race`/`char_class` go benign/empty, never
+  `"Human"`/`"Fighter"`.
+
+Gating: 121-6 (design) → **121-7** (F4a2, server engine + `validate_fate_sheet` validator +
+wire contract) → **121-8** (F4a3, UI). The other three packs author their archetype `fate:`
+blocks under 121-3/4/5. No change to F5 sequencing or the two-SRD end state.
