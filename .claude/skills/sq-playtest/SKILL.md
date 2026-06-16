@@ -78,9 +78,8 @@ mcp__playwright__browser_navigate(url="player1.local:5173")
 
 Take an initial screenshot to confirm the UI loaded. **Always pass `filename` with an absolute path to the shared screenshots dir — never let Playwright drop into cwd:**
 
-Open a tab to the OTEL dashboard: http://localhost:8765/dashboard
-Open a tab to the Save Forensics page: http://localhost:8765/forensics
-(Both are real pages served by the game server. The OTEL dashboard is live per-turn telemetry; Save Forensics is the read-only post-mortem save inspector — ADR-124. See Phase 3c for how to read each.)
+Open a tab to the Inspector: http://localhost:5173/#/dashboard
+(One unified React surface — story 117-1 merged the live OTEL/GM dashboard and the save-forensics post-mortem into a single page with a session picker. `just otel` opens it. The old server-rendered `:8765/dashboard` and `:8765/forensics` HTML pages were **deleted and now 404** — do not use them. Live per-turn telemetry and the read-only post-mortem save inspector (ADR-124) are both modes within the Inspector. See Phase 3c for how to read each.)
 
 Use `mcp__playwright__browser_tabs(action="new", url=...)` to open each surface in its own tab so the game tab (tab 0) stays put — don't `browser_navigate` away from the game.
 
@@ -159,7 +158,10 @@ Services tee to `~/.sidequest/logs/sidequest-{server,client,daemon}.log` (NOT `/
 
 Use these every few turns, not just when something looks broken. The narrator writes convincing prose with **zero mechanical backing**; these surfaces are the only way to catch improvisation masquerading as engine state.
 
-**OTEL dashboard (`http://localhost:8765/dashboard`) — live state + per-turn spans:**
+**Inspector — Live view (`http://localhost:5173/#/dashboard`) — live state + per-turn spans:**
+
+> **Caveat (known bug):** the Inspector's **Live** view currently mis-attributes the span stream across concurrent sessions — the header may show one session's slug while the timeline renders another world's narration/patches (it's not partitioned by `session_id`). If more than one session is active, trust the **by-slug dropdown selection** over Live. See the `[BUG / OTEL-INSPECTOR]` task in the ping-pong.
+
 
 - **② State tab** is the live save snapshot. Read it to check NPCs, location/region, HP, stats, and active tropes against what the narration *claimed*. Expand **Raw JSON ▸** for the full snapshot when a widget looks wrong or empty.
   - **Gotcha:** the "NPC Registry" widget reads the runtime `npc_pool` (who is present in the *current scene*), NOT the authored `npcs` roster. It frequently shows "No NPCs in registry yet" even when the roster is full. Do not trust the widget — check `npcs` in Raw JSON or via the forensics endpoint below.
@@ -167,9 +169,9 @@ Use these every few turns, not just when something looks broken. The narrator wr
 - **③ Subsystems**, **⑥ Prompt**, **⑦ Lore** tabs show what fired each turn.
 - Header strip shows live `Turns / Errors / p95`. **① Timeline** per-turn detail shows tokens in/out, **cache hit %** (want ~100% read), **System block sizes** (`stable / valley / recency / tools` — `valley` should be ~0; a fat valley is uncached-bloat, ADR-110/112), `Patches:`, `Beats:` (a confrontation that fired shows beats here; `none` = no beat rolled), and `Knowledge:` new entries.
 
-**Save Forensics page (`http://localhost:8765/forensics`) — read-only post-mortem save inspector (ADR-124):**
+**Inspector — Forensics view (the by-slug session picker within `http://localhost:5173/#/dashboard`) — read-only post-mortem save inspector (ADR-124):**
 
-This is the explicit feature — prefer it over hand-rolled curls. It is the *stored ground truth* viewer, the sibling of the live OTEL dashboard. Key reading discipline is the **provenance legend** at the top:
+This is the explicit feature — prefer it over hand-rolled curls. It is the *stored ground truth* viewer, the post-mortem sibling of the live OTEL view in the same Inspector. Key reading discipline is the **provenance legend** at the top:
 
 - **derived (narrator believed)** — value the narrator asserted/inferred, not necessarily persisted.
 - **stored (ground truth)** — value actually written to the Postgres save. This is what the engine truly knows.
