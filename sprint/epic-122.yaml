@@ -49,3 +49,11 @@ stories:
     repos: server
     workflow: trivial
     type: chore
+  - id: 122-6
+    title: Rename asset_url OTEL span server.asset_url.resolved -> foundation.asset_url.resolved to match emitting tier (ADR-147 honesty follow-up); update the two asserting tests in tests/server/test_asset_urls.py
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
