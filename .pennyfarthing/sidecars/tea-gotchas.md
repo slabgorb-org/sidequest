@@ -203,3 +203,35 @@ Delivery Finding + ask the Operator the scope question — don't silently pick.
 base_refresh, free_stunts, total_stunts) -> str|None` over primitives (not over an archetype
 object) kept the tests refactor-stable and let Dev choose field names. Prove the wiring
 separately via an integration test that runs the real validator on real content.
+
+## "Closes the F2b deferral" means the deferred work IS in scope — don't let an Explore scout's reading of the EARLIER story's "stateless" docstring shrink it (118-5 RED, 2026-06-16)
+
+118-5 ("F3e — compel accept/refuse round-trip; *closes the F2b deferral*") flagged that
+F2b's `propose_fate_compel`/`offer_compel` fires `fate.compel.offered` but **persists
+nothing** (the flow is stateless). A server Explore scout read F2b's docstring ("no economy
+change happens here … acceptance lands with the F3 UI round-trip") and concluded **118-5 is
+also stateless — no PendingCompel needed.** That was wrong: the *whole point* of "closes the
+deferral" is that the deferred PendingCompel persistence lands in THIS story. The session
+AC (highest spec authority) + the epic's "reactive FATE_STATE projection" mandate both
+require it (the UI can't show a compel the server doesn't remember). **Tell:** when a title
+says "closes the X deferral / picks up the F-something follow-up," the earlier story's
+"stateless"/"deferred" docstring describes the EARLIER story, not yours — the deferred work
+is your deliverable. Trust the session ACs over a sub-agent's scope inference.
+- **Concrete anchors for the compel round-trip (what already existed vs the real gaps):**
+  `FateRulesetModule.accept_compel` ALREADY existed (earn +1 FP + `fate.compel.accepted`
+  span, `ruleset/fate.py:314`) — "wire up what exists," don't re-author it. The genuine
+  gaps were: `refuse_compel` (spend 1 FP via the existing fail-loud `spend_fate_point` +
+  a new `fate.compel.refused` span), `offer_compel` persistence (it takes no `encounter`
+  today), `FateConflictEntry.pending_compels` on the projection (`fate_projection.py`
+  `build_fate_state_payload`), the `compel_accept`/`compel_refuse` members on the
+  `FateActionPayload.action` Literal (`protocol/fate.py:45`), a `fate_point_delta` field on
+  the frozen `FateDispatchResult`, and the dispatch routing (route early like `concede`).
+- **Refuse-at-0 is the load-bearing fail-loud test:** `spend_fate_point` already raises
+  `FateEconomyError` at 0 (validate→mutate→emit), so `refuse_compel` must reuse it and the
+  `fate.compel.refused` span must NOT fire on a rejected refusal. Pin both (raises + no span).
+- **The UI compel control inherits the surface's existing `ruleset!=="fate"` / no-active-
+  conflict empty-DOM gate** (`FateConflictSurface.tsx:98-100`) — so the epic's required
+  "never co-renders with ConfrontationOverlay" paired negative is satisfied by the gate
+  already; the new negatives to add are "no control when `pending_compels` empty." The
+  board-level production-path wiring test reuses the `renderBoard` harness from
+  `GameBoard-fate-tab.test.tsx` (no R3F mocks needed if you don't pass a `fateRoll`).

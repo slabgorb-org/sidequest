@@ -1,5 +1,12 @@
 ## Dev Gotchas
 
+### A stored-but-unread field (and any docstring/comment claiming behavior the code doesn't do) is a HONESTY rejection even when the feature works green end-to-end (2026-06-16, 118-5 green-rework)
+- 118-5 was functionally correct, fully wired, Fate suite green — and Reviewer REJECTED it. Not a functional rejection: a **quality/honesty** one. AC-1 said "store the offered fate point delta", so Dev added `PendingCompel.offered_delta` (default 1) — but `fate_projection` dropped it and the UI button hardcoded `Accept (+1 FP)`. The field was **stored but never projected or read** (No Stubbing / dead-code violation) and its docstring claimed "the fate point the player GAINS by accepting" — a lie, because nothing read it. A hardcoded display literal shadowing a stored field is also a **divergence vector** the OTEL lie-detector doctrine forbids (engine could grant X while UI shows a stale literal — the El Dorado lie).
+- **Rule — when an AC says "store X", wire X end-to-end: store → project → display.** The displayed value must READ the real datum (`+{c.offered_delta}`), never a hardcoded literal that can drift. If a field is genuinely forward-only/unused, that contradicts the AC — escalate; don't leave it dead. Adding the field is half the work; reading it is the other half.
+- **Reconcile honesty with bind-don't-balance:** keep the engine economy SRD-fixed (accept = +1 via `earn_fate_point`; don't make the grant read a variable field — that converts an SRD constant into a homebrew tunable, ADR-144). Instead PIN the field's default to the SRD value at its single creation site (`add_pending_compel` exposes no override) so display / stored field / grant agree **by construction** and the field cannot lie. The display reads the field (anti-drift); the engine stays SRD.
+- **Wiring-test docstrings must claim ONLY the path the test renders.** `GameBoard-fate-compel-wiring.test.tsx` rendered `<GameBoard>` directly (injecting `onFateAction` as a prop) yet its docstring claimed it proved the `App → GameBoard` production path (`App.tsx:2727 → GameBoard.tsx:644`). It never mounts `<App>`, so that link is untested — comment-analyzer flags this HIGH and the reviewer **cannot dismiss** it (same as the 107-1 precedent). Trim the claim to the GameBoard→Surface path actually exercised and name the App→GameBoard seam as the remaining untested link (or mount `<App>`). Also delete stale "FAIL today / (RED)" lines once the test is green.
+- **Negative tests on shared fail-loud paths:** even when accept and refuse share one `find_pending_compel is None → raise`, the reviewer wants BOTH legs tested independently (phantom-accept AND phantom-refuse) so a future routing divergence can't slip a never-offered verb through. Same for guard branches (`not encounter.resolved`): pin the resolved branch (span fires, nothing persists) so the guard can't be silently deleted.
+
 ### A scary `git diff develop..branch` (huge churn, file MOVES) does NOT predict a painful rebase — the conflict set is the INTERSECTION of branch-touched and develop-touched files (2026-06-16, 114-12 reconciliation)
 - A stale 114-12 branch showed `+1491/-3278` across 68 files vs develop, including `{server => foundation}` honest-layering moves — looked like a nightmare rebase. But the branch's REAL changeset (`merge-base..branch`) was only 5 files, and `comm -12` of (branch-touched-files) ∩ (develop-touched-files-since-merge-base) was **empty**. The rebase replayed with **0 conflicts**. The giant diff was all develop's drift on files the branch never touched.
 - **Rule before any scary rebase:** compute `MB=$(git merge-base develop $BR)`, then `comm -12 <(git diff --name-only $MB..$BR|sort) <(git diff --name-only $MB..develop|sort)`. Empty → conflict-free rebase regardless of net-diff size. After rebasing, the authoritative no-regression check is `git diff --name-only develop..HEAD` — it must equal exactly your intended changeset; anything extra means you clobbered develop's work.
@@ -550,3 +557,41 @@ your changed files, run BOTH (scoped to your files): `ruff check <files>` then
 `ruff format <files>`.** The `--fix` for `I001` keeps a comment attached to its import,
 so it lands leading the new symbol — semantically harmless. (The dev-exit gate runs the
 check, so an inherited `I001` on a file you touched blocks handoff anyway.)
+
+- **Playtest-hotfix branching: `develop` is protected by a PreToolUse hook, and it blocks
+  COMPOUND commands.** Even in the sq-playtest FIXER loop you cannot `git commit` on
+  `develop` — the `pf hooks dispatch PreToolUse` guard rejects it ("Cannot commit to
+  protected branch 'develop'"). Land fixes via feature branch → push → `gh pr create
+  --base develop` → `gh pr merge --squash --delete-branch`, then `git pull --ff-only` to
+  resync local develop. The DRIVER then pulls develop on the running-stack clone. **Gotcha:
+  the hook evaluates the command string against the CURRENT branch BEFORE it runs**, so
+  `git checkout -b feat/x && git commit …` is still blocked (it sees `git commit` while
+  HEAD is develop). Do the `checkout -b` as its OWN Bash call, then commit in a second call.
+
+- **sq-playtest "DRIVER pulls" means the fix must reach origin/develop.** A pushed feature
+  branch is invisible to the DRIVER's `git pull` on develop — so squash-merge to develop is
+  mandatory, not optional, for the fix to be testable. UI fixes need only a vite HMR / tab
+  reload after the pull; server fixes need a `just server` bounce (the running uvicorn has
+  NO `--reload` — confirm with `ps -o command -p <pid>`; a source grep "looks fixed" while
+  the process runs stale code). Note in the ping-pong task whether a restart is required.
+
+- **handleMessage stale-closure (sidequest-ui App.tsx).** `handleMessage` is a stable
+  `useCallback` with a CURATED deps list (`[connectedPlayerName, appendCachedEvent,
+  displayName]`) — volatile state it reads must be bridged through refs ("read
+  synchronously inside handleMessage without a re-render"), NOT read as captured state.
+  The 2026-06-16 portrait-picker empty-state bug was exactly this: the `pick_portrait`
+  fetch gated on `currentGenre`/`currentWorld` read directly from the closure → stale-null
+  → no fetch → "No sample portraits" even with 18 on the wire. Fix = `currentGenreRef` /
+  `currentWorldRef` synced via a tiny effect, read in handleMessage. When adding any
+  state-read to handleMessage, add a ref bridge — do NOT add the state to its deps (that
+  re-subscribes / churns the socket callback). Sibling gotcha: a presentational component
+  that treats `[]` as "empty" will flash its empty-state during an async fetch window —
+  use a `null` loading sentinel (and honor the server's `portraits_available` signal) so
+  loading / empty / ready are three distinct states.
+
+### Prove a full-suite failure is PRE-EXISTING before claiming it — base worktree + content symlink (118-5 GREEN, 2026-06-16)
+- A full `uv run pytest -q` on a Fate-only story (118-5 compel round-trip) surfaced **85 failures + 1 enum-count failure** that had nothing to do with the diff: the in-flight epic-108 / ADR-143 WWN-combat rework (`committed_blow` unknown-beat in `downed_seam`, `test_102_4_wn_sealed_round`, `test_108_*`) and `test_message_type_complete_count` (57≠56 enum drift). The doctrine is "no pre-existing excuse / suite green at handoff" — but you cannot fix another epic's mid-rework suite from a 5-pt story, and you must NOT just *assert* "pre-existing." **Prove it.**
+- **The proof technique:** spin a throwaway worktree at the merge-base and re-run the suspect tests there. `git merge-base HEAD develop` → `git worktree add -q /tmp/sq-base <merge-base-sha>`. Reuse the existing venv so you don't pay `uv sync`: `VIRTUAL_ENV=<repo>/.venv uv run --project <repo> python -m pytest -q <suspect tests>`. If they fail identically on the clean base → pre-existing, full stop. Clean up: `git worktree remove /tmp/sq-base --force && git worktree prune` (run from the repo, not the worktree — `git worktree remove` resets cwd).
+- **GOTCHA — the content sibling.** `tests/_helpers/genre_paths.py` sets `_REPO_ROOT = Path(__file__).resolve().parents[3]` then `CONTENT_ROOT = _REPO_ROOT / "sidequest-content"`. A `/tmp` worktree's `parents[3]` is `/tmp`, so `GENRE_PACKS_DIR` doesn't exist → every pack-dependent test is **SKIPPED, not run** (you'll see "11 skipped" and wrongly conclude the base is green). Fix: `ln -sfn <real>/sidequest-content /tmp/sidequest-content` so the worktree resolves packs. (Or put the worktree under the oq root so the real sibling resolves.) The enum/protocol tests need no content and run anywhere — use those for the instant proof, the pack-gated ones need the symlink.
+- **Cheap pre-check before the worktree:** `{ git diff --name-only; git diff --cached --name-only; git diff <base>...HEAD --name-only; } | sort -u | grep -iE "<suspect subsystem files>"`. If your diff touches none of the failing subsystem's files AND the change is purely additive (new pydantic field w/ default_factory, new model, new method), there is no causal path — the worktree run then just confirms it. Capture the result as a Delivery Finding (Gap, non-blocking, names the owning epic), don't silently move on.
+- **Stale sibling test from an earlier story in the same epic:** 118-7 (F3g) changed `FateActionHandler` to BROADCAST the roll via `sd._room` and `return []`, but the 118-6 invoke test's `_fate_session` mock never added `_room` and still asserted `len(out)==1` → it had been red since 118-7 merged. When a test in YOUR path is red because a sibling story moved the contract, repair it to the NEW documented contract (add the `_room` capture double, assert the broadcast + `[]` return) — that's "fix what you see," not scope creep. Distinguish it sharply (in the deviation log) from the separate-epic failures you legitimately can't touch.
