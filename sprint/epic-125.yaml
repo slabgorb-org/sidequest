@@ -57,3 +57,15 @@ stories:
     repos: ui
     workflow: trivial
     type: chore
+  - id: 125-6
+    title: 'Fate UI payload-boundary hardening (118-2 review): clamp free_invokes before Array.from + exclude fateState from sessionStorage'
+    description: "Two non-blocking defense-in-depth findings CONFIRMED in the 118-2 (F3b Fate panel) Reviewer pass that were never filed — orphaned until the 2026-06-16 Fate deferred-cleanup triage. Bundled here per the 118-8/118-9 'file a single follow-up story bundling related hardening' precedent. Both are FATE_STATE payload-trust gaps in the Fate UI; neither is a live exploit (server emits valid payloads via build_fate_projection), so this is hardening, not a fix. SOURCE: sprint/archive/118-2-session.md Reviewer findings (reviewer-security). (1) [MEDIUM][SEC] free_invokes is unclamped at FatePanel.tsx:104 — Array.from({ length: a.free_invokes }) — a malformed payload with a huge/Infinity free_invokes passes the array-only boundary guard and allocates a pathological array (browser-tab DoS). (2) [LOW][SEC] sessionStorage hydration bypass — fateState is persisted to sessionStorage and rehydrated on reload PAST the malformed-payload boundary guard, so a once-malformed payload survives a refresh. NOT covered by 125-5 (which guards the FATE_ROLL dice tuple in useStateMirror — a different message/field/file)."
+    points: 2
+    priority: p3
+    status: backlog
+    repos: ui
+    workflow: tdd
+    acceptance_criteria:
+      - "free_invokes clamp: at FatePanel.tsx:104 bound the pip count before Array.from (e.g. Math.min(a.free_invokes ?? 0, N) with a sane N), so a huge/Infinity/NaN free_invokes cannot allocate a pathological array. Regression test: a fateState payload with free_invokes=1e9 (and Infinity) renders a bounded pip count without hanging — closes the 118-2 'no test for free_invokes' gap."
+      - 'sessionStorage exclusion: exclude fateState from the sessionStorage hydration path (GameStateProvider/useStateMirror) so a malformed payload cannot bypass the FATE_STATE boundary guard on reload. Regression test: a malformed fateState written to sessionStorage is NOT rehydrated into live state on mount (it re-enters only via a fresh FATE_STATE message through the guard).'
+    type: bug
