@@ -36,6 +36,7 @@ completed_epics:
   - '116'
   - '108'
   - '117'
+  - '120'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -776,4 +777,34 @@ completed_stories:
     epic: '117'
     title: "Render quest-related lore in QuestsPanel — surface the related_lore the server now projects (117-5) so Keith actually SEES the coherent picture. Server-side projection landed in 117-5 (server #876): the QUESTS payload carries related_lore (list of {fact_id, content}) under each quest entry, but the client drops it. Two gaps: (1) sidequest-ui src/types/payloads.ts QuestLogEntry has no related_lore field, so the typed data is invisible; (2) src/components/QuestsPanel.tsx renders only title/status/objective/anchor — needs a 'What I've learned about this job' render block listing the related lore under each quest. UI-only (sidequest-ui, base develop). This is the visible payoff of 117-5; without it the coherence is on the wire but unseen. Player-facing (per CLAUDE.md: legible mechanics in player UI). Wiring test: a QuestsMessage with related_lore renders the lore block (jsdom)."
     points: 3
+    completed: '2026-06-15'
+  - id: 120-1
+    epic: '120'
+    title: 'caverns_and_claudes (WWN) genre baseline -> 100% verbatim: source the 31 unprovenanced genre item_catalog items from the WWN SRD at the genre tier where an analog exists (mode=verbatim, srd=wwn, license=wn-free, srd_ref -- the elemental_harmony/heavy_metal pattern, both already 100% WWN-verbatim). MOVE genuinely-unique items with no WWN analog (plot devices) to the world tier as honest mode=bespoke (the mutant_wasteland rad_pills/geiger precedent), logging each as a deviation. WARN world-replaces-genre kit trap: any NEW worlds/<w>/inventory.yaml MUST copy genre starting_equipment/starting_gold/currency verbatim or classes ship empty kits. Verify resolve_inventory(pack, world) resolves every kit id across caverns worlds. Does NOT touch the validator (that is 120-3).'
+    points: 8
+    completed: '2026-06-15'
+  - id: 120-2
+    epic: '120'
+    title: 'road_warrior (CWN) genre baseline -> verbatim sweep: the 25 unprovenanced genre items (rig parts, mount weapons, survival gear, rig-tier vessels) get sourced from the CWN SRD at genre where an analog exists (mode=verbatim, srd=cwn). Genuinely-unique items with no CWN analog (rig-tier vessels, road-warrior-specific gear) MOVE to worlds/the_circuit/inventory.yaml as honest mode=bespoke -- ADD to the inventory.yaml that 114-14 created; mind the kit trap, do not drop its starting_equipment/gold/currency. End state: 0 bespoke AND 0 unprovenanced at the genre tier. Verify the_circuit kits still resolve via resolve_inventory.'
+    points: 5
+    completed: '2026-06-15'
+  - id: 120-3
+    epic: '120'
+    title: "Upgrade the D3 genre-baseline validator from 'no genre-tier bespoke' to 'WN-family genre baseline must be mode:verbatim (or derived)': extend _validate_genre_baseline_no_bespoke (loader.py) to ALSO reject unprovenanced (no-provenance) genre item_catalog items in awn/cwn/wwn/swn packs, fail-loud naming offenders (No Silent Fallbacks); native packs stay exempt. MUST land AFTER both 120-1 (caverns) and 120-2 (road_warrior) -- enforcing verbatim-only before both sweeps breaks their load (the exact ordering trap that narrowed 114-14). Retune the 114-14 tests that pin the narrow rule; full WN-pack regression green (SIDEQUEST_GENRE_PACKS + SIDEQUEST_DATABASE_URL)."
+    points: 3
+    completed: '2026-06-16'
+  - id: 120-4
+    epic: '120'
+    title: "World-tier equipment_tables override — loader + CharacterBuilder per-slot merge (enables caverns/road_warrior verbatim chargen): add a World.equipment_tables field + load worlds/<w>/equipment_tables.yaml + merge world-over-genre at chargen (per-slot APPEND within each class kit; world guaranteed_grants append by kit_id). ADDITIVE — no-op for any pack/world shipping no world equipment_tables.yaml. Fixture-tested in the server repo. Enables 120-1's caverns genre-kit split (and likely 120-2 road_warrior). Merge semantics per Keith's Option-B ruling 2026-06-15."
+    points: 5
+    completed: '2026-06-15'
+  - id: 120-5
+    epic: '120'
+    title: '120-2 review fast-follows (3 non-blocking test-hardening findings, all sidequest-server, no production code): (1) ruff-format tests/genre/test_120_2_road_warrior_verbatim_baseline.py — the parenthesized assert at :146 reflows to a one-liner (ungated by server-check, no logic change); (2) tests/genre/test_road_warrior_vessel_calibration.py::test_starting_mounted_weapons_fit_in_starting_rig_slots builds its catalog from the world tier only, so the repointed cwn_* kit ids resolve to {} via silent .get(i,{}) — rebuild catalog from resolve_inventory(pack, "the_circuit") (merged genre+world) so genre-tier kit ids are visible; (3) test_120_2_road_warrior_verbatim_baseline.py::test_road_warrior_circuit_kits_resolve_no_dangling_ids loops resolved.starting_equipment.items() with no non-empty guard (vacuous if ever empty) — add assert resolved.starting_equipment before the loop. Keep all assertions meaningful; verify the suite stays green.'
+    points: 1
+    completed: '2026-06-15'
+  - id: 120-6
+    epic: '120'
+    title: '120-5 review follow-ups: refresh 4 stale RED-status docstrings in tests/genre/test_road_warrior_vessel_calibration.py to GREEN (parser + damage content shipped in 86-5/120-2, tests pass) and add a clarifying inline comment on the parse_vessel_tags(item.model_dump()) dict-bridge; test-file/comment-only, NO production code, NO logic change'
+    points: 1
     completed: '2026-06-15'
