@@ -45,12 +45,15 @@ stories:
     review_verdict: approved
   - id: 119-4
     title: 'Depends on whichever migration lands (119-2 or 119-3). Production auth durability + cost/credit observability. 1: long-running server uses an auto-refreshing ant auth login profile on the host (the print-credentials env token is short-lived and not auto-refreshed), construct the client to pick up the refreshing profile not a baked-in token; fail loud on expiry, never silently fall back to PAYG. 2: emit an OTEL span tagging which auth path / billing pool each inference draws (credit vs PAYG overflow) so the cost/GM panel can VERIFY the narrator is on the credit, a Keith/dev observability concern per the CLAUDE.md OTEL principle NOT a player surface. 3: monitor the 200 monthly credit + the pool-3 prepaid overflow buffer (currently 50.52) so mid-month exhaustion is visible before it silently bills PAYG.'
-    points: 3
+    points: 5
     priority: p2
     status: backlog
     repos: server
     workflow: tdd
     depends_on: 119-3
+    acceptance_criteria:
+      - "Cost-ceiling / runaway-detector recalibration (folded from 119-3): the per-session cost-runaway fingerprint detector + $10 hard-kill ceiling (cost_safety.py, ADR-134) are PAYG-dollar-calibrated, but under 119-3's subscription transport they now meter NOTIONAL CLI cost (one session_id ledger summing narrator + Haiku notional spend). Re-frame them as notional-shape signals so the ceiling neither fires spuriously nor silently never-fires."
+      - 'Cache-observability re-home (folded from 119-3 OQ-6): 119-3 left the narrator per-TTL (5m/1h) cache-write split documented-zero (anthropic_sdk_client.py:557-561, cached_input_write_5m/1h_tokens=0; aggregate cache read/write preserved). Surface the real split if the agent SDK exposes it, or document the permanent gap on the cost/GM panel so the 0s are never read as a measured value (No Silent Fallbacks).'
   - id: 119-5
     title: "119-3 transport-port cleanup (OQ-17): remove or re-home the now-vestigial Intent-Router cache-floor guard and restore coverage. The agent-SDK path emits no cache_control markers, so IntentRouterCacheFloorError / HAIKU_CACHEABLE_PREFIX_FLOOR_TOKENS / _INTENT_ROUTER_CACHE_TTL / _estimate_intent_router_prefix_tokens + the build_intent_router_llm floor check (llm_factory.py:646-667) now guard a trap the code can no longer spring; it is live-but-uncovered after 119-3's full-replace deleted test_haiku_cache_control.py. Either delete the guard wholesale or re-home it onto an SDK-exposed cache signal, and add a test asserting the chosen behavior (No Silent Fallbacks). While in this module also: (a) register an atexit cleanup for _neutral_cwd()'s mkdtemp temp dir (anthropic_sdk_client.py:156, one empty dir per process leak); (b) add a gated LIVE isolation smoke since the AC1 contamination regression mocks the query seam and cannot catch a real-SDK context-absorption regression (gate scripts/spike_119_3_agentsdk_subscription.py in ops/CI)."
     points: 3
