@@ -89,7 +89,8 @@ stories:
     description: "Carries the deferred/non-blocking findings from 118-3 (F3c). 118-3 delivered the dF Fudge die (dice-lib, live), the server FateRollPayload/FATE_ROLL message + handler emit, and the FateDiceTray component + isFateRoll guard — but the roll surface is not yet wired into the live client. CORRECTION to the 118-3 session note: F3b (118-2) IS done — FatePanel.tsx + FATE_STATE routing (useStateMirror.ts:251) + fateState slice + FateWidget all exist on develop; the 118-3 'F3b absent' finding was clone-drift (the Dev feat branch predated 118-2's merge). So the mount is now feasible: the client can gate on gameState.fateState != null (FATE_STATE only arrives on ruleset=='fate' packs). Depends on 118-3 (done)."
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-16'
     repos: server,ui
     workflow: tdd
     acceptance_criteria:
@@ -98,6 +99,8 @@ stories:
       - "Attribution: stamp player_id=acting_player_id on FateRollMessage (currently '') so a consumer can attribute whose roll it is — flagged by both security and edge-hunter reviewers."
       - "Glyph consistency: FateDiceTray faceGlyph(0) returns '0' but the dF die label for a blank face is '' — the table sees '+ + 0 -' vs the die's blank face. Pick one (lean: '0' is clearer for Sebastien/Jade legibility, or blank for Fudge canon) and make the die + text readout agree."
       - 'Stretch: carry throw_params/seed on FATE_ROLL (like DICE_RESULT) so the 3D Fudge dice animate to the actual rolled faces; today they render the idle pickup row (decorative) and only the text readout is authoritative.'
+    completed: '2026-06-16'
+    review_verdict: approved
   - id: 118-8
     title: 'Fate FATE_ACTION auth-bypass: drive seat resolution from authenticated identity, not msg.player_id (ADR-119) + sanitize skill field'
     description: "HIGH-severity security finding surfaced during 118-3 (F3c) review (Hermes/reviewer-security, high confidence). PRE-EXISTING — not introduced by 118-3 (the seat-resolution lines are unchanged by that diff) — but 118-3 amplifies it: the spoofer now receives the victim's roll result. Relates to ADR-119 (Authenticated Player Identity, partial). Filed p1 so it is not lost."
