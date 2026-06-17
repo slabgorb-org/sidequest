@@ -3,7 +3,7 @@ type: epic
 title: Documentation Staleness Reconciliation
 description: 'Bring agent-facing docs in line with the post-migration reality so they stop steering agents wrong: Rust->Python (ADR-082), SQLite->Postgres (ADR-115), TTS removal (2026-04), and the ruleset binding (no native flow; two SRD families WN + Fate; ADR-117/-142/-143/-144). PHASE 0 SHIPPED 2026-06-17: docs/sequence/ruleset-turns.md (WN+Fate turn diagrams) + README/architecture/server-CLAUDE alignment (orchestrator main 5ddcac0+677a9f0; server PR #930). This epic tracks the residual stale docs found in the 2026-06-17 audit sweep of 423 agent-facing docs.'
 priority: p1
-status: in_progress
+status: done
 repos: orchestrator
 stories:
   - id: 127-1
@@ -76,3 +76,4 @@ stories:
     workflow: trivial
     completed: '2026-06-17'
     type: chore
+completed: '2026-06-17'
