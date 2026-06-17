@@ -98,7 +98,11 @@ stories:
     title: Sweep pre-existing ruff I001 import-order debt across 8 server test files (ruff 0.15.11 flags them under uv-locked config; develop server-check currently red independent of any story)
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: server
     workflow: trivial
+    completed: '2026-06-17'
     type: chore
+    branch: feat/122-9-ruff-i001-test-import-order-sweep
+    review_verdict: approved
