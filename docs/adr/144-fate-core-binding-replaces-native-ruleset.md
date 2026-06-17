@@ -8,7 +8,7 @@ supersedes: []
 superseded-by: null
 related: [2, 33, 113, 114, 116, 117, 126, 139, 142, 143]
 tags: [game-systems]
-implementation-status: deferred
+implementation-status: partial
 implementation-pointer: "docs/superpowers/specs/2026-06-14-fate-core-binding-replaces-native-design.md"
 ---
 
@@ -298,3 +298,79 @@ decisions (Keith, 2026-06-16):
 Gating: 121-6 (design) → **121-7** (F4a2, server engine + `validate_fate_sheet` validator +
 wire contract) → **121-8** (F4a3, UI). The other three packs author their archetype `fate:`
 blocks under 121-3/4/5. No change to F5 sequencing or the two-SRD end state.
+
+### 2026-06-17 — Contests (the third Fate resolution mode)
+
+#### The Contest mode
+
+The Fate binding now includes **Contests** alongside Conflicts. A Contest is an opposed
+4dF race: first participant to accumulate N victories wins; a tied exchange grants a
+**boost** (a free invoke on the next exchange) to the leader. Fate-pack confrontations
+resolve as **Contests or Conflicts, never `opposed_check`** — the native dial/beat
+path is removed from the four Fate packs. The distinction is structural: a Contest has
+**no stress and no consequences**. An `attack` action submitted during a Contest is
+rejected loud (`ConflictActionInContestError`); the correct action is `overcome`.
+
+#### Engine and selection plumbing
+
+The Contest engine lives at `sidequest/server/dispatch/fate_contest.py::run_fate_contest_exchange`.
+It is selected when an encounter carries `encounter.contest` — a `ContestState`
+stamped at seating when the confrontation def declares `resolution_mode: contest`.
+`dispatch_fate_action` branches Conflict-vs-Contest on that stamp, which reconciles
+two things that might otherwise look inconsistent: resolution_mode selects between
+Contest and Conflict, while the Conflict engine is gated by
+`isinstance(ruleset, FateRulesetModule)` (not resolution_mode). The stamp bridges the
+two — resolution_mode fires at seating time to populate `ContestState`; dispatch
+reads the stamp to route. The Conflict engine is unchanged; Contest is additive.
+
+OTEL spans: `fate.contest.seeded`, `fate.contest.exchange`, `fate.contest.resolved`.
+
+#### Governing axis: substrate vs. resolution (Keith, 2026-06-17)
+
+When binding an SRD, every "honor the native behavior?" call is settled by which
+layer the behavior belongs to:
+
+**Multiplayer / remote-substrate mechanics are PRESERVED; the SRD engine bends to
+allow them.** They exist because SideQuest is remote, with no human GM at a physical
+table. The Contest path therefore carries:
+
+- **ADR-116 seating + fail-loud:** a confrontation requires an Other; no opponent
+  available → `NoOpponentAvailableError`. This invariant holds on the Contest path
+  exactly as it does on the Conflict path.
+- **Per-turn presence stamping (story 72-12):** each Contest exchange stamps the
+  seated NPC opponent's `last_seen_turn` / `last_seen_location` and emits
+  `npc.edge_published(source="fate_contest")`, so the 72-6 last-seen prune never
+  drops an NPC who is actively mid-contest.
+- **Universal `encounter.resolved` span on a points-win:** fired alongside
+  `fate.contest.resolved` (plus `pending_resolution_signal`), so the GM panel
+  tears down the confrontation overlay, player input unlocks, the render trigger
+  fires, and the forensic timeline records the close. The same signal drives
+  post-confrontation advancement and scene transition regardless of which engine
+  produced the win.
+
+**Genre resolution mechanics belong to the SRD.** The native `opposed_check`
+resolution — dial advance, threshold-7 / ADR-093 calibration, opponent-stat
+ceilings, beat `stat_check`s — is **removed** from the four Fate packs. Fate
+computes the outcome. We do not tune Fate's exchange math against native thresholds.
+
+Preserving the substrate invariants on the Contest path is **consistent with "Bind
+the Ruleset, Don't Balance It" (SOUL.md / ADR-143)**. The substrate mechanics are
+SideQuest-side observability, world-state, and multi-seat coordination — not Fate
+math. We wire the platform substrate through the new engine; we do not tune Fate
+against native.
+
+#### Implementation pointers
+
+Design spec: `docs/superpowers/specs/2026-06-17-fate-contest-binding-design.md`.
+Plan: `docs/superpowers/plans/2026-06-17-fate-contest-binding.md`.
+
+The following are complete on `feat/fate-contest-binding` (server + content):
+`native` → `dial` rename, fail-loud for three former silent fallbacks, `ContestState`
+model, `fate.contest.*` OTEL spans, Contest engine (`run_fate_contest_exchange`),
+seating + dispatch branching, spaghetti_western + tea_and_murder confrontation
+conversion from `opposed_check` to `resolution_mode: contest`, Contest guardrail
+(`attack`-in-Contest rejection), and regression fix.
+
+**Deferred fast-follow:** `create_advantage` *during* a Contest (place a situation
+aspect and forgo scoring that exchange). Deferred — aspect invokes already carry
+over via the shared dispatch seal; this is an additive capability, not a blocker.

@@ -403,5 +403,34 @@ In code, the ADR-033 engine is now the `native` ruleset module:
 status section above documents. The other shipped module is `swn.py` (Stars
 Without Number); modules resolve through `ruleset/registry.py`, and an unknown
 `ruleset:` name fails loud (`UnknownRulesetError`). Readers reconciling 033
-should treat the dial engine described here as the `native` module of a larger
+should treat the dial engine described here as the `dial` module of a larger
 pluggable system, not the sole confrontation engine.
+
+## Amendment 2026-06-17 — Engine renamed `native` → `dial`
+
+The confrontation engine module and class were renamed across the codebase on
+`feat/fate-contest-binding`:
+
+- `sidequest/game/ruleset/native.py` → `dial.py`
+- `NativeRulesetModule` → `DialRulesetModule`
+- registry slug `"native"` → `"dial"`
+
+This is the honest name. The module was always the **dial/beat engine** — tracking
+metrics on a dial toward a threshold, resolving beats, applying `stat_check`s and
+edge configs. Calling it "native" implied it was the *default native* ruleset, which
+was never true once ADR-117 made rulesets pluggable and the Without Number family
+claimed the WN modules. The module is the dial mechanism; `dial` names what it does.
+
+**Pure rename, no resolution-behavior change.** The dial/beat engine, `apply_beat`,
+opposed_check dispatch, and edge/reprisal machinery are unchanged.
+
+As a side effect of this work, `DialRulesetModule` now hosts the `ResolutionMode.contest`
+enum value and the contest-selection plumbing (ContestState seeding at seat-time). The
+Contest **engine** itself lives in `fate_contest.py`, not here — `dial.py` only holds
+the enum and the seating stamp.
+
+Three former silent `"native"` string fallbacks (pregen + two encounter_lifecycle call
+sites) were converted to fail-loud in the same work, consistent with the **No Silent
+Fallbacks** principle. An unknown `ruleset:` value in `rules.yaml` already raised
+`UnknownRulesetError` (per ADR-117); these three were the remaining call sites that
+silently assumed `"native"` when no ruleset was resolved — now they raise instead.
