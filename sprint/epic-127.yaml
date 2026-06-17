@@ -60,9 +60,11 @@ stories:
     title: 'Model-version sweep: verify llm_factory routing, then bump Opus 4.7 to 4.8 references across README, architecture, llm-backends, feature-inventory'
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: orchestrator
     workflow: trivial
+    completed: '2026-06-17'
     type: chore
   - id: 127-7
     title: 'Completeness audit and drift guard: final read-through of the canonical doc set (api-contract TTS-era sections, JARGONFILE, subrepo READMEs) for residual Rust/SQLite/TTS/native drift; propose a lightweight doc-drift check'
