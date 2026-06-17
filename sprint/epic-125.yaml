@@ -66,10 +66,13 @@ stories:
     description: "Deferred from story 118-7 (ADR-144 F3g) — flagged independently by the Reviewer's own analysis AND the reviewer-security subagent as a defense-in-depth gap (NOT a security vulnerability). The useStateMirror FATE_ROLL boundary guard (sidequest-ui/src/hooks/useStateMirror.ts) validates that p.dice is a 4-element array (!Array.isArray(p.dice) || p.dice.length !== 4) but does NOT validate that each face is in {-1,0,1}. A corrupted/replayed payload with valid-length but out-of-range faces renders a wrong glyph (FateDiceTray.faceGlyph degrades any out-of-range value to '0') — it cannot crash, exfiltrate, or escalate, and the server always emits valid faces via build_fate_roll_payload, so the realistic surface is nil today. Optional hardening: tighten the guard to also require p.dice.every(d => d === -1 || d === 0 || d === 1), dropping (console.error) a malformed roll the same way the missing-dice case is dropped. Add a regression test: a roll with a face of 2 (or -5) is rejected, not stored. Affects sidequest-ui/src/hooks/useStateMirror.ts (FATE_ROLL branch). See sprint/archive/118-7-session.md Delivery Findings — Reviewer (code review)."
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: ui
     workflow: trivial
+    completed: '2026-06-17'
     type: chore
+    review_verdict: approved
   - id: 125-6
     title: 'Fate UI payload-boundary hardening (118-2 review): clamp free_invokes before Array.from + exclude fateState from sessionStorage'
     description: "Two non-blocking defense-in-depth findings CONFIRMED in the 118-2 (F3b Fate panel) Reviewer pass that were never filed — orphaned until the 2026-06-16 Fate deferred-cleanup triage. Bundled here per the 118-8/118-9 'file a single follow-up story bundling related hardening' precedent. Both are FATE_STATE payload-trust gaps in the Fate UI; neither is a live exploit (server emits valid payloads via build_fate_projection), so this is hardening, not a fix. SOURCE: sprint/archive/118-2-session.md Reviewer findings (reviewer-security). (1) [MEDIUM][SEC] free_invokes is unclamped at FatePanel.tsx:104 — Array.from({ length: a.free_invokes }) — a malformed payload with a huge/Infinity free_invokes passes the array-only boundary guard and allocates a pathological array (browser-tab DoS). (2) [LOW][SEC] sessionStorage hydration bypass — fateState is persisted to sessionStorage and rehydrated on reload PAST the malformed-payload boundary guard, so a once-malformed payload survives a refresh. NOT covered by 125-5 (which guards the FATE_ROLL dice tuple in useStateMirror — a different message/field/file)."
