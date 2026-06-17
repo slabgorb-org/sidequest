@@ -11,9 +11,11 @@ stories:
     description: "Marquee deferred test from the eval ([FATE/NOTE]). Fate PCs carry BOTH a Fate sheet (stress + four consequence slots) AND the legacy unified-model fields core.hp={current:10,max:10}/armor_class=10/xp=0/level=1 (ADR-007), parallel tracks. Open question, never exercisable in-session (blocked by the now-fixed intent-router error_max_turns blocker AND the now-fixed GameBoard 'thresholds is not iterable' crash): when a SEATED Fate conflict deals harm, does it fill Fate stress/consequences or ablate core.hp? If combat reads core.hp (the 06-14 hp_depletion track) instead of Fate stress, the ADR-144 binding is HALF-WIRED — violates SOUL 'Bind the Ruleset, Don't Balance It' (the bound ruleset's engine must REPLACE the native one for what it covers, not layer on top). This is the lie-detector question for the whole Fate binding. Source: sq-playtest-pingpong [FATE/NOTE]."
     points: 5
     priority: p2
-    status: backlog
+    status: started
+    started: '2026-06-17'
     repos: server
     workflow: tdd
+    branch: feat/126-1-fate-conflict-harm-ablates-stress
     acceptance_criteria:
       - 'Seat a real Fate conflict in a Fate pack (e.g. grab/attack an NPC) and confirm the mechanical spine fires: FATE_ROLL + fate.* + confrontation.* OTEL spans present (GM-panel lie-detector), confrontation != None.'
       - Harm from the conflict ablates the Fate stress/consequence track, NOT core.hp. Add a server test asserting a Fate-conflict harm event decrements Fate stress/fills a consequence and leaves core.hp untouched.
