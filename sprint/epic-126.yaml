@@ -95,7 +95,8 @@ stories:
       START WITH DESIGN (Architect): nail the FATE_ACTION->throw->resolve sequence and the new client->server message, and write an ADR-144/ADR-074 reconciliation note (player Fate rolls are physics-is-the-roll; NPC rolls server-side). I (the agent) misjudged this twice, so design before code.
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: server,ui
     workflow: bdd
     acceptance_criteria:
@@ -107,3 +108,5 @@ stories:
       - "SPECTATOR CONSISTENCY: other seats replay the thrower's throw_params+seed and land on the SAME faces the thrower reported (consistent by construction, like DICE_RESULT). The 3D dice never contradict the text readout."
       - 'OTEL: the fate.action_resolved span records the dice that resolved the action AND whether they were player-thrown or server-rolled (GM-panel lie-detector for the determinism).'
       - "WIRING: end-to-end test of the player throw→resolve round-trip through the real handler (not a fixture), and confirmation the NPC path still server-rolls. Reuse 125-4's throw_params/seed payload fields + dF '0' label (no revert)."
+    completed: '2026-06-17'
+    review_verdict: approved
