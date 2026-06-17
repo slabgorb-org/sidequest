@@ -130,3 +130,37 @@ stories:
     status: backlog
     repos: server,ui
     workflow: tdd
+  - id: 126-9
+    title: '[PERF] Narrator + intent_router_pass turn-latency ~3x regression landed Jun 17 (no router thrash) — bisect + fix'
+    description: |-
+      Turn latency ~3x regression discovered during the annees_folles Fate-eval latency dig (2026-06-17). NOT the originally-suspected intent-router thrash.
+
+      VERDICT — no thrash. phase_call_counts.intent_router_pass = 1 on every turn across all 12 recent sessions / 339k turn_telemetry rows. The 8x/turn dice-replay storm Keith remembered is already fixed (suppress_intent_router). Two phases each got slower on a SINGLE call.
+
+      EVIDENCE (Postgres turn_telemetry, component=validator, event_type=turn_complete):
+      - Clean same-world proof: wry_whimsy/oz narrator agent_duration_ms 15.9s avg (older 29-turn session) -> 56.7s (Jun 17). 3.5x. Not world-mix.
+      - Baseline (<=Jun 16): ~16s narrator / ~4-6s intent_router_pass / ~20s total. perseus_cloud 16.1s, barsoom 16.0s, oz 15.9s.
+      - Regressed (Jun 17): ~50-57s narrator / ~10-14s router-phase / ~67-76s total. dust_and_lead 54.6s narr / max 97.7s.
+      - Fate spike: pulp_noir/annees_folles intent_router_pass hit 37-81s on a SINGLE call (router prompt bloat from the fate vocab block injected when rules.ruleset==fate, intent_router_pass.py:364-365). One annees_folles session totaled 162s/turn avg.
+
+      TWO REGRESSED PHASES:
+      1. Narrator (agent_duration_ms): the Anthropic SDK tool-loop (up to 8 heavy-model round-trips, 16 on dice turns). Dominant cost. ~16s -> ~50-57s.
+      2. intent_router_pass phase: ~4-6s -> ~10-14s, spiking 37-81s on Fate. Single call each; slow prompt, not a loop.
+
+      WINDOW: present by 06:04 UTC Jun 17, absent Jun 16. Culprit merged in that window. Likely a Jun-17 change that inflated the prompt (state_summary / system prompt / retrieval) or raised narrator round-trips. Bisect dispatched (Architect, narrator-regression-bisect).
+
+      NOTE: running server is the oq-3 checkout (pack_dir=/Users/slabgorb/Projects/oq-3/...). Fix targets sidequest-server develop; reconcile against whatever oq-3 is running.
+
+      DATA: Postgres db 'sidequest', table turn_telemetry. Monitor SQL + watch -n5 documented by save-latency-recon. Fast confirming experiment: set SIDEQUEST_NARRATOR_ITERATION_CAP low and re-measure p95.
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - 'Root cause identified: the Jun 16->17 commit(s) that regressed narrator and/or intent_router_pass latency, with the mechanism (more round-trips / bigger prompt / heavier model).'
+      - Narrator agent_duration_ms restored to ~baseline (~16s avg / total ~20-25s) on a non-Fate world, OR a documented justification if the new cost is intentional.
+      - intent_router_pass restored to ~baseline (~4-6s); Fate-world prompt bloat (fate vocab block) addressed so annees_folles no longer spikes to 37-81s on a single call.
+      - 'Regression guard added (OTEL principle): a telemetry alert or test that fails if narrator p95 or intent_router_pass exceeds a threshold, so this cannot silently regress again.'
+      - Verified on a fresh 2-seat understudy run across one Fate world (pulp_noir/annees_folles) and one non-Fate world, with before/after turn_complete numbers from turn_telemetry.
+    type: bug
