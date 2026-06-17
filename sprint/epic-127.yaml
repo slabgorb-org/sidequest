@@ -20,9 +20,11 @@ stories:
     title: 'advancement-effect-hosts.md: repoint dead sidequest-api Rust crate links to the Python advancement loader; reconcile ADR-078 (reversed by 114) and ADR-081 (deferred) framing'
     points: 2
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: orchestrator
     workflow: trivial
+    completed: '2026-06-17'
     type: chore
   - id: 127-3
     title: 'api-contract.md ruleset description: six modules, add awn+fate, native vestigial, all 11 pack bindings; reconcile the native-dial-packs resolver language with the two-SRD reality'
