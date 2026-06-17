@@ -53,7 +53,7 @@ All six plugins drafted. Combined ~7400 lines of plugin content.
 
 ### Per-genre `magic.yaml` files
 
-7 production genre packs + 4 workshop-only = 11 unique genres. Five had `magic_level: none` mislabels corrected in earlier sessions.
+All live packs now sit under `genre_packs/` — the `genre_workshopping/` staging tree was **retired 2026-06-03** (`low_fantasy` was deleted with it; the per-genre `magic.yaml` paths below should be read as their current `genre_packs/` locations). Five had `magic_level: none` mislabels corrected in earlier sessions.
 
 | Pack | Location | Status |
 |---|---|---|
@@ -61,7 +61,7 @@ All six plugins drafted. Combined ~7400 lines of plugin content.
 | mutant_wasteland | `genre_packs/mutant_wasteland/magic.yaml` | ✅ napkin-shape draft |
 | spaghetti_western | `genre_packs/spaghetti_western/magic.yaml` | ✅ napkin-shape draft |
 | tea_and_murder | `genre_packs/tea_and_murder/magic.yaml` | ✅ napkin-shape draft |
-| road_warrior | `genre_workshopping/road_warrior/magic.yaml` | ✅ napkin-shape draft |
+| road_warrior | `genre_packs/road_warrior/magic.yaml` | ✅ napkin-shape draft (live `cwn` pack) |
 | heavy_metal | `genre_packs/heavy_metal/_drafts/magic.yaml` | ✅ schema-validation draft |
 | elemental_harmony | (no magic.yaml yet) | ⏳ TODO |
 | space_opera | (only `magic_design.md`, rewritten last session) | ⏳ TODO migrate to magic.yaml |
