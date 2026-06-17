@@ -122,3 +122,11 @@ stories:
       - "WIRING: end-to-end test of the player throw→resolve round-trip through the real handler (not a fixture), and confirmation the NPC path still server-rolls. Reuse 125-4's throw_params/seed payload fields + dF '0' label (no revert)."
     completed: '2026-06-17'
     review_verdict: approved
+  - id: 126-8
+    title: '[FATE] Player defense 4dF is determinative (physics-is-the-roll) — the DEFEND barrier (ADR-148/149)'
+    description: "The DEFEND half of ADR-148, deliberately deferred from 126-7. Story 126-7 made the player's PROACTIVE Fate 4dF determinative (FATE_THROW: settled tray faces ARE the roll, server resolves from reported faces). 126-8 brings the player's DEFENSE roll into the same physics-is-the-roll model: today _roll_defense / _seat_opponent_commits in sidequest/server/dispatch/fate_conflict.py still roll the defending player's 4dF SERVER-SIDE with the tray as decoration. When a SEATED Fate PC defends against an attack, the player should physically throw the 4dF and the settled faces resolve the defense (no roll_4df on the player defense path). NPC/opponent rolls stay server-side. New client->server FATE_DEFEND_THROW message + ui defense throw tray mirroring 126-7's FateThrowHandler/FateDiceTray. Per ADR-148 line 146 this is 'Story 126-8 / ADR-149' — the no-roll_4df-on-the-player-path invariant extends from proactive to defense. SOUL: bind the ruleset (Fate ladder math unchanged)."
+    points: 5
+    priority: p3
+    status: backlog
+    repos: server,ui
+    workflow: tdd
