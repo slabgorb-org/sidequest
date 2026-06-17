@@ -11,16 +11,18 @@ stories:
     description: "Marquee deferred test from the eval ([FATE/NOTE]). Fate PCs carry BOTH a Fate sheet (stress + four consequence slots) AND the legacy unified-model fields core.hp={current:10,max:10}/armor_class=10/xp=0/level=1 (ADR-007), parallel tracks. Open question, never exercisable in-session (blocked by the now-fixed intent-router error_max_turns blocker AND the now-fixed GameBoard 'thresholds is not iterable' crash): when a SEATED Fate conflict deals harm, does it fill Fate stress/consequences or ablate core.hp? If combat reads core.hp (the 06-14 hp_depletion track) instead of Fate stress, the ADR-144 binding is HALF-WIRED — violates SOUL 'Bind the Ruleset, Don't Balance It' (the bound ruleset's engine must REPLACE the native one for what it covers, not layer on top). This is the lie-detector question for the whole Fate binding. Source: sq-playtest-pingpong [FATE/NOTE]."
     points: 5
     priority: p2
-    status: started
+    status: done
     started: '2026-06-17'
     repos: server
     workflow: tdd
-    branch: feat/126-1-fate-conflict-harm-ablates-stress
     acceptance_criteria:
       - 'Seat a real Fate conflict in a Fate pack (e.g. grab/attack an NPC) and confirm the mechanical spine fires: FATE_ROLL + fate.* + confrontation.* OTEL spans present (GM-panel lie-detector), confrontation != None.'
       - Harm from the conflict ablates the Fate stress/consequence track, NOT core.hp. Add a server test asserting a Fate-conflict harm event decrements Fate stress/fills a consequence and leaves core.hp untouched.
       - "If harm currently reads core.hp: wire the harm-application path in the Fate ruleset module to Fate stress/consequences (replace, don't balance). Include the wiring/integration test that proves the path is reachable from the live conflict dispatch."
+    completed: '2026-06-17'
+    branch: feat/126-1-fate-conflict-harm-ablates-stress
     type: bug
+    review_verdict: approved
   - id: 126-2
     title: '[BUG] Re-verify router-driven encounter seating returns the table/card game (poker)'
     description: "The 'card game totally broken and not engaging' finding was diagnosed as DOWNSTREAM of the intent-router error_max_turns blocker (now fixed), NOT a table-engine regression. N-seat table games seat at narration_apply.py:5450 only when a ResolutionMode.table_resolution ConfrontationDef arrives via the router-driven dispatch path (post-ADR-113). Router degraded (dispatch_package=None) -> no table_resolution cdef -> instantiate_table_encounter() (encounter_lifecycle.py:1175) never reached -> live save showed encounter=None. The table engine is intact (last table work #522 feat(table) / #685 War Rig crew table-game, both pre-Fate-port). FIXER's explicit instruction: re-test now the router fires; if it still doesn't seat, file/fix as a genuinely separate finding. DO NOT pre-emptively hunt in game/table/. Source: sq-playtest-pingpong [BUG] card game."
