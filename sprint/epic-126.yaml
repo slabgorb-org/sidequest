@@ -1,0 +1,83 @@
+id: '126'
+type: epic
+title: Fate Core playtest follow-ups — annees_folles eval (2026-06-16/17)
+description: "Still-open findings from the 2026-06-16/17 Fate Core evaluation playtest (pulp_noir/annees_folles, ADR-144 binding). NOT re-filed here: five blocker/major findings were fixed+merged DURING the session and await only DRIVER re-verification (GameBoard 'thresholds is not iterable' crash ui#408; stale skill-pyramid validator ui#409; OTEL Inspector live span mis-attribution server#923+ui#407; legacy chargen confirmation card server#926; free-text origin dropped #917); three more were verified in-session (intent-router error_max_turns; FATE-MAJOR identical-static-sheet via 121-8; portrait-picker empty-state #402). This epic captures what's genuinely left: the marquee in-play Fate-conflict ablation test (finally exercisable now the router + GameBoard blockers are cleared), the router-driven table/card re-seat verify, the Fate-gear visibility UX (Keith decision pending), and three carryover/observation items. Source: sq-playtest-pingpong 2026-06-17."
+priority: p3
+status: backlog
+repos: server,ui
+stories:
+  - id: 126-1
+    title: '[FATE] Verify + wire Fate-conflict harm to ablate stress/consequences, not core.hp'
+    description: "Marquee deferred test from the eval ([FATE/NOTE]). Fate PCs carry BOTH a Fate sheet (stress + four consequence slots) AND the legacy unified-model fields core.hp={current:10,max:10}/armor_class=10/xp=0/level=1 (ADR-007), parallel tracks. Open question, never exercisable in-session (blocked by the now-fixed intent-router error_max_turns blocker AND the now-fixed GameBoard 'thresholds is not iterable' crash): when a SEATED Fate conflict deals harm, does it fill Fate stress/consequences or ablate core.hp? If combat reads core.hp (the 06-14 hp_depletion track) instead of Fate stress, the ADR-144 binding is HALF-WIRED — violates SOUL 'Bind the Ruleset, Don't Balance It' (the bound ruleset's engine must REPLACE the native one for what it covers, not layer on top). This is the lie-detector question for the whole Fate binding. Source: sq-playtest-pingpong [FATE/NOTE]."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - 'Seat a real Fate conflict in a Fate pack (e.g. grab/attack an NPC) and confirm the mechanical spine fires: FATE_ROLL + fate.* + confrontation.* OTEL spans present (GM-panel lie-detector), confrontation != None.'
+      - Harm from the conflict ablates the Fate stress/consequence track, NOT core.hp. Add a server test asserting a Fate-conflict harm event decrements Fate stress/fills a consequence and leaves core.hp untouched.
+      - "If harm currently reads core.hp: wire the harm-application path in the Fate ruleset module to Fate stress/consequences (replace, don't balance). Include the wiring/integration test that proves the path is reachable from the live conflict dispatch."
+    type: bug
+  - id: 126-2
+    title: '[BUG] Re-verify router-driven encounter seating returns the table/card game (poker)'
+    description: "The 'card game totally broken and not engaging' finding was diagnosed as DOWNSTREAM of the intent-router error_max_turns blocker (now fixed), NOT a table-engine regression. N-seat table games seat at narration_apply.py:5450 only when a ResolutionMode.table_resolution ConfrontationDef arrives via the router-driven dispatch path (post-ADR-113). Router degraded (dispatch_package=None) -> no table_resolution cdef -> instantiate_table_encounter() (encounter_lifecycle.py:1175) never reached -> live save showed encounter=None. The table engine is intact (last table work #522 feat(table) / #685 War Rig crew table-game, both pre-Fate-port). FIXER's explicit instruction: re-test now the router fires; if it still doesn't seat, file/fix as a genuinely separate finding. DO NOT pre-emptively hunt in game/table/. Source: sq-playtest-pingpong [BUG] card game."
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - In a pack with a table game (e.g. spaghetti_western poker), trigger a poker/table scene; confirm a table_resolution cdef arrives via the live router and instantiate_table_encounter() runs (encounter != None, antes/seats/sealed-commit loop present).
+      - If it STILL does not seat after the router fix, capture the dispatch trace (router output -> cdef ResolutionMode) and fix the seating gap — that is the separate finding.
+    type: bug
+  - id: 126-3
+    title: "[FATE/UX] Surface Fate gear so a Fate player isn't stranded on an empty native Inventory panel"
+    description: "WORKING-AS-DESIGNED per ADR-144 (reclassified from [FATE-BUG]). The 114-10 Fate-gear migration (#472) deleted inventory.yaml for the four Fate packs; Fate has no carried inventory and no economy (game/ruleset/fate_gear.py + docs/superpowers/specs/2026-06-15-fate-gear-model-design.md: a ruleset:fate pack shipping inventory.yaml is a defined HARD ERROR). Gear dissolves into aspects via source_gear. The gap is pure UX: a Fate player who opens 'Inventory' sees an empty native panel (items:[], gold:0) and never learns their gear became aspects. DECISION (Keith, 2026-06-17): option (a) — HIDE the native Inventory tab for ruleset:fate packs (option (b), a read-only FatePanel Gear view, was declined). UI-ONLY change (no server work despite the epic's server repo tag) — do NOT populate inventory.items/gold (that re-introduces the carried inventory ADR-144 deliberately deleted). GOTCHA: a GameBoard dock tab is registered in TWO places — widgetRegistry/GameBoard AND MobileTabView's own TABS array; the jsdom wiring tests render the mobile path, so the conditional-hide must cover BOTH or the tab-reachability assertion will mismatch. Source: sq-playtest-pingpong [FATE-BUG] inventory; FIXER ruling (Dev/Hephaestus)."
+    points: 3
+    priority: p3
+    status: done
+    started: '2026-06-17'
+    repos: ui,server
+    workflow: tdd
+    acceptance_criteria:
+      - The native Inventory tab/panel is hidden for ruleset:fate PCs in BOTH the desktop dock (widgetRegistry/GameBoard) and the mobile path (MobileTabView TABS) — a Fate PC's GameBoard shows no Inventory tab.
+      - Native (WN/non-Fate) packs are unchanged and keep the Inventory tab.
+      - inventory.items / gold are NOT populated for Fate PCs (ADR-144 guard preserved).
+      - "Wiring/render test: a Fate PC's GameBoard has no Inventory tab (desktop + mobile); a native PC's does."
+    completed: '2026-06-17'
+    review_verdict: approved
+  - id: 126-4
+    title: '[BUG] Peer action text not visible during the WAIT phase (ADR-036 violation)'
+    description: "Carryover verify-target from 06-14, never resolved (the 06-16 session continued solo so MP couldn't be re-exercised). Peer action text is not visible during the WAIT phase — it only reveals at seal/resolve. This violates ADR-036's 2026-05-03 amendment: peer action text IS visible during the wait phase (collaborative visibility helps the table coordinate; sealed/hidden-submission 'sealed visibility' is reserved for the unimplemented PvP path — the playgroup doesn't slip notes to the DM). ~50% intermittent (suspected race). Likely the broadcast fan-out or the wait-phase render not applying peers' submitted-but-unsealed action text. Reproduce across MP turns (2 players), then fix so a peer's submitted action text shows during WAIT, not just at reveal. Source: sq-playtest-pingpong carryover verify-targets."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: ui,server
+    workflow: tdd
+    acceptance_criteria:
+      - 'Repro: 2-player MP session, one player submits an action; the other player sees that action text during the WAIT phase (before seal/resolve), reliably across multiple turns (kill the ~50% race).'
+      - Add a regression test (server broadcast or UI wait-phase render) that a peer's submitted-but-unsealed action text is delivered/rendered during WAIT, per ADR-036's 2026-05-03 amendment.
+    type: bug
+  - id: 126-5
+    title: "[UX-LOW] Chargen 'Backstory' is fed by the 'Description' input, not 'Background'"
+    description: "Carryover [UX-LOW] from 06-14. The character-sheet 'Backstory' field is populated from the chargen 'Description' input rather than the 'Background' input — a field-mapping mix-up. Verify which chargen input is intended to feed the sheet's Backstory and correct the wiring so Backstory reflects the Background input (or the intended source). Minor, non-blocking. Source: sq-playtest-pingpong carryover verify-targets."
+    points: 1
+    priority: p3
+    status: backlog
+    repos: ui
+    workflow: trivial
+    acceptance_criteria:
+      - Trace the chargen field mapping (Description vs Background -> sheet Backstory) and correct it so the sheet Backstory shows the intended input; add a small test pinning the mapping.
+    type: bug
+  - id: 126-6
+    title: '[CHORE] Downgrade intent_router.confrontation_verb_unrouted from WARNING (correct-suppression noise)'
+    description: 'Carryover [OBSERVATION] from 06-14. intent_router.confrontation_verb_unrouted logs at WARNING for a CORRECT suppression (expected behavior, not an error), diluting genuine warnings in the server log. Downgrade the correct-suppression path to DEBUG/INFO; keep WARNING only for genuinely unexpected unrouted verbs (if any such case exists). Telemetry-noise cleanup only. Source: sq-playtest-pingpong [OBSERVATION].'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    acceptance_criteria:
+      - intent_router.confrontation_verb_unrouted no longer logs at WARNING for the correct-suppression case (DEBUG/INFO instead); a real unexpected-unrouted case, if distinguishable, still warns.
+    type: chore
