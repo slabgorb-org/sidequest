@@ -42,6 +42,7 @@ completed_epics:
   - '121'
   - '118'
   - '124'
+  - '122'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -1003,3 +1004,48 @@ completed_stories:
     title: Tufte-redesign the OTEL Inspector — palette across the shell + full Timing & Timeline rebuild
     points: 8
     completed: '2026-06-16'
+  - id: 122-1
+    epic: '122'
+    title: "Foundation floor — relocate asset_urls, slug_fold, reference_anchors below server tier (kills 4 upward edges)"
+    points: 3
+    completed: '2026-06-15'
+  - id: 122-2
+    epic: '122'
+    title: Relocate pure combat-rules helpers (find_confrontation_def, resolve_damage_spec) out of server/dispatch into game/ruleset; drop lazy imports
+    points: 3
+    completed: '2026-06-15'
+  - id: 122-3
+    epic: '122'
+    title: Lift interior HTTP endpoint to server/rest.py; leave interior/ pure (no FastAPI imports)
+    points: 2
+    completed: '2026-06-16'
+  - id: 122-4
+    epic: '122'
+    title: Narrow orbital/intent from full Session to a 4-field read Protocol
+    points: 3
+    completed: '2026-06-15'
+  - id: 122-5
+    epic: '122'
+    title: "CI guard — fail on any domain->server upward import (foundation/game/genre/orbital/magic/interior); lands last + enforcing"
+    points: 2
+    completed: '2026-06-16'
+  - id: 122-6
+    epic: '122'
+    title: Rename asset_url OTEL span server.asset_url.resolved -> foundation.asset_url.resolved to match emitting tier (ADR-147 honesty follow-up); update the two asserting tests in tests/server/test_asset_urls.py
+    points: 1
+    completed: '2026-06-16'
+  - id: 122-7
+    epic: '122'
+    title: "Import-direction guard hardening — drop>=len root-escape boundary, except OSError in _parse_module, assert SIDEQUEST_PKG identity (ADR-147 122-5 review follow-up)"
+    points: 1
+    completed: '2026-06-17'
+  - id: 122-8
+    epic: '122'
+    title: "Relocate _KIND_TO_MESSAGE_CLS from server/session_handler to protocol tier; delete the validator.py grandfathered edge + its GRANDFATHERED guard entry (ADR-147 honesty — kills the last upward edge the guard grandfathers)"
+    points: 2
+    completed: '2026-06-17'
+  - id: 122-9
+    epic: '122'
+    title: Sweep pre-existing ruff I001 import-order debt across 8 server test files (ruff 0.15.11 flags them under uv-locked config; develop server-check currently red independent of any story)
+    points: 1
+    completed: '2026-06-17'
