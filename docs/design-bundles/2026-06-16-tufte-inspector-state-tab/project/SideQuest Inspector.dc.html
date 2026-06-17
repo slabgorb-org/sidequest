@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+::selection{background:rgba(205,106,78,0.28);}
+</style>
+</helmet>
+<div style="background:#19191b; min-height:100vh; color:#e7e5df; font-family:Georgia,'Iowan Old Style',serif;">
+
+  <div style="display:flex; align-items:baseline; gap:15px; padding:14px 26px 12px; border-bottom:1px solid #2a2a2e;">
+    <span style="font-family:Georgia,serif; font-size:17px; letter-spacing:0.04em; color:#e7e5df;">SideQuest <span style="color:#86847d; font-style:italic;">Inspector</span></span>
+    <span style="{{ statusDotStyle }}">●</span>
+    <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.07em; color:#86847d; font-size:12px;">connected</span>
+    <div style="flex:1;"></div>
+    <span style="display:inline-flex; align-items:baseline; gap:7px; margin-right:2px;">
+      <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.08em; color:#86847d; font-size:12px;">turns</span>
+      <span style="font-family:'JetBrains Mono',monospace; color:#e7e5df; font-size:14px;">{{ turnCount }}</span>
+    </span>
+    <span style="display:inline-flex; align-items:baseline; gap:7px; margin-right:2px;">
+      <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.08em; color:#86847d; font-size:12px;">errors</span>
+      <span style="{{ errorStyle }}">{{ errorCount }}</span>
+    </span>
+    <span style="display:inline-flex; align-items:baseline; gap:7px; margin-right:12px;">
+      <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.08em; color:#86847d; font-size:12px;">p95</span>
+      <span style="font-family:'JetBrains Mono',monospace; color:#e7e5df; font-size:14px;">{{ p95 }}</span>
+      {{ p95Spark }}
+    </span>
+    <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:12px; cursor:pointer;" style-hover="color:#e7e5df;">pause</span>
+    <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:12px; cursor:pointer;" style-hover="color:#e7e5df;">clear</span>
+    <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:12px; cursor:pointer;" style-hover="color:#e7e5df;">↻ state</span>
+  </div>
+
+  <div style="padding:7px 26px; border-bottom:1px solid #2a2a2e; display:flex; align-items:center; gap:9px; font-family:'JetBrains Mono',monospace; font-size:11px; color:#86847d;">
+    <span style="color:#7faa86;">● live</span>
+    <span style="color:#3a3a40;">/</span>
+    <span style="color:#b6b4ac;">narrator</span>
+    <span>fantasy · aetheria-reach</span>
+    <span style="color:#3a3a40;">·</span>
+    <span>{{ turnCount }} turns</span>
+    <span style="margin-left:auto; color:#6a6a64; cursor:pointer;">load forensic bundle ▾</span>
+  </div>
+
+  <div style="display:flex; padding:0 18px; border-bottom:1px solid #2a2a2e;">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="9">
+      <div onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}<sc-if value="{{ t.badge }}" hint-placeholder-val="{{ true }}"><span style="{{ t.badgeStyle }}">{{ t.badge }}</span></sc-if></div>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ isTimeline }}" hint-placeholder-val="{{ true }}">
+    <div style="{{ contentStyle }}">
+      <div style="display:flex; gap:32px; align-items:flex-start;">
+        <div style="width:204px; flex-shrink:0;">
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:8px; border-bottom:1px solid #2a2a2e;">Turns</div>
+          <div style="max-height:600px; overflow-y:auto;">
+            <sc-for list="{{ turnList }}" as="t" hint-placeholder-count="9">
+              <div onClick="{{ t.onClick }}" style="{{ t.style }}"><span>{{ t.label }}</span><span style="{{ t.durStyle }}">{{ t.dur }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; padding-bottom:5px; margin-bottom:6px; border-bottom:1px solid #2a2a2e;">
+            <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px;">{{ flameTitle }}</span>
+            <span style="{{ flameBnStyle }}">{{ flameBnText }}</span>
+          </div>
+          <div style="font-family:Georgia,serif; font-style:italic; color:#6a6a64; font-size:11px; margin-bottom:10px;">nesting = caller ▸ callee · width = time · faded = container span, solid = work done · outlined = critical span</div>
+          <div style="display:flex; gap:15px; margin-bottom:12px; font-family:'JetBrains Mono',monospace; font-size:11px; flex-wrap:wrap;">
+            <sc-for list="{{ flameLegend }}" as="l" hint-placeholder-count="6"><span style="{{ l.style }}">● {{ l.name }}</span></sc-for>
+          </div>
+          {{ flameEl }}
+          <div style="font-family:Georgia,serif; font-style:italic; color:#b6b4ac; font-size:14px; margin-top:16px; border-top:1px solid #2a2a2e; padding-top:12px;">“{{ inputLine }}”</div>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px 28px; margin-top:14px;">
+            <sc-for list="{{ detailRows }}" as="dr" hint-placeholder-count="6">
+              <div>
+                <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.07em; color:#86847d; font-size:11px;">{{ dr.k }}</div>
+                <div style="{{ dr.vStyle }}">{{ dr.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isTiming }}" hint-placeholder-val="{{ true }}">
+    <div style="{{ contentStyle }}">
+
+      <div style="display:flex; gap:46px; align-items:flex-end; margin-bottom:32px; flex-wrap:wrap;">
+        <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.09em; color:#86847d; font-size:12px;">{{ s.label }}</span>
+            <span style="display:flex; align-items:baseline; gap:9px;"><span style="{{ s.valStyle }}">{{ s.value }}</span>{{ s.spark }}</span>
+            <span style="font-family:Georgia,serif; font-style:italic; color:#6a6a64; font-size:11px;">{{ s.sub }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="margin-bottom:32px;">
+        <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:6px; border-bottom:1px solid #2a2a2e;">Phase breakdown</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#6a6a64; margin-bottom:12px;">{{ phaseNote }}</div>
+        {{ phasesEl }}
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-bottom:32px;">
+        <div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:14px; border-bottom:1px solid #2a2a2e;">Agent duration · distribution</div>
+          {{ histogramEl }}
+        </div>
+        <div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:14px; border-bottom:1px solid #2a2a2e;">By agent · mean &amp; range</div>
+          {{ agentDotsEl }}
+        </div>
+      </div>
+
+      <div style="margin-bottom:32px;">
+        <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:6px; border-bottom:1px solid #2a2a2e;">Turn duration over time</div>
+        <div style="display:flex; gap:16px; margin:6px 0 12px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+          <sc-for list="{{ legend }}" as="l" hint-placeholder-count="4"><span style="{{ l.style }}">● {{ l.name }}</span></sc-for>
+        </div>
+        {{ scatterEl }}
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px;">
+        <div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:6px; border-bottom:1px solid #2a2a2e;">Token usage &amp; cache <span style="font-variant:normal; font-style:italic; letter-spacing:0; color:#6a6a64; font-size:11px;">— in / out / cached</span></div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#6a6a64; margin-bottom:9px;">{{ cacheNote }}</div>
+          <div style="display:flex; gap:14px; margin-bottom:10px; font-family:'JetBrains Mono',monospace; font-size:11px; flex-wrap:wrap;">
+            <sc-for list="{{ tokenLegend }}" as="l" hint-placeholder-count="4"><span style="{{ l.style }}">● {{ l.name }}</span></sc-for>
+          </div>
+          {{ tokensEl }}
+        </div>
+        <div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:14px; border-bottom:1px solid #2a2a2e;">Extraction tier <span style="font-variant:normal; font-style:italic; letter-spacing:0; color:#6a6a64; font-size:11px;">— was a donut</span></div>
+          {{ tiersEl }}
+        </div>
+      </div>
+
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isState }}" hint-placeholder-val="{{ true }}">
+    <div style="{{ contentStyle }}">
+
+      <div style="display:flex; align-items:baseline; gap:13px; margin-bottom:26px;">
+        <span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.08em; color:#86847d; font-size:12px;">search</span>
+        <input value="{{ filterValue }}" onChange="{{ onFilter }}" placeholder="filter npcs, items…" style="background:transparent; border:none; border-bottom:1px solid #3a3a40; color:#e7e5df; font-family:'JetBrains Mono',monospace; font-size:12px; padding:3px 2px; width:240px; outline:none;">
+        <span style="margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:11px; color:#86847d;">{{ stateSession }}</span>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:44px; margin-bottom:32px;">
+        <div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:12px; border-bottom:1px solid #2a2a2e;">Location</div>
+          <div style="font-family:Georgia,serif; font-size:23px; color:#e7e5df; margin-bottom:4px;">{{ stateLocation }}</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#86847d; margin-bottom:16px;">{{ stateSub }}</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.07em; color:#86847d; font-size:11px; margin-bottom:6px;">discovered regions</div>
+          <div style="display:flex; flex-wrap:wrap; gap:5px 16px; font-family:'JetBrains Mono',monospace; font-size:12px; color:#8fb39a;">
+            <sc-for list="{{ stateRegions }}" as="r" hint-placeholder-count="4"><span>{{ r.name }}</span></sc-for>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:12px; border-bottom:1px solid #2a2a2e;">Tropes <span style="font-variant:normal; letter-spacing:0; color:#6a6a64; font-size:11px;">{{ tropesCount }}</span></div>
+          {{ tropesEl }}
+        </div>
+      </div>
+
+      <div style="margin-bottom:32px;">
+        <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:14px; border-bottom:1px solid #2a2a2e;">{{ playerTitle }}</div>
+        <div style="display:flex; align-items:center; gap:30px; margin-bottom:20px; flex-wrap:wrap;">
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.07em; color:#86847d; font-size:11px;">hp</span><span style="{{ playerHpStyle }}">{{ playerHpText }}</span>{{ playerHpEl }}</span>
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.07em; color:#86847d; font-size:11px;">xp</span><span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#e7e5df;">{{ playerXp }}</span></span>
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.07em; color:#86847d; font-size:11px;">gold</span><span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b3a578;">{{ playerGold }}</span></span>
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.07em; color:#86847d; font-size:11px;">at</span><span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b6b4ac;">{{ playerLoc }}</span></span>
+        </div>
+        <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.07em; color:#86847d; font-size:11px; margin-bottom:4px;">inventory</div>
+        <div style="display:grid; grid-template-columns:1.8fr 1.1fr 0.8fr 0.8fr; gap:0 18px;">
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">item</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">narrative weight</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">stage</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">state</div>
+          <sc-for list="{{ invRows }}" as="it" hint-placeholder-count="6">
+            <div style="font-family:Georgia,serif; font-size:13px; color:#e7e5df; padding:6px 0; border-bottom:1px solid #232327;">{{ it.name }}</div>
+            <div style="display:flex; align-items:center; gap:9px; padding:6px 0; border-bottom:1px solid #232327;">{{ it.weightEl }}<span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#86847d;">{{ it.weightText }}</span></div>
+            <div style="{{ it.stageStyle }}">{{ it.stage }}</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#86847d; padding:6px 0; border-bottom:1px solid #232327;">{{ it.state }}</div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="margin-bottom:32px;">
+        <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:10px; border-bottom:1px solid #2a2a2e;">NPC registry <span style="font-variant:normal; letter-spacing:0; color:#6a6a64; font-size:11px;">{{ npcCount }}</span></div>
+        <div style="display:grid; grid-template-columns:1.3fr 0.9fr 1.2fr 0.6fr 0.7fr 0.8fr 0.7fr; gap:0 16px;">
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">name</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">role</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">location</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">hp</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">last seen</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">pronouns</div>
+          <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.06em; color:#86847d; font-size:11px; padding:0 0 5px; border-bottom:1px solid #2a2a2e;">OCEAN</div>
+          <sc-for list="{{ npcRows }}" as="n" hint-placeholder-count="8">
+            <div style="font-family:Georgia,serif; font-size:13px; color:#e7e5df; padding:6px 0; border-bottom:1px solid #232327;">{{ n.name }}</div>
+            <div style="font-family:Georgia,serif; font-size:12.5px; color:#86847d; padding:6px 0; border-bottom:1px solid #232327;">{{ n.role }}</div>
+            <div style="font-family:Georgia,serif; font-size:12.5px; color:#86847d; padding:6px 0; border-bottom:1px solid #232327;">{{ n.location }}</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#b6b4ac; padding:6px 0; border-bottom:1px solid #232327;">{{ n.hpText }}</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#86847d; padding:6px 0; border-bottom:1px solid #232327;">{{ n.lastSeen }}</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#86847d; padding:6px 0; border-bottom:1px solid #232327;">{{ n.pronouns }}</div>
+            <div style="padding:6px 0; border-bottom:1px solid #232327;">{{ n.oceanEl }}</div>
+          </sc-for>
+        </div>
+        <div style="font-family:Georgia,serif; font-style:italic; color:#6a6a64; font-size:10px; margin-top:8px;">OCEAN = openness · conscientiousness · extraversion · agreeableness · neuroticism</div>
+      </div>
+
+      <div>
+        <div style="font-family:Georgia,serif; font-variant:small-caps; letter-spacing:0.1em; color:#9a988f; font-size:13px; padding-bottom:5px; margin-bottom:10px; border-bottom:1px solid #2a2a2e;">Infrastructure</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#86847d;">{{ infraLine }}</div>
+      </div>
+
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isOther }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex; align-items:center; justify-content:center; height:380px; color:#6a6a64; font-family:Georgia,serif; font-style:italic; font-size:15px;">{{ placeholderText }}</div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:900},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#4ab4cf&quot;,&quot;options&quot;:[&quot;#cd6a4e&quot;,&quot;#c9a227&quot;,&quot;#7aa2c4&quot;,&quot;#9c8fb3&quot;]},&quot;showRefs&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;comfortable&quot;,&quot;options&quot;:[&quot;compact&quot;,&quot;comfortable&quot;]}}">
+class Component extends DCLogic {
+  state = { activeTab: 3, selectedTurn: null, stateFilter: "" };
+
+  data = this.makeData();
+  stateData = this.makeState();
+
+  get MONO() { return "'JetBrains Mono', ui-monospace, monospace"; }
+  get SERIF() { return "Georgia, 'Iowan Old Style', 'Palatino Linotype', serif"; }
+  get showRefs() { return this.props.showRefs ?? true; }
+  get density() { return this.props.density ?? "comfortable"; }
+
+  get theme() {
+    const accent = this.props.accent ?? "#cd6a4e";
+    return {
+      bg: "#19191b", ink: "#e7e5df", inkDim: "#b6b4ac", muted: "#86847d",
+      faint: "#3a3a40", rule: "#2a2a2e", dot: "#6a6a64", accent,
+      steel: "#8fa3c0", steelDim: "#5e6b80", ochre: "#b3a578", sage: "#8fb39a", mauve: "#bf9fb3", good: "#7faa86",
+    };
+  }
+
+  agentColor(n) {
+    const T = this.theme;
+    return ({ narrator: T.steel, ensemble: T.sage, creature_smith: T.mauve, dialectician: T.ochre })[n] || T.inkDim;
+  }
+
+  rng(seed) {
+    let s = seed >>> 0;
+    return function () {
+      s += 0x6d2b79f5; let t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  makeData() {
+    const r = this.rng(20260411);
+    const agents = [["narrator", 2100, 0.5], ["ensemble", 3100, 0.2], ["creature_smith", 4700, 0.16], ["dialectician", 2500, 0.14]];
+    const pickA = () => { let x = r(), c = 0; for (const a of agents) { c += a[2]; if (x <= c) return a; } return agents[0]; };
+    const tiers = [["full", 0.5], ["partial", 0.2], ["cached", 0.2], ["skipped", 0.1]];
+    const pickTier = () => { let x = r(), c = 0; for (const t of tiers) { c += t[1]; if (x <= c) return t[0]; } return "full"; };
+    const inputs = [
+      "I search the ruined altar for hidden runes.",
+      "I ask the innkeeper about the missing caravan.",
+      "I draw my blade and charge the frost-wraith.",
+      "I try to barter the relic for safe passage.",
+      "I follow the ember-trail deeper into the mine.",
+      "I cast detect-magic on the sealed door.",
+      "I tend the wounded ranger by the fire.",
+      "I climb the shattered watchtower at dusk.",
+    ];
+    const mk = (nm, comp, dur) => ({ nm, comp, dur, kids: [], self: 0 });
+    const N = 42; const out = []; let ctx = 1700; let cold = true;
+    for (let i = 0; i < N; i++) {
+      const a = pickA(); const name = a[0]; const base = a[1];
+      let llmMain = base * (0.55 + r() * 0.85);
+      if (r() < 0.1) llmMain *= 1.7;
+      const degraded = r() < 0.04 || llmMain > base * 2.7;
+      const tier = degraded ? "degraded" : pickTier();
+
+      // ---- hierarchical span trace (caller -> callee nesting) ----
+      const promptNode = { nm: "prompt_build", comp: "prompt", self: Math.round(20 + r() * 40), dur: 0, kids: [mk("context_assemble", "prompt", Math.round(40 + r() * 70)), mk("memory_fetch", "prompt", Math.round(30 + r() * 60))] };
+      const llmKids = degraded
+        ? [mk("llm_call", "agent", Math.round(llmMain * 0.35)), mk("llm_call·retry", "agent", Math.round(llmMain))]
+        : [mk("llm_call", "agent", Math.round(llmMain))];
+      const llmNode = { nm: "agent_llm", comp: "agent", self: Math.round(30 + r() * 60), dur: 0, kids: llmKids };
+      let extNode;
+      if (tier === "skipped") {
+        extNode = { nm: "extraction", comp: "extraction", self: 0, dur: Math.round(20 + r() * 20), kids: [] };
+      } else {
+        const parse = mk("parse", "extraction", Math.round(60 + r() * 150));
+        const validate = mk("validate", "extraction", Math.round(40 + r() * 140));
+        extNode = { nm: "extraction", comp: "extraction", self: Math.round(15 + r() * 30), dur: 0, kids: tier === "cached" ? [parse] : [parse, validate] };
+      }
+      const stateNode = { nm: "state_update", comp: "state", self: Math.round(20 + r() * 40), dur: 0, kids: [mk("state_patch", "state", Math.round(60 + r() * 180))] };
+      const persist = mk("persist", "persist", Math.round(28 + r() * 80));
+      const broadcast = mk("broadcast", "persist", Math.round(18 + r() * 60));
+      const depth1 = [promptNode, llmNode, extNode, stateNode, persist, broadcast];
+      let media = 0;
+      if (name === "creature_smith") { if (r() < 0.6) media = Math.round(520 + r() * 1300); }
+      else if (r() < 0.12) media = Math.round(420 + r() * 900);
+      if (media > 0) depth1.push(mk("media", "media", media));
+      const root = { nm: "turn", comp: "root", self: Math.round(20 + r() * 70), dur: 0, kids: depth1 };
+      const calc = (n) => { if (n.kids && n.kids.length) { n.dur = (n.self || 0) + n.kids.reduce((s, k) => s + calc(k), 0); } return n.dur; };
+      calc(root);
+      const spans = []; const walk = (n, depth, start) => {
+        spans.push({ nm: n.nm, comp: n.comp, depth, start: Math.round(start), dur: Math.round(n.dur), leaf: !(n.kids && n.kids.length) });
+        let c = start; (n.kids || []).forEach((k) => { walk(k, depth + 1, c); c += k.dur; });
+      };
+      walk(root, 0, 0);
+      const total = Math.round(root.dur);
+
+      const phase_durations_ms = { prompt_build: promptNode.dur, agent_llm: llmNode.dur, extraction: extNode.dur, state_update: stateNode.dur, persist: persist.dur, broadcast: broadcast.dur };
+      if (media > 0) phase_durations_ms.media = media;
+      const phase_call_counts = {}; if (degraded) phase_call_counts.agent_llm = 2; if (extNode.kids && extNode.kids.length > 1) phase_call_counts.extraction = 2;
+      const agent_dur = promptNode.dur + llmNode.dur + extNode.dur + (media > 0 ? media : 0);
+
+      // ---- tokens + prompt cache ----
+      const tokens_in = Math.round(ctx + r() * 420);
+      const tokens_out = Math.round(200 + r() * 720);
+      let cache_read, cache_write;
+      if (cold) {
+        cache_read = Math.round(tokens_in * (0.02 + r() * 0.05));
+        cache_write = Math.round(tokens_in * (0.85 + r() * 0.12));
+      } else {
+        const hit = 0.68 + r() * 0.27;
+        cache_read = Math.round(tokens_in * hit);
+        cache_write = Math.round(120 + r() * 420);
+      }
+      const fresh_in = Math.max(0, tokens_in - cache_read);
+      const cache_hit = tokens_in > 0 ? cache_read / tokens_in : 0;
+
+      out.push({
+        turn_id: i + 1, agent_name: name, player_input: inputs[Math.floor(r() * inputs.length)],
+        agent_duration_ms: agent_dur, total_duration_ms: total,
+        phase_durations_ms, phase_call_counts,
+        token_count_in: tokens_in, token_count_out: tokens_out,
+        cache_read, cache_write, fresh_in, cache_hit, cold,
+        extraction_tier: tier, is_degraded: degraded, spans,
+      });
+
+      ctx += 180 + r() * 520;
+      cold = false;
+      if (r() < 0.1) { ctx = 1700 + r() * 400; cold = true; }
+    }
+    return out;
+  }
+
+  svg(W, H, children) {
+    return React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", style: { display: "block", height: "auto", overflow: "visible" } }, children);
+  }
+
+  spark(vals, color, w, hgt) {
+    const h = React.createElement;
+    if (!vals || vals.length < 2) return null;
+    const W = w || 66, H = hgt || 16;
+    const mn = Math.min(...vals), mx = Math.max(...vals), rg = (mx - mn) || 1;
+    const pts = vals.map((v, i) => [(i / (vals.length - 1)) * (W - 2) + 1, H - 2 - ((v - mn) / rg) * (H - 4)]);
+    const d = "M" + pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L");
+    const last = pts[pts.length - 1];
+    return h("svg", { width: W, height: H, style: { display: "inline-block", verticalAlign: "middle", overflow: "visible" } }, [
+      h("path", { key: "p", d, fill: "none", stroke: color, strokeWidth: 1 }),
+      h("circle", { key: "c", cx: last[0], cy: last[1], r: 1.6, fill: color }),
+    ]);
+  }
+
+  flame(turn) {
+    const T = this.theme, h = React.createElement, MONO = this.MONO, SERIF = this.SERIF;
+    const spans = turn.spans, total = turn.total_duration_ms;
+    const maxD = Math.max(...spans.map((s) => s.depth));
+    const W = 900, rowH = 27, m = { l: 4, r: 8, t: 6, b: 24 };
+    const plotW = W - m.l - m.r, H = m.t + (maxD + 1) * rowH + m.b;
+    const x = (v) => m.l + (v / total) * plotW;
+    const cc = { prompt: T.steel, agent: T.mauve, extraction: T.sage, state: T.ochre, persist: T.muted, media: T.inkDim, root: T.rule };
+    let bn = null; spans.forEach((s) => { if (s.leaf && (!bn || s.dur > bn.dur)) bn = s; });
+    const els = [];
+    spans.forEach((s, i) => {
+      const bx = x(s.start), bw = Math.max(1.2, x(s.start + s.dur) - x(s.start)), by = m.t + s.depth * rowH;
+      const col = cc[s.comp] || T.muted;
+      const isBn = bn && s.nm === bn.nm && s.start === bn.start && s.depth === bn.depth;
+      els.push(h("rect", { key: "r" + i, x: bx, y: by, width: bw, height: rowH - 2, fill: col, opacity: s.comp === "root" ? 0.16 : s.leaf ? 0.82 : 0.34, stroke: isBn ? T.accent : T.bg, strokeWidth: isBn ? 1.5 : 0.5 }, h("title", null, `${s.nm} · ${s.dur}ms · @${s.start}ms · depth ${s.depth}`)));
+      if (bw > 46) els.push(h("text", { key: "t" + i, x: bx + 5, y: by + rowH / 2 + 3.5, fill: s.leaf ? T.ink : T.inkDim, fontFamily: s.comp === "root" ? SERIF : MONO, fontSize: 11 }, s.nm + (bw > 104 ? "  " + s.dur + "ms" : "")));
+    });
+    const ay = m.t + (maxD + 1) * rowH + 2;
+    els.push(h("line", { key: "ax", x1: x(0), x2: x(total), y1: ay, y2: ay, stroke: T.faint, strokeWidth: 1 }));
+    [0, total / 2, total].forEach((tk, i) => els.push(h("text", { key: "axt" + i, x: x(tk), y: ay + 13, fill: T.muted, fontFamily: MONO, fontSize: 10, textAnchor: i === 0 ? "start" : i === 2 ? "end" : "middle" }, Math.round(tk) + "ms")));
+    return this.svg(W, H, els);
+  }
+
+  hist() {
+    const T = this.theme, h = React.createElement, MONO = this.MONO;
+    const vals = this.data.map((d) => d.agent_duration_ms / 1000);
+    const W = 520, H = 192, m = { l: 30, r: 14, t: 22, b: 28 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const max = Math.max(...vals);
+    const nb = 12, bw = max / nb;
+    const counts = new Array(nb).fill(0);
+    vals.forEach((v) => { counts[Math.min(nb - 1, Math.floor(v / bw))]++; });
+    const cmax = Math.max(...counts);
+    const x = (v) => m.l + (v / max) * iw;
+    const y = (c) => m.t + ih - (c / cmax) * ih;
+    const sorted = [...vals].sort((a, b) => a - b);
+    const med = sorted[Math.floor(sorted.length * 0.5)];
+    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+    const els = [];
+    counts.forEach((c, i) => {
+      if (c === 0) return;
+      els.push(h("rect", { key: "b" + i, x: x(i * bw) + 0.8, y: y(c), width: (iw / nb) - 1.6, height: (m.t + ih) - y(c), fill: T.inkDim, opacity: 0.85 }));
+    });
+    els.push(h("line", { key: "base", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih, stroke: T.faint, strokeWidth: 1 }));
+    [0, max / 2, max].forEach((tk, i) => els.push(h("text", { key: "xt" + i, x: x(tk), y: m.t + ih + 15, fill: T.muted, fontFamily: MONO, fontSize: 10, textAnchor: i === 0 ? "start" : i === 2 ? "end" : "middle" }, tk.toFixed(1) + "s")));
+    els.push(h("text", { key: "ym", x: m.l - 5, y: m.t + 4, fill: T.muted, fontFamily: MONO, fontSize: 9, textAnchor: "end" }, String(cmax)));
+    els.push(h("text", { key: "y0", x: m.l - 5, y: m.t + ih, fill: T.muted, fontFamily: MONO, fontSize: 9, textAnchor: "end" }, "0"));
+    if (this.showRefs) {
+      els.push(h("line", { key: "medl", x1: x(med), x2: x(med), y1: m.t, y2: m.t + ih, stroke: T.inkDim, strokeWidth: 1, strokeDasharray: "2 3" }));
+      els.push(h("text", { key: "medt", x: x(med), y: m.t - 4, fill: T.inkDim, fontFamily: MONO, fontSize: 9, textAnchor: "middle" }, "med " + med.toFixed(1) + "s"));
+      els.push(h("line", { key: "p95l", x1: x(p95), x2: x(p95), y1: m.t, y2: m.t + ih, stroke: T.accent, strokeWidth: 1, strokeDasharray: "2 3" }));
+      els.push(h("text", { key: "p95t", x: x(p95), y: m.t + 9, fill: T.accent, fontFamily: MONO, fontSize: 9, textAnchor: p95 > max * 0.85 ? "end" : "middle" }, "p95 " + p95.toFixed(1) + "s"));
+    }
+    return this.svg(W, H, els);
+  }
+
+  agentDots() {
+    const T = this.theme, h = React.createElement, MONO = this.MONO, SERIF = this.SERIF;
+    const by = {};
+    this.data.forEach((d) => { (by[d.agent_name] = by[d.agent_name] || []).push(d.agent_duration_ms / 1000); });
+    const rows = Object.keys(by).map((name) => {
+      const a = by[name]; const avg = a.reduce((x, y) => x + y, 0) / a.length;
+      return { name, seq: a, avg, min: Math.min(...a), max: Math.max(...a), count: a.length };
+    }).sort((x, y) => y.avg - x.avg);
+    const W = 540, rowH = 34, top = 14, H = top + rows.length * rowH + 10;
+    const labW = 94, sL = 172, sR = 436;
+    const gmax = Math.max(...rows.map((r) => r.max));
+    const x = (v) => sL + (v / gmax) * (sR - sL);
+    const els = [];
+    els.push(h("text", { key: "sphdr", x: 100, y: top - 2, fill: T.muted, fontFamily: SERIF, fontSize: 9, fontStyle: "italic" }, "per turn"));
+    rows.forEach((rw, i) => {
+      const cy = top + i * rowH + rowH / 2;
+      const col = this.agentColor(rw.name);
+      els.push(h("text", { key: "l" + i, x: labW, y: cy + 4, textAnchor: "end", fill: col, fontFamily: SERIF, fontSize: 13 }, rw.name));
+      const sw = 60, sh = 16, sx0 = 100, sy0 = cy - 8, mn = Math.min(...rw.seq), mx = Math.max(...rw.seq), rg = (mx - mn) || 1;
+      const pts = rw.seq.map((v, k) => [sx0 + (k / (rw.seq.length - 1 || 1)) * (sw - 2) + 1, sy0 + sh - 2 - ((v - mn) / rg) * (sh - 4)]);
+      els.push(h("path", { key: "sp" + i, d: "M" + pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L"), fill: "none", stroke: T.muted, strokeWidth: 1 }));
+      els.push(h("line", { key: "bl" + i, x1: sL, x2: sR, y1: cy, y2: cy, stroke: T.rule, strokeWidth: 1, strokeDasharray: "1 3" }));
+      els.push(h("line", { key: "rg" + i, x1: x(rw.min), x2: x(rw.max), y1: cy, y2: cy, stroke: col, strokeWidth: 1, opacity: 0.5 }));
+      els.push(h("circle", { key: "d" + i, cx: x(rw.avg), cy, r: 3.2, fill: col }, h("title", null, rw.name + " avg " + rw.avg.toFixed(1) + "s, range " + rw.min.toFixed(1) + "–" + rw.max.toFixed(1) + "s")));
+      els.push(h("text", { key: "v" + i, x: 446, y: cy + 4, fill: T.ink, fontFamily: MONO, fontSize: 12 }, rw.avg.toFixed(1) + "s"));
+      els.push(h("text", { key: "c" + i, x: W, y: cy + 4, textAnchor: "end", fill: T.muted, fontFamily: MONO, fontSize: 11 }, "n=" + rw.count));
+    });
+    const yb = top + rows.length * rowH + 2;
+    [0, gmax].forEach((tk, i) => els.push(h("text", { key: "xtk" + i, x: i === 0 ? sL : sR, y: yb, fill: T.muted, fontFamily: MONO, fontSize: 9, textAnchor: i === 0 ? "start" : "end" }, tk.toFixed(1) + "s")));
+    return this.svg(W, H, els);
+  }
+
+  scatter() {
+    const T = this.theme, h = React.createElement, MONO = this.MONO, SERIF = this.SERIF;
+    const d = this.data, N = d.length;
+    const W = 1060, H = 234, m = { l: 38, r: 86, t: 14, b: 26 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const secs = d.map((t) => t.agent_duration_ms / 1000);
+    const maxY = Math.max(...secs);
+    const x = (i) => m.l + (i / (N - 1 || 1)) * iw;
+    const y = (v) => m.t + ih - (v / maxY) * ih;
+    const els = [];
+    els.push(h("line", { key: "ya", x1: m.l, x2: m.l, y1: y(maxY), y2: y(0), stroke: T.faint, strokeWidth: 1 }));
+    els.push(h("line", { key: "xa", x1: x(0), x2: x(N - 1), y1: m.t + ih, y2: m.t + ih, stroke: T.faint, strokeWidth: 1 }));
+    [0, maxY / 2, maxY].forEach((tk, i) => els.push(h("text", { key: "yt" + i, x: m.l - 6, y: y(tk) + 3, textAnchor: "end", fill: T.muted, fontFamily: MONO, fontSize: 10 }, tk.toFixed(1) + "s")));
+    for (let i = 0; i < N; i += 6) els.push(h("text", { key: "xt" + i, x: x(i), y: m.t + ih + 14, textAnchor: "middle", fill: T.muted, fontFamily: MONO, fontSize: 10 }, "T" + (i + 1)));
+    if (this.showRefs) {
+      const sorted = [...secs].sort((a, b) => a - b); const p95 = sorted[Math.floor(sorted.length * 0.95)];
+      els.push(h("line", { key: "p95", x1: x(0), x2: x(N - 1), y1: y(p95), y2: y(p95), stroke: T.accent, strokeWidth: 1, strokeDasharray: "3 3", opacity: 0.8 }));
+      els.push(h("text", { key: "p95t", x: x(N - 1) + 6, y: y(p95) + 3, fill: T.accent, fontFamily: MONO, fontSize: 10 }, "p95 " + p95.toFixed(1) + "s"));
+    }
+    const mv = secs.map((_, i) => { const s = Math.max(0, i - 4); const sl = secs.slice(s, i + 1); return sl.reduce((a, b) => a + b, 0) / sl.length; });
+    els.push(h("path", { key: "mv", d: "M" + mv.map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" L"), fill: "none", stroke: T.inkDim, strokeWidth: 1.4 }));
+    els.push(h("text", { key: "mvt", x: x(N - 1) + 6, y: y(mv[mv.length - 1]) + 3, fill: T.inkDim, fontFamily: SERIF, fontSize: 10, fontStyle: "italic" }, "5-turn mean"));
+    d.forEach((t, i) => {
+      const cx = x(i), cy = y(secs[i]);
+      if (t.is_degraded) {
+        const s = 3.2;
+        els.push(h("path", { key: "x" + i, d: `M${cx - s},${cy - s} L${cx + s},${cy + s} M${cx - s},${cy + s} L${cx + s},${cy - s}`, stroke: T.accent, strokeWidth: 1.5 }, h("title", null, `T${i + 1} · ${t.agent_name} · ${secs[i].toFixed(1)}s · degraded`)));
+      } else {
+        els.push(h("circle", { key: "pt" + i, cx, cy, r: 2.6, fill: this.agentColor(t.agent_name), stroke: T.bg, strokeWidth: 0.6 }, h("title", null, `T${i + 1} · ${t.agent_name} · ${secs[i].toFixed(1)}s`)));
+      }
+    });
+    return this.svg(W, H, els);
+  }
+
+  tokens() {
+    const T = this.theme, h = React.createElement, MONO = this.MONO, SERIF = this.SERIF;
+    const d = this.data, N = d.length;
+    const W = 520, H = 224, lab = 64, xl = lab + 8, xr = W - 10, cw = xr - xl;
+    const maxIn = Math.max(...d.map((t) => t.token_count_in));
+    const maxOut = Math.max(...d.map((t) => t.token_count_out));
+    const maxTok = Math.max(maxIn, maxOut);
+    const bw = Math.max(1.6, (cw / N) - 1.4);
+    const xAt = (i) => xl + i * (cw / N);
+    const els = [];
+
+    // cache-hit-rate track
+    const hitVals = d.map((t) => t.cache_hit);
+    const avgHit = hitVals.reduce((a, b) => a + b, 0) / N;
+    const hsY = 8, hsH = 22;
+    els.push(h("text", { key: "chl", x: lab, y: hsY + hsH - 4, textAnchor: "end", fill: T.muted, fontFamily: SERIF, fontSize: 11 }, "cache hit"));
+    const hpts = hitVals.map((v, i) => [xAt(i) + bw / 2, hsY + hsH - 2 - v * (hsH - 4)]);
+    els.push(h("path", { key: "chp", d: "M" + hpts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L"), fill: "none", stroke: T.sage, strokeWidth: 1.2 }));
+    d.forEach((t, i) => { if (t.cold) els.push(h("circle", { key: "cm" + i, cx: hpts[i][0], cy: hpts[i][1], r: 2, fill: T.accent }, h("title", null, `T${i + 1} cold cache · ${Math.round(t.cache_hit * 100)}% hit`))); });
+    els.push(h("text", { key: "cha", x: xr, y: hsY + 7, textAnchor: "end", fill: T.sage, fontFamily: MONO, fontSize: 10 }, "\u2300 " + Math.round(avgHit * 100) + "%"));
+
+    // tokens in — stacked cached (faded) + fresh (solid)
+    const inBase = 128, sh = 70;
+    els.push(h("line", { key: "ib", x1: xl, x2: xr, y1: inBase, y2: inBase, stroke: T.faint, strokeWidth: 1 }));
+    els.push(h("text", { key: "il", x: lab, y: inBase - sh / 2 - 3, textAnchor: "end", fill: T.steel, fontFamily: SERIF, fontSize: 12 }, "tokens in"));
+    els.push(h("text", { key: "il2", x: lab, y: inBase - sh / 2 + 11, textAnchor: "end", fill: T.muted, fontFamily: SERIF, fontStyle: "italic", fontSize: 9 }, "cached+fresh"));
+    d.forEach((t, i) => {
+      const bx = xAt(i);
+      const cachedH = (t.cache_read / maxTok) * sh, freshH = (t.fresh_in / maxTok) * sh;
+      els.push(h("rect", { key: "ic" + i, x: bx, y: inBase - cachedH, width: bw, height: cachedH, fill: T.steel, opacity: 0.3 }, h("title", null, `T${i + 1} cached ${t.cache_read}`)));
+      els.push(h("rect", { key: "if" + i, x: bx, y: inBase - cachedH - freshH, width: bw, height: freshH, fill: T.steel, opacity: 0.9 }, h("title", null, `T${i + 1} fresh ${t.fresh_in}`)));
+    });
+    els.push(h("text", { key: "pk", x: xr, y: inBase - sh - 2, textAnchor: "end", fill: T.muted, fontFamily: MONO, fontSize: 9 }, "peak in " + maxIn));
+
+    // tokens out
+    const outBase = 212, soh = 58;
+    els.push(h("line", { key: "ob", x1: xl, x2: xr, y1: outBase, y2: outBase, stroke: T.faint, strokeWidth: 1 }));
+    els.push(h("text", { key: "ol", x: lab, y: outBase - soh / 2 + 4, textAnchor: "end", fill: T.ochre, fontFamily: SERIF, fontSize: 12 }, "tokens out"));
+    d.forEach((t, i) => {
+      const bx = xAt(i); const bh = (t.token_count_out / maxTok) * soh;
+      els.push(h("rect", { key: "o" + i, x: bx, y: outBase - bh, width: bw, height: bh, fill: T.ochre, opacity: 0.85 }, h("title", null, `T${i + 1} out ${t.token_count_out}`)));
+    });
+    return this.svg(W, H, els);
+  }
+
+  tiers() {
+    const T = this.theme, h = React.createElement, MONO = this.MONO, SERIF = this.SERIF;
+    const counts = {};
+    this.data.forEach((t) => { counts[t.extraction_tier] = (counts[t.extraction_tier] || 0) + 1; });
+    const rows = Object.entries(counts).map(([k, v]) => ({ k, v })).sort((a, b) => b.v - a.v);
+    const total = this.data.length;
+    const W = 520, rowH = 30, top = 12, H = top + rows.length * rowH + 6;
+    const labW = 78, x0 = labW + 10, x1 = W - 66;
+    const maxV = Math.max(...rows.map((r) => r.v));
+    const els = [];
+    rows.forEach((rw, i) => {
+      const cy = top + i * rowH + rowH / 2;
+      const emph = rw.k === "degraded" || rw.k === "skipped";
+      const col = emph ? T.accent : T.inkDim;
+      els.push(h("text", { key: "l" + i, x: labW, y: cy + 4, textAnchor: "end", fill: emph ? T.accent : T.ink, fontFamily: SERIF, fontSize: 13 }, rw.k));
+      els.push(h("line", { key: "led" + i, x1: x0, x2: x1, y1: cy, y2: cy, stroke: T.rule, strokeWidth: 1, strokeDasharray: "1 3" }));
+      els.push(h("rect", { key: "b" + i, x: x0, y: cy - 4, width: Math.max(1, (rw.v / maxV) * (x1 - x0)), height: 8, fill: col, opacity: emph ? 0.9 : 0.8 }));
+      els.push(h("text", { key: "v" + i, x: x1 + 8, y: cy + 4, fill: T.ink, fontFamily: MONO, fontSize: 12 }, rw.v + " (" + Math.round((rw.v / total) * 100) + "%)"));
+    });
+    return this.svg(W, H, els);
+  }
+
+  phases() {
+    const T = this.theme, h = React.createElement, MONO = this.MONO, SERIF = this.SERIF;
+    const latest = this.data[this.data.length - 1];
+    const lp = latest.phase_durations_ms || {};
+    const tot = {}, cnt = {};
+    this.data.forEach((t) => { const p = t.phase_durations_ms || {}; for (const k in p) { tot[k] = (tot[k] || 0) + p[k]; cnt[k] = (cnt[k] || 0) + 1; } });
+    const rows = Object.keys(lp).map((k) => ({ k, ms: lp[k], avg: tot[k] / cnt[k], calls: (latest.phase_call_counts || {})[k] || 1 })).sort((a, b) => b.ms - a.ms);
+    const maxMs = Math.max(...rows.map((r) => Math.max(r.ms, r.avg)));
+    const W = 1060, rowH = 26, top = 8, H = top + rows.length * rowH + 6;
+    const labW = 112, x0 = labW + 10, x1 = W - 150;
+    const x = (v) => x0 + (v / maxMs) * (x1 - x0);
+    const els = [];
+    rows.forEach((rw, i) => {
+      const cy = top + i * rowH + rowH / 2;
+      els.push(h("text", { key: "l" + i, x: labW, y: cy + 4, textAnchor: "end", fill: T.ink, fontFamily: SERIF, fontSize: 13 }, rw.k));
+      els.push(h("line", { key: "led" + i, x1: x0, x2: x1, y1: cy, y2: cy, stroke: T.rule, strokeWidth: 1, strokeDasharray: "1 3" }));
+      els.push(h("rect", { key: "b" + i, x: x0, y: cy - 4, width: Math.max(1, x(rw.ms) - x0), height: 8, fill: T.inkDim, opacity: 0.85 }));
+      if (this.showRefs) els.push(h("line", { key: "av" + i, x1: x(rw.avg), x2: x(rw.avg), y1: cy - 8, y2: cy + 8, stroke: T.accent, strokeWidth: 1.4 }, h("title", null, "session avg " + (rw.avg / 1000).toFixed(2) + "s")));
+      els.push(h("text", { key: "v" + i, x: x1 + 10, y: cy + 4, fill: T.ink, fontFamily: MONO, fontSize: 12 }, (rw.ms / 1000).toFixed(2) + "s"));
+      els.push(h("text", { key: "p" + i, x: x1 + 64, y: cy + 4, fill: T.muted, fontFamily: MONO, fontSize: 11 }, Math.round((rw.ms / latest.total_duration_ms) * 100) + "%"));
+      els.push(h("text", { key: "c" + i, x: W, y: cy + 4, textAnchor: "end", fill: T.muted, fontFamily: MONO, fontSize: 11 }, rw.calls > 1 ? "×" + rw.calls : ""));
+    });
+    return this.svg(W, H, els);
+  }
+
+  makeState() {
+    return {
+      location: "The Sunken Cloister",
+      genre: "fantasy", world: "aetheria-reach", mode: "turn-based", players: 1,
+      regions: ["Ashfen Marsh", "Sunken Cloister", "Emberhold", "Glasswood Verge"],
+      player: {
+        name: "Kaelen Vire", cls: "Warden", level: 7, hp: 41, maxHp: 58, xp: 12400, gold: 340,
+        location: "Sunken Cloister · Nave",
+        inventory: [
+          { name: "Emberbrand Glaive", weight: 0.86, state: "attuned" },
+          { name: "Cloak of the Ninth Tide", weight: 0.72, state: "worn" },
+          { name: "Warden's Sigil", weight: 0.58, state: "carried" },
+          { name: "Vial of Marsh-light", weight: 0.41, state: "stored" },
+          { name: "Iron rations", weight: 0.12, state: "stored" },
+          { name: "Frayed rope (40ft)", weight: 0.08, state: "stored" },
+        ],
+      },
+      npcs: [
+        { name: "Sister Veil", role: "oracle", location: "Sunken Cloister", hp: 18, maxHp: 18, lastSeen: 42, pronouns: "she/her", ocean: [0.80, 0.72, 0.35, 0.62, 0.48] },
+        { name: "Brakka Stonejaw", role: "smith", location: "Emberhold", hp: 34, maxHp: 40, lastSeen: 38, pronouns: "he/him", ocean: [0.42, 0.88, 0.55, 0.70, 0.22] },
+        { name: "The Tallow Man", role: "antagonist", location: "Ashfen Marsh", hp: 52, maxHp: 60, lastSeen: 40, pronouns: "he/him", ocean: [0.90, 0.60, 0.74, 0.12, 0.82] },
+        { name: "Wren of the Verge", role: "scout", location: "Glasswood Verge", hp: 22, maxHp: 26, lastSeen: 41, pronouns: "they/them", ocean: [0.66, 0.58, 0.62, 0.74, 0.30] },
+        { name: "Old Maelis", role: "herbalist", location: "Sunken Cloister", hp: 12, maxHp: 16, lastSeen: 29, pronouns: "she/her", ocean: [0.55, 0.80, 0.28, 0.85, 0.40] },
+        { name: "Captain Dorne", role: "guard", location: "Emberhold", hp: 30, maxHp: 38, lastSeen: 36, pronouns: "he/him", ocean: [0.30, 0.76, 0.66, 0.50, 0.35] },
+        { name: "Lyssa Quick", role: "thief", location: "Ashfen Marsh", hp: 16, maxHp: 20, lastSeen: 39, pronouns: "she/her", ocean: [0.78, 0.40, 0.82, 0.45, 0.58] },
+        { name: "The Drowned Choir", role: "hazard", location: "Sunken Cloister", hp: 0, maxHp: 0, lastSeen: 33, pronouns: "it/its", ocean: [0.95, 0.20, 0.10, 0.05, 0.90] },
+      ],
+      tropes: [
+        { id: "broken_oath", progression: 1.0, status: "resolved" },
+        { id: "reluctant_hero", progression: 0.88, status: "active" },
+        { id: "mentor_betrayal", progression: 0.62, status: "active" },
+        { id: "cursed_artifact", progression: 0.45, status: "dormant" },
+        { id: "lost_heir", progression: 0.30, status: "dormant" },
+        { id: "final_stand", progression: 0.12, status: "dormant" },
+      ],
+      infra: { narration: 42, regions: 4 },
+    };
+  }
+
+  hpBar(hp, max) {
+    const T = this.theme, h = React.createElement, W = 92, H = 12;
+    const frac = max > 0 ? hp / max : 0;
+    const col = frac > 0.6 ? T.sage : frac > 0.3 ? T.ochre : T.accent;
+    return h("svg", { width: W, height: H, style: { display: "inline-block", verticalAlign: "middle", overflow: "visible" } }, [
+      h("line", { key: "b", x1: 1, x2: W - 1, y1: H / 2, y2: H / 2, stroke: T.faint, strokeWidth: 1 }),
+      h("rect", { key: "f", x: 1, y: H / 2 - 2.5, width: Math.max(0, (W - 2) * frac), height: 5, fill: col }),
+    ]);
+  }
+
+  weightBar(w) {
+    const T = this.theme, h = React.createElement, W = 72, H = 12;
+    const col = w >= 0.7 ? T.steel : w >= 0.5 ? T.sage : T.muted;
+    const els = [h("line", { key: "b", x1: 1, x2: W - 1, y1: H / 2, y2: H / 2, stroke: T.faint, strokeWidth: 1 })];
+    [0.5, 0.7].forEach((t, i) => els.push(h("line", { key: "t" + i, x1: 1 + (W - 2) * t, x2: 1 + (W - 2) * t, y1: H / 2 - 4, y2: H / 2 + 4, stroke: T.rule, strokeWidth: 1 })));
+    els.push(h("rect", { key: "f", x: 1, y: H / 2 - 2.5, width: Math.max(1, (W - 2) * w), height: 5, fill: col }));
+    return h("svg", { width: W, height: H, style: { display: "inline-block", verticalAlign: "middle", overflow: "visible" } }, els);
+  }
+
+  oceanGlyph(arr) {
+    const T = this.theme, h = React.createElement, bw = 6, gap = 3, W = 5 * (bw + gap), H = 16;
+    const els = [h("line", { key: "b", x1: 0, x2: W, y1: H - 1, y2: H - 1, stroke: T.faint, strokeWidth: 1 })];
+    arr.forEach((v, i) => { const bh = Math.max(1, v * (H - 3)); els.push(h("rect", { key: "r" + i, x: i * (bw + gap), y: H - 1 - bh, width: bw, height: bh, fill: T.inkDim, opacity: 0.85 })); });
+    els.push(h("title", null, "O C E A N · " + arr.map((v) => v.toFixed(2)).join(" ")));
+    return h("svg", { width: W, height: H, style: { display: "inline-block", verticalAlign: "middle", overflow: "visible" } }, els);
+  }
+
+  tropesChart() {
+    const T = this.theme, h = React.createElement, MONO = this.MONO, SERIF = this.SERIF;
+    const rows = [...this.stateData.tropes].sort((a, b) => b.progression - a.progression);
+    const W = 520, rowH = 28, top = 8, H = top + rows.length * rowH + 4;
+    const labW = 130, x0 = labW + 10, x1 = W - 110;
+    const els = [];
+    rows.forEach((rw, i) => {
+      const cy = top + i * rowH + rowH / 2;
+      const col = rw.status === "active" ? T.steel : rw.status === "resolved" ? T.muted : T.faint;
+      els.push(h("text", { key: "l" + i, x: labW, y: cy + 4, textAnchor: "end", fill: T.ink, fontFamily: SERIF, fontSize: 12.5 }, rw.id));
+      els.push(h("line", { key: "d" + i, x1: x0, x2: x1, y1: cy, y2: cy, stroke: T.rule, strokeWidth: 1, strokeDasharray: "1 3" }));
+      els.push(h("rect", { key: "b" + i, x: x0, y: cy - 4, width: Math.max(1, (x1 - x0) * rw.progression), height: 8, fill: col, opacity: 0.85 }));
+      els.push(h("text", { key: "v" + i, x: x1 + 8, y: cy + 4, fill: T.muted, fontFamily: MONO, fontSize: 11 }, rw.progression.toFixed(2) + " · " + rw.status));
+    });
+    return this.svg(W, H, els);
+  }
+
+  setTab(i) { this.setState({ activeTab: i }); }
+  selectTurn(i) { this.setState({ selectedTurn: i }); }
+  setFilter(v) { this.setState({ stateFilter: v }); }
+
+  renderVals() {
+    const T = this.theme, MONO = this.MONO, SERIF = this.SERIF;
+    const d = this.data, N = d.length;
+    const seq = d.map((t) => t.agent_duration_ms / 1000);
+    const secs = [...seq].sort((a, b) => a - b);
+    const q = (p) => secs[Math.floor(secs.length * p)];
+    const p50 = q(0.5).toFixed(1) + "s", p95v = q(0.95).toFixed(1) + "s", p99 = q(0.99).toFixed(1) + "s";
+    const degraded = d.filter((t) => t.is_degraded).length;
+    const dpct = Math.round((degraded / N) * 100);
+    const errorCount = degraded;
+    const active = this.state.activeTab;
+    const labels = ["Timeline", "State", "Subsystems", "Timing", "Console", "Prompt", "Lore", "Encounters", "Mechanical"];
+
+    const tabs = labels.map((label, i) => {
+      const on = i === active;
+      return {
+        label, onClick: () => this.setTab(i),
+        style: {
+          padding: "9px 15px", cursor: "pointer", fontFamily: SERIF, fontVariant: "small-caps",
+          letterSpacing: "0.07em", fontSize: 13, userSelect: "none",
+          color: on ? T.ink : T.muted, borderBottom: `2px solid ${on ? T.accent : "transparent"}`, marginBottom: -1,
+        },
+        badge: i === 0 ? N : i === 2 ? errorCount : null,
+        badgeStyle: { fontFamily: MONO, fontSize: 9, marginLeft: 5, color: i === 2 ? T.accent : T.muted, verticalAlign: "super" },
+      };
+    });
+
+    const vStyle = (alert) => ({ fontFamily: MONO, fontSize: 30, lineHeight: 1, color: alert ? T.accent : T.ink });
+    const stats = [
+      { label: "p50", value: p50, sub: "median", valStyle: vStyle(false), spark: null },
+      { label: "p95", value: p95v, sub: "95th percentile", valStyle: vStyle(false), spark: this.spark(seq, T.muted, 74, 18) },
+      { label: "p99", value: p99, sub: "tail", valStyle: vStyle(false), spark: null },
+      { label: "degraded", value: degraded + "/" + N, sub: dpct + "% of turns", valStyle: vStyle(dpct > 10), spark: null },
+    ];
+
+    const legend = ["narrator", "ensemble", "creature_smith", "dialectician"].map((n) => ({ name: n, style: { fontFamily: MONO, fontSize: 11, color: this.agentColor(n) } }));
+    const pad = this.density === "compact" ? "16px 26px" : "24px 26px";
+
+    // --- cache summary ---
+    const fmtK = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e3 ? (n / 1e3).toFixed(1) + "k" : String(n));
+    const totCacheRead = d.reduce((a, t) => a + t.cache_read, 0);
+    const totIn = d.reduce((a, t) => a + t.token_count_in, 0);
+    const avgHitPct = Math.round((d.reduce((a, t) => a + t.cache_hit, 0) / N) * 100);
+    const cacheNote = "cache hit \u2300" + avgHitPct + "% \u00b7 " + fmtK(totCacheRead) + " of " + fmtK(totIn) + " input tokens served from cache";
+    const tokenLegend = [["fresh", T.steel], ["cached", T.steelDim], ["out", T.ochre], ["cache hit", T.sage]].map(([n, c]) => ({ name: n, style: { fontFamily: MONO, fontSize: 11, color: c } }));
+
+    // --- timeline / flame ---
+    const sel = this.state.selectedTurn != null ? this.state.selectedTurn : N - 1;
+    const selTurn = d[sel];
+    const turnList = d.map((t, i) => {
+      const on = i === sel;
+      return {
+        label: "#" + t.turn_id + " " + t.agent_name,
+        dur: (t.agent_duration_ms / 1000).toFixed(1) + "s",
+        onClick: () => this.selectTurn(i),
+        style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 9px", cursor: "pointer", fontFamily: SERIF, fontSize: 12.5, color: on ? T.ink : T.muted, borderLeft: `2px solid ${on ? T.accent : "transparent"}`, background: on ? "rgba(255,255,255,0.04)" : "transparent" },
+        durStyle: { fontFamily: MONO, fontSize: 11, color: t.is_degraded ? T.accent : (on ? T.inkDim : T.muted) },
+      };
+    }).reverse();
+    const cc = { prompt: T.steel, agent: T.mauve, extraction: T.sage, state: T.ochre, persist: T.muted, media: T.inkDim };
+    const flameLegend = [["prompt", "prompt_build"], ["agent", "agent_llm"], ["extraction", "extraction"], ["state", "state_update"], ["persist", "emit"], ["media", "media"]].map(([c, lbl]) => ({ name: lbl, style: { fontFamily: MONO, fontSize: 11, color: cc[c] } }));
+    let bn = null; selTurn.spans.forEach((s) => { if (s.leaf && (!bn || s.dur > bn.dur)) bn = s; });
+    const detailRows = [
+      { k: "agent", v: selTurn.agent_name, accent: false },
+      { k: "tokens", v: selTurn.token_count_in + " in / " + selTurn.token_count_out + " out", accent: false },
+      { k: "cache hit", v: Math.round(selTurn.cache_hit * 100) + "%" + (selTurn.cold ? " · cold" : ""), accent: selTurn.cold },
+      { k: "tier", v: selTurn.extraction_tier, accent: selTurn.extraction_tier === "degraded" || selTurn.extraction_tier === "skipped" },
+      { k: "degraded", v: selTurn.is_degraded ? "yes" : "no", accent: selTurn.is_degraded },
+      { k: "total", v: (selTurn.total_duration_ms / 1000).toFixed(2) + "s", accent: false },
+    ].map((rw) => ({ ...rw, vStyle: { fontFamily: MONO, fontSize: 13, color: rw.accent ? T.accent : T.ink, marginTop: 2 } }));
+
+    // --- state tab ---
+    const S = this.stateData;
+    const ff = (this.state.stateFilter || "").toLowerCase();
+    const cellBorder = "1px solid #232327";
+    const invRows = S.player.inventory
+      .filter((it) => !ff || it.name.toLowerCase().includes(ff))
+      .map((it) => ({
+        name: it.name, weightText: it.weight.toFixed(2), weightEl: this.weightBar(it.weight),
+        stage: it.weight >= 0.7 ? "evolved" : it.weight >= 0.5 ? "named" : "unnamed",
+        stageStyle: { fontFamily: MONO, fontSize: 12, color: it.weight >= 0.7 ? T.steel : it.weight >= 0.5 ? T.sage : T.muted, padding: "6px 0", borderBottom: cellBorder },
+        state: it.state,
+      }));
+    const npcRows = S.npcs
+      .filter((n) => !ff || (n.name + " " + n.role + " " + n.location).toLowerCase().includes(ff))
+      .map((n) => ({
+        name: n.name, role: n.role, location: n.location,
+        hpText: n.maxHp > 0 ? n.hp + "/" + n.maxHp : "\u2014", lastSeen: "T" + n.lastSeen, pronouns: n.pronouns,
+        oceanEl: this.oceanGlyph(n.ocean),
+      }));
+    const hpPct = Math.round((S.player.hp / S.player.maxHp) * 100);
+    const stateRegions = S.regions.map((r) => ({ name: r }));
+
+    return {
+      statusDotStyle: { fontSize: 9, color: T.good },
+      turnCount: N, errorCount, errorStyle: { fontFamily: MONO, fontSize: 14, color: errorCount > 0 ? T.accent : T.ink },
+      p95: p95v, p95Spark: this.spark(seq, T.muted, 60, 16),
+      tabs,
+      isTimeline: active === 0, isTiming: active === 3, isState: active === 1, isOther: active !== 0 && active !== 1 && active !== 3,
+      placeholderText: "\u201C" + labels[active] + "\u201D \u2014 this prototype focuses on the Timeline and Timing tabs.",
+      contentStyle: { padding: pad, maxWidth: 1180, margin: "0 auto" },
+      stats, legend,
+      cacheNote, tokenLegend,
+      turnList,
+      flameEl: this.flame(selTurn),
+      flameTitle: "Turn " + selTurn.turn_id + " \u2192 " + selTurn.agent_name + " \u00b7 " + (selTurn.total_duration_ms / 1000).toFixed(2) + "s",
+      flameBnText: bn ? "bottleneck \u00b7 " + bn.nm + " " + bn.dur + "ms" : "",
+      flameBnStyle: { fontFamily: MONO, fontSize: 11, color: T.accent },
+      flameLegend, detailRows, inputLine: selTurn.player_input,
+      phaseNote: "latest turn \u00b7 total " + (d[N - 1].total_duration_ms / 1000).toFixed(2) + "s \u00b7 bar = this turn, \u2502 = session avg",
+      phasesEl: this.phases(), histogramEl: this.hist(), agentDotsEl: this.agentDots(),
+      scatterEl: this.scatter(), tokensEl: this.tokens(), tiersEl: this.tiers(),
+      stateLocation: S.location,
+      stateSub: S.genre + " / " + S.world + " \u00b7 " + S.mode,
+      stateSession: S.genre + "/" + S.world + " \u00b7 " + S.players + " player",
+      stateRegions,
+      playerTitle: S.player.name + " \u2014 " + S.player.cls + " \u00b7 Lv " + S.player.level,
+      playerHpText: S.player.hp + "/" + S.player.maxHp,
+      playerHpStyle: { fontFamily: MONO, fontSize: 13, color: hpPct > 60 ? T.sage : hpPct > 30 ? T.ochre : T.accent },
+      playerHpEl: this.hpBar(S.player.hp, S.player.maxHp),
+      playerXp: S.player.xp.toLocaleString(), playerGold: S.player.gold + " gold", playerLoc: S.player.location,
+      invRows, npcRows, npcCount: "(" + npcRows.length + ")",
+      tropesEl: this.tropesChart(), tropesCount: "(" + S.tropes.length + ")",
+      infraLine: "music director \u2713 \u00b7 audio mixer \u2713 \u00b7 narration history " + S.infra.narration + " entries \u00b7 " + S.infra.regions + " regions",
+      filterValue: this.state.stateFilter || "", onFilter: (e) => this.setFilter(e.target.value),
+    };
+  }
+}
+</script>
+</body>
+</html>

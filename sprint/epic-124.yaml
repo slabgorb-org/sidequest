@@ -51,3 +51,13 @@ stories:
       - Driven only by real telemetry — no fabricated fields; data-blocked design features cut to 124-1 and 124-2
       - tsc clean, full UI suite green (2261/2261), Dashboard suite green (70/70)
     completed: '2026-06-16'
+  - id: 124-4
+    title: "Inspector State tab — dark-Tufte treatment (124-3 follow-on): location/regions direct-labeled, tropes sorted progression bar plot, character HP bullet bar + inventory narrative-weight bars with named/evolved threshold ticks, NPC registry with 5-bar OCEAN personality sparkline fingerprints, working search filter — bound to LIVE SessionStateView (not the prototype's synthetic makeState). Per the epic no-fabrication rule: where the design shows OCEAN / trope progression / per-item narrative weight, verify those fields actually reach SessionStateView and wire the deferred telemetry (server) or render only what is real — do not fabricate. Design source: Claude Design handoff 'tufte-inspired-visualization-improvements', file 'SideQuest Inspector.dc.html' State tab; screenshots state2.png + state_npc.png."
+    points: 5
+    priority: p3
+    status: done
+    started: '2026-06-16'
+    repos: server,ui
+    workflow: tdd
+    completed: '2026-06-16'
+    review_verdict: approved

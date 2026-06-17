@@ -187,3 +187,12 @@
   progression on a synthesized action — matches the `wn_attack` narrator tool).
 - Gate caveat: "attack" is also an authored NATIVE beat id (test_genre). The isinstance
   gate keeps native ids on the authored-beat lookup, so synthesis only fires under WN.
+
+### GM-panel projection fixes don't need their own OTEL emit (story 124-4)
+The State-tab `debug_state` projection is a **read-only GET** that re-shapes an already-loaded `GameSnapshot` for the panel. The OTEL "lie-detector" principle targets subsystem *decisions* (trope tick, combat, inventory mutation) — those emit spans at decision time, and the snapshot already carries their results. A passive projection of that state is the *display*, not a decision, so adding a span to the GET would be noise. Fixing the projection to read the real fields IS the honesty fix; no new emit. (Log this as a deviation so Reviewer doesn't flag a "missing OTEL emit" against the AC's boilerplate "with an OTEL emit" clause.)
+
+### Extract-to-test: lift an inline route projection into a pure helper (story 124-4)
+When a RED suite imports a not-yet-existing `project_*` function, the green move is mechanical and high-value: cut the inline `snapshot → dict` block out of the async route into `state_projection.py` as a pure function, then make the route **call it** (the wiring — a pure helper with no production caller is a stub, not a fix; grep confirms `rest.py` imports+calls it). Keep all DB/IO (save enumeration, `repository.load()`) in the route. The extraction is what makes the four dead-read fixes unit-testable against synthetic `GameSnapshot`s.
+
+### React Tufte sparkline: narrow `Record<string, unknown>` with `typeof`, never `||` or `as any` (story 124-4)
+The live `ocean` field is typed `Record<string, unknown>`. To draw the 5-bar OCEAN glyph: loop the five Big-Five keys, `if (typeof v !== "number" || Number.isNaN(v)) return null` (graceful "—" when absent — no fabrication), else push. This narrows `unknown`→`number` cleanly (TS rule #1: no `as any`) AND keeps a legitimate `0.0` dimension (TS rule #4: a `||`/`??` fallback would've been a trap had I used `||`). OCEAN is a **0–10** scale (OceanProfile defaults 5.0), so normalize bar height by /10, not as a 0–1 fraction. Give the `<svg>` `role="img"` + `aria-label`/`<title>` with the values — testable AND a real a11y win over a bare bar chart.

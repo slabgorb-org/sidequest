@@ -105,3 +105,15 @@
   action should agree on the math (SOUL "Bind the Ruleset"). File as Delivery Finding, don't block.
 - "cast" hiding behind a post-lookup route: if cast_spell routing sits AFTER the cdef.beats lookup,
   a fully zero-beat WWN combat def breaks Cast too — easy to miss when only "attack" is tested.
+
+### Watch the fix for the same smell it fixes (story 124-4)
+A "fix the silent dead-reads" commit re-introduced the *same class* in the fix itself: `float(getattr(trope, "progress", 0.0) or 0.0)` — the `or 0.0` is dead (getattr default already covers absent) and is the `or`-on-falsy-valid idiom being fixed. When reviewing a No-Silent-Fallbacks fix, grep the NEW code for `getattr(.., default)` / `x or <falsy-default>` and ask "does this preserve the fragile pattern that caused the bug?" The honest severity is usually LOW (numerically harmless) but it's worth flagging for consistency — and on a `<critical>`-rule match (No Silent Fallbacks) you may downgrade with rationale but may NOT dismiss.
+
+### Python None → JSON null vs a TS `?: string` type (story 124-4)
+Recurring contract gap: a Python field set to `None` serializes to JSON `null`, but the TS interface often types it `field?: string` (i.e. `string | undefined`). `null` is neither. The symptom surfaces as `as unknown as T` / `as never` casts in the *test* fixtures to force `null` in. When you see those casts on a wire-shape field, the real fix is widening the TS type to `string | null` in `types/watcher.ts`, not the cast. Production impact is often nil (if nothing reads the field) → MEDIUM, but it's real type dishonesty.
+
+### Disabled reviewer subagents are still YOUR job
+`pf settings get workflow.reviewer_subagents` had edge_hunter/silent_failure_hunter/type_design/security/simplifier = false this run. The review checklist still mandates those analyses — cover each personally and tag your own observations `[EDGE]`/`[SILENT]`/`[TYPE]`/`[SEC]`/`[SIMPLE]` so the gate's 8-tag requirement is met from the union of (3 enabled finding-subagents + rule-checker + your own coverage). Pre-fill the disabled rows as "Skipped / disabled" so the completion gate passes.
+
+### A code reviewer cannot verify a visual redesign — flag it (story 124-4)
+For a Tufte/visual-redesign story, the tests assert SVG *structure* (≥N `<rect>`), not the *look* (palette/spacing/no-boxes). With a read-only (no-browser) reviewer and no playtest pass, the headline "matches the design" AC is genuinely unverified. Don't let that pass silently — record a non-blocking finding recommending a manual / `sq-playtest` fidelity check vs the design-bundle screenshots. APPROVE on code correctness, but make the visual gap explicit.
