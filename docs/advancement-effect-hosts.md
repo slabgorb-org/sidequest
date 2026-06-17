@@ -1,28 +1,60 @@
 # Advancement Effect Hosts — Per-Genre Audit (Story 39-5 / AC6)
 
-**Status:** Decision artifact for ADR-078 / ADR-081
-**Last updated:** 2026-04-19
+**Status:** Decision artifact for ADR-078 / ADR-081 (Rust-era — see implementation-status note)
+**Last updated:** 2026-06-17
+
+> **Implementation status (2026-06-17 — ADR-082 port reconciliation).**
+> This is a Rust-era decision artifact and the ADR framing has moved on.
+> **ADR-078 is superseded by [ADR-114](adr/114-ablative-hp-substrate.md):**
+> Edge/Composure was reversed for SWN-style ablative HP, so the
+> `AdvancementEffect` vitality variants are re-pointed from Edge to HP
+> (`EdgeMaxBonus` → `HpMaxBonus`, `EdgeRecovery` → `HpRecovery` — note the
+> pydantic classes are `AdvancementEffectHpMaxBonus` / `...HpRecovery` while
+> their wire `type` literals still read `edge_max_bonus` / `edge_recovery`).
+> **ADR-081** (the two-variant expansion `AllyEdgeIntercept` /
+> `ConditionalEffectGating`) **is accepted but deferred**
+> ([ADR-087](adr/087-post-port-subsystem-restoration-plan.md)); neither
+> variant exists in code yet.
+>
+> **Ported:** the data models — `AdvancementTree`, `AdvancementTier`, and the
+> five-variant `AdvancementEffect` in
+> `sidequest-server/sidequest/genre/models/advancement.py`, plus
+> `AffinityTier.mechanical_effects` in
+> `sidequest-server/sidequest/genre/models/progression.py`. `progression.yaml`
+> is deserialized into `ProgressionConfig` by
+> `sidequest-server/sidequest/genre/loader.py`.
+>
+> **Did NOT port (deferred, ADR-087):** the `load_advancement_tree` harvester
+> + dual-host validation, and the consumption engine (`resolved_beat_for` /
+> `grant_advancement_tier`). No pack ships an `advancements.yaml` sidecar; only
+> `heavy_metal/progression.yaml` populates `mechanical_effects`, and nothing
+> applies it at runtime yet. **Read the two-host decision below as the target
+> design, not live behavior.**
 
 ## Decision
 
-Each genre authors its [`AdvancementTree`](../sidequest-api/crates/sidequest-genre/src/models/advancement.rs)
-in one of two mutually-exclusive locations:
+Each genre authors its `AdvancementTree`
+(`sidequest-server/sidequest/genre/models/advancement.py`) in one of two
+mutually-exclusive locations:
 
 - **Progression host** — `mechanical_effects:` blocks on affinity tiers in
-  `progression.yaml`. Harvested by
-  [`load_advancement_tree`](../sidequest-api/crates/sidequest-genre/src/loader.rs)
-  into a tree where each tier id is auto-derived from the affinity + tier slot
-  (e.g. `iron_tier_1`).
+  `progression.yaml` (`AffinityTier.mechanical_effects` in
+  `sidequest-server/sidequest/genre/models/progression.py`). The intended
+  harvester `load_advancement_tree` (Rust-era; **not yet ported** — ADR-087)
+  would fold these into a tree where each tier id is auto-derived from the
+  affinity + tier slot (e.g. `iron_tier_1`).
 - **Sidecar host** — a standalone `advancements.yaml` file at the genre root,
-  deserialised directly as an `AdvancementTree`.
+  deserialised directly as an `AdvancementTree`. (No pack ships one today; the
+  sidecar reader is part of the deferred harvester.)
 
 A genre may use **exactly one** of the two hosts. Carrying both files is a
-validation error — the loader fails loudly with
-`GenreError::ValidationError` naming both paths. See
-[`load_advancement_tree`](../sidequest-api/crates/sidequest-genre/src/loader.rs)
-for the enforced rule. No silent fallback.
+validation error — the loader fails loudly with `GenreValidationError`
+(`sidequest-server/sidequest/genre/error.py`, the Python port of Rust
+`GenreError::ValidationError`) naming both paths. No silent fallback. (The
+dual-host check rides the deferred `load_advancement_tree` harvester — ADR-087.)
 
-A genre with neither host is valid (empty `AdvancementTree::default()`) and
+A genre with neither host is valid (empty `AdvancementTree()` — pydantic
+default of no tiers) and
 indicates that the pack has not yet been wired for mechanical advancement —
 these genres still author narrative abilities on affinity tiers, but those
 abilities do not feed the Edge / Composure mechanical path until a tier carries
@@ -55,19 +87,26 @@ hook adjacent to the authored ability narrative.
 
 ## Wiring Path
 
-For the progression-hosted genres, `load_advancement_tree` harvests tiers by
-walking `progression.yaml → affinities[].unlocks.{tier_0..tier_3}.mechanical_effects`
-and yielding an `AdvancementTier` per populated host. Tier ids are synthesised
-as `{affinity_lowercase}_tier_{n}`; authors do not write ids by hand in this
-path.
+> The harvest and consumption steps below are the **Rust-era design**; the
+> harvester (`load_advancement_tree`) and the consumption engine
+> (`resolved_beat_for` / `grant_advancement_tier`) did not port and are
+> deferred (ADR-087). Only the data models and `progression.yaml`
+> deserialization are live today.
+
+For the progression-hosted genres, the intended `load_advancement_tree`
+harvester walks `progression.yaml → affinities[].unlocks.{tier_0..tier_3}.mechanical_effects`
+and yields an `AdvancementTier`
+(`sidequest-server/sidequest/genre/models/advancement.py`) per populated host.
+Tier ids are synthesised as `{affinity_lowercase}_tier_{n}`; authors do not
+write ids by hand in this path.
 
 For sidecar-hosted genres, authors write the full `AdvancementTree` YAML
 directly, including explicit tier ids. The sidecar schema matches the
 `AdvancementTree` type exactly.
 
-Both paths terminate in the same runtime type — `AdvancementTree` — consumed
-identically by [`resolved_beat_for`](../sidequest-api/crates/sidequest-game/src/advancement.rs)
-and [`grant_advancement_tier`](../sidequest-api/crates/sidequest-game/src/advancement.rs).
+Both paths terminate in the same runtime type — `AdvancementTree` — intended to
+be consumed identically by `resolved_beat_for` and `grant_advancement_tier`
+(Rust-era game-crate functions; **not yet ported** — ADR-087).
 
 ## Non-Goals (Story 39-5)
 
