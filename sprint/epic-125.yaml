@@ -55,9 +55,12 @@ stories:
       Player-UI legibility mandate (Sebastien/Jade): the dice should show what was actually rolled. See 118-7 session archive (sprint/archive/118-7-session.md) Delivery Findings — TEA (test design) + Reviewer (code review).
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: dice-lib,server,ui
     workflow: tdd
+    completed: '2026-06-17'
+    review_verdict: approved
   - id: 125-5
     title: 'Harden the FATE_ROLL boundary guard (118-7): validate Fudge face values in {-1,0,1}, not just dice-tuple length'
     description: "Deferred from story 118-7 (ADR-144 F3g) — flagged independently by the Reviewer's own analysis AND the reviewer-security subagent as a defense-in-depth gap (NOT a security vulnerability). The useStateMirror FATE_ROLL boundary guard (sidequest-ui/src/hooks/useStateMirror.ts) validates that p.dice is a 4-element array (!Array.isArray(p.dice) || p.dice.length !== 4) but does NOT validate that each face is in {-1,0,1}. A corrupted/replayed payload with valid-length but out-of-range faces renders a wrong glyph (FateDiceTray.faceGlyph degrades any out-of-range value to '0') — it cannot crash, exfiltrate, or escalate, and the server always emits valid faces via build_fate_roll_payload, so the realistic surface is nil today. Optional hardening: tighten the guard to also require p.dice.every(d => d === -1 || d === 0 || d === 1), dropping (console.error) a malformed roll the same way the missing-dice case is dropped. Add a regression test: a roll with a face of 2 (or -5) is rejected, not stored. Affects sidequest-ui/src/hooks/useStateMirror.ts (FATE_ROLL branch). See sprint/archive/118-7-session.md Delivery Findings — Reviewer (code review)."
