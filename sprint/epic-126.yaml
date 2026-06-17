@@ -52,13 +52,16 @@ stories:
     description: "Carryover verify-target from 06-14, never resolved (the 06-16 session continued solo so MP couldn't be re-exercised). Peer action text is not visible during the WAIT phase — it only reveals at seal/resolve. This violates ADR-036's 2026-05-03 amendment: peer action text IS visible during the wait phase (collaborative visibility helps the table coordinate; sealed/hidden-submission 'sealed visibility' is reserved for the unimplemented PvP path — the playgroup doesn't slip notes to the DM). ~50% intermittent (suspected race). Likely the broadcast fan-out or the wait-phase render not applying peers' submitted-but-unsealed action text. Reproduce across MP turns (2 players), then fix so a peer's submitted action text shows during WAIT, not just at reveal. Source: sq-playtest-pingpong carryover verify-targets."
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: ui,server
     workflow: tdd
     acceptance_criteria:
       - 'Repro: 2-player MP session, one player submits an action; the other player sees that action text during the WAIT phase (before seal/resolve), reliably across multiple turns (kill the ~50% race).'
       - Add a regression test (server broadcast or UI wait-phase render) that a peer's submitted-but-unsealed action text is delivered/rendered during WAIT, per ADR-036's 2026-05-03 amendment.
+    completed: '2026-06-17'
     type: bug
+    review_verdict: approved
   - id: 126-5
     title: "[UX-LOW] Chargen 'Backstory' is fed by the 'Description' input, not 'Background'"
     description: "Carryover [UX-LOW] from 06-14. The character-sheet 'Backstory' field is populated from the chargen 'Description' input rather than the 'Background' input — a field-mapping mix-up. Verify which chargen input is intended to feed the sheet's Backstory and correct the wiring so Backstory reflects the Background input (or the intended source). Minor, non-blocking. Source: sq-playtest-pingpong carryover verify-targets."
