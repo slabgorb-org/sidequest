@@ -103,17 +103,17 @@ personality archetypes, and conlang morphemes:
 
 | Pack | Theme | Worlds |
 |------|-------|--------|
-| **caverns_and_claudes** | High fantasy dungeon crawl (meta-humor on D&D tropes) | `beneath_sunden` (runtime procedural megadungeon, ADR-106) |
+| **caverns_and_claudes** | High fantasy dungeon crawl (meta-humor on D&D tropes) — WWN ruleset | `beneath_sunden` (runtime procedural megadungeon, ADR-106) |
 | **elemental_harmony** | Martial arts / elemental magic (WWN ruleset) | `burning_peace`, `shattered_accord` |
 | **heavy_metal** | Baroque fantasy of pacts, decay, and blood-priced magic | `evropi`, `long_foundry`, `barsoom` (WWN ruleset; portraits still rendering) |
-| **mutant_wasteland** | Post-apocalyptic mutants (`flickering_reach` fully spoilable) | `flickering_reach`, `seaboard_of_saints` |
+| **mutant_wasteland** | Post-apocalyptic mutants (`flickering_reach` fully spoilable) — AWN ruleset | `flickering_reach`, `seaboard_of_saints` |
 | **neon_dystopia** | Cyberpunk (CWN ruleset) | `franchise_nations` |
-| **pulp_noir** | 1930s detective / pre-war pulp | `annees_folles` |
-| **road_warrior** | Late-70s / early-80s vehicle subcultures sharing one port city | `the_circuit` |
+| **pulp_noir** | 1930s detective / pre-war pulp — Fate ruleset | `annees_folles` |
+| **road_warrior** | Late-70s / early-80s vehicle subcultures sharing one port city — CWN ruleset | `the_circuit` |
 | **space_opera** | Sci-fi space adventure (SWN ruleset) | `aureate_span`, `coyote_star`, `perseus_cloud` |
-| **spaghetti_western** | Morally ambiguous anti-heroes — Leone/Corbucci/Kurosawa | `dust_and_lead`, `five_points` (1850s NYC), `the_real_mccoy` (1878 Pittsburgh) |
-| **tea_and_murder** | Cosy Edwardian (1901-1914) BritBox murder mystery | `glenross` (Highland village), `blackthorn_moor` |
-| **wry_whimsy** | Golden-age literary portal fairytale — survive by wit, not force | `oz`, `wonderland`, `gulliver` |
+| **spaghetti_western** | Morally ambiguous anti-heroes — Leone/Corbucci/Kurosawa (Fate ruleset) | `dust_and_lead`, `five_points` (1850s NYC), `the_real_mccoy` (1878 Pittsburgh) |
+| **tea_and_murder** | Cosy Edwardian (1901-1914) BritBox murder mystery — Fate ruleset | `glenross` (Highland village), `blackthorn_moor` |
+| **wry_whimsy** | Golden-age literary portal fairytale — survive by wit, not force (Fate ruleset) | `oz`, `wonderland`, `gulliver` |
 
 All eleven packs have a `pack.yaml` and load at runtime. Worlds default to live;
 `draft: true` in a world's `world.yaml` hides it from selection until its asset
@@ -131,7 +131,10 @@ Genre packs are loaded via the `SIDEQUEST_GENRE_PACKS` env var. See
 2. **Character creation** flows through genre-driven scenes (choices + freeform text);
    the C&C pack offers a visible-dice flow with arrange + story steps and four classic
    B/X classes (fighter / mage / cleric / thief)
-3. **Each turn:** player action → narrator dispatch → state patch → narration broadcast
+3. **Each turn:** player action → submit-and-wait barrier → **intent router** (ADR-113,
+   a pre-narrator Haiku pass that engages the mechanical engines first) → narrator →
+   ruleset resolution (Without Number or Fate) → state patch → narration broadcast.
+   See the [WN and Fate turn diagrams](docs/sequence/ruleset-turns.md)
 4. **Unified narrator** (per [ADR-067](docs/adr/067-unified-narrator-agent.md), invoked
    stateless per turn per [ADR-098](docs/adr/098-stateless-narrator-turns.md)) handles
    all intents through a single bounded **Anthropic SDK** call
@@ -163,14 +166,19 @@ Genre packs are loaded via the `SIDEQUEST_GENRE_PACKS` env var. See
     Knowledge Journal supports keyword filtering, lore fragments seed from genre packs,
     conlang names generated from culture corpora via Markov
     ([ADR-091](docs/adr/091-culture-corpus-markov-naming.md))
-11. **Combat:** Ablative HP is the live personal survivability track on `CreatureCore`
-    (ADR-114, reversing ADR-078's HP removal). The bound ruleset module selects combat
-    resolution — three HP-based Without-Number rulesets (all attack-vs-AC, `hp_depletion`)
-    are live: SWN for space_opera, WWN for elemental_harmony, CWN for neon_dystopia; B/X or
-    3.5 SRD (both HP-based) are planned for caverns_and_claudes. Edge / Composure dials
-    (ADR-078) are planned to return as the Fate SRD substrate — "for different engines,"
-    not yet co-resident. (Vessel rig-composure survives separately.) 3D dice (Three.js +
-    Rapier) render inline in the confrontation overlay
+11. **Combat & mechanical resolution:** Every pack binds a published ruleset whose engine
+    **replaces** the native dial/beat engine — it is not tuned on top of it (SOUL: *Bind the
+    Ruleset, Don't Balance It*; ADR-143). Ablative HP is the live survivability track on
+    `CreatureCore` (ADR-114). **Two SRD families are live, zero homebrew rulesets to balance**
+    (ADR-144): seven packs bind a **Without Number** module — SWN (`space_opera`), WWN
+    (`caverns_and_claudes`, `elemental_harmony`, `heavy_metal`), CWN (`neon_dystopia`,
+    `road_warrior`), AWN (`mutant_wasteland`) — resolving through the sealed `run_wn_round`
+    (1d8+DEX initiative; HP / system_strain / Shock / Trauma); four bind **Fate Core**
+    (`pulp_noir`, `spaghetti_western`, `tea_and_murder`, `wry_whimsy`) — 4dF + skill,
+    aspects / invokes / compels, stress + consequences → *taken out*. **No live pack binds the
+    native engine.** Dice are determinative (ADR-074): the player throws the 3D dice (Three.js
+    + Rapier) and the settled faces ARE the roll; server RNG rolls only for NPCs (WN already;
+    Fate via Story 126-7). See the [WN and Fate turn diagrams](docs/sequence/ruleset-turns.md)
 12. **Multiplayer:** submit-and-wait turn barriers with adaptive timeout, Cinematic
     mode as the live default (FREE_PLAY available; STRUCTURED dead code), collaborative
     peer-action visibility with live teammate typing via `ACTION_REVEAL`, perception
@@ -186,7 +194,8 @@ sidequest-server/sidequest/
 ├── handlers/         # Per-message-type dispatch handlers
 ├── agents/           # Anthropic SDK narrator (default) + claude -p/Ollama opt-in, auxiliaries
 ├── game/             # State, characters, encounters, tropes, turns, persistence
-│                     #   game/ruleset/ — pluggable SRD modules (native + Without Number family)
+│                     #   game/ruleset/ — pluggable SRD modules: Without Number family
+│                     #   (swn/wwn/cwn/awn) + Fate; native vestigial (no live pack binds it)
 ├── dungeon/          # Runtime procedural Jaquaysed megadungeon (ADR-106)
 ├── mutation/         # AWN mutation system — acquire / use / stocks (ADR-102)
 ├── genre/            # YAML genre pack loader

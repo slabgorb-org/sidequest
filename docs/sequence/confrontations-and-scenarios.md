@@ -1,5 +1,15 @@
 # Confrontations and Scenarios
 
+> ⚠️ **STALE — historical reference only.** This document describes the **native
+> Rust beat/metric confrontation engine**, which has been **removed**. Every pack
+> now binds a published ruleset (Without Number or Fate); combat resolves through
+> `run_wn_round` / `run_fate_exchange`, not the dial/beat dispatch shown below
+> (SOUL: *Bind the Ruleset, Don't Balance It*; ADR-143/-144). For the current turn
+> resolution see **[`ruleset-turns.md`](./ruleset-turns.md)**. The **Scenario
+> System** section (clue graph, belief state, gossip) below is still
+> forward-looking design; the beat-dispatch and file-reference sections are
+> superseded.
+
 > Genre-defined encounter engine with beat-based resolution and metric tracking.
 > ConfrontationDefs in genre packs define available beats; StructuredEncounter tracks runtime state.
 

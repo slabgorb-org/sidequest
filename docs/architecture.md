@@ -17,6 +17,8 @@
 > - 2026-05-26: Intent Router mechanical-engagement spine (ADR-113) wired end-to-end as a pre-narrator Haiku pass; ablative HP substrate (ADR-114 Part 1) live
 > - 2026-05-28: Persistence substrate migrated SQLite → PostgreSQL (ADR-115, complete); SQLite write layer deleted, forensics now reads Postgres tables
 > - 2026-06-03: `genre_workshopping/` staging tree retired — in-progress packs/worlds now live in `genre_packs/` and use `draft: true` to stay out of selection. Live pack count is **11** (`caverns_and_claudes`, `elemental_harmony`, `heavy_metal`, `mutant_wasteland`, `neon_dystopia`, `pulp_noir`, `road_warrior`, `space_opera`, `spaghetti_western`, `tea_and_murder`, `wry_whimsy`)
+> - 2026-06-14: **Bind, don't balance** ruled doctrine (ADR-143, SOUL). Every pack now binds a published ruleset — a **Without Number** module (ADR-142 extracts the honest `WithoutNumberRulesetModule` base and reparents `swn`/`wwn`/`cwn`/`awn` under it) or **Fate Core** (ADR-144). The native dial/beat engine is *removed* from a bound path, not tuned under it; **no live pack binds `native`** (7 WN-family, 4 Fate). WN combat resolves through the sealed `run_wn_round` (1d8+DEX initiative); Fate through `run_fate_exchange` (Notice/Empathy order).
+> - 2026-06-17: Ruleset turn sequence diagrams added ([`sequence/ruleset-turns.md`](sequence/ruleset-turns.md)) — the shared intent-router front + the WN vs Fate resolution split. **Determinative dice** (ADR-074): the player throws the die and the settled faces ARE the roll; server RNG rolls only for NPCs (WN already; Fate via Story 126-7).
 
 ## Architectural Layers
 
@@ -180,17 +182,21 @@ A non-turn-consuming channel for OOC player→GM table-talk. `PLAYER_ACTION` car
 
 ### Spec 0: Pluggable Ruleset Module System (live)
 
-Mechanical resolution is dispatched through a pluggable ruleset layer in `sidequest/game/ruleset/`: `registry.py` (module lookup), `base.py` (the `RulesetModule` ABC), and the concrete modules `native.py`, `swn.py`, `wwn.py`, and `cwn.py`. The ABC defines the mechanical surface every module must implement: `find_confrontation`, `stat_modifier`, `compute_dc`, `apply_beat`, `resolve_damage`, `attack_params`, `ship_attack_params`, `check_params`, `save_params`, `roll_initiative`.
+Mechanical resolution is dispatched through a pluggable ruleset layer in `sidequest/game/ruleset/`: `registry.py` (module lookup), `base.py` (the `RulesetModule` ABC), and the concrete modules. A genre pack binds **exactly one** module via the `ruleset:` key in its `rules.yaml`; `get_ruleset_module` fails loud on an unknown slug — no silent degradation to a default.
 
-Four modules are live:
-- **`native`** — wraps the existing dial/confrontation engine (ADR-033). Default for all packs that omit `ruleset:`.
-- **`swn`** — Stars Without Number. Bound by `space_opera`.
-- **`wwn`** — Worlds Without Number. Bound by `elemental_harmony`. Subclasses `swn` (shared d20/HP core) and adds the WWN lethality layer (Luck save, Shock, Trauma, System Strain, Mortal Injury) plus WWN magic (Effort).
-- **`cwn`** — Cities Without Number. Bound by `neon_dystopia`. Subclasses `swn` and adds the CWN Luck save and the cyberspace hacking ladder.
+**The defining doctrine (SOUL: *Bind the Ruleset, Don't Balance It*; ADR-143, ruled 2026-06-14):** when a pack binds a published ruleset, that ruleset's engine **replaces** the native dial/beat engine for what it covers — it is not layered on top and tuned to fit. The native mechanic is *removed* from a bound path, not balanced against it.
 
-Each genre pack binds **exactly one** module via the `ruleset:` key in its `rules.yaml` (default `native`). An unknown value raises `UnknownRulesetError` at pack load — fail-loud, no silent degradation to a default.
+Six modules are registered. **No live pack binds `native`** — all 11 packs declare a Without Number or Fate ruleset (7 WN-family, 4 Fate):
 
-The `native`, `swn`, `wwn`, and `cwn` modules are live and pack-bound. Additional modules (`bx`, `fate`, `pbta`, `5e`) are designed but **not implemented**.
+- **`native`** — the legacy dial/confrontation engine (ADR-033). Still the schema default for a pack that omits `ruleset:` and registered for back-compat, but **vestigial**: nothing live binds it, and there is no native turn flow in production.
+- **Without Number family** — `WithoutNumberRulesetModule` (`without_number.py`) is the **honest shared base** extracted per **ADR-142**; the four siblings subclass *it* (not each other — the pre-ADR-142 "wwn subclasses swn" hierarchy was reparented):
+  - **`swn`** — Stars Without Number. Bound by `space_opera`.
+  - **`wwn`** — Worlds Without Number. Bound by `caverns_and_claudes`, `elemental_harmony`, `heavy_metal`. Adds the WWN lethality layer (Luck save, Shock, Trauma, System Strain, Mortal Injury) plus WWN magic (Effort).
+  - **`cwn`** — Cities Without Number. Bound by `neon_dystopia`, `road_warrior`. Adds the CWN Luck save and the cyberspace hacking ladder.
+  - **`awn`** — the AWN mutation variant. Bound by `mutant_wasteland`.
+- **`fate`** — **Fate Core** (CC-BY), subclasses `RulesetModule` directly. Bound by `pulp_noir`, `spaghetti_western`, `tea_and_murder`, `wry_whimsy`. 4dF + skill on the ladder; aspects/invokes/compels; stress tracks + consequences → *taken out*. End state (ADR-144): two SRDs, zero homebrew rulesets to balance.
+
+WN combat resolves through the sealed `run_wn_round` (`wn_round.py`, 1d8+DEX initiative); a Fate conflict through `run_fate_exchange` (`fate_conflict.py`, Notice/Empathy order). Both ride the same ADR-036 submit-and-wait barrier and the same ADR-113 intent-router front. See **[`sequence/ruleset-turns.md`](sequence/ruleset-turns.md)** for the full WN and Fate turn diagrams.
 
 ### ADR-114: Ablative HP Substrate (partial — Part 1 live)
 
@@ -337,9 +343,10 @@ For end-to-end signal traces showing every feature's path from UI input through 
 
 Pipeline-level sequences for cross-process flows live in [`docs/sequence/`](sequence/):
 
+- [Ruleset turns](sequence/ruleset-turns.md) — **the Without Number and Fate turn flows** (shared intent-router front, divergent mechanical resolution, determinative dice)
 - [Solo turn](sequence/solo-turn.md) — one action turn end-to-end
 - [Multiplayer sealed turns](sequence/multiplayer-sealed-turns.md) — concurrent submission + claim election
-- [Confrontations and scenarios](sequence/confrontations-and-scenarios.md) — beat-based encounter resolution
+- [Confrontations and scenarios](sequence/confrontations-and-scenarios.md) — ⚠️ **stale**: documents the removed native Rust beat/metric engine; superseded for turn resolution by [`ruleset-turns.md`](sequence/ruleset-turns.md)
 - [Lore storage and retrieval](sequence/lore-storage-and-retrieval.md) — knowledge indexing and prompt injection
 - [Image rendering](sequence/image-rendering.md) — narrator visual_scene through daemon to UI gallery (ADR-035, 050, 070)
 
