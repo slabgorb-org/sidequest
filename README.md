@@ -2,7 +2,7 @@
 
 An AI narrator engine that runs tabletop-style RPGs in any genre, powered by an
 Anthropic-SDK-backed Claude narrator (ADR-101 default; Haiku 4.5 classification /
-Sonnet 4.6 narration / Opus 4.7 declared-important moments, routed per call)
+Sonnet 4.6 narration / Opus 4.8 declared-important moments, routed per call)
 invoked stateless per turn (ADR-098), with native
 tool-use for structured mechanical patches (ADR-102) and native OTEL via the
 tool registry (ADR-103). Players connect via browser, create characters

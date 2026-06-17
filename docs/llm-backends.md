@@ -104,7 +104,7 @@ The SDK backend picks a model per call, not per session. Defaults live in
 | Intent classification / scratch | Haiku 4.5 (`claude-haiku-4-5-20251001`) | Cheap, fast, sufficient for state-override and short structured calls |
 | Aside resolver (ADR-107) | Haiku 4.5 | An aside is the lowest-drama input in the system per SOUL.md "Cost Scales with Drama" — single-shot completion, not the tool-use loop |
 | Default narration | Sonnet 4.6 | Quality / cost balance for ordinary turns |
-| Declared-important moments | Opus 4.7 | Drama spikes, milestones, set-piece scenes |
+| Declared-important moments | Opus 4.8 | Drama spikes, milestones, set-piece scenes |
 
 Drama-driven escalation is read from `TensionTracker.drama_weight` plus the
 narrator's own opt-in "this is important" signal carried in tool results.
