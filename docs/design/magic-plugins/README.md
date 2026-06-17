@@ -146,11 +146,11 @@ confrontations:
 
 | Plugin | Status | Source | Genres |
 |---|---|---|---|
-| `bargained_for_v1` | ✅ drafted 2026-04-28 | bargained_for | heavy_metal, tea_and_murder-high-gothic, low_fantasy-with-pacts |
-| `item_legacy_v1` | ✅ drafted 2026-04-28 | item_based | spaghetti_western, road_warrior, c&c, heavy_metal, tea_and_murder, low_fantasy, pulp_noir |
-| `divine_v1` | ✅ drafted 2026-04-28 | divine | heavy_metal, tea_and_murder-Catholic, low_fantasy, elemental_harmony, space_opera-religious |
-| `innate_v1` | ✅ drafted 2026-04-28 | innate | mutant_wasteland (signature), space_opera-Firefly-River, tea_and_murder-touched, low_fantasy-bloodline, untrained Force/bender register |
-| `learned_v1` | ✅ drafted 2026-04-28 | learned | elemental_harmony (signature — bending discipline), space_opera-Jedi-trained, low_fantasy-wizards, witcher-signs, Bene Gesserit, heavy_metal-rite-priest, pulp_noir-Hermetic, spaghetti_western-gunsmith |
+| `bargained_for_v1` | ✅ drafted 2026-04-28 | bargained_for | heavy_metal, tea_and_murder-high-gothic |
+| `item_legacy_v1` | ✅ drafted 2026-04-28 | item_based | spaghetti_western, road_warrior, c&c, heavy_metal, tea_and_murder, pulp_noir |
+| `divine_v1` | ✅ drafted 2026-04-28 | divine | heavy_metal, tea_and_murder-Catholic, elemental_harmony, space_opera-religious |
+| `innate_v1` | ✅ drafted 2026-04-28 | innate | mutant_wasteland (signature), space_opera-Firefly-River, tea_and_murder-touched, untrained Force/bender register |
+| `learned_v1` | ✅ drafted 2026-04-28 | learned | elemental_harmony (signature — bending discipline), space_opera-Jedi-trained, witcher-signs, Bene Gesserit, heavy_metal-rite-priest, pulp_noir-Hermetic, spaghetti_western-gunsmith |
 | `obligation_scales_v1` | ✅ drafted 2026-04-28 | (multi-plugin layer — cross-cutting tracker, no Source) | heavy_metal signature — tracks the five obligation scales (individual, communal, covenant, divine, stratigraphic) across all monitored Source plugins |
 
 **Framework plugin coverage is mechanically complete.** All five napkin Sources are covered by Source-shaped plugins, and the heavy_metal-specific multi-plugin tracker is drafted. Remaining work is concrete world-layer instantiations and architect/dev/UX review passes.

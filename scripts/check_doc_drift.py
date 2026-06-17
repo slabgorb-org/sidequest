@@ -67,7 +67,7 @@ TRIPWIRES: list[tuple[str, str, str]] = [
     ("opus-model-id", r"claude-opus-4-7", "Opus generation is 4.8 — use claude-opus-4-8 (ADR-101 routing)."),
     ("opus-version", r"Opus 4\.7\b", "Opus generation is 4.8 — say 'Opus 4.8'."),
     ("pack-count-prod", r"\b10 production packs\b", "There are 11 packs — update the count + list (add wry_whimsy)."),
-    ("pack-count-all", r"\ball 10 packs\b", "There are 11 packs — update the count."),
+    ("pack-count-all", r"\b[Aa]ll 10 packs\b", "There are 11 packs — update the count."),
     ("dead-rust-link", r"\]\(\.\./sidequest-api/", "Dead Rust crate link — repoint to the Python source (sidequest-server/sidequest/...)."),
     ("workshop-tree-path", r"genre_workshopping/[A-Za-z]", "genre_workshopping/ was retired 2026-06-03 — use genre_packs/."),
     ("hp-removed", r"No HP field on sheet", "ADR-114 reinstated ablative HP — HP is on the sheet (HpPool)."),
