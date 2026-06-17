@@ -133,25 +133,25 @@ stories:
   - id: 126-9
     title: '[PERF] Narrator + intent_router_pass turn-latency ~3x regression landed Jun 17 (no router thrash) — bisect + fix'
     description: |-
-      Turn latency ~3x regression discovered during the annees_folles Fate-eval latency dig (2026-06-17). NOT the originally-suspected intent-router thrash.
+      ROOT CAUSE FOUND (bisect, HIGH confidence): the narrator now runs with EXTENDED THINKING ON by default. It was never on before Jun 16 — an accidental side-effect, not a deliberate quality choice.
 
-      VERDICT — no thrash. phase_call_counts.intent_router_pass = 1 on every turn across all 12 recent sessions / 339k turn_telemetry rows. The 8x/turn dice-replay storm Keith remembered is already fixed (suppress_intent_router). Two phases each got slower on a SINGLE call.
+      TRIGGER COMMIT: f970091e (PR #908, "feat(119-3): port narrator + 4 Haiku sites onto claude-agent-sdk over subscription auth", Jun 16 05:32 EDT). It moved the narrator from the anthropic Messages SDK (thinking OFF unless a budget is passed) to the claude-agent-sdk query() loop (thinking defaults ON / "adaptive"). So sonnet-4.6 now runs an adaptive thinking pass before EACH of up to 8 tool-loop iterations -> 16s -> 50-57s.
 
-      EVIDENCE (Postgres turn_telemetry, component=validator, event_type=turn_complete):
-      - Clean same-world proof: wry_whimsy/oz narrator agent_duration_ms 15.9s avg (older 29-turn session) -> 56.7s (Jun 17). 3.5x. Not world-mix.
-      - Baseline (<=Jun 16): ~16s narrator / ~4-6s intent_router_pass / ~20s total. perseus_cloud 16.1s, barsoom 16.0s, oz 15.9s.
-      - Regressed (Jun 17): ~50-57s narrator / ~10-14s router-phase / ~67-76s total. dust_and_lead 54.6s narr / max 97.7s.
-      - Fate spike: pulp_noir/annees_folles intent_router_pass hit 37-81s on a SINGLE call (router prompt bloat from the fate vocab block injected when rules.ruleset==fate, intent_router_pass.py:364-365). One annees_folles session totaled 162s/turn avg.
+      CONFIRMING COMMIT: 872eeefc (PR #919) disabled thinking but ONLY on output_format/structured calls; its message states the narrator tool-loop is untouched. Its own evidence: thinking-on 22-32s vs thinking-off 7-11s (~3x) = exactly the narrator tripling.
 
-      TWO REGRESSED PHASES:
-      1. Narrator (agent_duration_ms): the Anthropic SDK tool-loop (up to 8 heavy-model round-trips, 16 on dice turns). Dominant cost. ~16s -> ~50-57s.
-      2. intent_router_pass phase: ~4-6s -> ~10-14s, spiking 37-81s on Fate. Single call each; slow prompt, not a loop.
+      RED HERRING: 68a95ac8 (PR #934, Opus 4.7->4.8) is NOT the cause — narrator runs sonnet-4.6 (resolve_model(CallType.NARRATION)); the bumped rung is dormant; it landed after the 06:04 UTC observation.
 
-      WINDOW: present by 06:04 UTC Jun 17, absent Jun 16. Culprit merged in that window. Likely a Jun-17 change that inflated the prompt (state_summary / system prompt / retrieval) or raised narrator round-trips. Bisect dispatched (Architect, narrator-regression-bisect).
+      MECHANISM (file:line): anthropic_sdk_client.py:438-444 builds the narrator call with no thinking + no output_format; the only auto-disable (anthropic_sdk_client.py:262-263) fires ONLY when output_format is set -> narrator's is None -> thinking stays None -> claude CLI adaptive default (ON) applies. max_iterations=8 at orchestrator.py:4089.
 
-      NOTE: running server is the oq-3 checkout (pack_dir=/Users/slabgorb/Projects/oq-3/...). Fix targets sidequest-server develop; reconcile against whatever oq-3 is running.
+      WHERE: on develop (f970091e is ancestor of origin/develop, oq-3 running HEAD 6edfb69e, and oq-1 branch). Bit once the server restarted onto post-#919 develop in the end-of-Jun-16 -> 06:00 UTC Jun 17 window.
 
-      DATA: Postgres db 'sidequest', table turn_telemetry. Monitor SQL + watch -n5 documented by save-latency-recon. Fast confirming experiment: set SIDEQUEST_NARRATOR_ITERATION_CAP low and re-measure p95.
+      RECOMMENDED FIX (surgical, 1 line): at anthropic_sdk_client.py:438 pass thinking={"type":"disabled"} into build_agent_sdk_options for complete_with_tools (and the aside path if it shows the same cost). Behavior-restore to the pre-119-3 baseline, NOT a quality cut. Fastest confirm: apply, restart, re-measure one wry_whimsy/oz turn -> expect ~50s -> ~16s. Do NOT use SIDEQUEST_NARRATOR_ITERATION_CAP as the fix (caps narration depth/quality; conflates two things).
+
+      SECONDARY (MEDIUM confidence, separate mechanism): the intent_router_pass 37-81s Fate spikes are NOT thinking (router call is structured, #919 already disabled its thinking). They are PROMPT BLOAT from the Fate vocab block (intent_router_pass.py:364-365 -> build_fate_projection, line 234: PC skills + all live aspects), which intermittently can't finalize inside the mandatory max_turns=2 floor -> error_max_turns fragility, surfacing slowly. Follow-up lever: trim build_fate_projection for the router prompt. AC #3 covers this.
+
+      PRODUCT DECISION FOR KEITH: thinking-off restores baseline latency but the narrator never got the (accidental) thinking quality boost it's had since Jun 16. If thinking is later wanted, it should be a deliberate opt-in with a bounded budget, not an adaptive default firing 8x/turn.
+
+      DATA: Postgres turn_telemetry. No-thrash verdict stands (router_calls=1 across 339k rows). Live annees_folles understudy run was generating fresh Fate spikes during the bisect.
     points: 5
     priority: p1
     status: backlog
