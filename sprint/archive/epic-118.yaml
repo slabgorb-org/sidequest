@@ -3,7 +3,7 @@ type: epic
 title: F3 — Fate Core UI surfaces (ADR-144)
 description: "ADR-144 F3 slice: player-facing Fate Core UI for the four narrative packs (pulp_noir, tea_and_murder, wry_whimsy, spaghetti_western). Reactive Fate panel (fate points, aspects+invoke, skill ladder, stress boxes, consequence slots), 4dF roll display, compel accept/refuse. KEY FINDING (Neo Architect pass 2026-06-15): nothing Fate-shaped is on the wire to the client today — FateActionPayload is client->server intent only; the 4dF dice tuple lives only on the OTEL span — so F3 is NOT pure-UI. Its spine is a new FATE_STATE reactive projection+message (server) consumed by a new panel (ui), mirroring ADR-136 RELATIONSHIPS. Player-facing math mandatory (Sebastien/Jade) — player-UI mandate, NOT OTEL/GM-panel. Every Fate surface ruleset=='fate'-gated so it never co-renders with the WN/native beat/dial ConfrontationOverlay (paired negative test required). F1+F2 done; F3 not gated by F4/F5. Critical path F3a->F3b. Parked open Qs: 4dF flat-readout vs 3D Fudge die (gates F3c), compel carrier aside-channel vs in-panel control (gates F3e)."
 priority: p2
-status: backlog
+status: done
 repos: server,ui
 stories:
   - id: 118-1
@@ -131,14 +131,17 @@ stories:
     description: "Follow-up hardening filed during the 118-8 review (The Merovingian, 2026-06-15). Bundles three ADR-119 (Authenticated Player Identity) / ADR-047 (Prompt Injection Sanitization) findings that were pre-existing and out of scope for 118-8 (which scoped to FATE_ACTION + the skill field only). (1) AUTH AUDIT: DiceThrowHandler (sidequest/handlers/dice_throw.py) is the explicit pattern FateActionHandler mirrored ('mirrors DiceThrowHandler' docstring) and very likely carries the same auth-trust idiom 'getattr(msg, \"player_id\", \"\") or sd.player_id' — i.e. the same seat-spoof exposure 118-8 fixed for Fate. If confirmed, this is a potential HIGH (same class as 118-8, which was p1). (2)+(3) SANITIZATION: in sidequest/server/dispatch/fate_conflict.py, payload.target and payload.aspect_text are sealed RAW onto FateSealedCommit right beside the now-sanitized skill. target is MEDIUM (commit.target is interpolated into _resolve_attack narrator hints at ~:521-547, but _resolve_attack raises at find_creature_core(commit.target) ~:503 before any hint, so a free-text injection target raises rather than reaching the LLM — the active path needs a maliciously-named actor). aspect_text is LOW/latent (already sanitized at the hint producer _resolve_create_advantage 590/606 AND the prompt projection fate_projection.py:65; raw survives only on the F3a display-only projection). Apply sanitize_player_text at the seal site for defense-in-depth consistency with the 118-8 skill fix."
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - 'dice_throw: audit DiceThrowHandler seat resolution; if it trusts inbound msg.player_id, drive it from sd.player_id as the SOLE source (mirror 118-8), with an anti-spoof regression test and a fate_action-style spoof watcher event. If the audit finds it already safe, document why and close that AC.'
       - 'fate_conflict: sanitize payload.target via sanitize_player_text at the seal site in dispatch_fate_action (or commit.target at the _resolve_attack hint sites), with a test proving an injection-bearing target name is neutralized in the stored/hinted value.'
       - 'fate_conflict: sanitize payload.aspect_text at the seal site to remove the raw-on-struct surface, keeping the existing hint-time + projection-time sanitization as defense-in-depth; test that the stored commit.aspect_text is sanitized.'
+    completed: '2026-06-17'
     type: bug
+    review_verdict: approved
   - id: 118-10
     title: 'F3d-pre (server) — Fate invoke_mode (bonus|reroll) over the wire: add invoke_mode to FateActionPayload + thread through dispatch_fate_action (currently hardcodes bonus) into ruleset.invoke_aspect, mirror via F1d handler + F2a subsystem, extend fate_aspect_invoked OTEL span with mode; optional stable aspect_id in FATE_STATE projection. Unblocks the reroll half of F3d (118-4).'
     description: "Server prerequisites for the Fate conflict surface (118-6) + invoke (F3d/118-4). TWO additions to FateActionPayload + dispatch: (a) invoke_mode: Literal['bonus','reroll']='bonus' threaded through dispatch_fate_action (currently hardcodes mode='bonus') into ruleset.invoke_aspect; mirror via F1d handler + F2a subsystem; extend fate_aspect_invoked OTEL span with mode. (b) player_action: str='' freeform action-text rider mirroring DiceThrowPayload.player_action — thread into the narrator's player_action context (orchestrator player_action_text) so 'I swing from the chandelier and fire' + the mechanical Fate action reach the prose together ('chandelier for free'). Optional: stable aspect_id in FATE_STATE projection. Unblocks reroll + freeform-rides-action for F3d."
@@ -149,3 +152,4 @@ stories:
     repos: server
     workflow: tdd
     completed: '2026-06-16'
+completed: '2026-06-17'

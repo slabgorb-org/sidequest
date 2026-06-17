@@ -40,6 +40,7 @@ completed_epics:
   - '123'
   - '114'
   - '121'
+  - '118'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -936,3 +937,53 @@ completed_stories:
     title: "F4b test-template hardening (do before F4c-e copy it): strengthen AC5 into a real-pack fate.chargen.seeded OTEL wiring assertion (mirror F4a's InMemorySpanExporter+injected _tracer, against real pulp_noir content); de-tautologize test_fate_sheet_skills_match_pack_config by pinning a concrete value (e.g. Investigate==4) so a seed truncate/reorder is caught; AC4 also assert the BUILT character has no d20 attribute pool (not just pack config); give _load_pack/_build_pulp_noir_character real return types (GenrePack/Character) instead of object + guard lines 146/161 fate access; reframe the now-stale 'RED today' module docstring; optionally strip the consumer-less encounter_base_tension dead config from pulp_noir rules.yaml. Source: 121-2 Reviewer findings."
     points: 2
     completed: '2026-06-15'
+  - id: 118-1
+    epic: '118'
+    title: "F3a — FATE_STATE reactive projection + wire message (the spine): promote build_fate_projection into a full client payload (per-PC fate_points/refresh, skills->ladder, all aspects+kind+free-invoke counts, stress boxes, consequence slots; scene situation aspects+boosts; conflict sides/turn order). Add FATE_STATE GameMessage+payload (model on RELATIONSHIPS/QUESTS in protocol/), an on-change emitter gated pack.rules.ruleset=='fate' (Cost-Scales-with-Drama, NOT per-turn), and fate.projection.emitted OTEL span. No UI. Mirrors ADR-136 RELATIONSHIPS. Files: game/ruleset/fate_projection.py, game/fate_sheet.py, protocol/, telemetry/spans/fate.py."
+    points: 5
+    completed: '2026-06-15'
+  - id: 118-2
+    epic: '118'
+    title: 'F3b — Fate panel (read surface): new FatePanel.tsx (dockview, mirror RelationshipsPanel/QuestsPanel) rendering per-PC fate-point count, aspect list grouped by kind (high-concept/trouble/character/situation/boost/consequence) with free-invoke pips, skills on the ladder (Terrible -2 .. Legendary +8, labels + numeric), consequence slots (mild/moderate/severe/extreme, filled vs open). Wire a fateState slice into useStateMirror + GameStateProvider (idempotent full-replace, null-guard, No-Silent-Fallback malformed-payload log) and register in GameBoard. Genre-themed CSS custom props. THE mechanics-legibility surface for Sebastien/Jade — all numbers labeled.'
+    points: 5
+    completed: '2026-06-15'
+  - id: 118-3
+    epic: '118'
+    title: 'F3c — 4dF roll display (dice surface): surface the 4dF result to the player — four Fudge faces {-,0,+}, ladder rating, shifts, outcome tier, succeed-with-style highlight. DEFAULT shape = flat readout in the Fate panel/narration (roll rides FATE_STATE or a small FateRollPayload). PARKED OPEN Q (Keith decides before RED): flat readout (3pt, tdd) vs extend the Rapier 3D overlay with a Fudge die derived from dice-lib d6.ts + GENRE_DICE_THEMES (5pt, superpowers, design-heavy, touches live WN/native dice path — add NEW die kind, never mutate d6). Filed at the flat default. Player sees faces+ladder+shift+tier regardless (legibility mandate).'
+    points: 5
+    completed: '2026-06-15'
+  - id: 118-4
+    epic: '118'
+    title: "F3d — Invoke control: player-driven invoke from the Fate panel — an 'Invoke (+2 / reroll)' affordance per invokable aspect showing cost (free invoke if available, else 1 fate point). Resolution already rides FateActionPayload.invoke_aspect (F1d/F2a); F3d builds the control + cost display + optimistic fate-point decrement reconciled by next FATE_STATE (server is the only economy authority — No Silent Fallbacks). Surfaces the F2b invokable-aspect directive as clickable UI instead of prose."
+    points: 3
+    completed: '2026-06-17'
+  - id: 118-5
+    epic: '118'
+    title: "F3e — Compel accept/refuse round-trip (closes the F2b deferral): F2b's propose_fate_compel fires fate.compel.offered but the engine never persisted a PendingCompel (F2b plan suggested one; shipped flow is stateless). F3e adds the accept/refuse routing seam (server) + the player surface (ui): Accept -> module.accept_compel (+1 fate point, fires fate.compel.accepted); Refuse -> pay 1 fate point to decline (SRD). Show the fate-point delta on resolve. PARKED OPEN Q (Keith decides before RED): carrier = ADR-107 aside channel vs dedicated in-panel control."
+    points: 5
+    completed: '2026-06-16'
+  - id: 118-6
+    epic: '118'
+    title: "F3f — Fate conflict surface (host for F3d invoke; 118-4 folded in): during an active Fate Conflict show the live exchange — sides, turn order, each attack's shifts -> which stress boxes checked / which consequence filled (absorption math, legibility), taken-out, proactive-action tiles (overcome/create_advantage/attack), a Concede control (pre-roll -> fate points + narrative control), and the F3d invoke affordance. Reuses ConfrontationOverlay as the mount precedent but renders Fate state, ruleset=='fate'-gated so it never collides with the WN/native beat overlay. Much rides on FATE_STATE (F3a) + the panel (F3b)."
+    points: 8
+    completed: '2026-06-16'
+  - id: 118-7
+    epic: '118'
+    title: 'F3g — wire the 4dF roll surface end-to-end: FATE_ROLL into the FatePanel + MP broadcast (carries 118-3 findings)'
+    points: 3
+    completed: '2026-06-16'
+  - id: 118-8
+    epic: '118'
+    title: 'Fate FATE_ACTION auth-bypass: drive seat resolution from authenticated identity, not msg.player_id (ADR-119) + sanitize skill field'
+    points: 3
+    completed: '2026-06-15'
+  - id: 118-9
+    epic: '118'
+    title: 'ADR-119/ADR-047 hardening: audit dice_throw seat-auth (mirrors the 118-8 spoof pattern) + sanitize target/aspect_text at the Fate seal site'
+    points: 3
+    completed: '2026-06-17'
+  - id: 118-10
+    epic: '118'
+    title: 'F3d-pre (server) — Fate invoke_mode (bonus|reroll) over the wire: add invoke_mode to FateActionPayload + thread through dispatch_fate_action (currently hardcodes bonus) into ruleset.invoke_aspect, mirror via F1d handler + F2a subsystem, extend fate_aspect_invoked OTEL span with mode; optional stable aspect_id in FATE_STATE projection. Unblocks the reroll half of F3d (118-4).'
+    points: 3
+    completed: '2026-06-16'

@@ -273,3 +273,6 @@ it broad with a non-committal message. Two RED-design lessons:
 - **Assert cause survival robustly:** `isinstance(raised, ValueError) or
   isinstance(raised.__cause__, ValueError)` accepts either a raw propagate or an honest
   `raise NonAuthError(...) from exc` wrap — don't over-pin the exact wrapper type.
+
+### `sanitize_player_text(None)` returns "" — the optional-field sanitize landmine (118-9)
+`protocol/sanitize.py::sanitize_player_text` starts `if not text: return ""`. So `sanitize_player_text(None)` returns `""`, NOT `None`, with no crash. When the field being sanitized is `Optional[str]` (e.g. Fate `payload.target`, where `None` means "passive action, no opponent"), a naive `sanitize_player_text(payload.target)` silently coerces `None → ""`, flipping a passive action into a broken active one downstream (`_opposition_total` treats a non-None target as a real defender → `find_creature_core("") → raises`). When a sanitize fix lands on an optional field, ALWAYS write a TRIPWIRE test asserting the `None` input is preserved as `None` (`test_passive_action_preserves_none_target`). It's green today and goes red the instant Dev does the naive thing. Don't trust the happy-path injection test alone.
