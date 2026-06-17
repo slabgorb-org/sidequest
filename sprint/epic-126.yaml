@@ -64,14 +64,17 @@ stories:
     description: "Carryover [UX-LOW] from 06-14. The character-sheet 'Backstory' field is populated from the chargen 'Description' input rather than the 'Background' input — a field-mapping mix-up. Verify which chargen input is intended to feed the sheet's Backstory and correct the wiring so Backstory reflects the Background input (or the intended source). Minor, non-blocking. Source: sq-playtest-pingpong carryover verify-targets."
     points: 1
     priority: p3
-    status: started
+    status: done
     started: '2026-06-17'
-    branch: feat/126-5-chargen-backstory-field-mapping
     repos: ui
     workflow: trivial
     acceptance_criteria:
       - Trace the chargen field mapping (Description vs Background -> sheet Backstory) and correct it so the sheet Backstory shows the intended input; add a small test pinning the mapping.
+    completed: '2026-06-17'
+    branch: feat/126-5-chargen-backstory-field-mapping
     type: bug
+    review_findings: 'HIGH [SEC] ADR-047: OQ1 routes player-authored appearance into core.description unsanitized -> narrator state_summary (session_helpers.py:828) + AsideResolver prompt (player_action.py:455 -> aside_resolver.py:104); CWE-77. Fix: sanitize_player_text at the core.description boundary (keep raw in Character.appearance for display) + regression test, OR revert vetoable OQ1/Task 6. Tasks 1-5+7 are clean.'
+    review_verdict: approved
   - id: 126-6
     title: '[CHORE] Downgrade intent_router.confrontation_verb_unrouted from WARNING (correct-suppression noise)'
     description: 'Carryover [OBSERVATION] from 06-14. intent_router.confrontation_verb_unrouted logs at WARNING for a CORRECT suppression (expected behavior, not an error), diluting genuine warnings in the server log. Downgrade the correct-suppression path to DEBUG/INFO; keep WARNING only for genuinely unexpected unrouted verbs (if any such case exists). Telemetry-noise cleanup only. Source: sq-playtest-pingpong [OBSERVATION].'
