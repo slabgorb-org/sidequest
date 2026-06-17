@@ -65,7 +65,6 @@ All live packs now sit under `genre_packs/` — the `genre_workshopping/` stagin
 | heavy_metal | `genre_packs/heavy_metal/_drafts/magic.yaml` | ✅ schema-validation draft |
 | elemental_harmony | (no magic.yaml yet) | ⏳ TODO |
 | space_opera | (only `magic_design.md`, rewritten last session) | ⏳ TODO migrate to magic.yaml |
-| low_fantasy | (no magic.yaml yet) | ⏳ TODO |
 | neon_dystopia | (no magic.yaml yet) | ⏳ TODO |
 | pulp_noir | (no magic.yaml yet) | ⏳ TODO |
 
