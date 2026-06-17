@@ -70,7 +70,9 @@ stories:
     title: 'Completeness audit and drift guard: final read-through of the canonical doc set (api-contract TTS-era sections, JARGONFILE, subrepo READMEs) for residual Rust/SQLite/TTS/native drift; propose a lightweight doc-drift check'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: orchestrator
     workflow: trivial
+    completed: '2026-06-17'
     type: chore
