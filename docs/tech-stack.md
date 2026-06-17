@@ -68,7 +68,7 @@ The composition mirrors the prior Rust crate layout 1:1 (per ADR-082) — any fe
 
 ## LLM Integration
 
-The narrator LLM path uses the **Anthropic Python SDK** by default per **ADR-101** (supersedes ADR-001): prompt caching on stable system zones, native tool-use for structured output (ADR-102), and per-call model routing (Haiku 4.5 classification/scratch, Sonnet 4.6 narration, Opus 4.7 declared-important moments). `ANTHROPIC_API_KEY` is a hard runtime requirement on narrator paths (fail-loud, no silent fallback). Backend is selected by `SIDEQUEST_LLM_BACKEND` (default `anthropic_sdk`) in `agents/llm_factory.py`; `claude -p` (`claude_client.py`) and Ollama (`ollama_client.py`) remain opt-in non-default backends, and `claude -p` still serves some non-narrator jobs (e.g. the daemon's subject extraction and the dungeon "curate" stage).
+The narrator LLM path uses the **Anthropic Python SDK** by default per **ADR-101** (supersedes ADR-001): prompt caching on stable system zones, native tool-use for structured output (ADR-102), and per-call model routing (Haiku 4.5 classification/scratch, Sonnet 4.6 narration, Opus 4.8 declared-important moments). `ANTHROPIC_API_KEY` is a hard runtime requirement on narrator paths (fail-loud, no silent fallback). Backend is selected by `SIDEQUEST_LLM_BACKEND` (default `anthropic_sdk`) in `agents/llm_factory.py`; `claude -p` (`claude_client.py`) and Ollama (`ollama_client.py`) remain opt-in non-default backends, and `claude -p` still serves some non-narrator jobs (e.g. the daemon's subject extraction and the dungeon "curate" stage).
 
 Active agent types:
 
