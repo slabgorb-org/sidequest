@@ -62,10 +62,14 @@ stories:
     title: '119-3 transport-port cleanup (OQ-17): remove or re-home the now-vestigial Intent-Router cache-floor guard and restore coverage. The agent-SDK path emits no cache_control markers, so IntentRouterCacheFloorError / HAIKU_CACHEABLE_PREFIX_FLOOR_TOKENS / _INTENT_ROUTER_CACHE_TTL / _estimate_intent_router_prefix_tokens + the build_intent_router_llm floor check (llm_factory.py:646-667) now guard a trap the code can no longer spring; it is live-but-uncovered after 119-3''s full-replace deleted test_haiku_cache_control.py. Either delete the guard wholesale or re-home it onto an SDK-exposed cache signal, and add a test asserting the chosen behavior (No Silent Fallbacks). While in this module also: (a) register an atexit cleanup for _neutral_cwd()''s mkdtemp temp dir (anthropic_sdk_client.py:156, one empty dir per process leak); (b) add a gated LIVE isolation smoke since the AC1 contamination regression mocks the query seam and cannot catch a real-SDK context-absorption regression (gate scripts/spike_119_3_agentsdk_subscription.py in ops/CI).'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: server
     workflow: tdd
+    completed: '2026-06-17'
     type: refactor
+    review_findings: 'AC3 spike detection logic: HIGH empty-text silent green-light (No-Silent-Fallbacks); MEDIUM generic tell-tokens cause false-positive contamination; LOW unconditional reply print leaks to CI logs. AC1/AC2 clean.'
+    review_verdict: approved
   - id: 119-6
     title: "119-3 deferred reuse refactor: consolidate the four single-shot Haiku adapters now the transport has landed. _AsideLlm.complete, _IntentRouterLlm.emit_tool, _UnseededObjectiveClassifierLlm.emit_tool, and infer_archetype_from_freeform (llm_factory.py) each repeat the same skeleton — pre-flight ceiling check -> build_agent_sdk_options -> llm_request_span + _consume_to_result + _record_usage_telemetry -> record_call -> structured_output extract/raise. Extract a shared _call_haiku_sdk(...) + _extract_structured_output_or_raise(...) (the verify-phase simplify-reuse high-confidence findings, ~40 lines saved). STRUCTURAL-ONLY, no behavior change: the existing agents suite (1993 passed) must stay green, and each site keeps its distinct caller tag, model, and loud error type. Deferred from 119-3 verify per story-scope minimal-diff / single-commit-rollback (Architect spec-check affirmed the then-current factoring); safe to do now the swap has soaked."
     points: 2
