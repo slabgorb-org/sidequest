@@ -1,0 +1,64 @@
+id: '127'
+type: epic
+title: Documentation Staleness Reconciliation
+description: 'Bring agent-facing docs in line with the post-migration reality so they stop steering agents wrong: Rust->Python (ADR-082), SQLite->Postgres (ADR-115), TTS removal (2026-04), and the ruleset binding (no native flow; two SRD families WN + Fate; ADR-117/-142/-143/-144). PHASE 0 SHIPPED 2026-06-17: docs/sequence/ruleset-turns.md (WN+Fate turn diagrams) + README/architecture/server-CLAUDE alignment (orchestrator main 5ddcac0+677a9f0; server PR #930). This epic tracks the residual stale docs found in the 2026-06-17 audit sweep of 423 agent-facing docs.'
+priority: p1
+status: in_progress
+repos: orchestrator
+stories:
+  - id: 127-1
+    title: 'wiring-diagrams.md persistence: migrate Session Persistence + dungeon-persist diagrams from the deleted SqliteStore onto Postgres/PgSaveRepository (ADR-115); sweep the doc for residual SQLite/Rust drift'
+    points: 3
+    priority: p1
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    type: chore
+  - id: 127-2
+    title: 'advancement-effect-hosts.md: repoint dead sidequest-api Rust crate links to the Python advancement loader; reconcile ADR-078 (reversed by 114) and ADR-081 (deferred) framing'
+    points: 2
+    priority: p1
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    type: chore
+  - id: 127-3
+    title: 'api-contract.md ruleset description: six modules, add awn+fate, native vestigial, all 11 pack bindings; reconcile the native-dial-packs resolver language with the two-SRD reality'
+    points: 2
+    priority: p1
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    type: chore
+  - id: 127-4
+    title: 'feature-inventory.md: reconcile native beat engine marked Live and Wired, space_opera native-dial-for-non-combat, SQLite forensics transaction, and model routing'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    type: chore
+  - id: 127-5
+    title: 'design docs road_warrior location: magic-system-handoff.md and rig-taxonomy.md still say genre_workshopping and not-instantiated; it is a live cwn pack (workshopping tree retired 2026-06-03)'
+    points: 1
+    priority: p2
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    type: chore
+  - id: 127-6
+    title: 'Model-version sweep: verify llm_factory routing, then bump Opus 4.7 to 4.8 references across README, architecture, llm-backends, feature-inventory'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    type: chore
+  - id: 127-7
+    title: 'Completeness audit and drift guard: final read-through of the canonical doc set (api-contract TTS-era sections, JARGONFILE, subrepo READMEs) for residual Rust/SQLite/TTS/native drift; propose a lightweight doc-drift check'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: orchestrator
+    workflow: trivial
+    type: chore
