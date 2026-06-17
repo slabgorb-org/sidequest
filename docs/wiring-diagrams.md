@@ -4,7 +4,7 @@
 > from visible UI feature through server layers to storage, with module paths and
 > function names.
 >
-> **Last updated:** 2026-05-18
+> **Last updated:** 2026-06-17
 > **Source of truth:** `sidequest-server/sidequest/` (Python tree, post-port per ADR-082).
 > The pre-port Rust archive (`sidequest-api`) is read-only at
 > <https://github.com/slabgorb/sidequest-api>; some diagrams below describe a
@@ -13,6 +13,13 @@
 >
 > **Recent additions:** §17 Forensics Telemetry Substrate (P1+P2, live
 > 2026-05-18) and §18 Aside Channel (ADR-107, accepted 2026-05-18).
+>
+> **2026-06-17 (ADR-115):** §15 Session Persistence, §17 Forensics, and §19
+> dungeon persistence migrated off the deleted `SqliteStore` onto the pooled
+> Postgres backend (`PgSaveRepository` / `PgDungeonRepository` /
+> `PgForensicReader`). SQLite survives only as a read-only import *source*
+> (`sidequest/game/importer.py`). The color legend's orange band now reads
+> "Postgres persistence."
 
 ---
 
@@ -32,7 +39,7 @@
 12. [Faction Agendas & Scene Directives](#12-faction-agendas--scene-directives) — Agendas → Directives → Narrator
 13. [Slash Commands](#13-slash-commands) — /command → Router → Response
 14. [Trope Engine](#14-trope-engine) — Tick → Beat Firing → Narrator Injection ⚠️ **partial**
-15. [Session Persistence](#15-session-persistence) — GameSnapshot → SQLite → Recovery
+15. [Session Persistence](#15-session-persistence) — GameSnapshot → Postgres → Recovery
 16. [Genre Pack Loading](#16-genre-pack-loading) — YAML → Pydantic → Session State
 17. [Forensics Telemetry Substrate](#17-forensics-telemetry-substrate) — NARRATION tx → turn_telemetry + mechanical_census → Save-Forensics Viewer
 18. [Aside Channel](#18-aside-channel-adr-107) — PLAYER_ACTION{aside} → Haiku Resolver → ASIDE_ANSWER (non-turn)
@@ -729,24 +736,29 @@ flowchart TD
 
 ## 15. Session Persistence
 
-Atomic save after every turn, full recovery on reconnect. Lives in `sidequest/game/persistence.py` (stdlib `sqlite3` via `asyncio.to_thread`).
+Atomic save after every turn, full recovery on reconnect. Lives in
+`sidequest/game/pg/save_repository.py` (`PgSaveRepository`, the sole
+production implementation of the `SaveRepository` Protocol —
+`sidequest/game/repository.py`, ADR-115). The driver is psycopg3 (sync) +
+`psycopg_pool.ConnectionPool`; the connection string comes from
+`SIDEQUEST_DATABASE_URL`.
 
 ```mermaid
 flowchart TD
-    A["Turn completes"] --> B["session_handler.py<br/>Build GameSnapshot<br/>(all session state)"]
-    B --> C["session_handler.py<br/>persistence.save()"]
-    C --> D["asyncio.to_thread(<br/>SqliteStore.save)"]
+    A["Turn completes"] --> B["websocket_session_handler.py<br/>Build GameSnapshot<br/>(all session state)"]
+    B --> C["session_data.repository.save(snapshot)"]
+    C --> D["PgSaveRepository.save()<br/>→ pg/snapshot.py save_snapshot()"]
 
-    D --> E["game/persistence.py<br/>SqliteStore.save()"]
+    D --> E["session_tx(pool, session_id):<br/>SELECT 1 … FOR UPDATE<br/>(per-session row lock)"]
     E --> F["json.dumps<br/>(full GameSnapshot)"]
-    F --> G["sqlite3 transaction:<br/>INSERT OR REPLACE<br/>game_state(snapshot_json)"]
+    F --> G["INSERT INTO game_state<br/>(session_id, snapshot_json, saved_at)<br/>ON CONFLICT (session_id)<br/>DO UPDATE"]
 
-    H["Narration text"] --> I["game/persistence.py<br/>append_narrative()"]
-    I --> J["INSERT narrative_log<br/>(round, author, content, tags)"]
+    H["Narration text"] --> I["PgSaveRepository.append_narrative()<br/>→ pg/narrative.py"]
+    I --> J["INSERT narrative_log<br/>(session_id, round,<br/>author, content, tags)"]
 
-    K["Client reconnects<br/>SESSION_EVENT{connect}"] --> L["session_handler.py<br/>persistence.exists()?"]
-    L -->|"true"| M["SqliteStore.load()"]
-    M --> N["SELECT snapshot_json<br/>FROM game_state"]
+    K["Client reconnects<br/>SESSION_EVENT{connect}"] --> L["session_state.py<br/>PgSaveRepository.for_slug()<br/>(idempotent on slug)"]
+    L -->|"game_state row exists"| M["PgSaveRepository.load()"]
+    M --> N["SELECT snapshot_json<br/>FROM game_state<br/>WHERE session_id = %s"]
     N --> O["json.loads + pydantic validate<br/>→ GameSnapshot"]
     O --> P["Restore all session state:<br/>character, location, quests,<br/>NPCs, tropes, inventory,<br/>axis values, lore"]
     P --> Q["Generate recap from<br/>recent narrative_log entries"]
@@ -759,11 +771,20 @@ flowchart TD
     style J fill:#e17055,color:#fff
 ```
 
-**Schema:** 3 tables — `session_meta`, `game_state` (single row, full JSON), `narrative_log` (append-only)
+**Schema:** one Postgres database, every table keyed by `session_id` —
+`sessions` (one row per save), `game_state` (one row per session, full JSON),
+`narrative_log` (append-only). The legacy per-file SQLite tables ported 1:1
+with a `session_id` column added to every WHERE clause.
 
-**Async pattern:** `sqlite3.Connection` is not safely shareable across asyncio tasks — DB calls run on a worker thread via `asyncio.to_thread` at the async boundary.
+**Concurrency:** psycopg3 sync calls run against the pooled connection.
+Same-session writers serialize on a `SELECT … FOR UPDATE` row lock
+(`session_tx`, `pg/_conn.py`), which replaced both the process-wide
+`SAVE_WRITE_LOCK` and the old `asyncio.to_thread` worker-thread boundary.
 
-**One DB per session:** `~/.sidequest/saves/{genre}/{world}/{player}/save.db`
+**One database, many sessions:** rows live in the shared Postgres DB at
+`SIDEQUEST_DATABASE_URL`, keyed by `session_id` — not the retired
+per-session `~/.sidequest/saves/.../save.db` file. SQLite survives only as a
+read-only import *source* (`sidequest/game/importer.py`, ADR-115).
 
 **GameSnapshot includes:** characters, NPCs, encounter, chase data (where ported), tropes (full TropeState), quests, lore, axis values, achievements, campaign maturity, world history, NPC registry
 
@@ -824,33 +845,34 @@ flowchart TD
 
 ## 17. Forensics Telemetry Substrate
 
-Two SQLite sinks ride inside the save file itself, written **inside the same
-NARRATION transaction** so per-turn back-pressure metrics and per-PC
-mechanical-state projections never desync from the event they describe.
-Phase 1 (`turn_telemetry`) and Phase 2 (`mechanical_census`) merged
-2026-05-18. The R1-R9 Spec-Reconciliation note in the merged plan is the
-authority for emission point and field semantics — do not re-derive.
+Two Postgres sinks ride inside the same **NARRATION (`emit_event`)
+transaction** so per-turn back-pressure metrics and per-PC mechanical-state
+projections never desync from the event they describe. Both tables are keyed
+by `session_id` (ADR-115). Phase 1 (`turn_telemetry`) and Phase 2
+(`mechanical_census`) merged 2026-05-18. The R1-R9 Spec-Reconciliation note
+in the merged plan is the authority for emission point and field semantics —
+do not re-derive.
 
 ```mermaid
 flowchart TD
     A["Turn pipeline:<br/>narrator returns prose + tool calls"] --> B["server-side: emit_event(NARRATION)"]
-    B --> C["with conn: (single SQLite tx)"]
+    B --> C["session_tx (single Postgres tx)"]
 
     C --> D["INSERT events<br/>(NARRATION row only —<br/>no per-event state_delta)"]
     C --> E["INSERT turn_telemetry (Phase 1)<br/>{model, latency_ms,<br/>input_tokens, output_tokens,<br/>cache_read, cache_write,<br/>cost_usd, tool_call_count,<br/>intent}"]
     C --> F["INSERT mechanical_census (Phase 2)<br/>per-seated-PC projections:<br/>edge, xp, inv, trope baseline<br/>+ session-level trope row<br/>+ per-round diff lane:<br/>{baseline, static, moved, absent}"]
 
-    D & E & F --> G["COMMIT — atomic;<br/>save.db consistent on crash"]
+    D & E & F --> G["COMMIT — atomic;<br/>the session's row set<br/>consistent on crash"]
 
     H["ADR-103 native OTEL"] -.->|"per tool call"| I["Jaeger (gRPC)<br/>narration.turn spans"]
     Note1["Old ADR-058 playtest_otlp<br/>HTTP/JSON scraper still feeds<br/>legacy GM-panel panes —<br/>does NOT reflect SDK narrator state.<br/>Two streams, do not conflate."]
     H -.-> Note1
 
     J["Save-Forensics Viewer (UI)"] --> K["GET /api/debug/state (snapshot)<br/>+ /timeline"]
-    K --> L["server: open_save_readonly(path)"]
-    Note2["NEVER SqliteStore.open() —<br/>that path WAL-flips +<br/>schema-migrates +<br/>commits on construction.<br/>See project_sqlitestore_open_writes."]
+    K --> L["server/rest.py:<br/>PgForensicReader(pool)"]
+    Note2["Pooled reads under MVCC —<br/>no session_tx, no FOR UPDATE,<br/>no locking. Read-only and lossy<br/>(ADR-115 D7). The old<br/>?mode=ro SqliteStore.open() hazard<br/>is gone with the SQLite path."]
     L -.-> Note2
-    L --> M["sqlite3 connect ?mode=ro"]
+    L --> M["pooled SELECTs<br/>(by session_id)"]
     M --> N["read events + turn_telemetry +<br/>mechanical_census + KnownFacts"]
     N --> O["fold KnownFacts by fact_id<br/>(ADR-100; powers<br/>'Derived state' panel —<br/>PR #325 shipped dead,<br/>PR #327 fixed)"]
     O --> P["Render Tufte panels:<br/>narration timeline +<br/>per-turn metrics +<br/>mechanical census deltas"]
@@ -861,8 +883,8 @@ flowchart TD
     style P fill:#4a9eff,color:#fff
 ```
 
-**Why one tx?** The savefile is the ground truth Keith reads after a session
-to verify the narrator wasn't winging it (CLAUDE.md OTEL Observability
+**Why one tx?** The persisted session is the ground truth Keith reads after a
+session to verify the narrator wasn't winging it (CLAUDE.md OTEL Observability
 Principle). If telemetry rows could land without the NARRATION they describe
 (or vice versa), the lie-detector lies. Single tx makes that class of bug
 impossible — either both write or neither does.
@@ -949,7 +971,7 @@ flowchart TD
     I --> J["Complication Ledger:<br/>encounter complications,<br/>resource constraints,<br/>narrative beats"]
     J --> K["materializer:<br/>seed-then-commit pattern<br/>(rollback on PersistError)"]
 
-    K --> L["sqlite persist:<br/>expansion.new_nodes ONLY<br/>(entrance was Expansion 0)"]
+    K --> L["Postgres persist<br/>(PgDungeonRepository.transaction):<br/>expansion.new_nodes ONLY<br/>(entrance was Expansion 0)"]
     L --> M["update room_graph<br/>+ snap.current_region"]
 
     M --> N["curate stage:<br/>claude -p (only LLM call<br/>in the expansion loop)<br/>names rooms, adds flavor"]
@@ -985,7 +1007,7 @@ Blue   (#4a9eff)  — Client/WebSocket messages (visible to player)
 Purple (#6c5ce7)  — Internal data (narration text, results)
 Red    (#ff6b6b)  — Narrator LLM call (Anthropic SDK default) / narrator prompt
 Green  (#00b894)  — Python daemon (Flux / Z-Image gen)
-Orange (#e17055)  — SQLite persistence
+Orange (#e17055)  — Postgres persistence
 Yellow (#fdcb6e)  — YAML configuration (genre packs)
 Gray   (#b2bec3)  — Not yet wired in Python (port-drift; see ADR-087)
 ```
