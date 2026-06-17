@@ -155,6 +155,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-094: Orrery Label Placement — Three-Strategy Taxonomy](094-orrery-label-placement-strategies.md) | ✓ accepted | live |
 | [ADR-107: Out-of-Band Aside Channel — Non-Turn-Consuming Player→GM Table-Talk](107-out-of-band-aside-channel.md) | ✓ accepted | live → docs/superpowers/specs/2026-05-17-aside-channel-design.md |
 | [ADR-133: Client State Reconciliation v2 — Full-Replay Mirror, Streaming-Narration Accumulator, and ImageBus Scrapbook Merge](133-client-state-reconciliation-v2.md) | ✓ accepted | live |
+| [ADR-148: Player Fate (4dF) Rolls Are Physics-Is-The-Roll; NPC Rolls Stay Server-Side — Reconciling ADR-074 and ADR-144](148-player-fate-roll-is-physics-is-the-roll.md) | ✓ accepted | live → sidequest-server/sidequest/handlers/fate_throw.py |
 
 ## Multiplayer
 

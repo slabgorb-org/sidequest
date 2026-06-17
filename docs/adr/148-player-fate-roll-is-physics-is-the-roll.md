@@ -1,15 +1,15 @@
 ---
 id: 148
 title: "Player Fate (4dF) Rolls Are Physics-Is-The-Roll; NPC Rolls Stay Server-Side — Reconciling ADR-074 and ADR-144"
-status: proposed
+status: accepted
 date: 2026-06-17
 deciders: ["Keith Avery", "The Man in Black (Architect)"]
 supersedes: []
 superseded-by: null
 related: [36, 74, 117, 129, 144]
 tags: [frontend-protocol, game-systems]
-implementation-status: deferred
-implementation-pointer: null
+implementation-status: live
+implementation-pointer: sidequest-server/sidequest/handlers/fate_throw.py
 ---
 
 # ADR-148: Player Fate (4dF) Rolls Are Physics-Is-The-Roll; NPC Rolls Stay Server-Side — Reconciling ADR-074 and ADR-144
