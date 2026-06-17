@@ -11,6 +11,5 @@ epics:
   - '84'
   - '119'
   - '122'
-  - '124'
   - '125'
 standalone_stories: []

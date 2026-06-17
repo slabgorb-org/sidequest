@@ -41,6 +41,7 @@ completed_epics:
   - '114'
   - '121'
   - '118'
+  - '124'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -986,4 +987,19 @@ completed_stories:
     epic: '118'
     title: 'F3d-pre (server) — Fate invoke_mode (bonus|reroll) over the wire: add invoke_mode to FateActionPayload + thread through dispatch_fate_action (currently hardcodes bonus) into ruleset.invoke_aspect, mirror via F1d handler + F2a subsystem, extend fate_aspect_invoked OTEL span with mode; optional stable aspect_id in FATE_STATE projection. Unblocks the reroll half of F3d (118-4).'
     points: 3
+    completed: '2026-06-16'
+  - id: 124-1
+    epic: '124'
+    title: Timing token chart — per-turn cached/fresh split + cache-hit sparkline
+    points: 5
+    completed: '2026-06-16'
+  - id: 124-2
+    epic: '124'
+    title: Dependency-aware flame chart — emit + render span hierarchy
+    points: 5
+    completed: '2026-06-17'
+  - id: 124-3
+    epic: '124'
+    title: Tufte-redesign the OTEL Inspector — palette across the shell + full Timing & Timeline rebuild
+    points: 8
     completed: '2026-06-16'

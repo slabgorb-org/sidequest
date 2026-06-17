@@ -3,7 +3,7 @@ type: epic
 title: OTEL Inspector — Tufte visualization follow-ups
 description: Follow-ups to the 2026-06-16 Tufte redesign of the SideQuest Inspector (PR slabgorb-org/sidequest-ui#398). Two design features from the Claude Design handoff were deferred because they depend on telemetry the engine does not currently emit; the redesign rendered only real TurnCompleteFields rather than fabricate data.
 priority: p3
-status: backlog
+status: done
 repos: server,ui
 stories:
   - id: 124-1
@@ -28,13 +28,17 @@ stories:
     description: 'The Tufte design renders the flame chart with dependency nesting: spans nested caller ▸ callee (containment = depth), faded container spans vs solid leaf work (Tufte layering), and the critical span outlined in accent. BLOCKER at redesign time: TurnSpan is FLAT (name, component, start_ms, duration_ms) — no parent/depth/leaf. The shipped FlameChart is therefore an honest time-proportional Gantt (one row per span, slowest outlined), NOT nested. To get nesting the server must emit span hierarchy (parent id or depth, and a leaf flag) on the turn_complete spans payload; charts/FlameChart.tsx then lays rows out by depth with container-vs-leaf opacity layering and keeps the accent outline on the critical span.'
     points: 5
     priority: p3
-    status: backlog
+    status: done
+    assigned_to: tea
+    started: '2026-06-17'
     repos: server,ui
     workflow: tdd
     acceptance_criteria:
       - turn_complete spans carry hierarchy (parent/depth + leaf flag) sufficient to reconstruct the caller▸callee tree
       - FlameChart lays spans out by depth (nested), faded containers vs solid leaves
       - critical (bottleneck) span stays outlined in accent; flat-span fallback still works for older servers
+    completed: '2026-06-17'
+    review_verdict: approved
   - id: 124-3
     title: Tufte-redesign the OTEL Inspector — palette across the shell + full Timing & Timeline rebuild
     description: "Implements the Claude Design 'tufte-inspired-visualization-improvements' handoff (SideQuest Inspector.dc.html, 2026-06-16) in the live OTEL Inspector. Filed retroactively — implemented directly at Keith's request (not via the SM→TEA→Dev pipeline). PR: slabgorb-org/sidequest-ui#398 (branch feat/inspector-tufte-redesign → develop), OPEN/awaiting merge. Scope: (1) bring the Tufte color scheme across the whole shell, (2) full Tufte rebuild of two tabs — Timing + Timeline. Palette recolored in shared/constants.ts (flat #19191b ground, #4ab4cf accent, muted agent hues, Georgia small-caps + JetBrains Mono); every legacy THEME key preserved so all nine tabs inherit it. Shell (Header/Tabs/App) restyled to hairline rules + flat ground; header gained a real p95 sparkline. Timing: stat row, phase bars w/ session-avg tick, histogram w/ median/p95 refs, per-agent dot plot, scatter w/ 5-turn mean + p95 + degraded X, shared-scale token bars, donut→sorted tier bar plot (DonutChart deleted). Timeline: Tufte turn list (session dividers preserved), flame Gantt w/ slowest span outlined, serif/mono detail grid. Driven entirely by real TurnCompleteFields; two data-blocked features cut to 124-1 (cache split) and 124-2 (flame nesting). Verification: tsc clean, full UI suite 2261/2261, Dashboard 70/70."
@@ -61,3 +65,4 @@ stories:
     workflow: tdd
     completed: '2026-06-16'
     review_verdict: approved
+completed: '2026-06-17'
