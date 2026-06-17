@@ -81,3 +81,29 @@ stories:
     acceptance_criteria:
       - intent_router.confrontation_verb_unrouted no longer logs at WARNING for the correct-suppression case (DEBUG/INFO instead); a real unexpected-unrouted case, if distinguishable, still warns.
     type: chore
+  - id: 126-7
+    title: '[FATE] Player 4dF roll is determinative — client throws the dF dice, settled faces ARE the result; server rolls only for NPCs'
+    description: |-
+      Make the player's Fate (4dF) roll DETERMINATIVE — physics-is-the-roll (ADR-074), the same model the d20 path already uses. The player throws the four dF Fudge dice in the tray and the faces they settle on ARE the roll; the server resolves the Fate action from those reported faces. Server-side RNG (roll_4df) is used ONLY for non-player actors (NPCs/opponents), which have no client to throw.
+
+      WHY: the current Fate path is backwards. The server rolls 4dF itself (resolve_action -> roll_4df(rng)) and decides the outcome; the 3D FateDiceTray is a post-hoc DECORATION. Story 125-4 (merged) tried to animate that decoration to match the already-decided result and could not — it synthesizes an arbitrary throw gesture, so the dice tumble to physics-determined faces UNRELATED to the actual roll and can contradict the text readout. That defeats the legibility mandate (Sebastien/Jade: 'the dice should show what was actually rolled'). Determinism fixes this by construction: when the faces come FROM the physics throw, replaying throw_params+seed reproduces them for every seat (exactly like DICE_RESULT spectators) — which is what 'mirroring DICE_RESULT' in the 125-4/118-x ACs actually required.
+
+      MODEL (mirror the d20 flow): FATE_ACTION (action+skill+target) -> server requests a Fate throw -> client throws 4 dF (interactive DiceScene, reuse the gesture path InlineDiceTray uses) -> client reports the 4 settled faces + throw_params + seed (Fate analog of DiceThrowPayload) -> server resolves from the reported faces and broadcasts. NPC rolls: server rolls + broadcasts FATE_ROLL with server-synthesized throw_params+seed (the existing 125-4 path) — spectators replay; no client throw needed.
+
+      REUSE (do NOT revert): 125-4's merged groundwork stays — the FateRollPayload throw_params/seed wire fields and the dF '0' face label are correct and needed here too. What gets torn out is the 'server decides, then animate' assumption in FateDiceTray + the server-rolls-for-players path.
+
+      START WITH DESIGN (Architect): nail the FATE_ACTION->throw->resolve sequence and the new client->server message, and write an ADR-144/ADR-074 reconciliation note (player Fate rolls are physics-is-the-roll; NPC rolls server-side). I (the agent) misjudged this twice, so design before code.
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server,ui
+    workflow: bdd
+    acceptance_criteria:
+      - 'DESIGN (Architect): a written design for the FATE_ACTION→request-throw→client-throw→resolve sequence + the new client→server Fate-throw message (Fate analog of DiceThrowPayload), plus an ADR-144/ADR-074 reconciliation note stating player Fate rolls are physics-is-the-roll and NPC rolls stay server-side. Design approved before RED.'
+      - 'PLAYER ROLL IS DETERMINATIVE: a player Fate action resolves from the CLIENT-reported 4dF settled faces, NOT from server roll_4df(rng). resolve_action (or its caller) takes the dice as input; roll_total/ladder_total/shifts/tier all derive from the thrown faces. Server test: given reported faces, the resolved outcome matches those faces; assert no server-side roll_4df is invoked on the player path.'
+      - "INTERACTIVE THROW (ui): FateDiceTray lets the player throw 4 dF dice via dice-lib's interactive DiceScene gesture (the path InlineDiceTray uses for d20), captures the 4 settled faces (each −1/0/+1) on settle, and submits them. No more hardcoded/decorative throw."
+      - "CLIENT→SERVER MESSAGE: a new typed message carries the 4 settled faces + throw_params + seed; faces are authoritative at the wire boundary (pydantic, extra='forbid'; exactly 4 faces, each in {−1,0,1}). Routable in the GameMessage union."
+      - 'NPC ROLLS STAY SERVER-SIDE: non-player Fate rolls still use server roll_4df and broadcast FATE_ROLL with server-synthesized throw_params+seed (the 125-4 path). Server test: an NPC/opponent Fate roll is server-rolled and broadcast; the player path does not.'
+      - "SPECTATOR CONSISTENCY: other seats replay the thrower's throw_params+seed and land on the SAME faces the thrower reported (consistent by construction, like DICE_RESULT). The 3D dice never contradict the text readout."
+      - 'OTEL: the fate.action_resolved span records the dice that resolved the action AND whether they were player-thrown or server-rolled (GM-panel lie-detector for the determinism).'
+      - "WIRING: end-to-end test of the player throw→resolve round-trip through the real handler (not a fixture), and confirmation the NPC path still server-rolls. Reuse 125-4's throw_params/seed payload fields + dF '0' label (no revert)."
