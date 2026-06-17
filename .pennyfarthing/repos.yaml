@@ -147,9 +147,18 @@ repos:
     build_command: "true"
     lint_command: tsc --noEmit
     dev_command: vite --config dev/vite.config.ts
-    branch_strategy: trunk-based
-    default_branch: main
+    branch_strategy: gitflow
+    default_branch: develop
     notes: |
       Standalone @local/dice-lib at ~/Projects/dice-lib, source-linked into
       every oq clone via file:../../dice-lib (one shared working copy; edits
-      are live everywhere, no build). Commit straight to main.
+      are live everywhere, no build).
+      Gitflow as of 2026-06-17 (was trunk-based): develop is the integration
+      and GitHub default branch, PRs target develop, releases merge
+      develop -> main — in line with the sidequest-* siblings.
+      SHARED-WORKING-COPY CAVEAT: ~/Projects/dice-lib is ONE physical checkout
+      symlinked into all oq clones (oq-1..oq-4). Switching its branch switches
+      it for every clone at once, so only ONE clone may hold a dice-lib feature
+      branch at a time; return the working copy to develop when the PR merges.
+      Still on the personal slabgorb/ GitHub org while the siblings moved to
+      slabgorb-org; the org transfer is a separate, unscheduled follow-up.
