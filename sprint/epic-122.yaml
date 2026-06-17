@@ -86,10 +86,14 @@ stories:
     title: Relocate _KIND_TO_MESSAGE_CLS from server/session_handler to protocol tier; delete the validator.py grandfathered edge + its GRANDFATHERED guard entry (ADR-147 honesty — kills the last upward edge the guard grandfathers)
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: server
     workflow: tdd
+    completed: '2026-06-17'
     type: refactor
+    branch: feat/122-8-kind-to-message-cls-protocol-tier
+    review_verdict: approved
   - id: 122-9
     title: Sweep pre-existing ruff I001 import-order debt across 8 server test files (ruff 0.15.11 flags them under uv-locked config; develop server-check currently red independent of any story)
     points: 1
