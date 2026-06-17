@@ -218,25 +218,28 @@ A baseline smoke pass is:
 > (`game/beat_kinds.py`). Combat resolves through the bound Without-Number / Fate
 > modules (ADR-143/-144), not native dials. The Pillar-1 manual-test phrase
 > "edge deltas land" is legacy: per **ADR-114** Edge/Composure was reversed for
-> ablative HP, so beats now land HP/resource deltas. **The "Combat / Edge /
-> Composure" section immediately below still describes the pre-ADR-114 `EdgePool`
-> world (HP removed, composure-break) and is itself stale — flagged for the
-> 127-7 completeness audit, not rewritten here.**
+> ablative HP, so beats now land HP/resource deltas. The "Combat / Survivability"
+> section immediately below was reconciled to that ablative-HP reality in the
+> 127-7 completeness audit (the pre-ADR-114 `EdgePool` / "HP removed" rows are
+> gone).
 
-### Combat / Edge / Composure (ADR-078, ADR-014)
+### Combat / Survivability (ADR-114 ablative HP — supersedes ADR-078 Edge/Composure)
+
+> **ADR-078's Edge/Composure model was reversed by ADR-114.** Personal `EdgePool`
+> and the "HP removed" state are gone: ablative **HP** is the live survivability
+> track — see the canonical **Ablative HP** entry below. The only composure pool
+> that survives is the vessel/`rig_pool` (`rig_composure_*`). Combat resolution
+> runs through the bound ruleset (Without Number / Fate), not the native dial
+> engine (ADR-143/-144).
 
 | Feature | Module(s) | UI | Manual test |
 |---------|-----------|----|-------------|
-| Edge primitive on CreatureCore | `game.creature_core.EdgePool`, `apply_edge_delta` | `CharacterPanel` Edge bar | Take a beat → Edge bar moves; yield → Edge debit; wired from `dispatch/yield_action.py:43`, `session.py:884,888` |
-| Edge debits + composure break + numerical advantage (ADR-078 §3-4) | `combat.edge_apply` + numerical-advantage shift | Edge bar + narration | Surrounded PC sees numerical-advantage shift; Edge at ≤0 triggers composure-break narration (server feat `8fa2b3a`) |
+| Ablative HP on CreatureCore (ADR-114) | `game.creature_core.HpPool` (`current`/`max`/`base_max`) | `PartyMember` HP bar | Take damage → HP drops; 0 HP → `hp_depletion` win condition; `state_patch_hp` OTEL span per delta |
 | Shared threshold helper | `game.thresholds` | — | *Engineering* — covers crossings + threshold→KnownFact mint |
-| `BeatDef.edge_delta` field | `genre.models.rules.BeatDef` | — | Beats with `edge_delta` move bars predictably |
-| HP removal | story 45-35 | character sheet | No HP field on sheet; chargen does not roll HP; vestigial fields in `tension_tracker.py:340-350`, `history_chapter.py:64` flagged for cleanup |
 | Combatant / opposed check | `game.combatant`, `opposed_check`, `combat_brackets` (dispatch) | — | *Engineering* — bracket math during combat ticks |
-| Advancement-effect data shapes | `genre.models.advancement` | — | Shapes loaded; runtime upstream-blocked on Epic 39 per-class edge config |
+| Advancement-effect data shapes | `genre.models.advancement` | — | Models loaded (`AdvancementTree`/`Tier`/`Effect`, vitality variants re-pointed Edge→HP); the harvester + consumption engine are deferred (ADR-081 → ADR-087) — see `advancement-effect-hosts.md` |
 | Gold-change narration apply | narrator gold seam | `InventoryPanel` purse | Narrator-reported gold change applies to acting PC's purse (no party-wide drift); OTEL span fires (server `a50c8c9`) |
-| `composure_break` OTEL span | `telemetry.spans.combat` | Dashboard | **Dark** — span definition exists but resolution-at-edge≤0 not yet wired into critical path (ADR-078 §4) |
-| Push-currency rituals (pact_working) | `genre_packs/heavy_metal/` | — | **Live (asset gate pending)** — heavy_metal re-promoted 2026-05-23; loads, assets owed |
+| Push-currency rituals (pact_working) | `genre_packs/heavy_metal/` | — | **Live (asset gate pending)** — heavy_metal loads; rituals ride genre `ResourcePool`s (voice/flesh/ledger), **not** Edge (ADR-078 §6 survives the ADR-114 reversal) |
 
 ### Saving Throws & B/X Class Beats
 
@@ -568,7 +571,7 @@ Speculative prerendering (ADR-044 historical 2026-05-02 — TTS-deprecated premi
 
 **10 pack directories** under `sidequest-content/genre_packs/`, and a filesystem check (`find genre_packs/*/worlds/*/openings.yaml`, verified 2026-05-28) confirms **all 10 have at least one world with an authored `openings.yaml`**, i.e. all load: `caverns_and_claudes` (beneath_sunden), `elemental_harmony` (burning_peace, shattered_accord), `heavy_metal` (evropi, long_foundry), `mutant_wasteland` (flickering_reach), `neon_dystopia` (franchise_nations), `pulp_noir` (annees_folles), `road_warrior` (the_circuit), `space_opera` (aureate_span, coyote_star), `spaghetti_western` (dust_and_lead, five_points, the_real_mccoy), `tea_and_murder` (glenross). This matches the root `CLAUDE.md`: `heavy_metal` was re-promoted 2026-05-23; `neon_dystopia` + `pulp_noir` were promoted 2026-05-23 with world openings now authored — but the **asset gate** (portraits, POI landscapes, generated OGG) is not yet met for `heavy_metal`, `neon_dystopia`, `pulp_noir`, or `road_warrior`. The earlier "7 directories / 5 production packs / 2 empty shells" framing is **stale** and superseded by this filesystem reality. `low_fantasy` — formerly the only workshop-only pack — was **deleted 2026-06-03** along with the retired `genre_workshopping/` tree. The one remaining gated world is `tea_and_murder/blackthorn_moor`, now held in place by `draft: true` under an otherwise-live pack (not a separate staging tree).
 
-**Loads (has world openings)** ≠ **cleared the full asset + playtest promotion gate.** All 10 packs load; the four flagship-tier worlds with assets remain `beneath_sunden`, `flickering_reach`, `coyote_star`, and `glenross`.
+**Loads (has world openings)** ≠ **cleared the full asset + playtest promotion gate.** All 11 packs load; the four flagship-tier worlds with assets remain `beneath_sunden`, `flickering_reach`, `coyote_star`, and `glenross`.
 
 **Highlights since the 2026-04-30 pack-status snapshot:**
 - **caverns_and_claudes** — now a **procedural-megadungeon pack** (ADR-106, closed 2026-05-17). Lobby world is `beneath_sunden` — a single shaft into Sünden Deep. World manifest authors only the surface anchor (Ropefoot waiting-camp + Dropmouth shaft head); the deep is generated unbounded at runtime by the contiguous-edge-expansion engine plus Complication Ledger. Four genre-level set-piece tropes anchor the procedural deep (Plan 7 §14.A, content PR #227). Prior `caverns_sunden` hamlet world deprecated (PR #228). Reference pack still ships the four B/X classic classes (fighter / mage / cleric / thief) + B26 saving throws + memorization + morale + signature abilities (Taunt / Turn Undead / Backstab); silver currency.
@@ -636,7 +639,7 @@ OTEL coverage is the strongest it has ever been. The biggest known gaps for Keit
 - `space_opera/coyote_star` (orbital chart + magic + rig MVP — flagship for Epic 47 work)
 - `tea_and_murder/glenross` (Highland village Edwardian Scotland c. 1908; emotional ability scores, class-stratified society, public-domain Chopin/Strauss music — the Sonia love-letter pack per CLAUDE.md)
 
-These four are the **flagship-tier** worlds — fully asset-complete and playtested. They are not the *only* loadable worlds: as of 2026-05-28 all 10 packs in `genre_packs/` load (each has at least one world with `openings.yaml`), including `elemental_harmony` (`burning_peace`, `shattered_accord` — back in `genre_packs/`, M2 "parked" note now stale), `heavy_metal`, `neon_dystopia`, `pulp_noir`, `road_warrior`, and `spaghetti_western` (three worlds incl. the new `five_points`). Those six just have not yet cleared the asset + playtest gate (portraits, POI landscapes, generated OGG), so they are loadable-but-rough rather than flagship. `tea_and_murder`'s `blackthorn_moor` is still `draft: true` (not lobby-promoted), though its asset gate is now being met (5 portraits + 8 POIs rendered 2026-05-29). The full media pipeline, faction-driven world, OCEAN-flavored NPCs, footnoted narration with journal, confrontation engine with genre-typed resource pools where wired, Edge/Composure replacing HP (with `space_opera` now on SWN ablative HP for combat), magic ledger bars and five wired confrontations, live teammate typing, and streaming narration are all live across the flagship worlds.
+These four are the **flagship-tier** worlds — fully asset-complete and playtested. They are not the *only* loadable worlds: as of 2026-06-12 all 11 packs in `genre_packs/` load (each has at least one world with `openings.yaml`), including `elemental_harmony` (`burning_peace`, `shattered_accord` — back in `genre_packs/`, M2 "parked" note now stale), `heavy_metal`, `neon_dystopia`, `pulp_noir`, `road_warrior`, `spaghetti_western` (three worlds incl. the new `five_points`), and `wry_whimsy`. Several just have not yet cleared the asset + playtest gate (portraits, POI landscapes, generated OGG), so they are loadable-but-rough rather than flagship. `tea_and_murder`'s `blackthorn_moor` is still `draft: true` (not lobby-promoted), though its asset gate is now being met (5 portraits + 8 POIs rendered 2026-05-29). The full media pipeline, faction-driven world, OCEAN-flavored NPCs, footnoted narration with journal, confrontation engine with genre-typed resource pools where wired, ablative HP (ADR-114, reversing ADR-078's HP→Edge removal), magic ledger bars and five wired confrontations, live teammate typing, and streaming narration are all live across the flagship worlds.
 
 > **2026-05-29 update.** `space_opera` now has **three** live (`draft: false`) worlds, not one: `coyote_star` (above), plus `aureate_span` (promoted 2026-05-29 — camp-cosmic painterly redirect, 7 portraits + 21 POIs rendered, #290/#291/#292) and `perseus_cloud` (#286/#288). `spaghetti_western/five_points` gained 12 authored + rendered POI prompts (#296/#297). So the asset-complete world count is climbing past the original four — see `docs/genre-pack-status.md` for the current matrix.
 

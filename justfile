@@ -665,6 +665,12 @@ setup:
     git -C {{root}} config core.hooksPath .githooks
     echo "=== setup complete ==="
 
+# Scan the canonical doc set for known-stale patterns (epic-127 drift guard).
+# Exits non-zero on a hit. `just doc-drift --list` prints the tripwire table.
+# See docs/doc-drift-check.md.
+doc-drift *ARGS:
+    python3 {{root}}/scripts/check_doc_drift.py {{ARGS}}
+
 # Validate ADR frontmatter + report staleness of generated indexes.
 adr-check:
     #!/usr/bin/env bash

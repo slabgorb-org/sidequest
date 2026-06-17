@@ -66,7 +66,7 @@ The cleanest possible demonstration of the granularity principle in a single dom
 
 The load-bearing insight: **fine granularity did not cost Mr. Robot mass-market appeal.** The show was a hit. The specificity didn't wall off the non-technical audience — it *impressed* them by passing the sniff test of the technical audience they could see tweeting about it. Granularity compounds: insiders validate, outsiders trust the validation.
 
-**This is the target for any SideQuest content touching a domain Keith has expertise in.** Not "accessible." Not "accurate." Accurate enough that an expert would tweet about the specific detail, so the non-expert audience feels the weight of that validation without needing to understand it. That's `neon_dystopia` netruns, `elemental_harmony` martial arts, `low_fantasy` medieval mechanisms, `space_opera` ship systems, and everything else in the high-expertise domains.
+**This is the target for any SideQuest content touching a domain Keith has expertise in.** Not "accessible." Not "accurate." Accurate enough that an expert would tweet about the specific detail, so the non-expert audience feels the weight of that validation without needing to understand it. That's `neon_dystopia` netruns, `elemental_harmony` martial arts, `caverns_and_claudes` medieval mechanisms, `space_opera` ship systems, and everything else in the high-expertise domains.
 
 ## The Five Lenses
 
