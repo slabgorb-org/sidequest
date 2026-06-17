@@ -44,11 +44,11 @@ All six plugins drafted. Combined ~7400 lines of plugin content.
 
 | Plugin | Source | Lines | Status | Genres using |
 |---|---|---|---|---|
-| `bargained_for_v1.md` | bargained_for | 815 | ✅ | heavy_metal, tea_and_murder-high-gothic, low_fantasy-with-pacts |
-| `item_legacy_v1.md` | item_based | 971 | ✅ | spaghetti_western, road_warrior, c&c, heavy_metal, tea_and_murder, low_fantasy, pulp_noir |
-| `divine_v1.md` | divine | 984 | ✅ | heavy_metal, tea_and_murder-Catholic, low_fantasy, elemental_harmony, space_opera-religious |
-| `innate_v1.md` | innate | 1631 | ✅ | mutant_wasteland (signature), space_opera-Firefly-River, tea_and_murder-touched, low_fantasy-bloodline, untrained Force/bender |
-| `learned_v1.md` | learned | 1821 | ✅ | elemental_harmony (signature), space_opera-Jedi-trained, low_fantasy-wizards, witcher-signs, Bene Gesserit, heavy_metal-rite-priest, pulp_noir-Hermetic, spaghetti_western-gunsmith |
+| `bargained_for_v1.md` | bargained_for | 815 | ✅ | heavy_metal, tea_and_murder-high-gothic |
+| `item_legacy_v1.md` | item_based | 971 | ✅ | spaghetti_western, road_warrior, c&c, heavy_metal, tea_and_murder, pulp_noir |
+| `divine_v1.md` | divine | 984 | ✅ | heavy_metal, tea_and_murder-Catholic, elemental_harmony, space_opera-religious |
+| `innate_v1.md` | innate | 1631 | ✅ | mutant_wasteland (signature), space_opera-Firefly-River, tea_and_murder-touched, untrained Force/bender |
+| `learned_v1.md` | learned | 1821 | ✅ | elemental_harmony (signature), space_opera-Jedi-trained, witcher-signs, Bene Gesserit, heavy_metal-rite-priest, pulp_noir-Hermetic, spaghetti_western-gunsmith |
 | `obligation_scales_v1.md` | (cross-cutting tracker; no Source) | 1191 | ✅ | heavy_metal — tracks five obligation scales across all monitored Source plugins |
 
 ### Per-genre `magic.yaml` files
