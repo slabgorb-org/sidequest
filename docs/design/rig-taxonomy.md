@@ -617,9 +617,9 @@ The full schema sketch above. Notable design choices validated by the playthroug
 
 Bright Margin is also a chassis (a bulk freighter being escorted), classified `ally` in the npc_registry. She has her own captain (Ortuño), her own provenance ("frontier-trained, voidborn cadence — she's worked this run before"), her own implicit voice. The framework treats her as a peer chassis instance, not as scenery — the player can interact with her via comms, the relationship can grow, and a future *Heroic Stand* confrontation could see Kestrel and Bright Margin defending each other.
 
-### Road Warrior — War-Rig (cross-genre validation, requires genre bootstrap)
+### Road Warrior — War-Rig (cross-genre validation)
 
-The road_warrior genre is currently in `genre_workshopping/` without a `genre_packs/` rules.yaml or chassis_classes.yaml. The chassis class below is a *design sketch* showing the framework supports the register; full instantiation requires bootstrapping the genre.
+road_warrior is now a **live `genre_packs/` pack** (`ruleset: cwn`; the `genre_workshopping/` staging tree was retired 2026-06-03), but it does **not yet author a `chassis_classes.yaml`**. The chassis class below remains a *design sketch* showing the framework supports the register; it lands when road_warrior authors its `chassis_classes.yaml`.
 
 ```yaml
 classes:
@@ -769,7 +769,7 @@ classes:
 | Genre | `chassis_classes.yaml` status | Notes |
 |---|---|---|
 | space_opera | ⏳ TODO author | Coyote Star is flagship; classes: voidborn_freighter, prospector_skiff, hegemonic_patrol_cruiser, fighter, station_hull, courier_skiff |
-| road_warrior | ⏳ TODO + genre bootstrap | Genre is in `genre_workshopping/`; needs full pack before chassis_classes can land |
+| road_warrior | ⏳ TODO author | Genre is **live** (`genre_packs/road_warrior`, `ruleset: cwn`); `chassis_classes.yaml` not yet authored |
 | mutant_wasteland | ⏳ TODO author | Classes: brittle_truck, scavenger_cycle, prospector_skiff (atmospheric variant), drift_walker (pre-collapse mech) |
 | heavy_metal | ⏳ TODO author | Classes: stratigraphic_delver (Long Foundry signature), pilgrim_carriage, foundry_drake (a chassis-mech hybrid), patron_relic (chassis-as-relic for divine integration) |
 | neon_dystopia | ⏳ TODO | Likely cycles, drone-rigs, body-prosthetic edge-cases (a body-augment as a chassis is an open issue) |
