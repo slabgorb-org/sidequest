@@ -11,32 +11,38 @@ stories:
     description: "From the 124-1 Reviewer audit. TokenBarChart.tsx:143 — the cache-hit-rate dot tooltip builds its turn label from the post-`filter` index (`i+1`) of the hitPoints array, not the turn's real `turnIndex`. The dot's x-position (p.x, captured pre-filter) and the aggregate cold-miss count are correct; only the hover label is wrong, and only when one or more null (non-SDK) turns are interspersed before a known turn. Fix: carry `turnIndex` into each hitPoints object and use it in the <title>. Add a regression test: a series like [null, cold] must show the cold dot's tooltip as the SECOND turn, not 'T1'. Affects sidequest-ui/src/components/Dashboard/charts/TokenBarChart.tsx + telemetryAdapter-cache-join/TokenBarChart-cache-split tests."
     points: 1
     priority: p3
-    status: in_progress
+    status: done
     started: '2026-06-16'
     repos: ui
     workflow: tdd
+    completed: '2026-06-16'
     type: bug
     branch: "feat/125-1-inspector-cache-chart-fixes"
+    review_verdict: approved
   - id: 125-2
     title: "Inspector token chart: visible 'cache: n/a' caption for all-non-SDK sessions (not hover-only)"
     description: "From the 124-1 Reviewer audit (via silent-failure-hunter). When every turn in a session is cacheState 'null' (all non-SDK, e.g. Ollama/claude-p), the 'served from cache' summary line is suppressed (TokenBarChart.tsx:149) and the only 'n/a' rendered is inside per-bar SVG <title> tooltips (hover-only, TokenBarChart.tsx:93). A GM can't tell cache data is ABSENT vs zero without hovering. Add a visible 'cache: n/a (non-SDK)' caption for the all-null case. AC-4's no-fabrication is already met — this is a legibility enhancement, NOT a correctness fix. Test: an all-null series renders a visible (non-title) n/a caption; a series with >=1 known turn renders the savings line instead. Affects sidequest-ui/src/components/Dashboard/charts/TokenBarChart.tsx."
     points: 1
     priority: p3
-    status: in_progress
+    status: done
     started: '2026-06-16'
     repos: ui
     workflow: tdd
+    completed: '2026-06-16'
     type: chore
+    review_verdict: approved
   - id: 125-3
     title: "Inspector cache join: surface malformed cache_usage instead of silently folding to 'null'"
     description: "From the 124-1 Reviewer audit (via silent-failure-hunter). buildTurnTokenCacheRows (telemetryAdapter.ts) folds a MALFORMED cache_usage (a present dict whose cache_read is absent/non-numeric) into the same 'null' bucket as a genuinely-absent cache_usage — masking server schema-drift as a benign 'non-SDK' turn (a No-Silent-Fallbacks concern). The current server contract guarantees cache_read is an int whenever the dict is present (test_prompt_cache_attribution_otel.py), so the realistic surface is nil TODAY — defensive hardening. Surface the anomaly: either a console.warn or a distinct 'malformed' cacheState (implementer's choice; avoid noisy prod logging). Test: a prompt_assembled with cache_usage={cache_write:500} (no cache_read) is flagged/warned, not silently treated as non-SDK. Affects sidequest-ui/src/components/Dashboard/source/telemetryAdapter.ts."
     points: 1
     priority: p3
-    status: in_progress
+    status: done
     started: '2026-06-16'
     repos: ui
     workflow: trivial
+    completed: '2026-06-16'
     type: chore
+    review_verdict: approved
   - id: 125-4
     title: "F3g follow-up (118-7): animate the FateDiceTray 3D Fudge dice to the rolled faces (throw_params/seed) + align the dF blank-face label to '0'"
     description: |-
