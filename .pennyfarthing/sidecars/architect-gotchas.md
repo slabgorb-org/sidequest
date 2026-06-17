@@ -1,5 +1,10 @@
 ## Architect Gotchas
 
+### Fate / ruleset dispatch — beats vs FATE_ACTIONs
+- **Fate confrontations DO NOT traverse the beat/`apply_beat` path.** A `ruleset: fate` pack resolves through `dispatch_fate_action` (FATE_ACTION: overcome/create_advantage/attack), not the legacy dial/`beat_selection` dispatch in `narration_apply.py`. The genre `beats:` on a Fate confrontation are author-facing flavor that maps to the four SRD actions; the engine never runs `apply_beat` for them. When designing any Fate mechanic, the trigger lives on the FATE_ACTION path, not the beat path. (Found 2026-06-17 designing the spaghetti_western Standoff→Gunfight escalation — the spec's "draw beat fires it" mechanism was un-implementable for exactly this reason.)
+- **`BeatDef` is `model_config = {"extra": "forbid"}` (`genre/models/rules.py`).** You cannot author a new per-beat flag (`escalates: true`, etc.) — it fails pack load. Escalation/lifecycle signals belong at the confrontation level: `ConfrontationDef.escalates_to` already exists and is the reuse hook. Reach for the existing reject/branch points (e.g. attack-in-Contest already raises in `fate_conflict.py`) before inventing a new payload or schema field.
+- **Fate has no d8 initiative.** The Conflict engine (`run_fate_exchange`) walks Notice/Empathy *skill* order; the `encounter.initiative` list is SWN/WN-only. "Acts first" in a Fate scene = a boost/free-invoke edge, NOT an initiative entry. Don't design Fate ordering against the WN initiative model.
+
 ### The wiring failure class (the dominant bug category in this project)
 - **Don't reinvent — wire up what exists.** Before building anything new, grep the codebase. Many systems are fully implemented but not wired into the server or UI. CLAUDE.md rule #3.
 - **No half-wired features.** Connect the full pipeline or don't start. If something needs 5 connections, make 5 connections. Shipping 3 and calling it done is the exact failure mode Epic 15 was created to clean up.
