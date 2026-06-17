@@ -40,9 +40,11 @@ stories:
     title: 'feature-inventory.md: reconcile native beat engine marked Live and Wired, space_opera native-dial-for-non-combat, SQLite forensics transaction, and model routing'
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-17'
     repos: orchestrator
     workflow: trivial
+    completed: '2026-06-17'
     type: chore
   - id: 127-5
     title: 'design docs road_warrior location: magic-system-handoff.md and rig-taxonomy.md still say genre_workshopping and not-instantiated; it is a live cwn pack (workshopping tree retired 2026-06-03)'
