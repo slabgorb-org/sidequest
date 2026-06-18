@@ -26,10 +26,13 @@ stories:
     title: '[NARRATOR] action_rewrite → IntentRouter pre-pass — retire the sidecar field, rewire visibility_classifier (ADR-150 step 3)'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-18'
     repos: server
     workflow: tdd
+    completed: '2026-06-18'
     type: refactor
+    review_verdict: approved
   - id: 151-4
     title: '[NARRATOR] Sidecar cutover I — transactional fields (items×4, gold, companions×2) off game_patch to the extractor (ADR-150 step 4)'
     points: 5
