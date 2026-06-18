@@ -59,11 +59,12 @@ SRD prose lives in a new first-class content tier under
   parallel to the `sidequest-content/genre_packs/` tree, not nested inside it.
 
 - **Phase 1: Fate.** The initial content tree is
-  `rulesets/fate/srd/*.md` — 7 player-facing chapters covering the core
-  resolution loop, the Fate ladder, Aspects, Stunts, Stress/Consequences,
-  Challenges/Contests/Conflicts, and the Skill list. These are the chapters a
-  player needs to understand play; lore/character-creation deep-dives are
-  out of scope for Phase 1.
+  `rulesets/fate/srd/*.md` — 7 player-facing chapters: The Basics, Character
+  Creation, Aspects and Fate Points, Skills and Stunts, Actions and Outcomes,
+  Challenges/Contests/Conflicts, and The Long Game (advancement). These are the
+  chapters a player needs to understand play; the GM-only chapters (Running the
+  Game; Scenes, Sessions, and Scenarios) and the Game Creation and Extras
+  chapters are out of scope for Phase 1.
 
 - **Plan B: Without Number.** The Without Number family (wwn, cwn, swn, awn) shares
   a common resolution spine, so WN content would live in
@@ -78,12 +79,12 @@ Every SRD `.md` file MUST carry YAML front-matter with these six keys:
 
 ```yaml
 ---
-srd: fate                    # ruleset slug; must match a registered RulesetModule
-srd_ref: fate_core_2013      # canonical SRD version identifier (for attribution)
-license: cc-by-3.0           # SPDX expression or named license slug
-anchor: overcome             # stable machine key — identifies this section globally
-title: "Overcome"            # human-readable heading shown in the ToC
-order: 2                     # integer; controls display order within the ruleset
+srd: fate                                 # ruleset slug; must match a registered RulesetModule
+srd_ref: "Fate Core System — The Basics"  # descriptive per-chapter SRD reference (for attribution)
+license: ccby                             # license slug: ccby (Fate, CC-BY 3.0) | wn-free (Without Number)
+anchor: fate-basics                       # stable machine key — identifies this chapter globally
+title: "The Basics"                       # human-readable heading shown in the ToC
+order: 1                                  # integer; controls display order within the ruleset
 ---
 ```
 
@@ -105,20 +106,25 @@ gains a new section type prepended before the existing rules stubs:
 {
   "id": "ruleset_reference",
   "type": "rules_document",
-  "title": "<srd_ref>",
-  "attribution": "...",
+  "label": "The Rules of Fate Core",
+  "ruleset": "fate",
   "chapters": [
-    { "anchor": "overcome", "title": "Overcome", "order": 2, "body": "..." },
+    { "anchor": "fate-basics", "title": "The Basics", "order": 1, "srd_ref": "Fate Core System — The Basics", "body_markdown": "..." },
     ...
-  ]
+  ],
+  "provenance": { "source": "Fate Core System (Evil Hat Productions)", "license": "ccby", "attribution": "..." }
 }
 ```
 
-Discriminator: `type: "rules_document"`. The React renderer dispatches on this
-discriminator to the `RulesDocument` component, which renders each chapter's
-`body` via **react-markdown** (already in the dependency tree). The ToC and
-anchor framework from ADR-135/100 applies without modification: each chapter's
-`anchor` is a navigable ToC entry.
+Discriminator: `type: "rules_document"`. The top-level `label` is the static
+human-readable ruleset title (from `RULESET_LABEL[ruleset]`), and licensing lives
+in the nested `provenance` object (`source`/`license`/`attribution`). The React
+renderer dispatches on this discriminator to the `RulesDocument` component, which
+renders each chapter's `body_markdown` via **react-markdown** and emits one
+`<article id={anchor}>` per chapter. The ToC is derived externally by
+`buildToc` (`screens/reference/buildToc.ts`), which maps the section's `chapters`
+to one navigable ToC entry each — so the ADR-135/100 ToC/anchor framework applies
+without modification.
 
 The section is prepended (it leads the page) so a first-time player lands on the
 rules before the genre-derived stubs. The existing stubs follow; they are not
