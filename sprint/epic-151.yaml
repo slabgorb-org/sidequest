@@ -1,0 +1,68 @@
+id: '151'
+type: epic
+title: Sidecar Accounting Off the Narrator Hot Path (ADR-150)
+description: "Implement ADR-150: move the narrator's 13 sidecar (game_patch) bookkeeping fields off the Opus hot path. action_rewrite -> pre-narration IntentRouter; 11 prose-readout fields -> a new post-narration Haiku emit_tool extractor (AsideResolver-shaped); private_segments stays narrator-inline (ADR-105 perception firewall, the one irreducible field). Frees the Opus narrator's attention for prose craft and removes ~4k uncached tokens/turn. Extends the live ADR-113 spine (IntentRouter pre-pass + dispatch_engagement_watcher post-narration). Story sizing per ADR-150 Implementation Notes -> 'Sizing the follow-up'; each field-group cutover is atomic with the lie-detector watching, catch-loops kept as the loud net. Fixture-based tests only (no live-content coupling). ADR-150 is the spec of record."
+priority: p2
+status: backlog
+repos: server
+stories:
+  - id: 151-1
+    title: '[NARRATOR] Cache-promote the narrator output contract — add narrator_output_only to STABLE_SECTION_NAMES (ADR-150 quick-win)'
+    description: "Promote narrator_output_only into the cached prefix by adding it to STABLE_SECTION_NAMES (prompt_framework/bucket.py). ADR-150 §Companion quick-win / Alternative A — independent, shippable first; removes ~4k uncached tokens/turn but does NOT address attention load (that's the rest of the epic). LANDMINE (not in the ADR — project memory project_adr112_promotion_breaks_test_60_6): adding a section to STABLE_SECTION_NAMES promotes it into the cached prefix and BREAKS test_60_6_stable_prefix_live_drift, which pins the old volatile invariant. Confirm narrator_output_only is byte-identical per session (no runtime interpolation — verified in the 2026-06-18 deep-dive) then update test_60_6 to the new stable invariant. Validate cache write/read deltas via the existing narration.turn.cached_input_* spans. Full-suite gate."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
+  - id: 151-2
+    title: '[NARRATOR] Post-narration Haiku sidecar extractor — shadow mode + sidecar_extraction.* OTEL + lie-detector (ADR-150 step 2)'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 151-3
+    title: '[NARRATOR] action_rewrite → IntentRouter pre-pass — retire the sidecar field, rewire visibility_classifier (ADR-150 step 3)'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
+  - id: 151-4
+    title: '[NARRATOR] Sidecar cutover I — transactional fields (items×4, gold, companions×2) off game_patch to the extractor (ADR-150 step 4)'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 151-2
+    type: refactor
+  - id: 151-5
+    title: '[NARRATOR] Sidecar cutover II — npcs_present (engine-owned side) + async cosmetic fields (mood, visual_scene, footnotes) (ADR-150 step 4)'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 151-2
+    type: refactor
+  - id: 151-6
+    title: '[NARRATOR] Shrink output_only.md to prose + private_segments brief; add perception-firewall guard test (ADR-150 step 5)'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 151-5
+    type: refactor
+  - id: 151-7
+    title: '[NARRATOR] Playtest validation gate — prose quality unharmed + sidecar fidelity ≥ catch-loop floor, mismatch-rate metric (ADR-150 step 6)'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 151-6
+    type: chore
