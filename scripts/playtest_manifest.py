@@ -25,9 +25,9 @@ import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# --- Locations (defaults match this machine's sibling-of-checkout convention) ---------
+# --- Locations (ping-pong/archive live under ~/Projects, shared across checkouts) -----
 REPO_ROOT = Path(__file__).resolve().parent.parent
-PROJECTS_DIR = REPO_ROOT.parent
+PROJECTS_DIR = Path.home() / "Projects"
 ARCHIVE_DIR = PROJECTS_DIR / "sq-playtest-archive"
 LIVE_PINGPONG = PROJECTS_DIR / "sq-playtest-pingpong.md"
 
