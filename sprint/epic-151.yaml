@@ -22,9 +22,12 @@ stories:
     title: '[NARRATOR] Post-narration Haiku sidecar extractor — shadow mode + sidecar_extraction.* OTEL + lie-detector (ADR-150 step 2)'
     points: 5
     priority: p2
-    status: backlog
+    status: in-progress
+    started: '2026-06-18'
     repos: server
     workflow: tdd
+    type: feature
+    branch: feat/151-2-haiku-sidecar-extractor-shadow
   - id: 151-3
     title: '[NARRATOR] action_rewrite → IntentRouter pre-pass — retire the sidecar field, rewire visibility_classifier (ADR-150 step 3)'
     points: 3
