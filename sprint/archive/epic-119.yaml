@@ -3,7 +3,7 @@ type: epic
 title: 'Narrator inference: move off API-key PAYG onto the free subscription (Agent SDK credit CANCELLED)'
 description: "REFRAMED 2026-06-15 (ADR-101 Amendment 2026-06-15). Anthropic CANCELLED the May \"Agent SDK credit\" split — claude -p and the Claude Agent SDK stay FREE on the Max subscription, unchanged; there is NO metered credit to claim. The original premise (programmatic usage carved into a separate $200/mo credit that an API key forfeits) is VOID. What still holds: SideQuest narrator (Sonnet 4.6) + intent classifier (Haiku 4.5) auth via ANTHROPIC_API_KEY through the single Story-91-1 choke point build_async_anthropic() (sidequest-server/sidequest/agents/llm_factory.py), so ~$150/mo bills full PAYG — and ~$500 was already sunk because ADR-101 abandoned free claude -p for the API key on the now-void premise. This epic moves that inference off the API key onto subscription auth. Gating spike 119-1 (sharpened, NOT dead): does the raw anthropic SDK over subscription OAuth draw the free subscription pool, or still bill PAYG? Signal is now a clean binary — watch for a PAYG line, NOT a credit meter. GO -> cheap re-auth of the single choke point (119-2; design spec docs/superpowers/specs/2026-06-15-narrator-subscription-oauth-reauth-design.md). NO-GO -> port to claude-agent-sdk (119-3, mutually exclusive; email-confirmed free). 119-4 hardens token refresh + cost OTEL (now subscription-pool budgeting, not credit-vs-PAYG). The literal claude -p CLI is a TRAP (claude_client.py lacks complete_with_tools / no tool-use) — \"return to claude -p\" = return to the free subscription via 119-2/119-3, NOT a sidecar rollback. Refs: ADR-101 Amendment (2026-06-15); SOUL No-Silent-Fallbacks."
 priority: p1
-status: backlog
+status: done
 repos: server
 stories:
   - id: 119-1
@@ -74,7 +74,12 @@ stories:
     title: "119-3 deferred reuse refactor: consolidate the four single-shot Haiku adapters now the transport has landed. _AsideLlm.complete, _IntentRouterLlm.emit_tool, _UnseededObjectiveClassifierLlm.emit_tool, and infer_archetype_from_freeform (llm_factory.py) each repeat the same skeleton — pre-flight ceiling check -> build_agent_sdk_options -> llm_request_span + _consume_to_result + _record_usage_telemetry -> record_call -> structured_output extract/raise. Extract a shared _call_haiku_sdk(...) + _extract_structured_output_or_raise(...) (the verify-phase simplify-reuse high-confidence findings, ~40 lines saved). STRUCTURAL-ONLY, no behavior change: the existing agents suite (1993 passed) must stay green, and each site keeps its distinct caller tag, model, and loud error type. Deferred from 119-3 verify per story-scope minimal-diff / single-commit-rollback (Architect spec-check affirmed the then-current factoring); safe to do now the swap has soaked."
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-18'
     repos: server
     workflow: tdd
+    completed: '2026-06-18'
     type: refactor
+    review_findings: 'Refactor is sound (security clean, logic preserved, 49/49 green); sole blocker is test file test_119_6_haiku_adapter_consolidation.py failing ruff format --check (2 cosmetic reformats). Format-only green rework: run ruff format on the file, re-verify, hand back.'
+    review_verdict: approved
+completed: '2026-06-18'

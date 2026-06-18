@@ -45,6 +45,7 @@ completed_epics:
   - '122'
   - '127'
   - '128'
+  - '119'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -1110,4 +1111,34 @@ completed_stories:
     epic: '128'
     title: '[FATE] Document optional grants_aspect on items_gained in narrator contract (output_only.md), items_gained-scoped; byte-budget fresh-ceiling 14900→15400 + corrected stale cache rationale (commits 55646f01, 19c61926, 61422bc8)'
     points: 1
+    completed: '2026-06-18'
+  - id: 119-1
+    epic: '119'
+    title: 'Spike (operator-run, go/no-go): does the raw anthropic SDK authed via subscription OAuth draw the Max Agent SDK credit, or still bill PAYG? Anthropic help blesses Claude Agent SDK usage specifically, so raw-Messages-SDK-over-OAuth qualifying is UNVERIFIED. Harness (full recipe in context doc): ant auth login to the Max workspace, unset ANTHROPIC_API_KEY, export the OAuth token as ANTHROPIC_AUTH_TOKEN, fire a few tiny messages.create calls on model claude-haiku-4-5 with the oauth-2025-04-20 beta header. SIGNAL: watch the Agent SDK credit meter in subscription billing draw down (positive); absence from the Console Cost page is a WEAK signal (it commingles interactive 5-hr-cap overage). Confirm the 200 credit is not already exhausted; run from a shell not also doing interactive Claude Code. Deliverable: a written GO/NO-GO that selects 119-2 vs 119-3 plus the reusable snippet. Operator runs the login and reads the meter; agent preps the harness and records the verdict.'
+    points: 2
+    completed: '2026-06-15'
+  - id: 119-2
+    epic: '119'
+    title: Conditional on 119-1 GO; mutually exclusive with 119-3. Re-auth the single Anthropic client choke point to subscription OAuth so narrator + classifier draw the Agent SDK credit instead of PAYG. Change build_async_anthropic() (llm_factory.py:76-96) to construct AsyncAnthropic via the OAuth/auth_token path (ANTHROPIC_AUTH_TOKEN plus the oauth-2025-04-20 beta header) instead of api_key=, and relax the api-key presence check in AnthropicSdkClient.__init__ (around lines 142-147) to accept token mode WITHOUT a silent fallback (fail loud if neither key nor token is present; SOUL No-Silent-Fallbacks). ANTHROPIC_API_KEY must be UNSET in the server env (a set key overrides the token and forfeits the credit; the API rejects both-set). The tool-use loop complete_with_tools (anthropic_sdk_client.py:248-705) is UNTOUCHED, still the raw Messages SDK. Because this is the single Story-91-1 choke point, narrator (Sonnet) + classifier (Haiku) + any Opus/Fable all move together. Verify the tool_use turn loop still converges. Hours of work; ~150/mo to ~0.
+    points: 3
+    completed: '2026-06-18'
+  - id: 119-3
+    epic: '119'
+    title: Conditional on 119-1 NO-GO; mutually exclusive with 119-2. Port narrator inference from the raw anthropic Messages SDK onto the Claude Agent SDK (claude-agent-sdk package) with subscription auth, the help doc explicitly-covered surface. Rewrite the ~120-line manual tool loop complete_with_tools (anthropic_sdk_client.py:248-705, which reads response.stop_reason==tool_use, appends assistant/user tool blocks, re-calls messages.create) onto the Agent SDK own tool/loop model, and re-express the Pydantic-generated tool schemas from tool_registry (tool_registry.py:225-249) as Agent SDK tools. Preserve every narration tool contract, the convergence semantics, and OTEL. Subscription/OAuth auth, ANTHROPIC_API_KEY unset, No-Silent-Fallbacks. Heavy-lift fallback, only worked if the spike rules out the cheap re-auth.
+    points: 13
+    completed: '2026-06-16'
+  - id: 119-4
+    epic: '119'
+    title: 'Depends on whichever migration lands (119-2 or 119-3). Production auth durability + cost/credit observability. 1: long-running server uses an auto-refreshing ant auth login profile on the host (the print-credentials env token is short-lived and not auto-refreshed), construct the client to pick up the refreshing profile not a baked-in token; fail loud on expiry, never silently fall back to PAYG. 2: emit an OTEL span tagging which auth path / billing pool each inference draws (credit vs PAYG overflow) so the cost/GM panel can VERIFY the narrator is on the credit, a Keith/dev observability concern per the CLAUDE.md OTEL principle NOT a player surface. 3: monitor the 200 monthly credit + the pool-3 prepaid overflow buffer (currently 50.52) so mid-month exhaustion is visible before it silently bills PAYG.'
+    points: 5
+    completed: '2026-06-16'
+  - id: 119-5
+    epic: '119'
+    title: '119-3 transport-port cleanup (OQ-17): remove or re-home the now-vestigial Intent-Router cache-floor guard and restore coverage. The agent-SDK path emits no cache_control markers, so IntentRouterCacheFloorError / HAIKU_CACHEABLE_PREFIX_FLOOR_TOKENS / _INTENT_ROUTER_CACHE_TTL / _estimate_intent_router_prefix_tokens + the build_intent_router_llm floor check (llm_factory.py:646-667) now guard a trap the code can no longer spring; it is live-but-uncovered after 119-3''s full-replace deleted test_haiku_cache_control.py. Either delete the guard wholesale or re-home it onto an SDK-exposed cache signal, and add a test asserting the chosen behavior (No Silent Fallbacks). While in this module also: (a) register an atexit cleanup for _neutral_cwd()''s mkdtemp temp dir (anthropic_sdk_client.py:156, one empty dir per process leak); (b) add a gated LIVE isolation smoke since the AC1 contamination regression mocks the query seam and cannot catch a real-SDK context-absorption regression (gate scripts/spike_119_3_agentsdk_subscription.py in ops/CI).'
+    points: 3
+    completed: '2026-06-17'
+  - id: 119-6
+    epic: '119'
+    title: "119-3 deferred reuse refactor: consolidate the four single-shot Haiku adapters now the transport has landed. _AsideLlm.complete, _IntentRouterLlm.emit_tool, _UnseededObjectiveClassifierLlm.emit_tool, and infer_archetype_from_freeform (llm_factory.py) each repeat the same skeleton — pre-flight ceiling check -> build_agent_sdk_options -> llm_request_span + _consume_to_result + _record_usage_telemetry -> record_call -> structured_output extract/raise. Extract a shared _call_haiku_sdk(...) + _extract_structured_output_or_raise(...) (the verify-phase simplify-reuse high-confidence findings, ~40 lines saved). STRUCTURAL-ONLY, no behavior change: the existing agents suite (1993 passed) must stay green, and each site keeps its distinct caller tag, model, and loud error type. Deferred from 119-3 verify per story-scope minimal-diff / single-commit-rollback (Architect spec-check affirmed the then-current factoring); safe to do now the swap has soaked."
+    points: 2
     completed: '2026-06-18'
