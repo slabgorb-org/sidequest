@@ -154,18 +154,21 @@ stories:
       DATA: Postgres turn_telemetry. No-thrash verdict stands (router_calls=1 across 339k rows). Live annees_folles understudy run was generating fresh Fate spikes during the bisect.
     points: 5
     priority: p1
-    status: in_progress
+    status: done
     started: '2026-06-18'
     repos: server
     workflow: tdd
-    branch: feat/126-9-narrator-latency-restore
     acceptance_criteria:
       - 'Root cause confirmed: narrator extended-thinking ON via the 119-3 agent-sdk port (f970091e). [SATISFIED by bisect]'
       - Narrator agent_duration_ms restored to ~baseline (~16s; non-Fate total ~20-25s) by passing thinking={"type":"disabled"} on the narrator complete_with_tools call (and aside path if same).
       - 'Regression guard added (OTEL or test): fails if the narrator call enables thinking, or if narrator p95 exceeds a threshold — so this cannot silently regress again.'
       - 'Verified before/after on a fresh non-Fate 2-seat understudy run: agent_duration_ms from turn_telemetry shows the drop.'
       - Fate-world intent_router_pass spike (build_fate_projection prompt bloat) is OUT OF SCOPE here — tracked in 126-10 (separate mechanism, thinking-off does not fix it).
+    completed: '2026-06-17'
+    branch: feat/126-9-narrator-latency-restore
     type: bug
+    review_findings: 'Code correct + tested (28 green, rule-clean); REJECT for doc incoherence: stale docstring at anthropic_sdk_client.py:258-259 now contradicts the changed narrator tool-loop thinking behaviour (revert-hazard), + off-by-one line ref in test docstring. Green rework.'
+    review_verdict: approved
   - id: 126-10
     title: '[PERF/FATE] intent_router_pass 37-81s spikes on Fate worlds — trim build_fate_projection router prompt (separate from 126-9 narrator fix)'
     description: |-
