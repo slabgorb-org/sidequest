@@ -185,9 +185,11 @@ stories:
       LEVER: trim build_fate_projection for the ROUTER prompt (the router likely needs far less than the narrator — PC skills maybe, not every live aspect). Confirm empirically on annees_folles turn_telemetry before/after.
     points: 3
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-06-18'
     repos: server
     workflow: tdd
+    branch: feat/126-10-trim-fate-router-prompt
     acceptance_criteria:
       - 'Quantify the Fate router-prompt bloat: measure intent_router_pass + state_summary size on annees_folles turns vs a non-Fate world (turn_telemetry / GM-panel intent_router.decompose spans).'
       - Trim build_fate_projection for the router prompt so intent_router_pass on Fate worlds returns to ~baseline (~4-6s) without breaking Fate routing accuracy.
