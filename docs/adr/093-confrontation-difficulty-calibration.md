@@ -218,3 +218,21 @@ Dev story should:
 
 5. Playtest one confrontation per genre pack and capture `rolls-to-resolution`
    from OTEL. Report against the median 7–10 target before closing.
+
+## Scope Note 2026-06-17 — Calibration applies to the dial/WN family only
+
+**`opposed_check` calibration is scoped to the dial engine (ADR-033) and the Without
+Number family.** The four Fate-bound packs — `spaghetti_western`, `tea_and_murder`,
+`pulp_noir`, `wry_whimsy` — carry **zero `opposed_check` confrontations** as of the
+`feat/fate-contest-binding` work. Their social and dramatic confrontations resolve as
+Fate **Contests or Conflicts** (see ADR-144 2026-06-17 amendment). The threshold-7
+calibration, opponent-stat ceilings (`opponent_default_stats = 10`), and the ±1 tie
+band in `opposed_check.py` therefore **do not apply to Fate-bound packs** — Fate
+computes its own exchange outcomes from 4dF + skill ratings, with no reference to
+these constants.
+
+`tests/genre/test_confrontation_calibration.py` reflects this split: **road_warrior
+(cwn)** is now the live `opposed_check` exemplar. The `tea_and_murder` and
+`spaghetti_western` coverage was removed from calibration tests when those packs
+converted to Fate. The ADR-093 ceiling invariant is preserved for road_warrior via
+the parameterized test `test_opponent_default_stats_no_parity_12_remains[road_warrior]`.
