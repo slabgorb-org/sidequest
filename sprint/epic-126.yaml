@@ -213,7 +213,9 @@ stories:
     title: "[NARRATOR][ADR] Design: move sidecar accounting off the narrator hot path. output_only.md is 94% bookkeeping (35% tool-owned + 59% sidecar-owned, ~0% craft, ~4k uncached tokens/turn) and one narrator generation must ALSO emit ~12 sidecar fields + fire 8 tool categories inline alongside prose — the 'ten pounds in a five-pound bag'. Draft an ADR in the ADR-113 intent-router lineage: extract sidecar accounting to a pre/post-narration pass so the narrator turn is mostly storytelling. DESIGN ONLY (Architect, no code) — size the dev work after the ADR lands. Found in the 2026-06-18 deep-dive."
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-18'
     repos: orchestrator
-    workflow: tdd
+    workflow: architecture
+    completed: '2026-06-18'
     type: chore
