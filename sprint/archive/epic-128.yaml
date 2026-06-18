@@ -1,0 +1,54 @@
+id: '128'
+type: epic
+title: Significant Items → Invokable Fate Aspects (ADR-144 runtime extension)
+description: 'Retroactively recorded 2026-06-18 (delivered via subagent-driven-development on branch feat/fate-item-aspects, merged to develop as squash f54c820a / PR #945, final opus review READY-TO-MERGE). Items acquired DURING PLAY in a Fate-bound pack become invokable aspects on the live FateSheet — closing the gap where only chargen gear got it. Catalog path (authored GearDef.grants_aspects compiles onto the live sheet, stunts deferred) + narrator path (invented item annotated grants_aspect mints ONE capped aspect, free_invokes=0). Gated on fate_sheet; non-Fate packs unaffected. New fate.item_promoted OTEL span = GM-panel lie-detector. Spec/plan: docs/superpowers/{specs,plans}/2026-06-18-significant-items-invokable-fate-aspects*. Sibling follow-ups under epic 126: 126-11 (drama-aware length-limit), 126-12 (ADR accounting off the narrator hot path).'
+priority: p2
+status: done
+repos: server
+stories:
+  - id: 128-1
+    title: '[FATE] fate.item_promoted OTEL span — GM-panel lie-detector for item→aspect promotion (commit 95c4ad1c)'
+    points: 1
+    priority: p2
+    status: done
+    repos: server
+    workflow: tdd
+    completed: '2026-06-18'
+    review_verdict: approved
+  - id: 128-2
+    title: '[FATE] Runtime catalog item→aspect promoter (fate_item_promotion.py): conservative id→slug→name match, aspects+permissions onto live sheet, stunts deferred, dedup logged-not-silent; never touches refresh/fate_points (commits 52f4d302, 71b6b9bc)'
+    points: 2
+    priority: p2
+    status: done
+    repos: server
+    workflow: tdd
+    completed: '2026-06-18'
+    review_verdict: approved
+  - id: 128-3
+    title: '[FATE] Wire promoter into narration_apply items_gained append branch, gated on fate_sheet; mandatory end-to-end wiring test through real _apply_narration_result_to_snapshot incl +2 into a 4dF ladder (commit 1cf5c021)'
+    points: 2
+    priority: p2
+    status: done
+    repos: server
+    workflow: tdd
+    completed: '2026-06-18'
+    review_verdict: approved
+  - id: 128-4
+    title: '[FATE] Narrator on-the-fly promotion (Phase 2): narrator_aspect mints ONE capped Aspect(kind=character, free_invokes=0 by construction), catalog-wins, blank-guarded (commit 9cf4aaf0)'
+    points: 2
+    priority: p2
+    status: done
+    repos: server
+    workflow: tdd
+    completed: '2026-06-18'
+    review_verdict: approved
+  - id: 128-5
+    title: '[FATE] Document optional grants_aspect on items_gained in narrator contract (output_only.md), items_gained-scoped; byte-budget fresh-ceiling 14900→15400 + corrected stale cache rationale (commits 55646f01, 19c61926, 61422bc8)'
+    points: 1
+    priority: p2
+    status: done
+    repos: server
+    workflow: trivial
+    completed: '2026-06-18'
+    review_verdict: approved
+completed: '2026-06-18'
