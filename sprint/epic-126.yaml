@@ -185,7 +185,8 @@ stories:
       LEVER: trim build_fate_projection for the ROUTER prompt (the router likely needs far less than the narrator — PC skills maybe, not every live aspect). Confirm empirically on annees_folles turn_telemetry before/after.
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-18'
     repos: server
     workflow: tdd
     acceptance_criteria:
@@ -193,6 +194,7 @@ stories:
       - Trim build_fate_projection for the router prompt so intent_router_pass on Fate worlds returns to ~baseline (~4-6s) without breaking Fate routing accuracy.
       - No error_max_turns fragility on Fate turns after the trim (the structured call finalizes within max_turns=2).
       - Verified before/after on a fresh annees_folles 2-seat understudy run (turn_telemetry numbers).
+    completed: '2026-06-18'
     type: bug
   - id: 126-11
     title: "[NARRATOR] Drama-aware <length-limit>: scale the verbosity cap to narrative weight (SOUL Cost-Scales-with-Drama). The flat standard cap (8 sentences / 800 chars, orchestrator.py:1588 _build_verbosity_section; static 'BREVITY IS KING' in output_style.md) never widens for a climactic reveal vs a walk to the tavern — it strangles plot beats. Wire a drama/weight signal into the verbosity section so high-weight turns get room and quiet turns stay cheap; OTEL span on the chosen tier. Found in the 2026-06-18 narrator-prompt deep-dive. NOTE: 126-9 (thinking-ON latency regression) is now DONE, so the clean baseline this needs exists."
