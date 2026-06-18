@@ -154,9 +154,11 @@ stories:
       DATA: Postgres turn_telemetry. No-thrash verdict stands (router_calls=1 across 339k rows). Live annees_folles understudy run was generating fresh Fate spikes during the bisect.
     points: 5
     priority: p1
-    status: backlog
+    status: in_progress
+    started: '2026-06-18'
     repos: server
     workflow: tdd
+    branch: feat/126-9-narrator-latency-restore
     acceptance_criteria:
       - 'Root cause confirmed: narrator extended-thinking ON via the 119-3 agent-sdk port (f970091e). [SATISFIED by bisect]'
       - Narrator agent_duration_ms restored to ~baseline (~16s; non-Fate total ~20-25s) by passing thinking={"type":"disabled"} on the narrator complete_with_tools call (and aside path if same).
