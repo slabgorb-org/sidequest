@@ -21,6 +21,7 @@ stories:
       - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
       - 'Routing accuracy: a create_advantage / invoke-an-aspect action still classifies correctly despite the router no longer carrying live aspects (126-10 AC2).'
       - Narration is genre-true (hardboiled 1920s Paris); no dead UI controls; any finding filed via ping-pong to FIXER.
+      - "SRD Rules page (ADR-149; merged today via server #948 + content #476 + ui #420): open /reference/rules/pulp_noir — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level already confirmed: build_rules_projection('pulp_noir') emits the section; this AC is the live-page render check."
     type: chore
   - id: 150-2
     title: '[PLAYTEST] spaghetti_western/dust_and_lead — full-stack verify (fate)'
@@ -37,6 +38,7 @@ stories:
       - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
       - Poker/table scene seats via the router (table_resolution cdef → instantiate_table_encounter); antes/seats/sealed-commit loop present (126-2).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+      - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/spaghetti_western — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('spaghetti_western') emits the section; this AC is the live-page render check."
     type: chore
   - id: 150-3
     title: '[PLAYTEST] spaghetti_western/five_points — full-stack verify (fate)'
@@ -53,6 +55,7 @@ stories:
       - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
       - Poker/table scene seats via the router (table_resolution cdef → instantiate_table_encounter); antes/seats/sealed-commit loop present (126-2).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+      - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/spaghetti_western — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('spaghetti_western') emits the section; this AC is the live-page render check."
     type: chore
   - id: 150-4
     title: '[PLAYTEST] spaghetti_western/the_real_mccoy — full-stack verify (fate)'
@@ -69,6 +72,7 @@ stories:
       - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
       - Poker/table scene seats via the router (table_resolution cdef → instantiate_table_encounter); antes/seats/sealed-commit loop present (126-2).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+      - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/spaghetti_western — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('spaghetti_western') emits the section; this AC is the live-page render check."
     type: chore
   - id: 150-5
     title: '[PLAYTEST] tea_and_murder/blackthorn_moor — full-stack verify (fate)'
@@ -85,6 +89,7 @@ stories:
       - A scenario clue is discovered and clue-graph/belief-state spans fire (ADR-053); a social Fate contest (Deceive/Empathy) resolves.
       - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+      - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/tea_and_murder — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('tea_and_murder') emits the section; this AC is the live-page render check."
     type: chore
   - id: 150-6
     title: '[PLAYTEST] tea_and_murder/glenross — full-stack verify (fate)'
@@ -101,6 +106,7 @@ stories:
       - A scenario clue is discovered and clue-graph/belief-state spans fire (ADR-053); a social Fate contest (Deceive/Empathy) resolves.
       - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+      - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/tea_and_murder — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('tea_and_murder') emits the section; this AC is the live-page render check."
     type: chore
   - id: 150-7
     title: '[PLAYTEST] wry_whimsy/gulliver — full-stack verify (fate)'
@@ -116,6 +122,7 @@ stories:
       - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
       - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+      - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/wry_whimsy — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('wry_whimsy') emits the section; this AC is the live-page render check."
     type: chore
   - id: 150-8
     title: '[PLAYTEST] wry_whimsy/oz — full-stack verify (fate)'
@@ -131,6 +138,7 @@ stories:
       - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
       - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+      - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/wry_whimsy — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('wry_whimsy') emits the section; this AC is the live-page render check."
     type: chore
   - id: 150-9
     title: '[PLAYTEST] wry_whimsy/wonderland — full-stack verify (fate)'
@@ -146,6 +154,7 @@ stories:
       - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
       - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+      - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/wry_whimsy — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('wry_whimsy') emits the section; this AC is the live-page render check."
     type: chore
   - id: 150-10
     title: '[PLAYTEST] caverns_and_claudes/beneath_sunden — full-stack verify (wwn)'
