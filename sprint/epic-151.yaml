@@ -11,10 +11,13 @@ stories:
     description: "Promote narrator_output_only into the cached prefix by adding it to STABLE_SECTION_NAMES (prompt_framework/bucket.py). ADR-150 §Companion quick-win / Alternative A — independent, shippable first; removes ~4k uncached tokens/turn but does NOT address attention load (that's the rest of the epic). LANDMINE (not in the ADR — project memory project_adr112_promotion_breaks_test_60_6): adding a section to STABLE_SECTION_NAMES promotes it into the cached prefix and BREAKS test_60_6_stable_prefix_live_drift, which pins the old volatile invariant. Confirm narrator_output_only is byte-identical per session (no runtime interpolation — verified in the 2026-06-18 deep-dive) then update test_60_6 to the new stable invariant. Validate cache write/read deltas via the existing narration.turn.cached_input_* spans. Full-suite gate."
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-18'
     repos: server
     workflow: tdd
+    completed: '2026-06-18'
     type: refactor
+    review_verdict: approved
   - id: 151-2
     title: '[NARRATOR] Post-narration Haiku sidecar extractor — shadow mode + sidecar_extraction.* OTEL + lie-detector (ADR-150 step 2)'
     points: 5
