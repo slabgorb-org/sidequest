@@ -44,6 +44,7 @@ completed_epics:
   - '124'
   - '122'
   - '127'
+  - '128'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -1085,3 +1086,28 @@ completed_stories:
     title: 'Completeness audit and drift guard: final read-through of the canonical doc set (api-contract TTS-era sections, JARGONFILE, subrepo READMEs) for residual Rust/SQLite/TTS/native drift; propose a lightweight doc-drift check'
     points: 3
     completed: '2026-06-17'
+  - id: 128-1
+    epic: '128'
+    title: '[FATE] fate.item_promoted OTEL span — GM-panel lie-detector for item→aspect promotion (commit 95c4ad1c)'
+    points: 1
+    completed: '2026-06-18'
+  - id: 128-2
+    epic: '128'
+    title: '[FATE] Runtime catalog item→aspect promoter (fate_item_promotion.py): conservative id→slug→name match, aspects+permissions onto live sheet, stunts deferred, dedup logged-not-silent; never touches refresh/fate_points (commits 52f4d302, 71b6b9bc)'
+    points: 2
+    completed: '2026-06-18'
+  - id: 128-3
+    epic: '128'
+    title: '[FATE] Wire promoter into narration_apply items_gained append branch, gated on fate_sheet; mandatory end-to-end wiring test through real _apply_narration_result_to_snapshot incl +2 into a 4dF ladder (commit 1cf5c021)'
+    points: 2
+    completed: '2026-06-18'
+  - id: 128-4
+    epic: '128'
+    title: '[FATE] Narrator on-the-fly promotion (Phase 2): narrator_aspect mints ONE capped Aspect(kind=character, free_invokes=0 by construction), catalog-wins, blank-guarded (commit 9cf4aaf0)'
+    points: 2
+    completed: '2026-06-18'
+  - id: 128-5
+    epic: '128'
+    title: '[FATE] Document optional grants_aspect on items_gained in narrator contract (output_only.md), items_gained-scoped; byte-budget fresh-ceiling 14900→15400 + corrected stale cache rationale (commits 55646f01, 19c61926, 61422bc8)'
+    points: 1
+    completed: '2026-06-18'

@@ -194,3 +194,18 @@ stories:
       - No error_max_turns fragility on Fate turns after the trim (the structured call finalizes within max_turns=2).
       - Verified before/after on a fresh annees_folles 2-seat understudy run (turn_telemetry numbers).
     type: bug
+  - id: 126-11
+    title: "[NARRATOR] Drama-aware <length-limit>: scale the verbosity cap to narrative weight (SOUL Cost-Scales-with-Drama). The flat standard cap (8 sentences / 800 chars, orchestrator.py:1588 _build_verbosity_section; static 'BREVITY IS KING' in output_style.md) never widens for a climactic reveal vs a walk to the tavern — it strangles plot beats. Wire a drama/weight signal into the verbosity section so high-weight turns get room and quiet turns stay cheap; OTEL span on the chosen tier. Found in the 2026-06-18 narrator-prompt deep-dive. NOTE: 126-9 (thinking-ON latency regression) is now DONE, so the clean baseline this needs exists."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 126-12
+    title: "[NARRATOR][ADR] Design: move sidecar accounting off the narrator hot path. output_only.md is 94% bookkeeping (35% tool-owned + 59% sidecar-owned, ~0% craft, ~4k uncached tokens/turn) and one narrator generation must ALSO emit ~12 sidecar fields + fire 8 tool categories inline alongside prose — the 'ten pounds in a five-pound bag'. Draft an ADR in the ADR-113 intent-router lineage: extract sidecar accounting to a pre/post-narration pass so the narrator turn is mostly storytelling. DESIGN ONLY (Architect, no code) — size the dev work after the ADR lands. Found in the 2026-06-18 deep-dive."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: orchestrator
+    workflow: tdd
+    type: chore
