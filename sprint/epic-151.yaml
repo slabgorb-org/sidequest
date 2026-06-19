@@ -73,11 +73,12 @@ stories:
     title: '[NARRATOR] Shrink output_only.md to prose + private_segments brief; add perception-firewall guard test (ADR-150 step 5)'
     points: 2
     priority: p2
-    status: in_progress
+    status: done
     started: '2026-06-19'
     repos: server
     workflow: tdd
     depends_on: 151-5
+    completed: '2026-06-19'
     type: refactor
     branch: feat/151-6-shrink-output-only-firewall-guard
   - id: 151-7
