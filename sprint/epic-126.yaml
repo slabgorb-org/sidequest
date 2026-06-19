@@ -132,9 +132,13 @@ stories:
     description: "The DEFEND half of ADR-148, deliberately deferred from 126-7. Story 126-7 made the player's PROACTIVE Fate 4dF determinative (FATE_THROW: settled tray faces ARE the roll, server resolves from reported faces). 126-8 brings the player's DEFENSE roll into the same physics-is-the-roll model: today _roll_defense / _seat_opponent_commits in sidequest/server/dispatch/fate_conflict.py still roll the defending player's 4dF SERVER-SIDE with the tray as decoration. When a SEATED Fate PC defends against an attack, the player should physically throw the 4dF and the settled faces resolve the defense (no roll_4df on the player defense path). NPC/opponent rolls stay server-side. New client->server FATE_DEFEND_THROW message + ui defense throw tray mirroring 126-7's FateThrowHandler/FateDiceTray. Per ADR-148 line 146 this is 'Story 126-8 / ADR-149' — the no-roll_4df-on-the-player-path invariant extends from proactive to defense. SOUL: bind the ruleset (Fate ladder math unchanged)."
     points: 5
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-18'
     repos: server,ui
     workflow: tdd
+    completed: '2026-06-18'
+    review_findings: "HIGH(blocking): missing defender authorization on the defend path — dispatch_fate_defense matches the parked entry by client-supplied request_id without verifying entry.defender==authenticated actor, so in MP one player can fill/grief another's defense and lock the real defender out (fix: verify entry.defender==character.core.name, reject loud; add RED test). Also MEDIUM: NPC defense rolls mis-tagged role=action not role=defense (AC-8); concede-at-defend implemented but unwired/dead (AC-4 vs AC-6); ADR-148/149 citations reference wrong ADR (149 is SRD content)."
+    review_verdict: approved
   - id: 126-9
     title: '[PERF] Narrator + intent_router_pass turn-latency ~3x regression landed Jun 17 (no router thrash) — bisect + fix'
     description: |-
@@ -218,4 +222,35 @@ stories:
     repos: orchestrator
     workflow: architecture
     completed: '2026-06-18'
+    type: chore
+  - id: 126-13
+    title: '[FATE] OTEL watcher event on defend-path authorization rejection (lie-detector parity with player_id spoof-rejection)'
+    points: 1
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
+  - id: 126-14
+    title: '[FATE] Reconcile concede-at-defend: AC-4 (server records concession) vs AC-6 (no wire) — add a defend-concession protocol field or remove the dead conceded branches'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server,ui
+    workflow: tdd
+  - id: 126-15
+    title: '[DOCS] Author the Fate DEFEND-barrier ADR and fix the wrong ADR-148/149 citations in 9 server files (149 is SRD content)'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
+  - id: 126-16
+    title: '[FATE] Defend-barrier test-quality nits + deferred TEA coverage (match=authorization, list-vs-next span, partial-fill + defense-wins unit tests)'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
     type: chore
