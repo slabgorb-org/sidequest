@@ -316,7 +316,8 @@ stories:
       Shares the orphaned-native-model root with the chargen cluster (126-24) but is a pure UI-surface fix.
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: ui
     workflow: tdd
     acceptance_criteria:
@@ -324,7 +325,10 @@ stories:
       - 'Suppression branches on the bound ruleset: a WN-bound pack still shows HP/level/class (no global deletion). Test both a Fate pack and a WN pack.'
       - 'Body HP de-duplicated: the pips+pill double-render is gone for Fate (it was both native AND redundant).'
       - The standalone 'Fate' dock tab is removed; the Fate sheet renders only under Character (Stats=skills+aspects, Abilities=stunts, Status=stress/consequences); no information lost.
+    completed: '2026-06-19'
+    branch: feat/126-19-fate-suppress-native-chrome-and-dock-dedup
     type: bug
+    review_verdict: approved
   - id: 126-20
     title: '[FATE/UX] Inventory empty-state copy for legitimately-empty Fate inventories'
     description: "Source: sq-playtest-pingpong 2026-06-19 [UX] (medium; Keith: 'presenting a blank screen is wrong regardless'). The Inventory tab on a new pulp_noir/annees_folles (Fate) PC renders just a bare 'Inventory' heading over empty space — no empty-state copy → looks broken. Doubly important under Fate: signature gear lives as ASPECTS not inventory lines (wry_whimsy/gear.yaml: 'gear is not a carried inventory... compiled into the FateSheet at chargen as aspects'), so a Fate inventory is LEGITIMATELY empty much of the time and must not read as broken. NOTE: AC-STALE finding clarifies the native Inventory tab is correctly VISIBLE for Fate now (#419 reversed 126-3's hide) — so the fix is the empty-state, not hiding the tab. Add explicit empty-state copy ('Nothing in your pockets yet' / Fate-flavored)."
@@ -400,3 +404,17 @@ stories:
       - 'End-to-end repro retired: walking The Service / I Find Things Out / A Ghost / Answers presents a pre-ranked pyramid (Investigate seeded high) + pre-filled aspects, all overridable — no blank sheet. UI renders the seed with no code change OR the minimal change is wired and tested (wiring test, not source-grep).'
       - Chargen confirmation prose renders the Fate High Concept, not the native {race} {class} template (char_creation.yaml 'confirmation' step) — no 'a Military I Find Things Out' under a Fate binding.
       - "Pack default signature gear compiles onto the sheet at chargen via the NARRATIVE-WIZARD path (folded from the pingpong [BUG]): pulp_noir/rules.yaml declares a gear: list (noir_trench_coat, noir_pi_license→'Licensed Private Investigator', noir_service_revolver→'A Piece I'd Rather Not Use', noir_little_black_book→'A Contact for Every Occasion') compiled via the EXISTING fate_gear.compile_gear_onto_sheet seam. The narrative-wizard chargen currently bypasses it (stored save shows only HC+Trouble+player aspects, all source_gear=null). Wire the seam into the narrative-wizard path; resulting sheet carries the pack's gear-derived aspects in addition to player + seeded aspects."
+  - id: 126-25
+    title: '[FATE/UX] Remove the duplicate Fate dock tab + re-home the non-conflict 4dF roll surface under Character (PART B of 126-19)'
+    description: "PART B split from 126-19 (Keith decision 2026-06-19). The standalone 'Fate' dock tab duplicates the Fate sheet now under Character→Stats (consolidation landed in 118-2), BUT it ALSO hosts story 118-7's non-conflict 4dF roll tray (FateDiceTray, testid fate-dice-tray) via FateWidget→FatePanel — which is NOT duplicated under Character→Stats (FateCharacterSheet takes no latestRoll). So the tab cannot be removed wholesale without losing the out-of-conflict roll surface and reddening GameBoard-fate-roll.test.tsx. Re-home the non-conflict roll tray under Character (or another single home), THEN remove the standalone 'fate' widget. The Fate Conflict surface (fate-conflict widget) keeps its own tray and is NOT touched. Cleanup the dead path on removal: WIDGET_REGISTRY 'fate' entry + WidgetId union, GameBoard availableWidgets 'fate' gate + renderWidgetContent 'fate' case + rightGroupOrder, MobileTabView TABS 'fate' entry, and widgets/FateWidget.tsx (becomes dead once the dock case is gone). Update GameBoard-fate-tab.test.tsx + GameBoard-fate-roll.test.tsx to the new reality."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: tdd
+    acceptance_criteria:
+      - The standalone 'Fate' dock tab is removed; the Fate sheet renders ONLY under Character (Stats=skills+aspects, Abilities=stunts, Status=stress/consequences); no information lost.
+      - The 118-7 non-conflict 4dF roll tray (FateDiceTray) is re-homed so a roll OUTSIDE a conflict still has a visible surface; GameBoard-fate-roll.test.tsx is updated and green.
+      - The Fate Conflict surface (fate-conflict widget) and its own dice tray are unaffected.
+      - "Dead-path cleanup: no orphaned 'fate' widget references remain (registry/union/availableWidgets/renderWidgetContent/rightGroupOrder/MobileTabView/FateWidget.tsx); lint + tsc clean."
+    type: bug
