@@ -442,7 +442,8 @@ stories:
     description: "PART B split from 126-19 (Keith decision 2026-06-19). The standalone 'Fate' dock tab duplicates the Fate sheet now under Character→Stats (consolidation landed in 118-2), BUT it ALSO hosts story 118-7's non-conflict 4dF roll tray (FateDiceTray, testid fate-dice-tray) via FateWidget→FatePanel — which is NOT duplicated under Character→Stats (FateCharacterSheet takes no latestRoll). So the tab cannot be removed wholesale without losing the out-of-conflict roll surface and reddening GameBoard-fate-roll.test.tsx. Re-home the non-conflict roll tray under Character (or another single home), THEN remove the standalone 'fate' widget. The Fate Conflict surface (fate-conflict widget) keeps its own tray and is NOT touched. Cleanup the dead path on removal: WIDGET_REGISTRY 'fate' entry + WidgetId union, GameBoard availableWidgets 'fate' gate + renderWidgetContent 'fate' case + rightGroupOrder, MobileTabView TABS 'fate' entry, and widgets/FateWidget.tsx. Update GameBoard-fate-tab.test.tsx + GameBoard-fate-roll.test.tsx to the new reality. (Originally mis-numbered 126-25 in a stale local branch; 126-25 is the SERVER Fate-gear story — this is 126-26.)"
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: ui
     workflow: tdd
     acceptance_criteria:
@@ -450,4 +451,7 @@ stories:
       - The 118-7 non-conflict 4dF roll tray (FateDiceTray) is re-homed so a roll OUTSIDE a conflict still has a visible surface; GameBoard-fate-roll.test.tsx is updated and green.
       - The Fate Conflict surface (fate-conflict widget) and its own dice tray are unaffected.
       - "Dead-path cleanup: no orphaned 'fate' widget references remain (registry/union/availableWidgets/renderWidgetContent/rightGroupOrder/MobileTabView/FateWidget.tsx); lint + tsc clean."
+    completed: '2026-06-19'
     type: bug
+    review_findings: "4 blocking cleanup items (M/L severity): 3 stale comments in GameBoard.tsx describing the deleted Fate tab as present (lines ~199, ~448, ~602), and a stale 'as GameBoardProps' cast in GameBoard-fate-roll.test.tsx:112 (sibling test already dropped it). Code is functionally correct (165/165 green, tsc/eslint clean); rejection is for incomplete dead-path cleanup on a clean-removal story. Green rework."
+    review_verdict: approved
