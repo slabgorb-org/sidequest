@@ -335,10 +335,13 @@ stories:
     description: "Source: sq-playtest-pingpong 2026-06-19 [UX] (medium; Keith: 'presenting a blank screen is wrong regardless'). The Inventory tab on a new pulp_noir/annees_folles (Fate) PC renders just a bare 'Inventory' heading over empty space — no empty-state copy → looks broken. Doubly important under Fate: signature gear lives as ASPECTS not inventory lines (wry_whimsy/gear.yaml: 'gear is not a carried inventory... compiled into the FateSheet at chargen as aspects'), so a Fate inventory is LEGITIMATELY empty much of the time and must not read as broken. NOTE: AC-STALE finding clarifies the native Inventory tab is correctly VISIBLE for Fate now (#419 reversed 126-3's hide) — so the fix is the empty-state, not hiding the tab. Add explicit empty-state copy ('Nothing in your pockets yet' / Fate-flavored)."
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: ui
     workflow: trivial
+    completed: '2026-06-19'
     type: bug
+    review_verdict: approved
   - id: 126-21
     title: '[CONTENT] Author significant Fate found-items as extras with grants_aspects (Oz silver shoes + others) so #945 can promote them'
     description: "Source: sq-playtest-pingpong 2026-06-19 [CONTENT-GAP] (high; Keith's Oz session: 'silver shoes are in my inventory and Fate's ignoring them'). #945 promotes a gained item to an invokable aspect ONLY if it's authored as a Fate GearDef/extra with grants_aspects (catalog path) OR the narrator sets grants_aspect (Phase 2). The Oz silver shoes exist ONLY as lore (wry_whimsy/worlds/oz/lore.yaml, tropes.yaml); wry_whimsy/gear.yaml EXPLICITLY excludes them ('The silver/ruby shoes are NOT here — mid-game found item per 121-4 design') and no mid-game GearDef with grants_aspects exists for them anywhere → the #945 catalog matcher has nothing to match → no promotion → inert inventory line. This is the #945 spec's named content dependency (design doc lines 130-132), unmet for Oz. OPEN Q to resolve in the story: is Phase-2 narrator promotion (grants_aspect) wired/instructed? If yes it's a fallback for un-authored items."
