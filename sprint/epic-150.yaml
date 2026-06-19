@@ -8,10 +8,27 @@ repos: ui,server,content,daemon
 stories:
   - id: 150-1
     title: '[PLAYTEST] pulp_noir/annees_folles — full-stack verify (fate) + 126-10 AC1/AC4'
-    description: 'Full-stack /sq-playtest verification of pulp_noir/annees_folles (ruleset: fate). The marquee Fate world + the 126-10 anchor. Confirm in play: Fate-conflict harm ablates stress/consequences not core.hp (126-1); FATE_STATE hydrates on connect/resume (#942); items gained become invokable aspects (#945); Contest engine resolves opposed checks (#936); player 4dF is determinative (126-7); native Inventory tab hidden for Fate (126-3); router-driven table seating (126-2). 126-10 specifics: intent_router_pass ~4-6s (NOT 37-81s) on the GM-panel Timeline + the intent_router.fate_vocabulary span shows bytes_after<bytes_before; routing accuracy survives the aspect trim (create_advantage/invoke still classify). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); report bugs cross-workspace via ping-pong to FIXER.'
+    description: |-
+      Full-stack /sq-playtest verification of pulp_noir/annees_folles (ruleset: fate). The marquee Fate world + the 126-10 anchor. Confirm in play: Fate-conflict harm ablates stress/consequences not core.hp (126-1); FATE_STATE hydrates on connect/resume (#942); items gained become invokable aspects (#945); Contest engine resolves opposed checks (#936); player 4dF is determinative (126-7); native Inventory tab hidden for Fate (126-3); router-driven table seating (126-2). 126-10 specifics: intent_router_pass ~4-6s (NOT 37-81s) on the GM-panel Timeline + the intent_router.fate_vocabulary span shows bytes_after<bytes_before; routing accuracy survives the aspect trim (create_advantage/invoke still classify). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); report bugs cross-workspace via ping-pong to FIXER.
+
+      --- PLAYTEST CONTEXT UPDATE (2026-06-19, GM/DRIVER) ---
+      Ran solo full-stack on player1.local against the oq-1=develop stack (daemon down; all live ACs are mechanical/OTEL so images N/A; concurrent headless test on the same stack contaminated the OTEL Live view).
+
+      OUTCOME: the marquee MECHANICAL ACs are UNVERIFIED / BLOCKED. Root cause = the intent router on the running stack is unreliable: intermittent error_max_turns AND it never escalates opposed actions to a Fate contest. Across 4 turns (study-NPC create-advantage, Provoke interrogation, physical Overcome-vs-resistance) NO 4dF / contest / confrontation ever fired (server log: confrontation=None + in_conflict=False every turn; PC auto-succeeds with zero mechanical stakes). So 126-7 / #936 / #945 / 126-1 CANNOT be exercised until a fixed router on a clean rebuild.
+
+      VERIFIED / OK: world loads, connects, chargen completes through the real UI (no GameBoard crash); FATE_STATE renders and hydrates the full sheet (aspects/skills/fate points/stress/consequences) before turn 1; narration is genre-true hardboiled 1920s Paris.
+
+      AC CORRECTION: "native Inventory tab hidden for Fate (126-3)" is STALE — superseded by ui#419 (show a Fate PC's carried inventory). Live behavior is a visible-but-BLANK Inventory (needs an empty-state, NOT a hidden tab). The real intent is #945 (significant items -> invokable aspects) + a non-broken empty state.
+
+      FIXES LANDED during the run: server #958 (intent_router structured-output max_turns 2->4, merged to develop, awaiting stack restart); save DB rotated (5.1GB pg_dump backup) + cleared (was 4.3M projection_cache rows + 1399 junk sessions).
+
+      FINDINGS (~14, all in ~/Projects/sq-playtest-pingpong.md -> FIXER): (1) chargen wizard discards its narrative signals + does NOT compile the pack default signature gear onto the Fate sheet (stored save had 0 gear aspects despite rules.yaml gear:); (2) native HP/level/class chrome leaks under Fate across 5 renderings (header/body-pips+pill/party/action-bar); (3) standalone Fate dock tab DUPLICATES Character->Stats, and Abilities/Status sub-tabs are blank (content not distributed); (4) opening-scene OBJECTS never persisted to state -> established envelope retracted on interaction (NPCs are persisted, objects are not); (5) must_not_narrate constraint text leaked into player prose; (6) router never escalates to a contest (the spine bug above); (7) OTEL Inspector not partitioned by session_id (Live hijacks to concurrent sessions); (8) projection_cache unbounded growth (DB bloat); (9) CONTENT-GAP = significant found-items (Oz silver shoes) not authored as Fate extras, so #945 can't promote them.
+
+      BLOCKED-ON to finish 150-1: (a) restart the running stack on fresh develop to pick up #958; (b) the router no-contest-escalation fix; then re-run 126-7 / #936 / #945 / 126-1 / 126-10 on the clean DB.
     points: 2
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-06-19'
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
