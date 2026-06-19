@@ -73,11 +73,13 @@ stories:
     title: '[NARRATOR] Shrink output_only.md to prose + private_segments brief; add perception-firewall guard test (ADR-150 step 5)'
     points: 2
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-06-19'
     repos: server
     workflow: tdd
     depends_on: 151-5
     type: refactor
+    branch: feat/151-6-shrink-output-only-firewall-guard
   - id: 151-7
     title: '[NARRATOR] Playtest validation gate — prose quality unharmed + sidecar fidelity ≥ catch-loop floor, mismatch-rate metric (ADR-150 step 6)'
     points: 3
