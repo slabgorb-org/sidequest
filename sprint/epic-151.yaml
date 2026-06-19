@@ -59,13 +59,16 @@ stories:
     title: '[NARRATOR] Sidecar cutover II — npcs_present (engine-owned side) + async cosmetic fields (mood, visual_scene, footnotes) (ADR-150 step 4)'
     points: 5
     priority: p2
-    status: in_progress
+    status: done
+    started: '2026-06-19'
     repos: server
     workflow: tdd
     depends_on: 151-2
+    completed: '2026-06-19'
     type: refactor
     branch: feat/151-5-sidecar-cutover-ii
-    started: '2026-06-19'
+    review_findings: "HIGH: merge_sidecar_extraction_npcs_present routes extractor output through NpcMention.from_value (narration_apply.py:3678), which raises ValueError on an out-of-enum side (e.g. 'hostile'); unwrapped at the WS handler -> crashes/degrades the post-narration turn, violating the epic's NON-FATAL contract. The validated side is then discarded (engine-owned). Fix: per-mention try/except, clamp to engine side + emit mismatch span, never raise into the turn; add a TEA test for the invalid-side path. Plus 5 non-blocking improvements (span status, unbounded list, exact-name matching, phantom-NPC confabulation, getattr style)."
+    review_verdict: approved
   - id: 151-6
     title: '[NARRATOR] Shrink output_only.md to prose + private_segments brief; add perception-firewall guard test (ADR-150 step 5)'
     points: 2
