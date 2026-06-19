@@ -455,3 +455,19 @@ stories:
     type: bug
     review_findings: "4 blocking cleanup items (M/L severity): 3 stale comments in GameBoard.tsx describing the deleted Fate tab as present (lines ~199, ~448, ~602), and a stale 'as GameBoardProps' cast in GameBoard-fate-roll.test.tsx:112 (sibling test already dropped it). Code is functionally correct (165/165 green, tsc/eslint clean); rejection is for incomplete dead-path cleanup on a clean-removal story. Green rework."
     review_verdict: approved
+  - id: 126-27
+    title: '[FATE/CLEANUP] Delete unreferenced FatePanel function + sweep stale FateWidget comments (126-26 follow-up)'
+    description: |-
+      Follow-up from 126-26 (filed 2026-06-19). Two non-blocking cleanups the 126-26 removal left behind, both in sidequest-ui:
+
+      1. DEAD CODE: With the 'fate' dock widget removed (126-26 deleted widgets/FateWidget.tsx), the FatePanel *function* in src/components/FatePanel.tsx is now production-unreferenced — its only consumer was FateWidget. The shared FateCharacterSheet, exported from the SAME file, is still imported by CharacterPanel and MUST stay. Delete the unused FatePanel function and its two dedicated test files (src/components/__tests__/FatePanel.test.tsx, src/components/__tests__/FatePanel.fateRoll.test.tsx), keeping FateCharacterSheet and its coverage intact. Verify no other importer of FatePanel (the function) exists before deleting.
+
+      2. STALE COMMENTS: Sweep lingering 'FateWidget'/'dock Fate tab' references in files 126-26 did NOT touch (so the comment-analyzer didn't flag them, being outside that diff): src/components/FatePanel.tsx:142 ('the dock FateWidget AND the in-game Character panel'), src/components/GameBoard/__tests__/GameBoard-fate-conflict.test.tsx:18, and src/hooks/__tests__/useStateMirror.fate-roll.test.ts:9. FateWidget no longer exists; reword to the post-126-26 reality (the non-conflict roll tray lives under Character->Stats; the Fate conflict surface has its own tray).
+
+      Trivial workflow. Scope guard: do NOT touch FateCharacterSheet or the fate-conflict surface. Run the full Fate + GameBoard suite to confirm no regression after the FatePanel deletion.
+    points: 1
+    priority: p3
+    status: backlog
+    repos: ui
+    workflow: trivial
+    type: refactor
