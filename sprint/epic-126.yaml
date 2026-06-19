@@ -366,14 +366,18 @@ stories:
     description: "Source: sq-playtest-pingpong 2026-06-19 [PERF/BUG] (SM during save-DB rotation). pg_stat_user_tables on the 'sidequest' DB before clear: projection_cache = 4,313,951 rows, turn_telemetry = 470,647, for only 1,399 sessions (~3,000 projection_cache rows/session). projection_cache dwarfs everything else combined → this is the 'too much garbage in the save DB' bloat Keith hit. DB was rotated (5.1 GB pg_dump → ~/.sidequest/db-backups/sidequest-fulldump-20260619-054530.sql) and all save tables TRUNCATEd (kept alembic_version); saves now 0. This story fixes the CAUSE so it doesn't re-bloat. Add an eviction / TTL / per-session cap (or prune-on-session-end) for projection_cache; add a retention policy for turn_telemetry (470k, more expected but still unbounded). Confirm via row-count growth per session after the fix."
     points: 3
     priority: p2
-    status: backlog
+    status: done
     repos: server
     workflow: tdd
     acceptance_criteria:
       - projection_cache has a bounded growth policy (eviction/TTL/per-session cap or prune-on-session-end); a multi-turn session does not accumulate ~3k unbounded rows.
       - turn_telemetry has a documented retention policy.
       - Eviction/prune emits an OTEL span (rows pruned, scope) so the cleanup is observable, not silent.
+    completed: '2026-06-19'
+    branch: feat/126-22-projection-cache-retention
     type: bug
+    review_findings: 'HIGH: prune wired unguarded into PgSaveRepository.save() — a cleanup-DELETE fault propagates as a snapshot-save failure (contaminates last_save_failure/close_store, skips per-turn narrative logging). Isolate the prune (log-and-continue), mirror lore-persist isolation. +2 non-blocking: keep=0 inverted zero-semantics guards; rows_pruned span on failure path.'
+    review_verdict: approved
   - id: 126-23
     title: '[BUG] OTEL Inspector Live view not partitioned by session_id — renders the last-emitting session, unusable during concurrent runs'
     description: "Source: sq-playtest-pingpong 2026-06-19 [BUG] (SM; Keith: 'the otel dashboard is also totally fucked'). Repro: open #/dashboard while >=2 sessions are active (a playtest + a concurrent headless test test-444686c1). Observed: (1) the Live header jumped to test-444686c1 — a session the operator was NOT driving; (2) Timeline showed TURNS 0 / 'Waiting for first turn...' even though the driven session had taken turns (the live stream only captures spans emitted AFTER the panel connects AND follows whichever session last emitted); (3) the driven session's spans were never viewable in Live. The dashboard must partition the span stream by session_id and render the SELECTED session, not the last-emitting one. Today the sq-playtest skill's Phase-3c caveat says 'trust the by-slug dropdown over Live' — but with concurrent sessions even reaching the right turns is unreliable. This makes the GM-panel lie-detector unusable during concurrent runs (headless tests are frequently concurrent); it blocked live verification of 126-10 router timing. NOT independently tracked before — this is the task. Likely spans server (watcher hub broadcasts all sessions on /ws/watcher) + ui (Dashboard Live should filter to the selected session_id)."
