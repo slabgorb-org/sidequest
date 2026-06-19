@@ -227,10 +227,14 @@ stories:
     title: '[FATE] OTEL watcher event on defend-path authorization rejection (lie-detector parity with player_id spoof-rejection)'
     points: 1
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: server
     workflow: trivial
+    completed: '2026-06-19'
     type: chore
+    branch: feat/126-13-otel-defend-auth-reject
+    review_verdict: approved
   - id: 126-14
     title: '[FATE] Reconcile concede-at-defend: AC-4 (server records concession) vs AC-6 (no wire) — add a defend-concession protocol field or remove the dead conceded branches'
     points: 3
