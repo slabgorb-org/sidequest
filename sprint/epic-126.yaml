@@ -258,10 +258,13 @@ stories:
     title: '[DOCS] Author the Fate DEFEND-barrier ADR and fix the wrong ADR-148/149 citations in 9 server files (149 is SRD content)'
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: server
     workflow: trivial
+    completed: '2026-06-19'
     type: chore
+    review_verdict: approved
   - id: 126-16
     title: '[FATE] Defend-barrier test-quality nits + deferred TEA coverage (match=authorization, list-vs-next span, partial-fill + defense-wins unit tests)'
     points: 1
