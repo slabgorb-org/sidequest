@@ -302,7 +302,7 @@ stories:
       Coupled to the [BUG] must_not_narrate-leak (fixed in-loop this session as the player-hygiene half) — this is the ROOT-CAUSE half: persist the props so the guard never fires on an opening-established detail.
     points: 5
     priority: p1
-    status: in_progress
+    status: done
     started: '2026-06-19'
     repos: server
     workflow: tdd
@@ -311,7 +311,9 @@ stories:
       - 'A prop established by the opening is interactable on turn 1 without the must_not_narrate guard firing: the envelope can be picked up / opened (Yes-And), not denied.'
       - 'Scope is OBJECTS only: opening-scene NPC persistence is unchanged (already works); no regression to NPC seeding.'
       - 'OTEL span on opening-prop persistence (props_persisted count + ids) so the GM panel can confirm props were written, not just narrated (lie-detector for the inverted failure mode: good narration, empty state).'
+    completed: '2026-06-19'
     type: bug
+    review_verdict: approved
   - id: 126-19
     title: '[FATE/UX] Suppress residual native chrome on Fate characters (HP/level/class across 5 surfaces) + remove the duplicate Fate dock tab'
     description: |-
