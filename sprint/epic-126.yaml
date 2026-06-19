@@ -302,7 +302,8 @@ stories:
       Coupled to the [BUG] must_not_narrate-leak (fixed in-loop this session as the player-hygiene half) — this is the ROOT-CAUSE half: persist the props so the guard never fires on an opening-established detail.
     points: 5
     priority: p1
-    status: backlog
+    status: in_progress
+    started: '2026-06-19'
     repos: server
     workflow: tdd
     acceptance_criteria:
