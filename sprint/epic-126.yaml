@@ -275,7 +275,8 @@ stories:
     description: "126-8 shipped the server DEFEND barrier (FATE_DEFEND_REQUEST broadcast + block-and-wait, no auto-roll) but its promised UI half (the defense-throw tray) was deferred to spec section 8 and NEVER FILED. Verified 2026-06-19 (The Man in Black): the UI has ZERO Fate defend handling — no FATE_DEFEND_REQUEST MessageType (protocol.ts only has FATE_ROLL/STATE/ACTION/THROW), no 'defend' in the action union (payloads.ts:614), no defend tray; the existing concede() is the pre-roll whole-conflict FATE_ACTION concede, a different mechanic. RESULT — a latent SHOWSTOPPER: the first time an NPC attacks a PC in a Fate conflict, the server broadcasts the request and parks with no narration (fate_throw.py:161-173) while the UI drops the unknown message, so the exchange hangs forever. This story builds the missing surface by REUSING 126-7's patterns (FateConflictSurface + FateDiceTray thrower mode + handleFateThrow/makeFateThrowMessage). It ALSO adds the Concede affordance, which depends on 126-14's server-side concede field (126-14 is in flight, server-only). Prioritized p1 because it un-hangs Fate combat."
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: ui
     workflow: tdd
     acceptance_criteria:
@@ -285,6 +286,9 @@ stories:
       - A Concede affordance on the defend tray sends the defend throw with the concede signal (no dice throw) and consumes the request. DEPENDS on 126-14's server concede field; sequence after 126-14 merges (or land defend-throw first and add concede in a rebase).
       - "Tests (vitest) mirror 126-7's FateConflictSurface/FateDiceTray harness: defend-request -> throw emits FATE_THROW(action='defend', faces); defend-request -> concede emits the concede message with no dice; mechanical readouts come from the payload, not literals."
       - 'Wiring/e2e: the defend tray is reachable from the production component tree (mounted on FATE_DEFEND_REQUEST via the real App/GameBoard path), proven by at least one test that renders through the real mount path — not just the component in isolation.'
+    completed: '2026-06-19'
+    review_findings: '2 confirmed: [HIGH] FATE_DEFEND_REQUEST mirror guard validates only routing keys (request_id/defender), not mechanical fields (attacker/attack_skill/attack_total) — No-Silent-Fallbacks gap, diverges from the FATE_ROLL per-face guard precedent (useStateMirror.ts:307); [MEDIUM] onDefendThrow consumes via pendingDefend.request_id instead of thrown.request_id — wrong-tray-dismiss race if the slice swaps mid-settle (FateConflictSurface.tsx:231). Both testable logic/validation fixes → red rework. Non-blocking follow-ups logged (multi-pending-defense latest-wins gap; FateDiceTray silent settle-drop).'
+    review_verdict: approved
   - id: 126-18
     title: "[FATE] Opening-scene inanimate props persist to room_states so established hooks aren't retracted (envelope/Pernod/ashtray)"
     description: |-
