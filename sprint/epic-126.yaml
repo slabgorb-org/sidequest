@@ -482,3 +482,11 @@ stories:
     repos: ui
     workflow: trivial
     type: refactor
+  - id: 126-28
+    title: '[FATE/TEST] Harden 126-18 opening-prop tests: exercise the real snapshot-slimming projection (seed player_seats so party_location resolves; assert summary[room_states] keeps the prop), add a de-dup/idempotency test, assert the wiring-test span payload (props_persisted==N + prop_ids) not just truthy, assert all 3 props in the forensic test, cover the chassis-anchor path, refresh the stale (RED) docstring + drop now-unnecessary type:ignore suppressors, and promote the 2 local imports in persist_opening_props to top-level'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
