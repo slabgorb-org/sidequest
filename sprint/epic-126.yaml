@@ -350,13 +350,14 @@ stories:
     description: "Source: sq-playtest-pingpong 2026-06-19 [CONTENT-GAP] (high; Keith's Oz session: 'silver shoes are in my inventory and Fate's ignoring them'). #945 promotes a gained item to an invokable aspect ONLY if it's authored as a Fate GearDef/extra with grants_aspects (catalog path) OR the narrator sets grants_aspect (Phase 2). The Oz silver shoes exist ONLY as lore (wry_whimsy/worlds/oz/lore.yaml, tropes.yaml); wry_whimsy/gear.yaml EXPLICITLY excludes them ('The silver/ruby shoes are NOT here — mid-game found item per 121-4 design') and no mid-game GearDef with grants_aspects exists for them anywhere → the #945 catalog matcher has nothing to match → no promotion → inert inventory line. This is the #945 spec's named content dependency (design doc lines 130-132), unmet for Oz. OPEN Q to resolve in the story: is Phase-2 narrator promotion (grants_aspect) wired/instructed? If yes it's a fallback for un-authored items."
     points: 2
     priority: p2
-    status: backlog
+    status: done
     repos: content
     workflow: tdd
     acceptance_criteria:
       - The Oz silver shoes (and other significant found-items) are authored as Fate extras with grants_aspects (e.g. 'The Silver Shoes of the Dead Witch' → permission/aspect 'Three Steps Home').
       - 'On pickup, #945 promotes the authored item to an invokable aspect — verified by the fate.item_promoted span firing and the aspect appearing on the sheet.'
       - 'Resolve + document the Phase-2 narrator-promotion (grants_aspect) path: is it wired as a fallback for un-authored significant items? If not, note the gap.'
+    completed: '2026-06-19'
   - id: 126-22
     title: '[PERF] projection_cache unbounded growth (~3k rows/session, 4.3M rows) — add eviction/TTL/per-session cap + turn_telemetry retention to stop save-DB bloat'
     description: "Source: sq-playtest-pingpong 2026-06-19 [PERF/BUG] (SM during save-DB rotation). pg_stat_user_tables on the 'sidequest' DB before clear: projection_cache = 4,313,951 rows, turn_telemetry = 470,647, for only 1,399 sessions (~3,000 projection_cache rows/session). projection_cache dwarfs everything else combined → this is the 'too much garbage in the save DB' bloat Keith hit. DB was rotated (5.1 GB pg_dump → ~/.sidequest/db-backups/sidequest-fulldump-20260619-054530.sql) and all save tables TRUNCATEd (kept alembic_version); saves now 0. This story fixes the CAUSE so it doesn't re-bloat. Add an eviction / TTL / per-session cap (or prune-on-session-end) for projection_cache; add a retention policy for turn_telemetry (470k, more expected but still unbounded). Confirm via row-count growth per session after the fix."
