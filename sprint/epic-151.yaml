@@ -22,12 +22,15 @@ stories:
     title: '[NARRATOR] Post-narration Haiku sidecar extractor — shadow mode + sidecar_extraction.* OTEL + lie-detector (ADR-150 step 2)'
     points: 5
     priority: p2
-    status: in-progress
+    status: done
     started: '2026-06-18'
     repos: server
     workflow: tdd
+    completed: '2026-06-18'
     type: feature
     branch: feat/151-2-haiku-sidecar-extractor-shadow
+    review_findings: 'Re-review round 2: all 5 round-1 findings RESOLVED (HIGH narration-bound + crashed-span + schema detail/log nits, security+silent-failure subagents confirmed). Single remaining blocker: I001 unsorted-import lint in test_sidecar_extractor.py:485 (fails ruff check / check-all). Lint-only green rework: ruff check --fix + recommit.'
+    review_verdict: approved
   - id: 151-3
     title: '[NARRATOR] action_rewrite → IntentRouter pre-pass — retire the sidecar field, rewire visibility_classifier (ADR-150 step 3)'
     points: 3
