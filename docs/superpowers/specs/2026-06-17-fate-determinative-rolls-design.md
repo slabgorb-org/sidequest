@@ -5,7 +5,7 @@
 **Status:** Approved (design) — pending written-spec review
 **Epic:** 126 (Fate Core playtest follow-ups)
 **Stories:** 126-7 (proactive determinism) + 126-8 (defend follow-up barrier) — split per packaging decision
-**Companion ADRs:** ADR-148 (proactive determinism, written) · ADR-149 (defend follow-up barrier — to be authored in 126-8)
+**Companion ADRs:** ADR-148 (proactive determinism, written) · ADR-151 (defend follow-up barrier — authored in 126-15; originally reserved as ADR-149 before that number went to SRD reference content)
 **Reconciles:** ADR-074 (dice resolution protocol) · ADR-144 (Fate Core binding) · ADR-036 / ADR-129 (sealed-commit turn model)
 
 ---
@@ -173,7 +173,7 @@ The design above is the whole model. It ships as two stories:
   rolls stay server-side. **Fixes the visible 125-4 contradiction for the common case.**
 - `FATE_ACTION` keeps the non-roll verbs. 125-4 groundwork preserved.
 
-### 126-8 — Fate defend follow-up barrier (~8pt, ADR-149)
+### 126-8 — Fate defend follow-up barrier (~8pt, ADR-151)
 - Restructure `run_fate_exchange` into COMMIT → REVEAL → DEFEND → RESOLVE.
 - `FATE_DEFEND_REQUEST` (server→client) + the DEFEND barrier (parallel, conditional,
   block-and-wait); `FATE_THROW(action=defend)` consumed into `_resolve_attack`; player

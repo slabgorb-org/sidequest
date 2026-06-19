@@ -143,7 +143,8 @@ today (only the acting PC's roll is broadcast as `FATE_ROLL`). Interactive playe
 is a separate, harder problem — it is **designed** (a conditional DEFEND follow-up barrier
 that keeps the sealed-commit barrier intact) in
 `docs/superpowers/specs/2026-06-17-fate-determinative-rolls-design.md` and scheduled as
-**Story 126-8 / ADR-149**, not left as an open punt. The "no `roll_4df` on the player
+**Story 126-8 / ADR-151** (originally reserved as ADR-149 before that number was
+allocated to SRD reference content; see ADR-151), not left as an open punt. The "no `roll_4df` on the player
 path" invariant therefore scopes to the player's **proactive action** dispatch
 (`dispatch_fate_action`), which this ADR makes determinative.
 
