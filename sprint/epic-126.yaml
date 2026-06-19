@@ -425,7 +425,8 @@ stories:
       ALSO IN SCOPE (separate, small — the Phase-2 gap, AC3 of 126-21): the narrator-side grants_aspect surfacing never landed. narration_apply.py:4974 CONSUMES `entry.get('grants_aspect')`, but no narrator tool-contract / prompt instructs the narrator it may set that field (zero refs outside narration_apply.py) → Phase-2 narrator promotion is DORMANT. Either surface grants_aspect to the narrator tool-contract (the design doc's named Phase-2 deliverable) or split it to its own story; note the decision here.
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: server
     workflow: tdd
     acceptance_criteria:
@@ -434,6 +435,8 @@ stories:
       - "Match robustness: the placement content's granted item (id/name) resolves to GearDef oz_silver_shoes under match_gained_gear's exact discipline; if a placement-content change is needed (stable item id/name), file/coordinate it so the chain actually connects in real play."
       - 'Phase-2 gap resolved (126-21 AC3): either surface grants_aspect to the narrator tool-contract (activating dormant Phase-2 narrator promotion) or split to its own story with the gap documented; whichever, the decision is recorded and the narrator path is no longer silently dead.'
       - 'OTEL: the world-tier gear merge is observable (span or log: which world gear ids merged into the catalog) so the GM panel can confirm the world artifacts were wired, not just authored.'
+    completed: '2026-06-19'
+    review_verdict: approved
   - id: 126-26
     title: '[FATE/UX] Remove the duplicate Fate dock tab + re-home the non-conflict 4dF roll surface under Character (PART B of 126-19)'
     description: "PART B split from 126-19 (Keith decision 2026-06-19). The standalone 'Fate' dock tab duplicates the Fate sheet now under Character→Stats (consolidation landed in 118-2), BUT it ALSO hosts story 118-7's non-conflict 4dF roll tray (FateDiceTray, testid fate-dice-tray) via FateWidget→FatePanel — which is NOT duplicated under Character→Stats (FateCharacterSheet takes no latestRoll). So the tab cannot be removed wholesale without losing the out-of-conflict roll surface and reddening GameBoard-fate-roll.test.tsx. Re-home the non-conflict roll tray under Character (or another single home), THEN remove the standalone 'fate' widget. The Fate Conflict surface (fate-conflict widget) keeps its own tray and is NOT touched. Cleanup the dead path on removal: WIDGET_REGISTRY 'fate' entry + WidgetId union, GameBoard availableWidgets 'fate' gate + renderWidgetContent 'fate' case + rightGroupOrder, MobileTabView TABS 'fate' entry, and widgets/FateWidget.tsx. Update GameBoard-fate-tab.test.tsx + GameBoard-fate-roll.test.tsx to the new reality. (Originally mis-numbered 126-25 in a stale local branch; 126-25 is the SERVER Fate-gear story — this is 126-26.)"
