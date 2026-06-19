@@ -59,11 +59,13 @@ stories:
     title: '[NARRATOR] Sidecar cutover II — npcs_present (engine-owned side) + async cosmetic fields (mood, visual_scene, footnotes) (ADR-150 step 4)'
     points: 5
     priority: p2
-    status: backlog
+    status: in_progress
     repos: server
     workflow: tdd
     depends_on: 151-2
     type: refactor
+    branch: feat/151-5-sidecar-cutover-ii
+    started: '2026-06-19'
   - id: 151-6
     title: '[NARRATOR] Shrink output_only.md to prose + private_segments brief; add perception-firewall guard test (ADR-150 step 5)'
     points: 2
