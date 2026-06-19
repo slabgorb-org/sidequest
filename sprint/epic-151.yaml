@@ -46,7 +46,8 @@ stories:
     title: '[NARRATOR] Sidecar cutover I — transactional fields (items×4, gold, companions×2) off game_patch to the extractor (ADR-150 step 4)'
     points: 5
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-06-18'
     repos: server
     workflow: tdd
     depends_on: 151-2
