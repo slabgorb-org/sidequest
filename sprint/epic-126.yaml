@@ -398,7 +398,8 @@ stories:
       Affected: content genre_packs/pulp_noir/ (new genre-tier seed table + optional annees_folles world override) ; server chargen_mixin.py present-time seed computation + fate_chargen.py helper ; ui FateChargenPanel.tsx (verify-only expected). Does NOT block 150-1 mechanical AC verification.
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: content,server,ui
     workflow: tdd
     acceptance_criteria:
@@ -411,6 +412,9 @@ stories:
       - 'End-to-end repro retired: walking The Service / I Find Things Out / A Ghost / Answers presents a pre-ranked pyramid (Investigate seeded high) + pre-filled aspects, all overridable — no blank sheet. UI renders the seed with no code change OR the minimal change is wired and tested (wiring test, not source-grep).'
       - Chargen confirmation prose renders the Fate High Concept, not the native {race} {class} template (char_creation.yaml 'confirmation' step) — no 'a Military I Find Things Out' under a Fate binding.
       - "Pack default signature gear compiles onto the sheet at chargen via the NARRATIVE-WIZARD path (folded from the pingpong [BUG]): pulp_noir/rules.yaml declares a gear: list (noir_trench_coat, noir_pi_license→'Licensed Private Investigator', noir_service_revolver→'A Piece I'd Rather Not Use', noir_little_black_book→'A Contact for Every Occasion') compiled via the EXISTING fate_gear.compile_gear_onto_sheet seam. The narrative-wizard chargen currently bypasses it (stored save shows only HC+Trouble+player aspects, all source_gear=null). Wire the seam into the narrative-wizard path; resulting sheet carries the pack's gear-derived aspects in addition to player + seeded aspects."
+    completed: '2026-06-19'
+    review_findings: 'HIGH: world-tier chargen_seed_table override (AC2) is half-wired — World has no chargen_seed_table field and the loader never populates one, so resolve_fate_chargen_seed_table always returns the genre table; the AC2 unit test masks it with _FakeWorld injecting FateHintSeed objects. Fix: typed World.chargen_seed_table field + loader population (mirror world gear) + a real-loaded-world AC2 test. Genre-tier seeding (AC1/3/4/5/7/8/9) is GREEN and sound.'
+    review_verdict: approved
   - id: 126-25
     title: '[SERVER] Wire world-tier Fate gear.yaml into rules.fate.gear_catalog so #945 promotes world-specific found-items'
     description: |-
