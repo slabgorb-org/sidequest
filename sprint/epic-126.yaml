@@ -404,3 +404,26 @@ stories:
       - 'End-to-end repro retired: walking The Service / I Find Things Out / A Ghost / Answers presents a pre-ranked pyramid (Investigate seeded high) + pre-filled aspects, all overridable — no blank sheet. UI renders the seed with no code change OR the minimal change is wired and tested (wiring test, not source-grep).'
       - Chargen confirmation prose renders the Fate High Concept, not the native {race} {class} template (char_creation.yaml 'confirmation' step) — no 'a Military I Find Things Out' under a Fate binding.
       - "Pack default signature gear compiles onto the sheet at chargen via the NARRATIVE-WIZARD path (folded from the pingpong [BUG]): pulp_noir/rules.yaml declares a gear: list (noir_trench_coat, noir_pi_license→'Licensed Private Investigator', noir_service_revolver→'A Piece I'd Rather Not Use', noir_little_black_book→'A Contact for Every Occasion') compiled via the EXISTING fate_gear.compile_gear_onto_sheet seam. The narrative-wizard chargen currently bypasses it (stored save shows only HC+Trouble+player aspects, all source_gear=null). Wire the seam into the narrative-wizard path; resulting sheet carries the pack's gear-derived aspects in addition to player + seeded aspects."
+  - id: 126-25
+    title: '[SERVER] Wire world-tier Fate gear.yaml into rules.fate.gear_catalog so #945 promotes world-specific found-items'
+    description: |-
+      Source: 126-21 GM investigation (2026-06-19). The #945 Fate item-promoter (game/ruleset/fate_item_promotion.py:match_gained_gear) matches a gained item against `_fate_cfg.gear_catalog` (narration_apply.py:4967), but `gear_catalog` is loaded from the GENRE tier ONLY (loader._load_gear at loader.py:2130 reads `<pack>/gear.yaml` → rules.fate.gear_catalog). World-tier `worlds/<world>/gear.yaml` is NOT merged, so a world-specific Fate GearDef can never be seen by the promoter. This is the 'future story' the fate_gear.py docstring names (parallel to the ADR-145 §D3 by-id inventory merge). It BLOCKS 126-21 AC2.
+
+      FIX: load `worlds/<world>/gear.yaml` for the active world and merge its GearDefs into the effective gear_catalog (by-id, world wins — mirror the inventory merge precedent), so when that world is active the promoter sees its found-items. Keep the genre catalog clean (Flavor in the World): world artifacts live only at the world tier.
+
+      MATCHER CAVEAT (must be covered by the wiring test): match_gained_gear is conservative-exact (id → slug → case-folded name; 'Silver' must NOT bind 'Silver Shoes'). So the placement content that puts the silver shoes in play must grant an inventory item whose id or name RESOLVES to the GearDef id `oz_silver_shoes` / name 'The Silver Shoes of the Dead Witch'. The wiring test must drive the FULL path, not just the merge: active world=oz → gain the silver shoes → fate.item_promoted span fires (source=catalog) → 'Three Steps Home' aspect appears on the FateSheet and is invokable.
+
+      CONTENT ALREADY AUTHORED (126-21, inert until this lands): genre_packs/wry_whimsy/worlds/oz/gear.yaml (oz_silver_shoes → permission 'Three Steps Home'; oz_golden_cap → permission 'Three Commands of the Winged Monkeys'). Validated against the live GearDef schema via loader._load_gear.
+
+      ALSO IN SCOPE (separate, small — the Phase-2 gap, AC3 of 126-21): the narrator-side grants_aspect surfacing never landed. narration_apply.py:4974 CONSUMES `entry.get('grants_aspect')`, but no narrator tool-contract / prompt instructs the narrator it may set that field (zero refs outside narration_apply.py) → Phase-2 narrator promotion is DORMANT. Either surface grants_aspect to the narrator tool-contract (the design doc's named Phase-2 deliverable) or split it to its own story; note the decision here.
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - worlds/<world>/gear.yaml is loaded and its GearDefs merge by-id (world wins) into the effective Fate gear_catalog for the active world; the genre-tier catalog stays unpolluted (a wonderland/gulliver session does NOT see oz_silver_shoes).
+      - "WIRING TEST (full path, not just the merge): active world=oz, player gains the silver shoes → fate.item_promoted span fires with source=catalog → the 'Three Steps Home' aspect appears on the FateSheet and is invokable in a 4dF resolution. Mirrors the design doc's mandatory end-to-end wiring test."
+      - "Match robustness: the placement content's granted item (id/name) resolves to GearDef oz_silver_shoes under match_gained_gear's exact discipline; if a placement-content change is needed (stable item id/name), file/coordinate it so the chain actually connects in real play."
+      - 'Phase-2 gap resolved (126-21 AC3): either surface grants_aspect to the narrator tool-contract (activating dormant Phase-2 narrator promotion) or split to its own story with the gap documented; whichever, the decision is recorded and the narrator path is no longer silently dead.'
+      - 'OTEL: the world-tier gear merge is observable (span or log: which world gear ids merged into the catalog) so the GM panel can confirm the world artifacts were wired, not just authored.'
