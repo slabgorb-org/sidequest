@@ -237,11 +237,23 @@ stories:
     review_verdict: approved
   - id: 126-14
     title: '[FATE] Reconcile concede-at-defend: AC-4 (server records concession) vs AC-6 (no wire) — add a defend-concession protocol field or remove the dead conceded branches'
+    description: "Wire defend-concession end-to-end on the SERVER (Keith decision 2026-06-19; re-scoped server-only 2026-06-19 after The Man in Black verified the UI has no Fate defend surface — the UI concede affordance moved to new story 126-17 which builds the whole defend tray). The engine branches already exist from 126-8 but have no production caller: dispatch_fate_defense(conceded=...), the _resolve_attack concede branch (fate_conflict.py:612), the 'ledger_full ... or p.conceded' clause (fate_conflict.py:1231), and FatePendingDefense.conceded. This story adds the protocol concede field + _handle_defend plumbing + OTEL so the dead branches become live. NOTE: story YAML repos still reads 'server,ui' (the update CLI has no --repos flag); the SESSION Repos line (server) is authoritative — see the logged deviation. UI work is tracked in 126-17."
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: server,ui
     workflow: tdd
+    acceptance_criteria:
+      - FateThrowPayload(action='defend') gains a 'concede' signal field; when conceding, NO 4dF faces are required (no roll_4df, faces optional/ignored on the concede path). A non-concede defend throw still validates its four faces (defense in depth unchanged).
+      - _handle_defend reads the concede signal and passes conceded=True to dispatch_fate_defense, marking the matching pending_defenses entry conceded and filling the ledger via the already-built _resolve_attack concede branch and the 'ledger_full ... or p.conceded' clause. After this story NO 'conceded' code path remains unwired (No half-wired features / dead-code doctrine).
+      - "Authorization holds: only the entry's own defender may concede it — the existing entry.defender==actor_name check (fate_conflict.py:1188, ADR-119) must guard the concede path too. A concede aimed at another defender's request_id is rejected loudly (FateConflictError) and that defender's entry stays unfilled (and unconceded)."
+      - 'Resume-safety (ADR-128): a conceded pending_defenses entry rides snapshot.encounter and survives a server restart; RESUME reads the recorded concession and never re-rolls; NPC dice locked at REVEAL are untouched.'
+      - 'OTEL (lie detector): the fate.defend_phase span records conceded=True for the answered entry, and NO fate.action_resolved roll span is emitted for a conceded defense (nothing was rolled). The GM panel can confirm a concession was a real player choice.'
+      - 'Wiring (mandatory, server e2e): a test drives NPC-attacks-PC -> FATE_DEFEND_REQUEST -> player CONCEDES through the real FateThrowHandler/registry/exchange on a fixture snapshot -> ledger fills -> RESUME -> narrate-once, asserting the concede span fired and no player 4dF was rolled. Span capture over grepping production source.'
+    completed: '2026-06-19'
+    review_findings: 'HIGH(blocking): FateThrowPayload._validate_faces accepts concede=True WITH a face tuple and the faces are silently discarded at dispatch (No Silent Fallbacks; divergence-lie risk). Fix: reject concede+faces in the validator + add a RED test. Otherwise clean — security 0 findings, preflight 397 fate-scoped pass, auth/determinism/anti-backdoor all verified.'
+    review_verdict: approved
   - id: 126-15
     title: '[DOCS] Author the Fate DEFEND-barrier ADR and fix the wrong ADR-148/149 citations in 9 server files (149 is SRD content)'
     points: 1
@@ -258,3 +270,18 @@ stories:
     repos: server
     workflow: tdd
     type: chore
+  - id: 126-17
+    title: '[FATE] Build the Fate defend-throw UI surface — handle FATE_DEFEND_REQUEST + defend tray (4dF thrower) + concede affordance; un-hangs the 126-8 DEFEND barrier'
+    description: "126-8 shipped the server DEFEND barrier (FATE_DEFEND_REQUEST broadcast + block-and-wait, no auto-roll) but its promised UI half (the defense-throw tray) was deferred to spec section 8 and NEVER FILED. Verified 2026-06-19 (The Man in Black): the UI has ZERO Fate defend handling — no FATE_DEFEND_REQUEST MessageType (protocol.ts only has FATE_ROLL/STATE/ACTION/THROW), no 'defend' in the action union (payloads.ts:614), no defend tray; the existing concede() is the pre-roll whole-conflict FATE_ACTION concede, a different mechanic. RESULT — a latent SHOWSTOPPER: the first time an NPC attacks a PC in a Fate conflict, the server broadcasts the request and parks with no narration (fate_throw.py:161-173) while the UI drops the unknown message, so the exchange hangs forever. This story builds the missing surface by REUSING 126-7's patterns (FateConflictSurface + FateDiceTray thrower mode + handleFateThrow/makeFateThrowMessage). It ALSO adds the Concede affordance, which depends on 126-14's server-side concede field (126-14 is in flight, server-only). Prioritized p1 because it un-hangs Fate combat."
+    points: 5
+    priority: p1
+    status: backlog
+    repos: ui
+    workflow: tdd
+    acceptance_criteria:
+      - "The UI handles FATE_DEFEND_REQUEST: add the MessageType + a FateDefendRequestPayload type (request_id, defender, attacker, attack_skill, attack_total, mental) mirroring the server contract, and extend the FateThrowPayload action union to include 'defend'."
+      - When a FATE_DEFEND_REQUEST targeting the local player arrives, a defend tray mounts showing the server-sent attacker/attack_skill/attack_total READ FROM THE PAYLOAD (no hardcoded mechanical literals, 118-5 anti-drift) and arms the 4dF thrower (reuse FateDiceTray thrower mode).
+      - Settling the dice sends FATE_THROW(action='defend') echoing the request_id with the settled faces (reuse handleFateThrow/makeFateThrowMessage); the request is consumed and the tray dismisses.
+      - A Concede affordance on the defend tray sends the defend throw with the concede signal (no dice throw) and consumes the request. DEPENDS on 126-14's server concede field; sequence after 126-14 merges (or land defend-throw first and add concede in a rebase).
+      - "Tests (vitest) mirror 126-7's FateConflictSurface/FateDiceTray harness: defend-request -> throw emits FATE_THROW(action='defend', faces); defend-request -> concede emits the concede message with no dice; mechanical readouts come from the payload, not literals."
+      - 'Wiring/e2e: the defend tray is reachable from the production component tree (mounted on FATE_DEFEND_REQUEST via the real App/GameBoard path), proven by at least one test that renders through the real mount path — not just the component in isolation.'
