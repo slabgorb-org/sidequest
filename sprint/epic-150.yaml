@@ -104,9 +104,10 @@ stories:
       DISPOSITION: per-world five_points health + the Fate CONFLICT engine are GREEN and well-verified; but the MAJOR out-of-conflict fabrication + dice-font 403 + poker deactivation are genre/engine-wide (not five_points-specific) and warrant FIXER work before the Fate ACs can be called green for spaghetti_western. Held in_progress pending those fixes.
     points: 2
     priority: p2
-    status: backlog
-    assigned_to: ''
+    status: in_progress
+    assigned_to: 'keith'
     started: '2026-06-20'
+    branch: 'feat/150-3-five_points-fate-playtest'
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
@@ -215,7 +216,8 @@ stories:
     description: 'Full-stack /sq-playtest verification of wry_whimsy/wonderland (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Whimsy genre-true narration; if the world hydrates a political layer, witnessed-act vocabulary/classification spans fire (double-gated). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
     points: 2
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-06-20'
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
@@ -247,7 +249,8 @@ stories:
     description: 'Full-stack /sq-playtest verification of elemental_harmony/burning_peace (ruleset: wwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Elemental magic (ADR-126 MagicPlugin): exercise a magic working. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
     points: 2
     priority: p3
-    status: backlog
+    status: in_progress
+    started: '2026-06-20'
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
