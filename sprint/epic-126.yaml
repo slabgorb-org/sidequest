@@ -604,3 +604,11 @@ stories:
     completed: '2026-06-20'
     type: refactor
     review_verdict: approved
+  - id: 126-38
+    title: '[BUG] Namegen: key the narrator-invented-person mint to the current region instead of a blind culture shuffle. Split from 126-32 (manifestation c) by Keith 2026-06-20. _resolve_invented_naming_context (sidequest/server/narration_apply.py) random.shuffles bound cultures with no region awareness, so an unaffiliated stranger in the Anglo-settler dust_and_lead frontier (region sangre_del_paso) can be rerouted to the Ndé/Apache people-group (npc.invented_name_routed resolution_strategy=shuffle_fallback). DESIGN-GATED: there is no region->culture binding in content today — decide WHERE it lives (per-culture regions: field | cartography region->culture list | world default culture) before implementing. RED contract preserved in git commit 64c60385 (test_invented_name_not_shuffle_routed_to_wrong_people_group: strategy must be region-keyed, not blind shuffle).'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
