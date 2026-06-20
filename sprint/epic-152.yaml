@@ -52,3 +52,19 @@ stories:
       - test_cc_chargen_e2e and test_class_signature_wiring are green; class selection + the WWN Calling signature abilities (Killing Blow/Veteran's Luck, Read the Ledger, Read the Worked Stone) + pronoun-agnostic prose all still asserted.
       - No production code changed for the walk fix; any class_moves surface change needed is owned by 152-1/152-2, not invented here.
     type: bug
+  - id: 152-4
+    title: "[ENGINE] Synthesize the WN opponent attack so the Other deals damage on a zero-beat WWN combat def — parallel to 108-8's player synthesis (no_strike_beat live outage); prerequisite for 152-1"
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 152-5
+    title: "[BUG] MP WN-round wire: 2nd commit misresolves to the 1st PC's seat (round never fires) + non-hermetic narrator transport on the sealed-commit handler path — unskip test_mp_wire_first_commit_seals_second_commit_fires_the_round"
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
