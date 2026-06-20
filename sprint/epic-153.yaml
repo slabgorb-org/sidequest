@@ -1,0 +1,8 @@
+id: '153'
+type: epic
+title: Faction/zone-scoped content eligibility
+description: "Multi-region worlds leak content across zones: the Monster Manual (ADR-059) seeds creatures with no location_tags so they are eligible EVERYWHERE, and format_area_creatures does ZERO location filtering — so a 4th-voyage Yahoo surfaces on the 1st-voyage Lilliput shore (wry_whimsy/gulliver playtest, session 2026-06-20-gulliver-e721409c). Applies to oz (4 countries + Emerald City), road_warrior/the_circuit (subculture territories), and any multi-region/faction world. Architectural direction (Keith, 2026-06-20): group locations by faction; scope content-eligibility by the region's faction-group (region -> faction-group -> eligible NPC/creature/trope pools). Reuse-first: regions already carry controlled_by:<faction>; the Monster Manual already has location_tags + culture + available_at_location(); cartography entities already home NPCs. Work = (a) DESIGN the faction-group eligibility model as an ADR-059 amendment, (b) WIRE the eligibility pools (creature selection, NPC staging), (c) TAG content per multi-region world (gulliver as proof, then fan-out). Design-first per PM scoping 2026-06-20."
+priority: p2
+status: backlog
+repos: server,content
+stories: []

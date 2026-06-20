@@ -1,0 +1,65 @@
+id: '157'
+type: epic
+title: Faction/zone-scoped content eligibility
+description: "Multi-region worlds leak content across zones: the Monster Manual (ADR-059) seeds creatures with no location_tags so they are eligible EVERYWHERE, and format_area_creatures does ZERO location filtering — so a 4th-voyage Yahoo surfaces on the 1st-voyage Lilliput shore (wry_whimsy/gulliver, session 2026-06-20-gulliver-e721409c). Applies to oz (4 countries + Emerald City), road_warrior/the_circuit (subculture territories), wonderland, and any multi-region/faction world. Direction (Keith, 2026-06-20): group locations by faction; scope content-eligibility by the region's faction-group (region -> faction-group -> eligible NPC/creature/trope pools). Reuse-first: regions already carry controlled_by:<faction>; the Monster Manual has location_tags + culture + available_at_location(); cartography entities home NPCs. Design-first; full design + ADR-059 amendment in docs/superpowers/specs/2026-06-20-faction-zone-content-eligibility-design.md (157-1 DONE). Strict fail-loud validator lands last."
+priority: p2
+status: backlog
+repos: server,content
+stories:
+  - id: 157-1
+    title: '[DESIGN] Faction/zone eligibility model — ADR-059 amendment + spec'
+    points: 3
+    priority: p2
+    status: done
+    repos: orchestrator
+    workflow: trivial
+    completed: '2026-06-20'
+  - id: 157-2
+    title: '[ENGINE] zone_eligibility core + factions tag + creature inject filter (Seam 1)'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 157-1
+  - id: 157-3
+    title: '[ENGINE] NPC walk-on origin-stamp + authored-cast staging on region entry (Seam 2)'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 157-2
+  - id: 157-4
+    title: '[ENGINE] factions on trope/seed + trope gate + seed-deck draw (Seams 3 & 4)'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 157-2
+  - id: 157-5
+    title: '[CONTENT] Tag gulliver by faction (proof world) + verify no bleed'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: content
+    workflow: trivial
+    depends_on: 157-4
+  - id: 157-6
+    title: '[CONTENT] Faction-tag fan-out: oz, wonderland, the_circuit'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: content
+    workflow: trivial
+    depends_on: 157-5
+    type: chore
+  - id: 157-7
+    title: '[ENGINE] Strict zone-tagging load validator (fail-loud, lands last)'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 157-6
