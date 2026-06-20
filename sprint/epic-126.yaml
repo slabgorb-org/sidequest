@@ -569,3 +569,11 @@ stories:
     repos: content,server
     workflow: tdd
     type: bug
+  - id: 126-37
+    title: '[ENGINE] De-nativize Fate confrontation RESOLUTION — extend fate_conflict to the downstream dial guards (apply_beat suppression + advance_confrontation refusal + narration_apply beat-drop)'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
