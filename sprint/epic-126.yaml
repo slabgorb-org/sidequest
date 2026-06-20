@@ -566,10 +566,14 @@ stories:
     title: '[OTEL] Keep test-run sessions out of the live GM dashboard. (1) UI filter: drop test-*/tool-test sessions from liveSessions picker + State-tab debugState (useLiveSource.ts:347-355). (2) Stop bumping last_activity_ts on session-list/state polls so auto-follow tracks the genuinely-active session. (3) Session-tag (or drop) infra/test spans so the per-session pin fully filters them. (4) Root cause: point test runs at a separate port / no-watcher mode so they never reach the operator''s live WatcherHub. 41 stale test-* sessions linger (ADR-122 never-evict); only a restart clears them today.'
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: server,ui
     workflow: tdd
+    completed: '2026-06-20'
     type: bug
+    review_findings: "F401 unused UTC import in tests/server/test_test_session_isolation.py:33 fails 'ruff check .' (blocks lint gate / just server-check); plus 2 medium test-hardening fixes: negative-control asserts use 'session_type' not in ev instead of != 'test'. Impl code (rest.py, watcher_hub.py, useLiveSource.ts) clean — 26/26 server + 12/12 ui green, ruff clean, tsc clean."
+    review_verdict: approved
   - id: 126-35
     title: '[FATE] On-play significant items don''t promote to an invokable aspect/extra (#945 on-play path; chargen path verified GREEN via 126-21/126-25). A narrator-granted story item (the drifter''s surveyor''s map) lands in native core.inventory but fate_sheet.aspects/extras is unchanged. KEITH DESIGN CALL pending: either (a) close as model-correct (no equipment economy; ad-hoc item has no authored grants_aspects) + document, or (b) auto-promote narrator-granted significant items to a situation/story aspect or Fate extra under ruleset==''fate''. Surface the decision in the design phase before implementing.'
     points: 3
