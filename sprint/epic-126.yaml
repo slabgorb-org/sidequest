@@ -609,9 +609,10 @@ stories:
     review_verdict: approved
   - id: 126-38
     title: '[BUG] Namegen: key the narrator-invented-person mint to the current region instead of a blind culture shuffle. Split from 126-32 (manifestation c) by Keith 2026-06-20. _resolve_invented_naming_context (sidequest/server/narration_apply.py) random.shuffles bound cultures with no region awareness, so an unaffiliated stranger in the Anglo-settler dust_and_lead frontier (region sangre_del_paso) can be rerouted to the Ndé/Apache people-group (npc.invented_name_routed resolution_strategy=shuffle_fallback). DESIGN-GATED: there is no region->culture binding in content today — decide WHERE it lives (per-culture regions: field | cartography region->culture list | world default culture) before implementing. RED contract preserved in git commit 64c60385 (test_invented_name_not_shuffle_routed_to_wrong_people_group: strategy must be region-keyed, not blind shuffle).'
+    description: CANCELED 2026-06-20 — scope expanded into a dedicated epic (being created in a separate session). The region→culture binding design gate (per-culture regions field | cartography Region.cultures | world-default) is deferred to that epic. feat/126-38 branches (server + orchestrator) and RED commit ba3336e6 discarded; TEA epithet-guard + design-gated-RED learnings preserved in .pennyfarthing/sidecars/tea-gotchas.md.
     points: 3
     priority: p2
-    status: backlog
+    status: canceled
     repos: server
     workflow: tdd
     type: bug
