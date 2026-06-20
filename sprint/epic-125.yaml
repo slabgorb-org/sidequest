@@ -108,3 +108,19 @@ stories:
       - No production code changed unless a genuine wiring gap is found; this is test-debt cleanup. Any production change is logged as a Delivery Finding and re-scoped.
       - Coordinated with in-flight epic-108 WN-round work so the fixes don't collide with or pre-empt that story's own test updates.
     type: chore
+  - id: 125-9
+    title: "[126-34 follow-up] Test-run session isolation root fix — point test runs at a separate port / --no-watcher mode so they never register with the operator's live WatcherHub (design captured in 126-34 Dev Assessment / archived session)"
+    points: 5
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
+  - id: 125-10
+    title: "[126-34 follow-up] Keep the test-session predicate in sync across repos — is_test_session (server watcher_hub.py) and isTestSession (ui useLiveSource.ts) encode the test-/tool-test prefixes independently; add a contract test or shared source so they can't drift"
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server,ui
+    workflow: trivial
+    type: chore
