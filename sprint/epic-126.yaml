@@ -537,9 +537,12 @@ stories:
     title: '[FATE/UX] Render the opponent stress/consequence track + a taken-out win-meter in FateConflictSurface from the now-projected FATE_STATE.conflict data (#973 carve-out). Data is on the wire (participants[opponent].stress/consequences + fate.conflict.projected span); mirror ConfrontationOverlay''s EdgeBar. DRIVER''s single highest-impact legibility gap.'
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: ui
     workflow: tdd
+    completed: '2026-06-20'
+    review_verdict: approved
   - id: 126-32
     title: "[BUG] Bind narrated NPCs to seeded/registry entities + fix shuffle_fallback culture/region routing (one root seam, three manifestations). (a) narrated antagonist -> seated Fate opponent identity by exact name (dust_and_lead 'Henry Shaw' not the bestiary 'Western Diamondback'; Defect A seater fix shipped, identity-binding residual open); (b) described canonical figure -> seeded registry NPC (Oz Good Witch of the North, not a hollow 'Amaranth Warmacre' mint, carry its hp/pronouns); (c) Defect B namegen — npc.invented_name_routed shuffle_fallback reroutes established Anglo names to the wrong culture/region (Ndé), key the mint to the current region. Timing change in narration_apply.py (promote narrated NPCs to snapshot.npcs before mint/seating). LARGE/RISKY — proper TDD server story."
     points: 8
