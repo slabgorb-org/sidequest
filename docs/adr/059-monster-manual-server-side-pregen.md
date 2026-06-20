@@ -206,3 +206,43 @@ What is dark — the Manual + the pipeline that fills `<game_state>` with pre-ge
 What `<game_state>` carries today is the running session snapshot only (`orchestrator.py`: `state_summary = session.model_dump_json(...)`). There is no pre-generated NPC pool, no encounter pool, no enemy stat-block pool being merged in. The narrator therefore continues to invent NPC names and stats — exactly the failure mode this ADR was written to prevent.
 
 Restoration is **P0 RESTORE** in [ADR-087](087-post-port-subsystem-restoration-plan.md) — the highest-priority single item across the entire restoration plan: _"Single biggest hot item. Accepted ADR is currently dark. Without this, NPC names/encounters/loadouts drift into Claude's improvisation."_ ADR-087 also schedules the encountergen/loadoutgen binary RESTORE and the namegen REWIRE as P0 prerequisites in §E. The decision in this ADR stands.
+
+## Amendment (2026-06-20) — Faction/zone-scoped content eligibility (epic-157)
+
+The entry schema above carried `location_tags` *"for future filtering even if filtering
+isn't implemented yet"* (see "Entry Schema"). That future filtering is now specified, on
+the **faction** axis, by epic-157. Full design:
+[`docs/superpowers/specs/2026-06-20-faction-zone-content-eligibility-design.md`](../superpowers/specs/2026-06-20-faction-zone-content-eligibility-design.md).
+
+**Problem this amends.** The Manual is region-unaware. `monster_manual_inject._npc_patches_for_encounters()`
+applies **zero** location filtering, so a sampled bestiary creature is eligible
+everywhere — a 4th-voyage gulliver **Yahoo** surfaces on the 1st-voyage **Lilliput shore**
+(playtest `2026-06-20-gulliver-e721409c`). The same lack of a region axis exists in the
+trope engine and the seed-trope deck.
+
+**Decision.** Content eligibility is scoped by the **faction-group** that controls the
+party's current region (Keith, 2026-06-20: "group locations by faction; scope
+content-eligibility by the region's faction-group"). The eligibility key is the
+**already-authored `Region.controlled_by`** — no new cartography authoring; it is present
+in exactly the multi-region worlds with the bleed (gulliver/oz/wonderland/the_circuit/
+perseus_cloud) and absent in the 11 single-zone worlds, which are therefore unaffected.
+
+- **Tag** the three pooled, home-less content types — bestiary entries, tropes,
+  seed-tropes — with `factions: list[str]` (exact `controlled_by` values, or `"*"` for
+  world-global). Authored cartography NPCs (region = zone) and runtime generated walk-ons
+  (stamped on activation) are **not** tagged; their zone is derived.
+- **Filter** at four seams against one shared predicate
+  (`game/zone_eligibility.py`): creature/encounter injection (Seam 1, the headline fix),
+  generated-walk-on origin-stamp + **authored-cast push-staging on region entry** via the
+  ADR-113 `frontier_hook` observer registry's first real consumer (Seam 2), the trope
+  activation gate (Seam 3), and the seed-deck draw (Seam 4).
+- **Runtime is permissive** on untagged content; **strictness is a load-time validator**
+  (`GenreLoadError` for any untagged/typo'd pooled item in a zoned world). This decouples
+  sequencing (engine ships before content tagging) while guaranteeing no untagged content
+  reaches production. The validator lands **last**, after all zoned worlds are tagged.
+- **OTEL.** Persisted `zone_eligibility.filtered` (exclusions) + `zone_eligibility.cast_staged`
+  (region-entry staging) watcher events — the GM-panel lie-detector.
+
+The compound-key culture/faction axis and the injection mechanism in the body above are
+unchanged; this amendment adds the region→faction eligibility filter that the entry schema
+anticipated. The decision in this ADR stands.
