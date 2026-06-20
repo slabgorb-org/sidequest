@@ -490,10 +490,11 @@ stories:
     title: '[FATE/TEST] Harden 126-18 opening-prop tests: exercise the real snapshot-slimming projection (seed player_seats so party_location resolves; assert summary[room_states] keeps the prop), add a de-dup/idempotency test, assert the wiring-test span payload (props_persisted==N + prop_ids) not just truthy, assert all 3 props in the forensic test, cover the chassis-anchor path, refresh the stale (RED) docstring + drop now-unnecessary type:ignore suppressors, and promote the 2 local imports in persist_opening_props to top-level'
     points: 2
     priority: p3
-    status: backlog
+    status: in-progress
     repos: server
     workflow: trivial
     type: chore
+    branch: feat/126-28-harden-opening-prop-tests
   - id: 126-29
     title: "[BUG] Gate Fate proactive tiles on committed-this-exchange so a resumed mid-exchange conflict doesn't offer actions the server rejects (#403). Add a per-PC committed bool to FATE_STATE.conflict participant from encounter.fate_commits; UI disables/replaces the proactive Overcome/Create-Advantage/Attack/Concede tiles with the existing fate-sealed-hint when set. Do NOT relax the server dispatch_fate_throw sealed-commit guard (ADR-129/151)."
     points: 3
