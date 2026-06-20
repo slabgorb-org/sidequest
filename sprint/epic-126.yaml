@@ -1,7 +1,7 @@
 id: '126'
 type: epic
-title: Fate Core playtest follow-ups — annees_folles eval (2026-06-16/17)
-description: "Still-open findings from the 2026-06-16/17 Fate Core evaluation playtest (pulp_noir/annees_folles, ADR-144 binding). NOT re-filed here: five blocker/major findings were fixed+merged DURING the session and await only DRIVER re-verification (GameBoard 'thresholds is not iterable' crash ui#408; stale skill-pyramid validator ui#409; OTEL Inspector live span mis-attribution server#923+ui#407; legacy chargen confirmation card server#926; free-text origin dropped #917); three more were verified in-session (intent-router error_max_turns; FATE-MAJOR identical-static-sheet via 121-8; portrait-picker empty-state #402). This epic captures what's genuinely left: the marquee in-play Fate-conflict ablation test (finally exercisable now the router + GameBoard blockers are cleared), the router-driven table/card re-seat verify, the Fate-gear visibility UX (Keith decision pending), and three carryover/observation items. Source: sq-playtest-pingpong 2026-06-17."
+title: "Fate Core playtest follow-ups — annees_folles eval (2026-06-16/17)"
+description: 'Still-open findings from the 2026-06-16/17 Fate Core evaluation playtest (pulp_noir/annees_folles, ADR-144 binding). NOT re-filed here: five blocker/major findings were fixed+merged DURING the session and await only DRIVER re-verification (GameBoard ''thresholds is not iterable'' crash ui#408; stale skill-pyramid validator ui#409; OTEL Inspector live span mis-attribution server#923+ui#407; legacy chargen confirmation card server#926; free-text origin dropped #917); three more were verified in-session (intent-router error_max_turns; FATE-MAJOR identical-static-sheet via 121-8; portrait-picker empty-state #402). This epic captures what''s genuinely left: the marquee in-play Fate-conflict ablation test (finally exercisable now the router + GameBoard blockers are cleared), the router-driven table/card re-seat verify, the Fate-gear visibility UX (Keith decision pending), and three carryover/observation items. Source: sq-playtest-pingpong 2026-06-17.'
 priority: p3
 status: backlog
 repos: server,ui
@@ -18,14 +18,14 @@ stories:
     acceptance_criteria:
       - 'Seat a real Fate conflict in a Fate pack (e.g. grab/attack an NPC) and confirm the mechanical spine fires: FATE_ROLL + fate.* + confrontation.* OTEL spans present (GM-panel lie-detector), confrontation != None.'
       - Harm from the conflict ablates the Fate stress/consequence track, NOT core.hp. Add a server test asserting a Fate-conflict harm event decrements Fate stress/fills a consequence and leaves core.hp untouched.
-      - "If harm currently reads core.hp: wire the harm-application path in the Fate ruleset module to Fate stress/consequences (replace, don't balance). Include the wiring/integration test that proves the path is reachable from the live conflict dispatch."
+      - 'If harm currently reads core.hp: wire the harm-application path in the Fate ruleset module to Fate stress/consequences (replace, don''t balance). Include the wiring/integration test that proves the path is reachable from the live conflict dispatch.'
     completed: '2026-06-17'
     branch: feat/126-1-fate-conflict-harm-ablates-stress
     type: bug
     review_verdict: approved
   - id: 126-2
     title: '[BUG] Re-verify router-driven encounter seating returns the table/card game (poker)'
-    description: "The 'card game totally broken and not engaging' finding was diagnosed as DOWNSTREAM of the intent-router error_max_turns blocker (now fixed), NOT a table-engine regression. N-seat table games seat at narration_apply.py:5450 only when a ResolutionMode.table_resolution ConfrontationDef arrives via the router-driven dispatch path (post-ADR-113). Router degraded (dispatch_package=None) -> no table_resolution cdef -> instantiate_table_encounter() (encounter_lifecycle.py:1175) never reached -> live save showed encounter=None. The table engine is intact (last table work #522 feat(table) / #685 War Rig crew table-game, both pre-Fate-port). FIXER's explicit instruction: re-test now the router fires; if it still doesn't seat, file/fix as a genuinely separate finding. DO NOT pre-emptively hunt in game/table/. Source: sq-playtest-pingpong [BUG] card game."
+    description: 'The ''card game totally broken and not engaging'' finding was diagnosed as DOWNSTREAM of the intent-router error_max_turns blocker (now fixed), NOT a table-engine regression. N-seat table games seat at narration_apply.py:5450 only when a ResolutionMode.table_resolution ConfrontationDef arrives via the router-driven dispatch path (post-ADR-113). Router degraded (dispatch_package=None) -> no table_resolution cdef -> instantiate_table_encounter() (encounter_lifecycle.py:1175) never reached -> live save showed encounter=None. The table engine is intact (last table work #522 feat(table) / #685 War Rig crew table-game, both pre-Fate-port). FIXER''s explicit instruction: re-test now the router fires; if it still doesn''t seat, file/fix as a genuinely separate finding. DO NOT pre-emptively hunt in game/table/. Source: sq-playtest-pingpong [BUG] card game.'
     points: 2
     priority: p3
     status: done
@@ -34,11 +34,11 @@ stories:
     workflow: tdd
     acceptance_criteria:
       - In a pack with a table game (e.g. spaghetti_western poker), trigger a poker/table scene; confirm a table_resolution cdef arrives via the live router and instantiate_table_encounter() runs (encounter != None, antes/seats/sealed-commit loop present).
-      - If it STILL does not seat after the router fix, capture the dispatch trace (router output -> cdef ResolutionMode) and fix the seating gap — that is the separate finding.
+      - "If it STILL does not seat after the router fix, capture the dispatch trace (router output -> cdef ResolutionMode) and fix the seating gap — that is the separate finding."
     completed: '2026-06-18'
     type: bug
   - id: 126-3
-    title: "[FATE/UX] Surface Fate gear so a Fate player isn't stranded on an empty native Inventory panel"
+    title: '[FATE/UX] Surface Fate gear so a Fate player isn''t stranded on an empty native Inventory panel'
     description: "WORKING-AS-DESIGNED per ADR-144 (reclassified from [FATE-BUG]). The 114-10 Fate-gear migration (#472) deleted inventory.yaml for the four Fate packs; Fate has no carried inventory and no economy (game/ruleset/fate_gear.py + docs/superpowers/specs/2026-06-15-fate-gear-model-design.md: a ruleset:fate pack shipping inventory.yaml is a defined HARD ERROR). Gear dissolves into aspects via source_gear. The gap is pure UX: a Fate player who opens 'Inventory' sees an empty native panel (items:[], gold:0) and never learns their gear became aspects. DECISION (Keith, 2026-06-17): option (a) — HIDE the native Inventory tab for ruleset:fate packs (option (b), a read-only FatePanel Gear view, was declined). UI-ONLY change (no server work despite the epic's server repo tag) — do NOT populate inventory.items/gold (that re-introduces the carried inventory ADR-144 deliberately deleted). GOTCHA: a GameBoard dock tab is registered in TWO places — widgetRegistry/GameBoard AND MobileTabView's own TABS array; the jsdom wiring tests render the mobile path, so the conditional-hide must cover BOTH or the tab-reachability assertion will mismatch. Source: sq-playtest-pingpong [FATE-BUG] inventory; FIXER ruling (Dev/Hephaestus)."
     points: 3
     priority: p3
@@ -47,10 +47,10 @@ stories:
     repos: ui,server
     workflow: tdd
     acceptance_criteria:
-      - The native Inventory tab/panel is hidden for ruleset:fate PCs in BOTH the desktop dock (widgetRegistry/GameBoard) and the mobile path (MobileTabView TABS) — a Fate PC's GameBoard shows no Inventory tab.
+      - "The native Inventory tab/panel is hidden for ruleset:fate PCs in BOTH the desktop dock (widgetRegistry/GameBoard) and the mobile path (MobileTabView TABS) — a Fate PC's GameBoard shows no Inventory tab."
       - Native (WN/non-Fate) packs are unchanged and keep the Inventory tab.
       - inventory.items / gold are NOT populated for Fate PCs (ADR-144 guard preserved).
-      - "Wiring/render test: a Fate PC's GameBoard has no Inventory tab (desktop + mobile); a native PC's does."
+      - 'Wiring/render test: a Fate PC''s GameBoard has no Inventory tab (desktop + mobile); a native PC''s does.'
     completed: '2026-06-17'
     review_verdict: approved
   - id: 126-4
@@ -69,7 +69,7 @@ stories:
     type: bug
     review_verdict: approved
   - id: 126-5
-    title: "[UX-LOW] Chargen 'Backstory' is fed by the 'Description' input, not 'Background'"
+    title: '[UX-LOW] Chargen ''Backstory'' is fed by the ''Description'' input, not ''Background'''
     description: "Carryover [UX-LOW] from 06-14. The character-sheet 'Backstory' field is populated from the chargen 'Description' input rather than the 'Background' input — a field-mapping mix-up. Verify which chargen input is intended to feed the sheet's Backstory and correct the wiring so Backstory reflects the Background input (or the intended source). Minor, non-blocking. Source: sq-playtest-pingpong carryover verify-targets."
     points: 1
     priority: p3
@@ -99,7 +99,7 @@ stories:
     type: chore
     review_verdict: approved
   - id: 126-7
-    title: '[FATE] Player 4dF roll is determinative — client throws the dF dice, settled faces ARE the result; server rolls only for NPCs'
+    title: "[FATE] Player 4dF roll is determinative — client throws the dF dice, settled faces ARE the result; server rolls only for NPCs"
     description: |-
       Make the player's Fate (4dF) roll DETERMINATIVE — physics-is-the-roll (ADR-074), the same model the d20 path already uses. The player throws the four dF Fudge dice in the tray and the faces they settle on ARE the roll; the server resolves the Fate action from those reported faces. Server-side RNG (roll_4df) is used ONLY for non-player actors (NPCs/opponents), which have no client to throw.
 
@@ -117,18 +117,18 @@ stories:
     repos: server,ui
     workflow: bdd
     acceptance_criteria:
-      - 'DESIGN (Architect): a written design for the FATE_ACTION→request-throw→client-throw→resolve sequence + the new client→server Fate-throw message (Fate analog of DiceThrowPayload), plus an ADR-144/ADR-074 reconciliation note stating player Fate rolls are physics-is-the-roll and NPC rolls stay server-side. Design approved before RED.'
+      - "DESIGN (Architect): a written design for the FATE_ACTION→request-throw→client-throw→resolve sequence + the new client→server Fate-throw message (Fate analog of DiceThrowPayload), plus an ADR-144/ADR-074 reconciliation note stating player Fate rolls are physics-is-the-roll and NPC rolls stay server-side. Design approved before RED."
       - 'PLAYER ROLL IS DETERMINATIVE: a player Fate action resolves from the CLIENT-reported 4dF settled faces, NOT from server roll_4df(rng). resolve_action (or its caller) takes the dice as input; roll_total/ladder_total/shifts/tier all derive from the thrown faces. Server test: given reported faces, the resolved outcome matches those faces; assert no server-side roll_4df is invoked on the player path.'
       - "INTERACTIVE THROW (ui): FateDiceTray lets the player throw 4 dF dice via dice-lib's interactive DiceScene gesture (the path InlineDiceTray uses for d20), captures the 4 settled faces (each −1/0/+1) on settle, and submits them. No more hardcoded/decorative throw."
       - "CLIENT→SERVER MESSAGE: a new typed message carries the 4 settled faces + throw_params + seed; faces are authoritative at the wire boundary (pydantic, extra='forbid'; exactly 4 faces, each in {−1,0,1}). Routable in the GameMessage union."
       - 'NPC ROLLS STAY SERVER-SIDE: non-player Fate rolls still use server roll_4df and broadcast FATE_ROLL with server-synthesized throw_params+seed (the 125-4 path). Server test: an NPC/opponent Fate roll is server-rolled and broadcast; the player path does not.'
-      - "SPECTATOR CONSISTENCY: other seats replay the thrower's throw_params+seed and land on the SAME faces the thrower reported (consistent by construction, like DICE_RESULT). The 3D dice never contradict the text readout."
+      - 'SPECTATOR CONSISTENCY: other seats replay the thrower''s throw_params+seed and land on the SAME faces the thrower reported (consistent by construction, like DICE_RESULT). The 3D dice never contradict the text readout.'
       - 'OTEL: the fate.action_resolved span records the dice that resolved the action AND whether they were player-thrown or server-rolled (GM-panel lie-detector for the determinism).'
       - "WIRING: end-to-end test of the player throw→resolve round-trip through the real handler (not a fixture), and confirmation the NPC path still server-rolls. Reuse 125-4's throw_params/seed payload fields + dF '0' label (no revert)."
     completed: '2026-06-17'
     review_verdict: approved
   - id: 126-8
-    title: '[FATE] Player defense 4dF is determinative (physics-is-the-roll) — the DEFEND barrier (ADR-148/149)'
+    title: "[FATE] Player defense 4dF is determinative (physics-is-the-roll) — the DEFEND barrier (ADR-148/149)"
     description: "The DEFEND half of ADR-148, deliberately deferred from 126-7. Story 126-7 made the player's PROACTIVE Fate 4dF determinative (FATE_THROW: settled tray faces ARE the roll, server resolves from reported faces). 126-8 brings the player's DEFENSE roll into the same physics-is-the-roll model: today _roll_defense / _seat_opponent_commits in sidequest/server/dispatch/fate_conflict.py still roll the defending player's 4dF SERVER-SIDE with the tray as decoration. When a SEATED Fate PC defends against an attack, the player should physically throw the 4dF and the settled faces resolve the defense (no roll_4df on the player defense path). NPC/opponent rolls stay server-side. New client->server FATE_DEFEND_THROW message + ui defense throw tray mirroring 126-7's FateThrowHandler/FateDiceTray. Per ADR-148 line 146 this is 'Story 126-8 / ADR-149' — the no-roll_4df-on-the-player-path invariant extends from proactive to defense. SOUL: bind the ruleset (Fate ladder math unchanged)."
     points: 5
     priority: p3
@@ -140,7 +140,7 @@ stories:
     review_findings: "HIGH(blocking): missing defender authorization on the defend path — dispatch_fate_defense matches the parked entry by client-supplied request_id without verifying entry.defender==authenticated actor, so in MP one player can fill/grief another's defense and lock the real defender out (fix: verify entry.defender==character.core.name, reject loud; add RED test). Also MEDIUM: NPC defense rolls mis-tagged role=action not role=defense (AC-8); concede-at-defend implemented but unwired/dead (AC-4 vs AC-6); ADR-148/149 citations reference wrong ADR (149 is SRD content)."
     review_verdict: approved
   - id: 126-9
-    title: '[PERF] Narrator + intent_router_pass turn-latency ~3x regression landed Jun 17 (no router thrash) — bisect + fix'
+    title: "[PERF] Narrator + intent_router_pass turn-latency ~3x regression landed Jun 17 (no router thrash) — bisect + fix"
     description: |-
       ROOT CAUSE FOUND (bisect, HIGH confidence): the narrator now runs with EXTENDED THINKING ON by default. It was never on before Jun 16 — an accidental side-effect, not a deliberate quality choice.
 
@@ -170,16 +170,16 @@ stories:
     acceptance_criteria:
       - 'Root cause confirmed: narrator extended-thinking ON via the 119-3 agent-sdk port (f970091e). [SATISFIED by bisect]'
       - Narrator agent_duration_ms restored to ~baseline (~16s; non-Fate total ~20-25s) by passing thinking={"type":"disabled"} on the narrator complete_with_tools call (and aside path if same).
-      - 'Regression guard added (OTEL or test): fails if the narrator call enables thinking, or if narrator p95 exceeds a threshold — so this cannot silently regress again.'
+      - "Regression guard added (OTEL or test): fails if the narrator call enables thinking, or if narrator p95 exceeds a threshold — so this cannot silently regress again."
       - 'Verified before/after on a fresh non-Fate 2-seat understudy run: agent_duration_ms from turn_telemetry shows the drop.'
-      - Fate-world intent_router_pass spike (build_fate_projection prompt bloat) is OUT OF SCOPE here — tracked in 126-10 (separate mechanism, thinking-off does not fix it).
+      - "Fate-world intent_router_pass spike (build_fate_projection prompt bloat) is OUT OF SCOPE here — tracked in 126-10 (separate mechanism, thinking-off does not fix it)."
     completed: '2026-06-17'
     branch: feat/126-9-narrator-latency-restore
     type: bug
     review_findings: 'Code correct + tested (28 green, rule-clean); REJECT for doc incoherence: stale docstring at anthropic_sdk_client.py:258-259 now contradicts the changed narrator tool-loop thinking behaviour (revert-hazard), + off-by-one line ref in test docstring. Green rework.'
     review_verdict: approved
   - id: 126-10
-    title: '[PERF/FATE] intent_router_pass 37-81s spikes on Fate worlds — trim build_fate_projection router prompt (separate from 126-9 narrator fix)'
+    title: "[PERF/FATE] intent_router_pass 37-81s spikes on Fate worlds — trim build_fate_projection router prompt (separate from 126-9 narrator fix)"
     description: |-
       Secondary finding from the 126-9 latency dig (bisect, MEDIUM confidence). SEPARATE mechanism from 126-9's narrator extended-thinking regression — this one is prompt bloat, not thinking.
 
@@ -236,7 +236,7 @@ stories:
     branch: feat/126-13-otel-defend-auth-reject
     review_verdict: approved
   - id: 126-14
-    title: '[FATE] Reconcile concede-at-defend: AC-4 (server records concession) vs AC-6 (no wire) — add a defend-concession protocol field or remove the dead conceded branches'
+    title: "[FATE] Reconcile concede-at-defend: AC-4 (server records concession) vs AC-6 (no wire) — add a defend-concession protocol field or remove the dead conceded branches"
     description: "Wire defend-concession end-to-end on the SERVER (Keith decision 2026-06-19; re-scoped server-only 2026-06-19 after The Man in Black verified the UI has no Fate defend surface — the UI concede affordance moved to new story 126-17 which builds the whole defend tray). The engine branches already exist from 126-8 but have no production caller: dispatch_fate_defense(conceded=...), the _resolve_attack concede branch (fate_conflict.py:612), the 'ledger_full ... or p.conceded' clause (fate_conflict.py:1231), and FatePendingDefense.conceded. This story adds the protocol concede field + _handle_defend plumbing + OTEL so the dead branches become live. NOTE: story YAML repos still reads 'server,ui' (the update CLI has no --repos flag); the SESSION Repos line (server) is authoritative — see the logged deviation. UI work is tracked in 126-17."
     points: 3
     priority: p3
@@ -252,7 +252,7 @@ stories:
       - 'OTEL (lie detector): the fate.defend_phase span records conceded=True for the answered entry, and NO fate.action_resolved roll span is emitted for a conceded defense (nothing was rolled). The GM panel can confirm a concession was a real player choice.'
       - 'Wiring (mandatory, server e2e): a test drives NPC-attacks-PC -> FATE_DEFEND_REQUEST -> player CONCEDES through the real FateThrowHandler/registry/exchange on a fixture snapshot -> ledger fills -> RESUME -> narrate-once, asserting the concede span fired and no player 4dF was rolled. Span capture over grepping production source.'
     completed: '2026-06-19'
-    review_findings: 'HIGH(blocking): FateThrowPayload._validate_faces accepts concede=True WITH a face tuple and the faces are silently discarded at dispatch (No Silent Fallbacks; divergence-lie risk). Fix: reject concede+faces in the validator + add a RED test. Otherwise clean — security 0 findings, preflight 397 fate-scoped pass, auth/determinism/anti-backdoor all verified.'
+    review_findings: "HIGH(blocking): FateThrowPayload._validate_faces accepts concede=True WITH a face tuple and the faces are silently discarded at dispatch (No Silent Fallbacks; divergence-lie risk). Fix: reject concede+faces in the validator + add a RED test. Otherwise clean — security 0 findings, preflight 397 fate-scoped pass, auth/determinism/anti-backdoor all verified."
     review_verdict: approved
   - id: 126-15
     title: '[DOCS] Author the Fate DEFEND-barrier ADR and fix the wrong ADR-148/149 citations in 9 server files (149 is SRD content)'
@@ -274,7 +274,7 @@ stories:
     workflow: tdd
     type: chore
   - id: 126-17
-    title: '[FATE] Build the Fate defend-throw UI surface — handle FATE_DEFEND_REQUEST + defend tray (4dF thrower) + concede affordance; un-hangs the 126-8 DEFEND barrier'
+    title: "[FATE] Build the Fate defend-throw UI surface — handle FATE_DEFEND_REQUEST + defend tray (4dF thrower) + concede affordance; un-hangs the 126-8 DEFEND barrier"
     description: "126-8 shipped the server DEFEND barrier (FATE_DEFEND_REQUEST broadcast + block-and-wait, no auto-roll) but its promised UI half (the defense-throw tray) was deferred to spec section 8 and NEVER FILED. Verified 2026-06-19 (The Man in Black): the UI has ZERO Fate defend handling — no FATE_DEFEND_REQUEST MessageType (protocol.ts only has FATE_ROLL/STATE/ACTION/THROW), no 'defend' in the action union (payloads.ts:614), no defend tray; the existing concede() is the pre-roll whole-conflict FATE_ACTION concede, a different mechanic. RESULT — a latent SHOWSTOPPER: the first time an NPC attacks a PC in a Fate conflict, the server broadcasts the request and parks with no narration (fate_throw.py:161-173) while the UI drops the unknown message, so the exchange hangs forever. This story builds the missing surface by REUSING 126-7's patterns (FateConflictSurface + FateDiceTray thrower mode + handleFateThrow/makeFateThrowMessage). It ALSO adds the Concede affordance, which depends on 126-14's server-side concede field (126-14 is in flight, server-only). Prioritized p1 because it un-hangs Fate combat."
     points: 5
     priority: p1
@@ -283,17 +283,17 @@ stories:
     repos: ui
     workflow: tdd
     acceptance_criteria:
-      - "The UI handles FATE_DEFEND_REQUEST: add the MessageType + a FateDefendRequestPayload type (request_id, defender, attacker, attack_skill, attack_total, mental) mirroring the server contract, and extend the FateThrowPayload action union to include 'defend'."
+      - 'The UI handles FATE_DEFEND_REQUEST: add the MessageType + a FateDefendRequestPayload type (request_id, defender, attacker, attack_skill, attack_total, mental) mirroring the server contract, and extend the FateThrowPayload action union to include ''defend''.'
       - When a FATE_DEFEND_REQUEST targeting the local player arrives, a defend tray mounts showing the server-sent attacker/attack_skill/attack_total READ FROM THE PAYLOAD (no hardcoded mechanical literals, 118-5 anti-drift) and arms the 4dF thrower (reuse FateDiceTray thrower mode).
       - Settling the dice sends FATE_THROW(action='defend') echoing the request_id with the settled faces (reuse handleFateThrow/makeFateThrowMessage); the request is consumed and the tray dismisses.
       - A Concede affordance on the defend tray sends the defend throw with the concede signal (no dice throw) and consumes the request. DEPENDS on 126-14's server concede field; sequence after 126-14 merges (or land defend-throw first and add concede in a rebase).
-      - "Tests (vitest) mirror 126-7's FateConflictSurface/FateDiceTray harness: defend-request -> throw emits FATE_THROW(action='defend', faces); defend-request -> concede emits the concede message with no dice; mechanical readouts come from the payload, not literals."
-      - 'Wiring/e2e: the defend tray is reachable from the production component tree (mounted on FATE_DEFEND_REQUEST via the real App/GameBoard path), proven by at least one test that renders through the real mount path — not just the component in isolation.'
+      - 'Tests (vitest) mirror 126-7''s FateConflictSurface/FateDiceTray harness: defend-request -> throw emits FATE_THROW(action=''defend'', faces); defend-request -> concede emits the concede message with no dice; mechanical readouts come from the payload, not literals.'
+      - "Wiring/e2e: the defend tray is reachable from the production component tree (mounted on FATE_DEFEND_REQUEST via the real App/GameBoard path), proven by at least one test that renders through the real mount path — not just the component in isolation."
     completed: '2026-06-19'
-    review_findings: '2 confirmed: [HIGH] FATE_DEFEND_REQUEST mirror guard validates only routing keys (request_id/defender), not mechanical fields (attacker/attack_skill/attack_total) — No-Silent-Fallbacks gap, diverges from the FATE_ROLL per-face guard precedent (useStateMirror.ts:307); [MEDIUM] onDefendThrow consumes via pendingDefend.request_id instead of thrown.request_id — wrong-tray-dismiss race if the slice swaps mid-settle (FateConflictSurface.tsx:231). Both testable logic/validation fixes → red rework. Non-blocking follow-ups logged (multi-pending-defense latest-wins gap; FateDiceTray silent settle-drop).'
+    review_findings: "2 confirmed: [HIGH] FATE_DEFEND_REQUEST mirror guard validates only routing keys (request_id/defender), not mechanical fields (attacker/attack_skill/attack_total) — No-Silent-Fallbacks gap, diverges from the FATE_ROLL per-face guard precedent (useStateMirror.ts:307); [MEDIUM] onDefendThrow consumes via pendingDefend.request_id instead of thrown.request_id — wrong-tray-dismiss race if the slice swaps mid-settle (FateConflictSurface.tsx:231). Both testable logic/validation fixes → red rework. Non-blocking follow-ups logged (multi-pending-defense latest-wins gap; FateDiceTray silent settle-drop)."
     review_verdict: approved
   - id: 126-18
-    title: "[FATE] Opening-scene inanimate props persist to room_states so established hooks aren't retracted (envelope/Pernod/ashtray)"
+    title: '[FATE] Opening-scene inanimate props persist to room_states so established hooks aren''t retracted (envelope/Pernod/ashtray)'
     description: |-
       Source: sq-playtest-pingpong 2026-06-19 [BUG] (SM, forensic-confirmed). Opening narration for pulp_noir/annees_folles establishes a tableau ('The envelope is on the marble between the glass and the ashtray... Henri is in the kitchen... the man with Le Figaro'), but turn-1 interaction with the envelope is DENIED by the per-turn narrator ('There is no envelope. The marble tabletop holds nothing but your glass and a brass ashtray'). Forensic evidence (stored save 2026-06-19-annees_folles-cd25d503): the string 'envelope' is ABSENT from the entire snapshot; room_states={}, discovered_rooms=[]. The opening scene's interactable props were narrated in prose but written to NO state object. Next stateless per-turn narrator (ADR-098) reads an empty scene, the must_not_narrate guard fires, and an explicitly-baited hook is retracted (SOUL Yes-And / Diamonds-and-Coal violation; Keith's #1 product goal = consistency).
 
@@ -307,7 +307,7 @@ stories:
     repos: server
     workflow: tdd
     acceptance_criteria:
-      - Opening-scene establishing narration persists its interactable inanimate props to room_states (or equivalent honored-scene-truth store) at scene setup — verified by snapshot containing the prop (e.g. 'envelope') after the opening, before turn 1.
+      - "Opening-scene establishing narration persists its interactable inanimate props to room_states (or equivalent honored-scene-truth store) at scene setup — verified by snapshot containing the prop (e.g. 'envelope') after the opening, before turn 1."
       - 'A prop established by the opening is interactable on turn 1 without the must_not_narrate guard firing: the envelope can be picked up / opened (Yes-And), not denied.'
       - 'Scope is OBJECTS only: opening-scene NPC persistence is unchanged (already works); no regression to NPC seeding.'
       - 'OTEL span on opening-prop persistence (props_persisted count + ids) so the GM panel can confirm props were written, not just narrated (lie-detector for the inverted failure mode: good narration, empty state).'
@@ -357,12 +357,12 @@ stories:
     repos: content
     workflow: tdd
     acceptance_criteria:
-      - The Oz silver shoes (and other significant found-items) are authored as Fate extras with grants_aspects (e.g. 'The Silver Shoes of the Dead Witch' → permission/aspect 'Three Steps Home').
-      - 'On pickup, #945 promotes the authored item to an invokable aspect — verified by the fate.item_promoted span firing and the aspect appearing on the sheet.'
+      - "The Oz silver shoes (and other significant found-items) are authored as Fate extras with grants_aspects (e.g. 'The Silver Shoes of the Dead Witch' → permission/aspect 'Three Steps Home')."
+      - "On pickup, #945 promotes the authored item to an invokable aspect — verified by the fate.item_promoted span firing and the aspect appearing on the sheet."
       - 'Resolve + document the Phase-2 narrator-promotion (grants_aspect) path: is it wired as a fallback for un-authored significant items? If not, note the gap.'
     completed: '2026-06-19'
   - id: 126-22
-    title: '[PERF] projection_cache unbounded growth (~3k rows/session, 4.3M rows) — add eviction/TTL/per-session cap + turn_telemetry retention to stop save-DB bloat'
+    title: "[PERF] projection_cache unbounded growth (~3k rows/session, 4.3M rows) — add eviction/TTL/per-session cap + turn_telemetry retention to stop save-DB bloat"
     description: "Source: sq-playtest-pingpong 2026-06-19 [PERF/BUG] (SM during save-DB rotation). pg_stat_user_tables on the 'sidequest' DB before clear: projection_cache = 4,313,951 rows, turn_telemetry = 470,647, for only 1,399 sessions (~3,000 projection_cache rows/session). projection_cache dwarfs everything else combined → this is the 'too much garbage in the save DB' bloat Keith hit. DB was rotated (5.1 GB pg_dump → ~/.sidequest/db-backups/sidequest-fulldump-20260619-054530.sql) and all save tables TRUNCATEd (kept alembic_version); saves now 0. This story fixes the CAUSE so it doesn't re-bloat. Add an eviction / TTL / per-session cap (or prune-on-session-end) for projection_cache; add a retention policy for turn_telemetry (470k, more expected but still unbounded). Confirm via row-count growth per session after the fix."
     points: 3
     priority: p2
@@ -376,10 +376,10 @@ stories:
     completed: '2026-06-19'
     branch: feat/126-22-projection-cache-retention
     type: bug
-    review_findings: 'HIGH: prune wired unguarded into PgSaveRepository.save() — a cleanup-DELETE fault propagates as a snapshot-save failure (contaminates last_save_failure/close_store, skips per-turn narrative logging). Isolate the prune (log-and-continue), mirror lore-persist isolation. +2 non-blocking: keep=0 inverted zero-semantics guards; rows_pruned span on failure path.'
+    review_findings: "HIGH: prune wired unguarded into PgSaveRepository.save() — a cleanup-DELETE fault propagates as a snapshot-save failure (contaminates last_save_failure/close_store, skips per-turn narrative logging). Isolate the prune (log-and-continue), mirror lore-persist isolation. +2 non-blocking: keep=0 inverted zero-semantics guards; rows_pruned span on failure path."
     review_verdict: approved
   - id: 126-23
-    title: '[BUG] OTEL Inspector Live view not partitioned by session_id — renders the last-emitting session, unusable during concurrent runs'
+    title: "[BUG] OTEL Inspector Live view not partitioned by session_id — renders the last-emitting session, unusable during concurrent runs"
     description: "Source: sq-playtest-pingpong 2026-06-19 [BUG] (SM; Keith: 'the otel dashboard is also totally fucked'). Repro: open #/dashboard while >=2 sessions are active (a playtest + a concurrent headless test test-444686c1). Observed: (1) the Live header jumped to test-444686c1 — a session the operator was NOT driving; (2) Timeline showed TURNS 0 / 'Waiting for first turn...' even though the driven session had taken turns (the live stream only captures spans emitted AFTER the panel connects AND follows whichever session last emitted); (3) the driven session's spans were never viewable in Live. The dashboard must partition the span stream by session_id and render the SELECTED session, not the last-emitting one. Today the sq-playtest skill's Phase-3c caveat says 'trust the by-slug dropdown over Live' — but with concurrent sessions even reaching the right turns is unreliable. This makes the GM-panel lie-detector unusable during concurrent runs (headless tests are frequently concurrent); it blocked live verification of 126-10 router timing. NOT independently tracked before — this is the task. Likely spans server (watcher hub broadcasts all sessions on /ws/watcher) + ui (Dashboard Live should filter to the selected session_id)."
     points: 3
     priority: p2
@@ -420,11 +420,11 @@ stories:
       - 'The seeded pyramid is LEGAL: passes pyramid_violations/validate_fate_sheet for the pack chargen_pyramid + chargen_apex_rating (every rung at exact budget; no rung over/under).'
       - 'Seed is an EDITABLE DEFAULT: player can override every skill rating and every aspect; the override always wins; HC/Trouble keep the no-silent-default invariant (must be non-empty on confirm).'
       - OTEL span on seed computation (hints-in -> skills+aspects-out, world_override_applied bool) so the GM panel can confirm the seed engaged and the narrator/UI didn't improvise (lie-detector parity, CLAUDE.md OTEL principle).
-      - 'End-to-end repro retired: walking The Service / I Find Things Out / A Ghost / Answers presents a pre-ranked pyramid (Investigate seeded high) + pre-filled aspects, all overridable — no blank sheet. UI renders the seed with no code change OR the minimal change is wired and tested (wiring test, not source-grep).'
-      - Chargen confirmation prose renders the Fate High Concept, not the native {race} {class} template (char_creation.yaml 'confirmation' step) — no 'a Military I Find Things Out' under a Fate binding.
+      - "End-to-end repro retired: walking The Service / I Find Things Out / A Ghost / Answers presents a pre-ranked pyramid (Investigate seeded high) + pre-filled aspects, all overridable — no blank sheet. UI renders the seed with no code change OR the minimal change is wired and tested (wiring test, not source-grep)."
+      - "Chargen confirmation prose renders the Fate High Concept, not the native {race} {class} template (char_creation.yaml 'confirmation' step) — no 'a Military I Find Things Out' under a Fate binding."
       - "Pack default signature gear compiles onto the sheet at chargen via the NARRATIVE-WIZARD path (folded from the pingpong [BUG]): pulp_noir/rules.yaml declares a gear: list (noir_trench_coat, noir_pi_license→'Licensed Private Investigator', noir_service_revolver→'A Piece I'd Rather Not Use', noir_little_black_book→'A Contact for Every Occasion') compiled via the EXISTING fate_gear.compile_gear_onto_sheet seam. The narrative-wizard chargen currently bypasses it (stored save shows only HC+Trouble+player aspects, all source_gear=null). Wire the seam into the narrative-wizard path; resulting sheet carries the pack's gear-derived aspects in addition to player + seeded aspects."
     completed: '2026-06-19'
-    review_findings: 'HIGH: world-tier chargen_seed_table override (AC2) is half-wired — World has no chargen_seed_table field and the loader never populates one, so resolve_fate_chargen_seed_table always returns the genre table; the AC2 unit test masks it with _FakeWorld injecting FateHintSeed objects. Fix: typed World.chargen_seed_table field + loader population (mirror world gear) + a real-loaded-world AC2 test. Genre-tier seeding (AC1/3/4/5/7/8/9) is GREEN and sound.'
+    review_findings: "HIGH: world-tier chargen_seed_table override (AC2) is half-wired — World has no chargen_seed_table field and the loader never populates one, so resolve_fate_chargen_seed_table always returns the genre table; the AC2 unit test masks it with _FakeWorld injecting FateHintSeed objects. Fix: typed World.chargen_seed_table field + loader population (mirror world gear) + a real-loaded-world AC2 test. Genre-tier seeding (AC1/3/4/5/7/8/9) is GREEN and sound."
     review_verdict: approved
   - id: 126-25
     title: '[SERVER] Wire world-tier Fate gear.yaml into rules.fate.gear_catalog so #945 promotes world-specific found-items'
@@ -447,7 +447,7 @@ stories:
     acceptance_criteria:
       - worlds/<world>/gear.yaml is loaded and its GearDefs merge by-id (world wins) into the effective Fate gear_catalog for the active world; the genre-tier catalog stays unpolluted (a wonderland/gulliver session does NOT see oz_silver_shoes).
       - "WIRING TEST (full path, not just the merge): active world=oz, player gains the silver shoes → fate.item_promoted span fires with source=catalog → the 'Three Steps Home' aspect appears on the FateSheet and is invokable in a 4dF resolution. Mirrors the design doc's mandatory end-to-end wiring test."
-      - "Match robustness: the placement content's granted item (id/name) resolves to GearDef oz_silver_shoes under match_gained_gear's exact discipline; if a placement-content change is needed (stable item id/name), file/coordinate it so the chain actually connects in real play."
+      - 'Match robustness: the placement content''s granted item (id/name) resolves to GearDef oz_silver_shoes under match_gained_gear''s exact discipline; if a placement-content change is needed (stable item id/name), file/coordinate it so the chain actually connects in real play.'
       - 'Phase-2 gap resolved (126-21 AC3): either surface grants_aspect to the narrator tool-contract (activating dormant Phase-2 narrator promotion) or split to its own story with the gap documented; whichever, the decision is recorded and the narrator path is no longer silently dead.'
       - 'OTEL: the world-tier gear merge is observable (span or log: which world gear ids merged into the catalog) so the GM panel can confirm the world artifacts were wired, not just authored.'
     completed: '2026-06-19'
@@ -465,10 +465,10 @@ stories:
       - The standalone 'Fate' dock tab is removed; the Fate sheet renders ONLY under Character (Stats=skills+aspects, Abilities=stunts, Status=stress/consequences); no information lost.
       - The 118-7 non-conflict 4dF roll tray (FateDiceTray) is re-homed so a roll OUTSIDE a conflict still has a visible surface; GameBoard-fate-roll.test.tsx is updated and green.
       - The Fate Conflict surface (fate-conflict widget) and its own dice tray are unaffected.
-      - "Dead-path cleanup: no orphaned 'fate' widget references remain (registry/union/availableWidgets/renderWidgetContent/rightGroupOrder/MobileTabView/FateWidget.tsx); lint + tsc clean."
+      - 'Dead-path cleanup: no orphaned ''fate'' widget references remain (registry/union/availableWidgets/renderWidgetContent/rightGroupOrder/MobileTabView/FateWidget.tsx); lint + tsc clean.'
     completed: '2026-06-19'
     type: bug
-    review_findings: "4 blocking cleanup items (M/L severity): 3 stale comments in GameBoard.tsx describing the deleted Fate tab as present (lines ~199, ~448, ~602), and a stale 'as GameBoardProps' cast in GameBoard-fate-roll.test.tsx:112 (sibling test already dropped it). Code is functionally correct (165/165 green, tsc/eslint clean); rejection is for incomplete dead-path cleanup on a clean-removal story. Green rework."
+    review_findings: '4 blocking cleanup items (M/L severity): 3 stale comments in GameBoard.tsx describing the deleted Fate tab as present (lines ~199, ~448, ~602), and a stale ''as GameBoardProps'' cast in GameBoard-fate-roll.test.tsx:112 (sibling test already dropped it). Code is functionally correct (165/165 green, tsc/eslint clean); rejection is for incomplete dead-path cleanup on a clean-removal story. Green rework.'
     review_verdict: approved
   - id: 126-27
     title: '[FATE/CLEANUP] Delete unreferenced FatePanel function + sweep stale FateWidget comments (126-26 follow-up)'
@@ -501,7 +501,7 @@ stories:
     branch: feat/126-28-harden-opening-prop-tests
     review_verdict: approved
   - id: 126-29
-    title: "[BUG] Gate Fate proactive tiles on committed-this-exchange so a resumed mid-exchange conflict doesn't offer actions the server rejects (#403). Add a per-PC committed bool to FATE_STATE.conflict participant from encounter.fate_commits; UI disables/replaces the proactive Overcome/Create-Advantage/Attack/Concede tiles with the existing fate-sealed-hint when set. Do NOT relax the server dispatch_fate_throw sealed-commit guard (ADR-129/151)."
+    title: '[BUG] Gate Fate proactive tiles on committed-this-exchange so a resumed mid-exchange conflict doesn''t offer actions the server rejects (#403). Add a per-PC committed bool to FATE_STATE.conflict participant from encounter.fate_commits; UI disables/replaces the proactive Overcome/Create-Advantage/Attack/Concede tiles with the existing fate-sealed-hint when set. Do NOT relax the server dispatch_fate_throw sealed-commit guard (ADR-129/151).'
     points: 3
     priority: p2
     status: done
@@ -515,12 +515,16 @@ stories:
     title: "[ENGINE] De-nativize Fate confrontation SEATING — under ruleset=='fate' seat a standoff/conflict directly as a Fate contest (4dF + ladder, four actions, ablative stress); do NOT seat or feed native beats / a tension dial. Keith ruling 2026-06-19. Upstream of #973 projection; the win signal is opponent stress+consequence fill, not the vestigial opponent_metric.tension dial (#964 gated the overlay but did NOT de-nativize seating; beat_selections=2 still seats native beat_defs). Content follow-on (GM-owned, after seam lands): audit whether Fate packs' confrontations.yaml should carry native dial/beat defs at all."
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: server
     workflow: tdd
+    completed: '2026-06-20'
     type: refactor
+    branch: feat/126-30-denativize-fate-seating
+    review_verdict: approved
   - id: 126-31
-    title: "[FATE/UX] Render the opponent stress/consequence track + a taken-out win-meter in FateConflictSurface from the now-projected FATE_STATE.conflict data (#973 carve-out). Data is on the wire (participants[opponent].stress/consequences + fate.conflict.projected span); mirror ConfrontationOverlay's EdgeBar. DRIVER's single highest-impact legibility gap."
+    title: '[FATE/UX] Render the opponent stress/consequence track + a taken-out win-meter in FateConflictSurface from the now-projected FATE_STATE.conflict data (#973 carve-out). Data is on the wire (participants[opponent].stress/consequences + fate.conflict.projected span); mirror ConfrontationOverlay''s EdgeBar. DRIVER''s single highest-impact legibility gap.'
     points: 2
     priority: p2
     status: backlog
@@ -543,7 +547,7 @@ stories:
     workflow: tdd
     type: bug
   - id: 126-34
-    title: "[OTEL] Keep test-run sessions out of the live GM dashboard. (1) UI filter: drop test-*/tool-test sessions from liveSessions picker + State-tab debugState (useLiveSource.ts:347-355). (2) Stop bumping last_activity_ts on session-list/state polls so auto-follow tracks the genuinely-active session. (3) Session-tag (or drop) infra/test spans so the per-session pin fully filters them. (4) Root cause: point test runs at a separate port / no-watcher mode so they never reach the operator's live WatcherHub. 41 stale test-* sessions linger (ADR-122 never-evict); only a restart clears them today."
+    title: '[OTEL] Keep test-run sessions out of the live GM dashboard. (1) UI filter: drop test-*/tool-test sessions from liveSessions picker + State-tab debugState (useLiveSource.ts:347-355). (2) Stop bumping last_activity_ts on session-list/state polls so auto-follow tracks the genuinely-active session. (3) Session-tag (or drop) infra/test spans so the per-session pin fully filters them. (4) Root cause: point test runs at a separate port / no-watcher mode so they never reach the operator''s live WatcherHub. 41 stale test-* sessions linger (ADR-122 never-evict); only a restart clears them today.'
     points: 3
     priority: p3
     status: backlog
@@ -551,7 +555,7 @@ stories:
     workflow: tdd
     type: bug
   - id: 126-35
-    title: "[FATE] On-play significant items don't promote to an invokable aspect/extra (#945 on-play path; chargen path verified GREEN via 126-21/126-25). A narrator-granted story item (the drifter's surveyor's map) lands in native core.inventory but fate_sheet.aspects/extras is unchanged. KEITH DESIGN CALL pending: either (a) close as model-correct (no equipment economy; ad-hoc item has no authored grants_aspects) + document, or (b) auto-promote narrator-granted significant items to a situation/story aspect or Fate extra under ruleset=='fate'. Surface the decision in the design phase before implementing."
+    title: '[FATE] On-play significant items don''t promote to an invokable aspect/extra (#945 on-play path; chargen path verified GREEN via 126-21/126-25). A narrator-granted story item (the drifter''s surveyor''s map) lands in native core.inventory but fate_sheet.aspects/extras is unchanged. KEITH DESIGN CALL pending: either (a) close as model-correct (no equipment economy; ad-hoc item has no authored grants_aspects) + document, or (b) auto-promote narrator-granted significant items to a situation/story aspect or Fate extra under ruleset==''fate''. Surface the decision in the design phase before implementing.'
     points: 3
     priority: p3
     status: backlog
