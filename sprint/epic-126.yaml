@@ -578,10 +578,14 @@ stories:
     title: "[UX-LOW] Solo session uses party-scale framing in openings + quest briefs. dust_and_lead opening establishing_narration (openings.yaml the_drifters_offer) reads 'pours four small glasses … waits for the party'; narrator then says 'fifty each for two riders' in a solo game. Make the authored opening party-count-aware (singular for solo) and tell the narrator the seat count so quest briefs scale ('a rider' vs 'two riders')."
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: content,server
     workflow: tdd
+    completed: '2026-06-20'
     type: bug
+    review_findings: '2 LOW: (1) tests/agents/test_party_scale_signal.py fails ruff format --check (pure reflow); (2) register_party_scale_section player_count<=1 silently floors 0/neg to solo — add fail-loud guard per No-Silent-Fallbacks. Green rework; existing 9 tests stay green.'
+    review_verdict: approved
   - id: 126-37
     title: '[ENGINE] De-nativize Fate confrontation RESOLUTION — extend fate_conflict to the downstream dial guards (apply_beat suppression + advance_confrontation refusal + narration_apply beat-drop)'
     points: 3
