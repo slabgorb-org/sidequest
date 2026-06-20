@@ -501,10 +501,13 @@ stories:
     title: "[BUG] Gate Fate proactive tiles on committed-this-exchange so a resumed mid-exchange conflict doesn't offer actions the server rejects (#403). Add a per-PC committed bool to FATE_STATE.conflict participant from encounter.fate_commits; UI disables/replaces the proactive Overcome/Create-Advantage/Attack/Concede tiles with the existing fate-sealed-hint when set. Do NOT relax the server dispatch_fate_throw sealed-commit guard (ADR-129/151)."
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: server,ui
     workflow: tdd
+    completed: '2026-06-20'
     type: bug
+    review_verdict: approved
   - id: 126-30
     title: "[ENGINE] De-nativize Fate confrontation SEATING — under ruleset=='fate' seat a standoff/conflict directly as a Fate contest (4dF + ladder, four actions, ablative stress); do NOT seat or feed native beats / a tension dial. Keith ruling 2026-06-19. Upstream of #973 projection; the win signal is opponent stress+consequence fill, not the vestigial opponent_metric.tension dial (#964 gated the overlay but did NOT de-nativize seating; beat_selections=2 still seats native beat_defs). Content follow-on (GM-owned, after seam lands): audit whether Fate packs' confrontations.yaml should carry native dial/beat defs at all."
     points: 5
