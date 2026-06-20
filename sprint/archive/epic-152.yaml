@@ -3,7 +3,7 @@ type: epic
 title: WN combat owns the full WWN action set — cast + Total Defense + Fighting Withdrawal via WWN math, not native beats (complete 108-8)
 description: "Completes the WWN combat de-nativization (epic-108, ADR-143 'Bind the Ruleset, Don't Balance It'). 108-3 stripped ALL native combat beats off WWN hp_depletion defs (cdef.beats == []); 108-8 synthesized only the 'attack' action (beat_filter.is_wn_action_beat == {'attack'}) while item-use rode its own intercept. cast_spell, brace, and break_contact were stripped but NEVER synthesized — at dispatch (dice.py:414) they miss the attack intercept, fall into the empty-cdef lookup, and raise 'unknown beat_id ... available: []' before any round runs. LIVE OUTAGE: in WWN combat today you can attack and use an item, but you CANNOT cast a spell, brace, or disengage — a real player-facing regression across caverns_and_claudes/elemental_harmony/heavy_metal/barsoom, red since 108-3 landed ~2026-06-15. Keith ruling (brainstorm 2026-06-20, CORRECTED after WWN SRD reading): do NOT shape native into the SRD. cast IS a real WWN action -> route it to the WWN spell spine (152-2). brace/break_contact were the native 106-2 reprisal-mitigation model (tier-delta HP mitigation + whole-attack prevent + a per-beat reprisal) — WWN has NONE of those; REMOVE that scaffolding and replace it with the genuine WWN defensive actions: Total Defense (+2 AC + Shock immunity) and Fighting Withdrawal/Run (avoid the free attack on flee), resolved by WWN AC math (152-1). The opponent attacks once on its initiative slot vs the defender's AC — there is no per-beat reprisal. test_106_2 is REWRITTEN to WWN semantics, not kept as a native RED spec. Cast RED spec: test_dice_path_spell_cast_102_2 + per-pack dispatch cast tests + test_wwn_scene_harness_fixture_proof. Pure stale-id test-debt (committed_blow/strike->attack swaps, loader assertion flips) stays in 125-8 (epic-125). Separate roots surfaced in the same sweep (chargen [None x6], e2e chargen protocol, Fate-SRD catalog load, deprecated-world skips) get their own stories. Design doc: docs/superpowers/specs/2026-06-20-wn-full-action-set-design.md."
 priority: p1
-status: backlog
+status: done
 repos: server
 stories:
   - id: 152-1
@@ -65,9 +65,10 @@ stories:
     review_verdict: approved
   - id: 152-4
     title: "[ENGINE] Synthesize the WN opponent attack so the Other deals damage on a zero-beat WWN combat def — parallel to 108-8's player synthesis (no_strike_beat live outage); prerequisite for 152-1"
+    description: "CANCELED 2026-06-20 (Architect triage, /pf-architect). STALE — scope already shipped + green in story 152-1. The title's own tell ('prerequisite for 152-1') is the giveaway: TEA pulled the opponent-strike synthesis INTO 152-1 as a blocking precondition (you cannot test Total Defense making the opponent miss if the opponent never attacks). Shipped at dispatch/dice.py:2052-2053 — _resolve_opponent_reprisal synthesizes wn_action_beat(WN_ATTACK_BEAT_ID) under a WithoutNumberRulesetModule binding on a zero-beat (108-3-stripped) cdef, so the Other attacks once on its slot vs the defender's AC. Routed through BOTH wn_round.py:302 (own-turn slot walk) and :423 (opportunity-attack on flee) — no second unfixed path. The no_strike_beat skip (dice.opponent_reprisal_skipped, PC_LOST=0) is gone. Verified: tests/integration/test_106_2_wwn_defensive_reprisal.py::test_wwn_opponent_attacks_on_its_slot_with_a_synthesized_strike → 1 passed on HEAD. See sprint/archive/152-1-session.md (lines 191/219-222/246) + PR #995 (commit d0dddbe3). No residual scope."
     points: 5
     priority: p1
-    status: backlog
+    status: canceled
     repos: server
     workflow: tdd
     type: bug
@@ -75,7 +76,11 @@ stories:
     title: "[BUG] MP WN-round wire: 2nd commit misresolves to the 1st PC's seat (round never fires) + non-hermetic narrator transport on the sealed-commit handler path — unskip test_mp_wire_first_commit_seals_second_commit_fires_the_round"
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: server
     workflow: tdd
+    completed: '2026-06-20'
     type: bug
+    review_verdict: approved
+completed: '2026-06-20'

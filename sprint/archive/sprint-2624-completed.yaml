@@ -47,6 +47,7 @@ completed_epics:
   - '128'
   - '119'
   - '153'
+  - '152'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -1147,4 +1148,29 @@ completed_stories:
     epic: '153'
     title: '[PERF] Slim the IntentRouter DispatchPackage — cut resolved/lethality/you, default visibility, reorder fields, slim prompt'
     points: 5
+    completed: '2026-06-20'
+  - id: 152-1
+    epic: '152'
+    title: '[ENGINE] WWN defensive actions — remove the native brace/break_contact reprisal-mitigation; add Total Defense (+2 AC/Shock immunity) + Fighting Withdrawal/Run disengage (WWN SRD 2.4.4)'
+    points: 5
+    completed: '2026-06-20'
+  - id: 152-2
+    epic: '152'
+    title: '[ENGINE] Synthesize the cast WN action (cast_spell) so casting resolves on a zero-beat WWN combat def — route the synthesized cast to the existing wwn cast spine'
+    points: 5
+    completed: '2026-06-20'
+  - id: 152-3
+    epic: '152'
+    title: '[TEST] Restore the chargen class-surface tests (test_cc_chargen_e2e + test_class_signature_wiring) — fix the brittle multi-choice-scene walk + reconcile class_moves to the de-nativized WN action set'
+    points: 3
+    completed: '2026-06-20'
+  - id: 152-4
+    epic: '152'
+    title: "[ENGINE] Synthesize the WN opponent attack so the Other deals damage on a zero-beat WWN combat def — parallel to 108-8's player synthesis (no_strike_beat live outage); prerequisite for 152-1"
+    points: 5
+    completed: '2026-06-20'
+  - id: 152-5
+    epic: '152'
+    title: "[BUG] MP WN-round wire: 2nd commit misresolves to the 1st PC's seat (round never fires) + non-hermetic narrator transport on the sealed-commit handler path — unskip test_mp_wire_first_commit_seals_second_commit_fires_the_round"
+    points: 3
     completed: '2026-06-20'
