@@ -494,3 +494,65 @@ stories:
     repos: server
     workflow: trivial
     type: chore
+  - id: 126-29
+    title: "[BUG] Gate Fate proactive tiles on committed-this-exchange so a resumed mid-exchange conflict doesn't offer actions the server rejects (#403). Add a per-PC committed bool to FATE_STATE.conflict participant from encounter.fate_commits; UI disables/replaces the proactive Overcome/Create-Advantage/Attack/Concede tiles with the existing fate-sealed-hint when set. Do NOT relax the server dispatch_fate_throw sealed-commit guard (ADR-129/151)."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server,ui
+    workflow: tdd
+    type: bug
+  - id: 126-30
+    title: "[ENGINE] De-nativize Fate confrontation SEATING — under ruleset=='fate' seat a standoff/conflict directly as a Fate contest (4dF + ladder, four actions, ablative stress); do NOT seat or feed native beats / a tension dial. Keith ruling 2026-06-19. Upstream of #973 projection; the win signal is opponent stress+consequence fill, not the vestigial opponent_metric.tension dial (#964 gated the overlay but did NOT de-nativize seating; beat_selections=2 still seats native beat_defs). Content follow-on (GM-owned, after seam lands): audit whether Fate packs' confrontations.yaml should carry native dial/beat defs at all."
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
+  - id: 126-31
+    title: "[FATE/UX] Render the opponent stress/consequence track + a taken-out win-meter in FateConflictSurface from the now-projected FATE_STATE.conflict data (#973 carve-out). Data is on the wire (participants[opponent].stress/consequences + fate.conflict.projected span); mirror ConfrontationOverlay's EdgeBar. DRIVER's single highest-impact legibility gap."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: tdd
+  - id: 126-32
+    title: "[BUG] Bind narrated NPCs to seeded/registry entities + fix shuffle_fallback culture/region routing (one root seam, three manifestations). (a) narrated antagonist -> seated Fate opponent identity by exact name (dust_and_lead 'Henry Shaw' not the bestiary 'Western Diamondback'; Defect A seater fix shipped, identity-binding residual open); (b) described canonical figure -> seeded registry NPC (Oz Good Witch of the North, not a hollow 'Amaranth Warmacre' mint, carry its hp/pronouns); (c) Defect B namegen — npc.invented_name_routed shuffle_fallback reroutes established Anglo names to the wrong culture/region (Ndé), key the mint to the current region. Timing change in narration_apply.py (promote narrated NPCs to snapshot.npcs before mint/seating). LARGE/RISKY — proper TDD server story."
+    points: 8
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 126-33
+    title: "[BUG] Dedup inventory grants — a state.inventory_update 'gained' of an item the character already holds (same name/id) must be a no-op/merge, not a duplicate stack. Oz turn-7 re-granted 'silver shoes' -> inventory ['silver shoes','silver shoes']. Small/scoped server fix."
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 126-34
+    title: "[OTEL] Keep test-run sessions out of the live GM dashboard. (1) UI filter: drop test-*/tool-test sessions from liveSessions picker + State-tab debugState (useLiveSource.ts:347-355). (2) Stop bumping last_activity_ts on session-list/state polls so auto-follow tracks the genuinely-active session. (3) Session-tag (or drop) infra/test spans so the per-session pin fully filters them. (4) Root cause: point test runs at a separate port / no-watcher mode so they never reach the operator's live WatcherHub. 41 stale test-* sessions linger (ADR-122 never-evict); only a restart clears them today."
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server,ui
+    workflow: tdd
+    type: bug
+  - id: 126-35
+    title: "[FATE] On-play significant items don't promote to an invokable aspect/extra (#945 on-play path; chargen path verified GREEN via 126-21/126-25). A narrator-granted story item (the drifter's surveyor's map) lands in native core.inventory but fate_sheet.aspects/extras is unchanged. KEITH DESIGN CALL pending: either (a) close as model-correct (no equipment economy; ad-hoc item has no authored grants_aspects) + document, or (b) auto-promote narrator-granted significant items to a situation/story aspect or Fate extra under ruleset=='fate'. Surface the decision in the design phase before implementing."
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 126-36
+    title: "[UX-LOW] Solo session uses party-scale framing in openings + quest briefs. dust_and_lead opening establishing_narration (openings.yaml the_drifters_offer) reads 'pours four small glasses … waits for the party'; narrator then says 'fifty each for two riders' in a solo game. Make the authored opening party-count-aware (singular for solo) and tell the narrator the seat count so quest briefs scale ('a rider' vs 'two riders')."
+    points: 2
+    priority: p3
+    status: backlog
+    repos: content,server
+    workflow: tdd
+    type: bug
