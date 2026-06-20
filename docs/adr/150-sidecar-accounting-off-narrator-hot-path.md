@@ -28,6 +28,45 @@ hot-path deep-dive. `implementation-status: deferred` — the structure is ratif
 the dev work is sized in the follow-up epic this ADR scopes but does not perform
 (see §Implementation Notes → *Sizing the follow-up*).
 
+## Amendment — RENDER-NO-SUBJECT (2026-06-20): bucket-B Is Extractive-Only; Generative Fields Stay Narrator-Owned
+
+Found in the 2026-06-20 full-stack playtest (wry_whimsy/gulliver, story 150-7;
+root-caused by the Architect). The cutover (Story 151-5, server #956) routed **all**
+of bucket-B through the post-narration *never-invent* extractor (`sidecar_extractor.py`:
+"report only what the prose states; never invent — an empty field is correct"). Two of
+those fields are **not extractive facts**; they are **generative/authorial outputs**:
+
+- **`visual_scene`** — an art-direction directive (*what illustration to PAINT*).
+  Prose never literally states a render subject; composing one **is** invention. The
+  reader correctly returned it empty every turn → `render.eligible_no_subject` → the
+  daemon was never called → **zero scrapbook illustrations on every world** since the
+  cutover.
+- **`footnotes`** — the player's knowledge/journal feed (an authorial "what did the
+  player just learn" decision). Same mechanism → empty feed → `known_facts=0` on
+  mystery worlds.
+
+A reader-that-cannot-invent **structurally cannot produce** a generative field.
+Per SOUL *Diamonds & Coal* (the narrator chooses *what* is worth drawing) and
+*Bind the Ruleset, Don't Balance It* (the bound mechanism replaces, it is not
+layered-and-tuned), the fix is **not** a generative second pass (that re-introduces
+cost and splits art-direction authority); it is to **keep generative fields on the
+narrator hot path**.
+
+**Amended decision:** bucket-B is **extractive-only**. The post-narration extractor
+owns the facts the prose *states* — `items_gained/lost/discarded/consumed`,
+`gold_change`, `companions_added/dismissed`, `npcs_present`, `scene_mood`. The two
+**generative** fields **`visual_scene`** and **`footnotes`** stay **narrator-owned**,
+the same exception already granted to `private_segments` (ADR-105 firewall). The
+narrator's "one field that stays" is now *three* — the firewall field plus the two
+generative fields.
+
+Implemented in server PR #994 (reverses #956 for these two fields only): restored to
+`extract_structured_from_response` + the narrator `output_only.md` contract; removed
+from `BUCKET_B_FIELDS`, the `SidecarExtraction` model, and
+`merge_sidecar_extraction_cosmetic` (now scene_mood-only). The §Decision bucket-B
+table below predates this amendment — `visual_scene`/`footnotes` listed there as
+extractor-sourced are superseded by this section.
+
 ## Context
 
 ### The narrator is carrying ten pounds in a five-pound bag
