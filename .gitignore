@@ -43,11 +43,11 @@ sq-playtest-screenshots/
 
 # Pennyfarthing runtime
 # Canonical session dir is sprint/.session; .session is a symlink to it (tracked).
-# Ignore runtime artifacts (logs, handoff scratch, agents/) but keep session files.
+# All session working state (sessions, handoffs, logs, agents/) is local-only and is
+# never version-controlled. A .gitkeep preserves the dir so the symlink resolves.
 sprint/.session/*
-!sprint/.session/*-session.md
+!sprint/.session/.gitkeep
 .session/*
-!.session/.gitkeep
 .claude/settings.local.json
 .claude/persona-config.local.yaml
 .claude/scheduled_tasks.lock
