@@ -552,10 +552,13 @@ stories:
     title: "[BUG] Dedup inventory grants — a state.inventory_update 'gained' of an item the character already holds (same name/id) must be a no-op/merge, not a duplicate stack. Oz turn-7 re-granted 'silver shoes' -> inventory ['silver shoes','silver shoes']. Small/scoped server fix."
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: server
     workflow: tdd
+    completed: '2026-06-20'
     type: bug
+    review_verdict: approved
   - id: 126-34
     title: '[OTEL] Keep test-run sessions out of the live GM dashboard. (1) UI filter: drop test-*/tool-test sessions from liveSessions picker + State-tab debugState (useLiveSource.ts:347-355). (2) Stop bumping last_activity_ts on session-list/state polls so auto-follow tracks the genuinely-active session. (3) Session-tag (or drop) infra/test spans so the per-session pin fully filters them. (4) Root cause: point test runs at a separate port / no-watcher mode so they never reach the operator''s live WatcherHub. 41 stale test-* sessions linger (ADR-122 never-evict); only a restart clears them today.'
     points: 3
