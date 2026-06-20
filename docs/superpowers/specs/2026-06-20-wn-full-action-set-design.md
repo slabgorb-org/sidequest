@@ -31,7 +31,7 @@ dice and `apply_beat` paths):
 | Root | Count | Nature |
 |---|---|---|
 | `DICE unknown beat_id` (empty WN pool) | 47 + 3 err | de-nativization mechanism — see below |
-| chargen `[None×6]` (`test_cc_chargen_e2e`, `test_class_signature_wiring`) | 10 | **separate** — class choices not populated; possibly a real regression |
+| chargen `[None×6]` (`test_cc_chargen_e2e`, `test_class_signature_wiring`) | 10 | **separate** — stale test (brittle 2-choice-scene walk); class selection intact → story 152-3 |
 | loader asserts old native beats present | 3 | stale assertion — flip to de-nativized reality |
 | sealed-round wire fires no WN spans | 4 | stale beat id (commit can't seal) |
 | e2e chargen protocol (`CHARACTER_CREATION` vs `ERROR`) | 4 | **separate** — protocol drift |
@@ -108,9 +108,13 @@ follow-up story ref, never a silent xfail.
 
 ### Separate roots — triage and file (NOT epic-152, NOT beat-strip)
 
-- **chargen `[None×6]` (10 tests)** — class choices not populated. **Highest-priority
-  triage**: determine stale-fixture vs. real chargen regression before disposition. If real,
-  its own bug story.
+- **chargen `[None×6]` (10 tests)** — **TRIAGED 2026-06-20: stale test, NOT a regression.**
+  The WWN chargen has two choice-scenes (`the_calling` with `class_hint`; `the_trade` with 6
+  `class_hint`-less background choices); the test's walk naively requires every choice-scene to
+  be the class scene and dies on `the_trade`. Class selection content is intact
+  (`char_creation.yaml:23/29/35`). Also carries de-nativization-coupled `class_moves`
+  assertions → the player-facing surface of epic-152's action set. **Homed in story 152-3**
+  (depends_on 152-2). No urgent production bug.
 - **e2e chargen protocol (4)** — `CHARACTER_CREATION`/`SESSION_EVENT` where `ERROR`/`CHARACTER_CREATION`
   expected. Protocol drift; its own story.
 - **Fate-SRD catalog load (1)** — `test_wwn_spell_catalog_load::test_non_wwn_pack_with_spells_file_does_not_load_catalog`
