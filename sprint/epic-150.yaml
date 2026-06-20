@@ -435,3 +435,17 @@ stories:
     workflow: trivial
     depends_on: 150-1
     type: chore
+  - id: 150-24
+    title: '[PLAYTEST] 153-1 IntentRouter output-slim — router-latency + zero-mismatch verify (pulp_noir/annees_folles + combat)'
+    description: "Full-stack /sq-playtest verification of the Story 153-1 IntentRouter output-slim (merged via slabgorb-org/sidequest-server#997, squash 28dc4d77). The slim cut DispatchPackage to the fields consumed pre-narration to drop decompose latency (0.94-correlated with output tokens). This story IS 153-1's outstanding AC7 — it must run on a live server with the GM panel / Jaeger up, because latency + mismatch are runtime properties not provable in unit tests. Default world pulp_noir/annees_folles (Fate) for latency continuity with the 126-10 baseline; add a combat scenario (e.g. combat_otel / a Fate conflict) for the zero-mismatch regression. Baseline to beat (intent_router.decompose, 2026-06-20): output p50 314 tok; latency p50 8.6s / p95 18.4s / max 26.6s. Bugs reported cross-workspace via the ping-pong file to FIXER. Belongs to epic 150's playtest-verification sweep; revert #997 if latency/mismatch regresses."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: ui,server,content,daemon
+    workflow: trivial
+    acceptance_criteria:
+      - 'Latency win: intent_router.decompose output_tokens p50 roughly halved (~150 tok) and latency p50 down to ~4-5s, with the 15-26s tail crushed vs the 2026-06-20 baseline — read from GM-panel/Jaeger spans over a multi-turn annees_folles session.'
+      - "Zero regression: a combat/conflict turn shows ZERO new dispatch_engagement.*.mismatch spans + identical dispatch counts vs a pre-153-1 baseline run. Drive a pronoun-heavy action ('hit him with it') to prove no consumer depended on the removed resolved[] list."
+      - "Death-RP belt intact: if a combat turn drops an NPC to HP=0, the LethalityArbiter verdict + paired must/must-not directives still fire (the slim removed only the router's directive-less lethality suspenders)."
+      - 'Per-world health holds: annees_folles loads, connects, chargen completes, a multi-turn Fate session runs genre-true, no dead UI controls; mechanical resolution legible in the player UI.'
+    type: chore
