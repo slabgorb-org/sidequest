@@ -16,9 +16,13 @@ can attack and use an item but **cannot cast a spell, brace, or disengage** — 
 108-3 landed (~2026-06-15), across `caverns_and_claudes`, `elemental_harmony`,
 `heavy_metal`, `barsoom`.
 
-**Keith ruling (2026-06-20):** synthesize `cast` / `brace` / `break_contact` into the
-sealed WN round the same way `attack` is (keep 106-2's defensive-reprisal model). Owned
-by new **epic-152**. 125-8 stays as test-debt for the genuinely-stale subset.
+**Keith ruling (2026-06-20, corrected after a WWN SRD reading — see "Course correction"
+below):** `cast` IS a real WWN action → route it to the WWN spell spine. But `brace` /
+`break_contact` are the *native* 106-2 reprisal-mitigation model — **shaping native into
+the SRD**, the exact ADR-143 trap. WWN defines defense as **Armor Class manipulation**, so
+the fix is to **remove** the native scaffolding and add the **genuine WWN defensive
+actions** (Total Defense, Fighting Withdrawal). Owned by new **epic-152**. 125-8 stays as
+test-debt for the genuinely-stale subset.
 
 ## Measurement (ground truth, not the story's estimate)
 
@@ -58,16 +62,30 @@ round runs**. The cast spine (`:440–488`) and the defensive-reprisal engine
 **unreachable** because the action can't be committed. The 108-8 `attack` proof passes 5/5,
 confirming the round machinery itself is healthy.
 
-## Doctrine ruling
+## Doctrine ruling — and a course correction
 
-- **`cast`** — plainly a real feature; casting in combat must work. Synthesize.
-- **`brace` / `break_contact`** — these are 106-2's per-beat reprisal *mitigation* (Keith
-  ruling 2026-06-13). ADR-143 says the native **per-beat auto-reprisal** is exactly what
-  the sealed initiative round *removes*, so there was a genuine fork: retire 106-2 vs.
-  carry it forward. **Keith ruled 2026-06-20: carry it forward — synthesize the defensive
-  actions into the WN round.** The sealed initiative round remains the sole opponent-attack
-  path (Option A, 2026-06-13); a committed defensive action now seals into that round and
-  reaches the existing mitigation helper.
+- **`cast`** — plainly a real WWN action; casting in combat must work. Route it to the WWN
+  spell spine (152-2). Settled.
+- **`brace` / `break_contact`** — first ruled "synthesize them into the round" (2026-06-20),
+  which was **wrong** and was caught before any code shipped. Keith: *"why are we trying to
+  shape native into SRD?"* He was right. Synthesizing `brace` as `BeatKind.brace, base:1` with
+  mitigation from `resolve_tier_deltas`, and `break_contact` as a whole-attack-canceller, and
+  the **per-beat reprisal** the mitigation patches — **none of those exist in WWN.** That is the
+  exact ADR-143 / SOUL "Bind, Don't Balance" trap: porting native mechanics into a bound ruleset.
+
+### What WWN actually says about defense (WWN SRD)
+
+| Native (106-2) | WWN SRD |
+|---|---|
+| `brace` → flat HP mitigation via `resolve_tier_deltas(base:1)` | **Total Defense** (§2.4.4, Instant Action): give up your Main Action → **+2 Melee & Ranged AC + immune to Shock** until your next turn. Resolved by raising AC so the attack *misses* — there is no damage-reduction number |
+| `break_contact` → **prevents the opponent's whole attack** | **Fighting Withdrawal** (§2.4.4, Main Action): disengage so a following **Run** provokes **no free attack**; it does **not** cancel the opponent's own-turn attack |
+| **per-beat opponent reprisal** (what `brace` mitigates) | **§2.4.1**: side-initiative; the opponent attacks **once, on its own turn**. No per-beat reprisal exists |
+
+**Corrected ruling (2026-06-20):** **remove** the native defensive-reprisal scaffolding from
+the WWN path and add the genuine WWN defensive verbs — **Total Defense** (+2 AC, Shock immunity,
+resolved by the existing AC math) and **Fighting Withdrawal / Run** (avoid the free attack on
+flee). The opponent's attack on its slot vs the defender's (possibly Total-Defense-boosted) AC
+*is* the model. `test_106_2` is **rewritten** to WWN semantics, not kept as a native RED spec.
 
 ## Decomposition — the boundary that assigns each test
 
@@ -78,11 +96,14 @@ the de-nativized reality).
 
 ### epic-152 — production synthesis (RED specs already written + failing)
 
-- **152-1** — Synthesize the **defensive** WN actions (`brace` + `break_contact`). Mint
-  transient `BeatKind.brace` / `BeatKind.push` beats under the WN gate; route the committed
-  defensive action into the sealed round so it reaches `_defensive_posture_for_reprisal`.
-  RED spec: `tests/integration/test_106_2_wwn_defensive_reprisal.py`. (Owns the incidental
-  `committed_blow`→`attack` baseline swaps in that file.)
+- **152-1** — **WWN defensive actions.** *Remove* the native defensive-reprisal scaffolding
+  (`_defensive_posture_for_reprisal` brace tier-delta mitigation + `break_contact` prevent) from
+  the WWN path, and *add* the genuine WWN verbs: **Total Defense** (commit → +2 Melee/Ranged AC
+  + Shock immunity until next turn, via the existing AC math) and **Fighting Withdrawal / Run**
+  (wire the deferred `move` action; disengage avoids the free attack on a flee, does not cancel
+  the opponent turn). **Rewrite** `tests/integration/test_106_2_wwn_defensive_reprisal.py` to WWN
+  semantics (AC bump / Shock immunity / free-attack-on-flee), not native mitigation. Magnitudes
+  are SRD-verbatim (+2 AC, Shock immunity) — nothing invented.
 - **152-2** — Synthesize the **cast** WN action (`cast_spell`). Route a wwn `cast_spell`
   commit to the existing cast spine *before* the cdef lookup (model on the `is_item_use_beat`
   intercept); mirror on the `apply_beat` path. RED spec:
@@ -123,12 +144,19 @@ follow-up story ref, never a silent xfail.
 - **deprecated-world skips (20)** — `test_chargen_dispatch` skips on a retired
   `caverns_sunden` world binding. Stale-skip cleanup.
 
-## Why this respects "don't regress features"
+## Why this respects "don't regress features" — and "bind, don't balance"
 
-Restoring the `cast`/`brace`/`break_contact` tests to green by weakening their assertions
-would have **buried a live combat outage** behind a green suite. The boundary above keeps
-every behavioral assertion intact: the synthesis-gated tests stay red until the *feature* is
-restored (epic-152), and only the genuinely-stale ids are edited (125-8).
+Two failure modes were live here, and the boundary above guards both:
+
+1. **Burying a real outage** (don't regress features): forcing the `cast` tests green by
+   weakening assertions would have hidden that WWN combat spellcasting is broken. So `cast`
+   stays red until the *feature* is restored (152-2); only genuinely-stale ids are edited (125-8).
+2. **Restoring the wrong thing** (bind, don't balance): the `brace`/`break_contact` tests
+   encode a *native* model (tier-delta mitigation, attack-cancellation, per-beat reprisal) that
+   WWN doesn't have. "Make the tests pass" would have re-imported native mechanics into the WWN
+   binding — the ADR-143 trap. So those tests are **rewritten to WWN semantics** (Total Defense
+   AC bump, Fighting Withdrawal), not made green against the native model. A red test is not
+   always a thing to restore; sometimes it's a thing to retire or rewrite.
 
 ## Open question for execution
 
