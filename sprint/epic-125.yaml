@@ -99,7 +99,7 @@ stories:
     description: "RE-SCOPED 2026-06-20 (epic-152 brainstorm; design doc docs/superpowers/specs/2026-06-20-wn-full-action-set-design.md). Triage proved the WWN-combat failures are MULTIPLE roots, not one stale-beat root (measured: 97 pass / 71 fail / 20 skip / 3 err). The cast/brace/break_contact failures are a LIVE production combat outage (108-3 stripped them; 108-8 synthesized only 'attack') now owned by EPIC-152 (152-1 defensive, 152-2 cast), whose RED specs are those already-failing tests. The chargen [None x6], e2e chargen protocol, and Fate-SRD failures are SEPARATE roots, triaged/filed separately. 125-8 is narrowed to the PURE-EDIT-GREEN subset: tests that pass against current main by swapping a stale offensive id (committed_blow/strike -> 'attack', the synthesized WN action from 108-8) or flipping a loader assertion to the de-nativized reality (WN combat classes carry no native beats; loader returns [] per 108-7). Reference fix pattern: tests/genre/test_classes_yaml_loader.py (126-37). The 152-owned and separate-root tests are loud-skipped with a story ref (NEVER a silent xfail, NEVER a weakened assertion) until their owning stories land."
     points: 5
     priority: p2
-    status: in_review
+    status: done
     started: '2026-06-20'
     repos: server
     workflow: tdd
@@ -110,7 +110,9 @@ stories:
       - Epic-152-owned tests (test_106_2_wwn_defensive_reprisal; test_dice_path_spell_cast_102_2 + the cast dispatch tests; the cast case in test_wwn_scene_harness_fixture_proof) are NOT touched here — left red as 152's RED spec, or loud-skipped with an epic-152 ref where a fully-green file is needed. Never weakened, never silent-xfail'd.
       - Separate roots (chargen [None x6], e2e chargen protocol, Fate-SRD load, deprecated-world skips) are out of scope — tracked under their own stories; a mixed file's separate-root test is loud-skipped with a ref.
       - No production code changed (test-debt only); any genuine wiring gap found is a Delivery Finding re-scoped to epic-152.
+    completed: '2026-06-20'
     type: chore
+    review_verdict: approved
   - id: 125-9
     title: "[126-34 follow-up] Test-run session isolation root fix — point test runs at a separate port / --no-watcher mode so they never register with the operator's live WatcherHub (design captured in 126-34 Dev Assessment / archived session)"
     points: 5
