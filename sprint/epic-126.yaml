@@ -267,12 +267,22 @@ stories:
     review_verdict: approved
   - id: 126-16
     title: '[FATE] Defend-barrier test-quality nits + deferred TEA coverage (match=authorization, list-vs-next span, partial-fill + defense-wins unit tests)'
+    description: "Deferred test-quality + coverage follow-ups from 126-8 (the server DEFEND barrier, ADR-148/151). 126-8's review APPROVED the implementation but logged test-side gaps; this 1pt chore closes them. Server-only; net change is test-side (assertion-tightening + new characterization tests of already-shipped behavior), no production logic change expected. Three items decoded from the title: (1) match=authorization — tighten a vacuous pytest.raises; (2) list-vs-next span — make span lookups name-keyed not positional; (3) deferred TEA coverage — partial-fill ledger + defense-wins resolution. Grounding files: tests/server/dispatch/test_fate_defense_record.py, tests/game/ruleset/test_fate_defend_spans.py, tests/game/test_fate_pending_defenses.py, sidequest/server/dispatch/fate_conflict.py (dispatch_fate_defense ~1160, _resolve_attack ~590, ledger_full all() gate ~1257)."
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: server
     workflow: tdd
+    acceptance_criteria:
+      - "match=authorization: test_defend_throw_from_non_defender_is_rejected (test_fate_defense_record.py) tightens its bare pytest.raises(FateConflictError) with match= pinned to the authorization branch, so it cannot pass on a different FateConflictError (unknown / already-filled / no-faces). The authorization rejection message is the one ending in '(authorization)'."
+      - "list-vs-next span: in test_fate_defend_spans.py, span assertions that fetch a span by positional list index (get_finished_spans()[0]) on a path that can emit more than one span are converted to name-keyed next(s for s in ... if s.name == '...') lookups (the convention already used in test_npc_server_defense_tags_role_defense), so each assertion targets the intended span rather than a positional accident."
+      - "partial-fill coverage: a new unit test exercises a MULTI-entry pending_defenses ledger — filling one defender's entry leaves ledger_full=False, filling all entries makes it True — proving the all(...) ledger gate handles partial fills (existing tests only cover the single-entry full-ledger case)."
+      - 'defense-wins coverage: a new unit test drives a RECORDED PC defense through _resolve_attack where the defense beats/ties the attack (defense_total >= attacker ladder_total -> shifts<=0 -> no harm applied, momentum boost on exact tie, defender NOT taken out), covering the win side of the recorded-defense branch.'
+      - Server suite stays green (no production regression); any new fixture (e.g. a two-defender parked conflict) lives alongside parked_conflict in tests/_helpers/fate_fixtures.py, not pointed at live content.
+    completed: '2026-06-20'
     type: chore
+    review_verdict: approved
   - id: 126-17
     title: "[FATE] Build the Fate defend-throw UI surface — handle FATE_DEFEND_REQUEST + defend tray (4dF thrower) + concede affordance; un-hangs the 126-8 DEFEND barrier"
     description: "126-8 shipped the server DEFEND barrier (FATE_DEFEND_REQUEST broadcast + block-and-wait, no auto-roll) but its promised UI half (the defense-throw tray) was deferred to spec section 8 and NEVER FILED. Verified 2026-06-19 (The Man in Black): the UI has ZERO Fate defend handling — no FATE_DEFEND_REQUEST MessageType (protocol.ts only has FATE_ROLL/STATE/ACTION/THROW), no 'defend' in the action union (payloads.ts:614), no defend tray; the existing concede() is the pre-roll whole-conflict FATE_ACTION concede, a different mechanic. RESULT — a latent SHOWSTOPPER: the first time an NPC attacks a PC in a Fate conflict, the server broadcasts the request and parks with no narration (fate_throw.py:161-173) while the UI drops the unknown message, so the exchange hangs forever. This story builds the missing surface by REUSING 126-7's patterns (FateConflictSurface + FateDiceTray thrower mode + handleFateThrow/makeFateThrowMessage). It ALSO adds the Concede affordance, which depends on 126-14's server-side concede field (126-14 is in flight, server-only). Prioritized p1 because it un-hangs Fate combat."
