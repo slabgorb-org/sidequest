@@ -482,10 +482,13 @@ stories:
       Trivial workflow. Scope guard: do NOT touch FateCharacterSheet or the fate-conflict surface. Run the full Fate + GameBoard suite to confirm no regression after the FatePanel deletion.
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: ui
     workflow: trivial
+    completed: '2026-06-20'
     type: refactor
+    review_verdict: approved
   - id: 126-28
     title: '[FATE/TEST] Harden 126-18 opening-prop tests: exercise the real snapshot-slimming projection (seed player_seats so party_location resolves; assert summary[room_states] keeps the prop), add a de-dup/idempotency test, assert the wiring-test span payload (props_persisted==N + prop_ids) not just truthy, assert all 3 props in the forensic test, cover the chassis-anchor path, refresh the stale (RED) docstring + drop now-unnecessary type:ignore suppressors, and promote the 2 local imports in persist_opening_props to top-level'
     points: 2
