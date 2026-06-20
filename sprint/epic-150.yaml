@@ -139,7 +139,7 @@ stories:
     description: 'Full-stack /sq-playtest verification of tea_and_murder/blackthorn_moor (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Cozy-mystery: exercise the scenario/clue graph (ADR-053) and a social Fate contest. Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
     points: 2
     priority: p2
-    status: backlog
+    status: done
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
@@ -150,6 +150,7 @@ stories:
       - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
       - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/tea_and_murder — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('tea_and_murder') emits the section; this AC is the live-page render check."
+    completed: '2026-06-20'
     type: chore
   - id: 150-6
     title: '[PLAYTEST] tea_and_murder/glenross — full-stack verify (fate)'
