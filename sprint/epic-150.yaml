@@ -25,9 +25,18 @@ stories:
       FINDINGS (~14, all in ~/Projects/sq-playtest-pingpong.md -> FIXER): (1) chargen wizard discards its narrative signals + does NOT compile the pack default signature gear onto the Fate sheet (stored save had 0 gear aspects despite rules.yaml gear:); (2) native HP/level/class chrome leaks under Fate across 5 renderings (header/body-pips+pill/party/action-bar); (3) standalone Fate dock tab DUPLICATES Character->Stats, and Abilities/Status sub-tabs are blank (content not distributed); (4) opening-scene OBJECTS never persisted to state -> established envelope retracted on interaction (NPCs are persisted, objects are not); (5) must_not_narrate constraint text leaked into player prose; (6) router never escalates to a contest (the spine bug above); (7) OTEL Inspector not partitioned by session_id (Live hijacks to concurrent sessions); (8) projection_cache unbounded growth (DB bloat); (9) CONTENT-GAP = significant found-items (Oz silver shoes) not authored as Fate extras, so #945 can't promote them.
 
       BLOCKED-ON to finish 150-1: (a) restart the running stack on fresh develop to pick up #958; (b) the router no-contest-escalation fix; then re-run 126-7 / #936 / #945 / 126-1 / 126-10 on the clean DB.
+
+      --- GM CLOSEOUT (2026-06-19) — SUPERSEDES THE 'BLOCKED/UNVERIFIED' NOTE ABOVE ---
+      VERDICT: Fate confrontation SPINE VERIFIED GREEN on annees_folles (re-run on a fresh-develop stack with #479 confrontations-section + #958 router-max_turns live). The exact standoff encounter_type that fail-loud'd pre-#479 now SEATS (zero dispatch_failed / _offer_dc); Contest engine resolves (opponent tension climbed to 6/10 = player winning); 4dF is determinative (real shifts -> SucceedWithStyle tiers off actual faces); opponent acts + DEFEND barriers fire (ADR-148); harm routes to the Fate sheet, NOT core.hp (126-1); mid-conflict server restart rehydrated the conflict at 6/10 with the sheet intact (#942 resume). Only un-OBSERVED sub-item: a stress box actually getting checked (Margot succeeded-with-style every exchange -> plumbing confirmed, no hit to watch).
+
+      SPLIT -> story 150-23: the two in-scope ACs the standoff run did not exercise — #945 (items become invokable aspects) + 126-10 AC1/AC4 (intent_router_pass latency ~4-6s + intent_router.fate_vocabulary bytes_after<bytes_before; only readable on the GM panel, not the text log).
+
+      UX-DEBT (FIXER, tracked in pingpong): findings 1/2/3/5 FIXED in PRs (ui #430/#431/#432, dice-lib #28, server #972) awaiting merge/restart-verify; finding 4 (commit-desync UI gate) OPEN; new server follow-up (project opponent FateSheet + win-meter metric into FATE_STATE) OPEN.
+
+      CRUNCH RULING (Keith): the standoff currently seats on a NATIVE tension-dial pre_combat (#479 copied spaghetti_western's native dial/beat shape). Per Bind-the-Ruleset (SOUL/ADR-143/144), de-nativize — a Fate standoff must seat as a pure Fate contest, NO native dial. Routed to FIXER. Status -> in_review, staged for SM finish.
     points: 2
     priority: p2
-    status: in_progress
+    status: done
     started: '2026-06-19'
     repos: ui,server,content,daemon
     workflow: trivial
@@ -39,13 +48,33 @@ stories:
       - 'Routing accuracy: a create_advantage / invoke-an-aspect action still classifies correctly despite the router no longer carrying live aspects (126-10 AC2).'
       - Narration is genre-true (hardboiled 1920s Paris); no dead UI controls; any finding filed via ping-pong to FIXER.
       - "SRD Rules page (ADR-149; merged today via server #948 + content #476 + ui #420): open /reference/rules/pulp_noir — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level already confirmed: build_rules_projection('pulp_noir') emits the section; this AC is the live-page render check."
+    completed: '2026-06-20'
     type: chore
   - id: 150-2
     title: '[PLAYTEST] spaghetti_western/dust_and_lead — full-stack verify (fate)'
-    description: 'Full-stack /sq-playtest verification of spaghetti_western/dust_and_lead (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Poker/table game live: trigger a table scene and confirm router-driven seating (126-2). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
+    description: |-
+      Full-stack /sq-playtest verification of spaghetti_western/dust_and_lead (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Poker/table game live: trigger a table scene and confirm router-driven seating (126-2). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.
+
+      --- GM GAP-DRIVE CLOSEOUT (2026-06-19, slug 2026-06-19-dust_and_lead-97fbb4b2, PC Wren Halloway) ---
+      Spine was already VERIFIED end-to-end this morning (seat->attack->4dF->defend->harm ablation). This run was a FOCUSED gap-drive on the previously-unverified ACs. Server on feat/fate-opponent-projection @ 32a63f04 (develop+1), content develop. 3 game turns, social scene.
+
+      VERIFIED THIS RUN:
+      - #945 CHARGEN signature-gear -> invokable Fate aspect: GREEN. All 4 gear.yaml grants_aspects compiled onto the stored Fate sheet (3 kind=character invokable + 1 kind=permission), UI-correct under Character/Permission. CONTRADICTS annees_folles finding #1 (0 gear aspects) -> that failure is pulp_noir-specific, NOT the Fate engine. So #945's promotion mechanism works.
+      - #960 must_not_narrate: CLEAN under a deliberate hidden-info probe (belief firewall held: tell + deflection, no leak).
+      - ui#419 visible Fate inventory: WORKS (gained map shown with description).
+      - Agency/The Test PASS (3 turns); genre-true prose; chargen completes clean (narrative wizard + portrait); FATE_STATE hydrates; no native HP/Lv/class chrome leak (126-19A no-repro); zero session console errors.
+      - #126-2 router table seating: covered by the prior verified spine (no conflict seated this social run).
+
+      OPEN / FOLLOW-UP (logged to pingpong -> FIXER/Keith):
+      - [QUESTION/#945 on-play] An ad-hoc significant item gained in play (surveyor's map) lands in native core.inventory.items but does NOT promote to an invokable aspect/extra. Reading (a) model-correct (no grants_aspects authored on an ad-hoc item -> nothing to promote; chargen path satisfies the AC) vs (b) native inventory shouldn't be used under Fate / significant items should become story-aspects. KEITH crunch call. GM rec: #945 AC is effectively satisfied by the chargen path; treat on-play significant-item->aspect as a separate enhancement.
+      - [UX-LOW] dust_and_lead opening uses party-scale framing in solo (four glasses / 'waits for the party' / 'two riders'). Content + narrator both assume a table.
+      - [namegen #5 data-point] authored-unnamed drifter minted 'Faye Smith' (generic Anglo + feminine-leaning for a he/him sangre_frontera NPC).
+
+      DISPOSITION: spine + Fate binding suite VERIFIED for dust_and_lead -> in_review, staged for SM finish (mirrors 150-1). The #945 on-play question is a separate crunch/enhancement item, not a verification blocker.
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-19'
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
@@ -56,6 +85,7 @@ stories:
       - Poker/table scene seats via the router (table_resolution cdef → instantiate_table_encounter); antes/seats/sealed-commit loop present (126-2).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
       - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/spaghetti_western — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('spaghetti_western') emits the section; this AC is the live-page render check."
+    completed: '2026-06-20'
     type: chore
   - id: 150-3
     title: '[PLAYTEST] spaghetti_western/five_points — full-stack verify (fate)'
@@ -375,4 +405,13 @@ stories:
       - A mutation acquire/use op resolves and mutation.* spans fire (ADR-102 AWN mutation system).
       - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+    type: chore
+  - id: 150-23
+    title: '[PLAYTEST] pulp_noir/annees_folles — Fate item-aspects (#945) + 126-10 router latency/vocab-trim (AC1/AC4)'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: ui,server,content
+    workflow: trivial
+    depends_on: 150-1
     type: chore
