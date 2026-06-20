@@ -46,6 +46,7 @@ completed_epics:
   - '127'
   - '128'
   - '119'
+  - '153'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -1142,3 +1143,8 @@ completed_stories:
     title: "119-3 deferred reuse refactor: consolidate the four single-shot Haiku adapters now the transport has landed. _AsideLlm.complete, _IntentRouterLlm.emit_tool, _UnseededObjectiveClassifierLlm.emit_tool, and infer_archetype_from_freeform (llm_factory.py) each repeat the same skeleton — pre-flight ceiling check -> build_agent_sdk_options -> llm_request_span + _consume_to_result + _record_usage_telemetry -> record_call -> structured_output extract/raise. Extract a shared _call_haiku_sdk(...) + _extract_structured_output_or_raise(...) (the verify-phase simplify-reuse high-confidence findings, ~40 lines saved). STRUCTURAL-ONLY, no behavior change: the existing agents suite (1993 passed) must stay green, and each site keeps its distinct caller tag, model, and loud error type. Deferred from 119-3 verify per story-scope minimal-diff / single-commit-rollback (Architect spec-check affirmed the then-current factoring); safe to do now the swap has soaked."
     points: 2
     completed: '2026-06-18'
+  - id: 153-1
+    epic: '153'
+    title: '[PERF] Slim the IntentRouter DispatchPackage — cut resolved/lethality/you, default visibility, reorder fields, slim prompt'
+    points: 5
+    completed: '2026-06-20'
