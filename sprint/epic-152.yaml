@@ -1,0 +1,38 @@
+id: '152'
+type: epic
+title: WN combat owns the full action set — synthesize cast/brace/break_contact into the sealed round (complete 108-8)
+description: "Completes the WWN combat de-nativization (epic-108, ADR-143 'Bind the Ruleset, Don't Balance It'). 108-3 stripped ALL native combat beats off WWN hp_depletion defs (cdef.beats == []); 108-8 synthesized only the 'attack' action (beat_filter.is_wn_action_beat == {'attack'}) while item-use rode its own intercept. cast_spell, brace, and break_contact were stripped but NEVER synthesized — at dispatch (dice.py:414) they miss the attack intercept, fall into the empty-cdef lookup, and raise 'unknown beat_id ... available: []' before any round runs. LIVE OUTAGE: in WWN combat today you can attack and use an item, but you CANNOT cast a spell, brace, or disengage — a real player-facing regression across caverns_and_claudes/elemental_harmony/heavy_metal/barsoom, red since 108-3 landed ~2026-06-15. Keith ruling (brainstorm 2026-06-20): SYNTHESIZE cast/brace/break_contact into the sealed WN round the same way 'attack' is — keep 106-2's defensive-reprisal model (the _defensive_posture_for_reprisal helper already exists, just unreachable). The orphaned-red tests are the RED spec: test_106_2_wwn_defensive_reprisal (brace/break_contact), test_dice_path_spell_cast_102_2 + per-pack dispatch cast tests (cast_spell/elemental_burst), test_wwn_scene_harness_fixture_proof (cast). Pure stale-id test-debt (committed_blow/strike->attack swaps, loader assertion flips) stays in 125-8 (epic-125). Separate roots surfaced in the same sweep (chargen [None x6], e2e chargen protocol, Fate-SRD catalog load, deprecated-world skips) get their own stories. Design doc: docs/superpowers/specs/2026-06-20-wn-full-action-set-design.md."
+priority: p1
+status: backlog
+repos: server
+stories:
+  - id: 152-1
+    title: '[ENGINE] Synthesize the defensive WN actions (brace + break_contact) into the sealed round — restore 106-2 reprisal-mitigation on a zero-beat WWN combat def'
+    description: "Surfaced during 125-8 triage (brainstorm 2026-06-20, ADR-143 / SOUL Bind-the-Ruleset; design doc docs/superpowers/specs/2026-06-20-wn-full-action-set-design.md). 108-3 stripped the native combat beats (incl. brace/break_contact) off every WWN hp_depletion def; 108-8 synthesized ONLY 'attack' (beat_filter.is_wn_action_beat == {'attack'}). A player who commits brace or break_contact in WWN combat hits dice.py:417's empty-cdef lookup and raises DiceDispatchError 'unknown beat_id ... available: []' — 106-2's defensive-reprisal feature (Keith ruling 2026-06-13: a committed brace measurably blunts the reprisal; a committed break_contact makes the opponent's slot miss/not occur) is UNREACHABLE in production, red since 108-3 (~2026-06-15). The mitigation engine still exists (_defensive_posture_for_reprisal in dispatch/dice.py) — it just never runs because the beat can't be committed. FIX: extend the WN action synthesis (beat_filter.wn_action_beat / is_wn_action_beat) to mint transient brace (BeatKind.brace) and break_contact (BeatKind.push) beats under the WithoutNumberRulesetModule gate, same shape as the 'attack' strike synthesis, so a committed defensive action seals into the round and reaches _defensive_posture_for_reprisal. Preserve 108-8's closed-allowlist + isinstance-gate invariants. RED spec (already written, currently failing): tests/integration/test_106_2_wwn_defensive_reprisal.py. Incidental: those tests' committed_blow baseline swaps to 'attack' as part of making the file green (owned HERE, not 125-8). No content changes — the loader correctly returns [] for WN classes (108-7)."
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - A committed brace on a zero-beat WWN hp_depletion combat def resolves (no DiceDispatchError) and takes strictly LESS reprisal damage than an undefended attack under identical pinned rng + initiative (test_106_2 AC1).
+      - A committed break_contact prevents the opponent's reprisal that round (zero HP loss) on Success/CritSuccess and does NOT prevent on a Tie (test_106_2 AC2).
+      - The encounter.opponent_attack_resolved span carries defender_beat + a non-zero defense_mitigation for a brace, and defense_mitigation==0 for an undefended attack (OTEL lie-detector, test_106_2 AC3).
+      - "108-8 invariants stay green: a bogus beat id under zero beats still raises DiceDispatchError; a NATIVE pack's authored attack/brace resolves on the native engine (no wwn.native_scaffolding_suppressed span)."
+      - tests/integration/test_106_2_wwn_defensive_reprisal.py is fully green; no production change outside the WN action synthesis + its routing into the sealed round.
+    type: bug
+  - id: 152-2
+    title: '[ENGINE] Synthesize the cast WN action (cast_spell) so casting resolves on a zero-beat WWN combat def — route the synthesized cast to the existing wwn cast spine'
+    description: "Surfaced during 125-8 triage (brainstorm 2026-06-20, ADR-143; design doc docs/superpowers/specs/2026-06-20-wn-full-action-set-design.md). 108-3 stripped cast_spell off every WWN hp_depletion combat def; 108-8 synthesized only 'attack'. cast_spell is NOT in is_wn_action_beat's allowlist, so a cast commit falls into dice.py:417's empty-cdef lookup and raises 'unknown beat_id cast_spell ... available: []' BEFORE the existing wwn cast spine (dice.py:440-488: spell_id validation, catalog resolve, cast resolution) ever runs. The apply-beat path breaks the same way (narration_apply.py ValueError 'cast_spell'). WWN combat spellcasting is a live outage across caverns_and_claudes/elemental_harmony/heavy_metal, red since 108-3. FIX: route a wwn cast_spell commit to the cast spine BEFORE the cdef beat lookup — model on the is_item_use_beat transient intercept (dice.py:390) and the attack synthesis (dice.py:414); the spine + validations already exist and are correct, this makes them reachable on a zero-beat def. Mirror the fix on the apply_beat path. RED spec (already written, failing): tests/integration/test_dice_path_spell_cast_102_2.py; tests/integration/test_wwn_{caverns,elemental_harmony,heavy_metal}_dispatch.py (cast routes through the wwn module on real packs); tests/integration/test_wwn_scene_harness_fixture_proof.py (cast_spell ablates hp). Keep all spine guards loud (spell_id required, catalog membership, opposed-check refusal). No content changes."
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - A cast_spell commit (with spell_id) on a zero-beat WWN hp_depletion combat def resolves through the wwn cast spine (wwn.spell.cast span), not DiceDispatchError 'unknown beat_id'.
+      - Cast outcome is independent of the d20 face; a killing cast resolves the encounter and suppresses reprisal; a no-casts-remaining cast is refused-but-recorded (refused=True), not a generic stat throw (test_dice_path_spell_cast_102_2).
+      - The dice path and the apply_beat path reach the SAME cast spine (parity test green); narration_apply no longer raises ValueError 'cast_spell' on a zero-beat def.
+      - Cast routes through the WWN module on the real caverns_and_claudes / elemental_harmony / heavy_metal packs (per-pack dispatch tests green).
+      - All existing spine guards stay loud (missing spell_id raises, unknown spell_id raises, cast on an opposed_check cdef raises); no content changes.
+    type: bug
