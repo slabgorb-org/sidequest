@@ -28,6 +28,8 @@ Thumbs.db
 
 # Playtest artifacts
 playtest-*.png
+# Playwright screenshot-output dir (sandboxed to repo root) — pure artifacts:
+playtest-shots/
 # Legacy screenshot-output dirs — pure artifacts, no tracked files:
 sq-playtest-screenshots/
 .playtest-screenshots/
