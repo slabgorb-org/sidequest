@@ -78,13 +78,17 @@ stories:
     description: "Two non-blocking defense-in-depth findings CONFIRMED in the 118-2 (F3b Fate panel) Reviewer pass that were never filed — orphaned until the 2026-06-16 Fate deferred-cleanup triage. Bundled here per the 118-8/118-9 'file a single follow-up story bundling related hardening' precedent. Both are FATE_STATE payload-trust gaps in the Fate UI; neither is a live exploit (server emits valid payloads via build_fate_projection), so this is hardening, not a fix. SOURCE: sprint/archive/118-2-session.md Reviewer findings (reviewer-security). (1) [MEDIUM][SEC] free_invokes is unclamped at FatePanel.tsx:104 — Array.from({ length: a.free_invokes }) — a malformed payload with a huge/Infinity free_invokes passes the array-only boundary guard and allocates a pathological array (browser-tab DoS). (2) [LOW][SEC] sessionStorage hydration bypass — fateState is persisted to sessionStorage and rehydrated on reload PAST the malformed-payload boundary guard, so a once-malformed payload survives a refresh. NOT covered by 125-5 (which guards the FATE_ROLL dice tuple in useStateMirror — a different message/field/file)."
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: ui
     workflow: tdd
     acceptance_criteria:
       - "free_invokes clamp: at FatePanel.tsx:104 bound the pip count before Array.from (e.g. Math.min(a.free_invokes ?? 0, N) with a sane N), so a huge/Infinity/NaN free_invokes cannot allocate a pathological array. Regression test: a fateState payload with free_invokes=1e9 (and Infinity) renders a bounded pip count without hanging — closes the 118-2 'no test for free_invokes' gap."
       - 'sessionStorage exclusion: exclude fateState from the sessionStorage hydration path (GameStateProvider/useStateMirror) so a malformed payload cannot bypass the FATE_STATE boundary guard on reload. Regression test: a malformed fateState written to sessionStorage is NOT rehydrated into live state on mount (it re-enters only via a fresh FATE_STATE message through the guard).'
+    completed: '2026-06-21'
     type: bug
+    review_findings: "[HIGH][SEC] FatePoints refresh token loop (FatePanel.tsx:153) has the identical unbounded Array.from DoS the story fixes for free_invokes: refresh=Infinity throws RangeError (crashes render), refresh=1e9 allocates ~1B nodes. Same file/component/payload, missed by the fix (scoped out on a false 'already clamped' premise). Clamp refresh + add regression test. The two named ACs are correctly implemented and closed."
+    review_verdict: approved
   - id: 125-7
     title: emitters.py C2-transaction comment says 'sqlite rolls back' — stale post-ADR-115 (Postgres); rename to the PgSaveRepository transaction semantics
     description: "From the 127-7 completeness-audit sweep (epic-127) — flagged as a carried, out-of-tech-writer-lane source-code follow-up. sidequest-server/sidequest/server/emitters.py lines 502-507 (the C2 single-transaction block in the event-append/cache-write path) document crash-recovery as 'If the server crashes mid-block, sqlite rolls back both the event row and any partial cache rows'. Post-ADR-115 (SQLite-per-session -> PostgreSQL) the block runs on Postgres via repo.transaction() (PgSaveRepository), so the engine name is wrong. The transactional BEHAVIOR is correct and unchanged (atomic event + projection-cache write or nothing) — this is a COMMENT-ONLY fix: replace 'sqlite rolls back' with the Postgres/PgSaveRepository transaction semantics (e.g. 'the transaction rolls back'). No code/logic change, no test change. Caught by tech-writer in 127-7 but deferred because it is source code, not docs."
