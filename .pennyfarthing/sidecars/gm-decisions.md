@@ -4,6 +4,32 @@ Standing rulings and doctrine from the operator (Keith) that govern GM/content
 work. Append new decisions; don't rewrite history. Convert relative dates to
 absolute.
 
+## 2026-06-21 — `factions: ["*"]` is the behavior-preserving unblock for zoned worlds
+
+**Context:** Epic-157 (faction/zone-scoped content eligibility) tagged only 4 of
+the **7** live zoned worlds. 157-5/157-6 covered gulliver, oz, wonderland,
+the_circuit. Missed: `space_opera/perseus_cloud`, `space_opera/coyote_star`,
+`tea_and_murder/glenross` — all declare `controlled_by` regions (→ zoned) but had
+ZERO faction tags. The strict load validator (157-7, fail-loud) would `GenreLoadError`
+on them and break develop.
+
+**Ruling (Keith, 2026-06-21):** "Tag the 3 worlds first" → **world-global `["*"]`
+everywhere.** `"*"` is behavior-identical to untagged at the runtime predicate
+(`is_eligible`: both short-circuit to eligible), so blanket `["*"]` satisfies the
+validator's non-empty requirement and changes NOTHING in play. It is also the
+*correct* semantic for a cozy single-zone-of-many world like glenross (content is
+village-wide; per-household gating would over-suppress). Real per-faction scoping
+(content hides outside its zone) is a genuine game-feel change — Keith owns it; do
+NOT do it unilaterally. Offer it as a follow-up, don't assume it.
+
+**Reusable pattern:** zoned world = any region with truthy `controlled_by`
+(`no_one`/`null` hubs count only if the string is truthy). Validator scope is per
+world: `bestiary.entries` + RESOLVED `tropes` (post-inheritance; only world tropes
+emitted, child `factions` override parent) + `seed_tropes`. Genre-tier pooled files
+are parents only, never validated directly. Verify with `uv run python -m
+sidequest.cli.validate pack <pack>` + a loader sim checking every resolved pooled
+item has non-empty factions ⊆ {`"*"`} ∪ controlled_by-slugs.
+
 ## 2026-06-13 — WWN SRD is the authority for any WWN-bound mechanical question
 
 **Ruling (Keith, verbatim intent):** "When asked 'what should this be like' for

@@ -3,7 +3,7 @@ type: epic
 title: Faction/zone-scoped content eligibility
 description: "Multi-region worlds leak content across zones: the Monster Manual (ADR-059) seeds creatures with no location_tags so they are eligible EVERYWHERE, and format_area_creatures does ZERO location filtering — so a 4th-voyage Yahoo surfaces on the 1st-voyage Lilliput shore (wry_whimsy/gulliver, session 2026-06-20-gulliver-e721409c). Applies to oz (4 countries + Emerald City), road_warrior/the_circuit (subculture territories), wonderland, and any multi-region/faction world. Direction (Keith, 2026-06-20): group locations by faction; scope content-eligibility by the region's faction-group (region -> faction-group -> eligible NPC/creature/trope pools). Reuse-first: regions already carry controlled_by:<faction>; the Monster Manual has location_tags + culture + available_at_location(); cartography entities home NPCs. Design-first; full design + ADR-059 amendment in docs/superpowers/specs/2026-06-20-faction-zone-content-eligibility-design.md (157-1 DONE). Strict fail-loud validator lands last."
 priority: p2
-status: backlog
+status: done
 repos: server,content
 stories:
   - id: 157-1
@@ -82,7 +82,27 @@ stories:
     title: '[ENGINE] Strict zone-tagging load validator (fail-loud, lands last)'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: tdd
     depends_on: 157-6
+    completed: '2026-06-21'
+    review_verdict: approved
+  - id: 157-8
+    title: '[CONTENT] Tag remaining 3 zoned worlds (perseus_cloud, coyote_star, glenross) — 157-7 validator precondition'
+    description: "Tag every pooled item (bestiary/tropes/seeds) factions:[\"*\"] (world-global) in the 3 zoned worlds epic-157 tagging missed: space_opera/perseus_cloud, space_opera/coyote_star, tea_and_murder/glenross. Precondition for 157-7's strict validator. PR: sidequest-content#485. 154 insertions/0 deletions across 9 files."
+    points: 2
+    priority: p2
+    status: done
+    repos: content
+    workflow: trivial
+    depends_on: 157-6
+    acceptance_criteria:
+      - "All 3 worlds: every bestiary entry, world trope, seed trope carries non-empty factions (['*'])"
+      - validate pack PASS on space_opera and tea_and_murder (0 errors)
+      - 'Loader sim of 157-7 validator: all 3 worlds zoned + all resolved pooled items have valid factions => load clean'
+      - "Behavior-preserving: ['*'] is runtime-identical to untagged; no game-feel change"
+    completed: '2026-06-21'
+    type: chore
+completed: '2026-06-21'

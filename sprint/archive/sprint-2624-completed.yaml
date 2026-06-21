@@ -49,6 +49,7 @@ completed_epics:
   - '153'
   - '152'
   - '126'
+  - '157'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -1365,3 +1366,43 @@ completed_stories:
     title: '[BUG] Namegen: key the narrator-invented-person mint to the current region instead of a blind culture shuffle. Split from 126-32 (manifestation c) by Keith 2026-06-20. _resolve_invented_naming_context (sidequest/server/narration_apply.py) random.shuffles bound cultures with no region awareness, so an unaffiliated stranger in the Anglo-settler dust_and_lead frontier (region sangre_del_paso) can be rerouted to the Ndé/Apache people-group (npc.invented_name_routed resolution_strategy=shuffle_fallback). DESIGN-GATED: there is no region->culture binding in content today — decide WHERE it lives (per-culture regions: field | cartography region->culture list | world default culture) before implementing. RED contract preserved in git commit 64c60385 (test_invented_name_not_shuffle_routed_to_wrong_people_group: strategy must be region-keyed, not blind shuffle).'
     points: 3
     completed: '2026-06-20'
+  - id: 157-1
+    epic: '157'
+    title: '[DESIGN] Faction/zone eligibility model — ADR-059 amendment + spec'
+    points: 3
+    completed: '2026-06-20'
+  - id: 157-2
+    epic: '157'
+    title: '[ENGINE] zone_eligibility core + factions tag + creature inject filter (Seam 1)'
+    points: 5
+    completed: '2026-06-20'
+  - id: 157-3
+    epic: '157'
+    title: '[ENGINE] NPC walk-on origin-stamp + authored-cast staging on region entry (Seam 2)'
+    points: 5
+    completed: '2026-06-20'
+  - id: 157-4
+    epic: '157'
+    title: '[ENGINE] factions on trope/seed + trope gate + seed-deck draw (Seams 3 & 4)'
+    points: 5
+    completed: '2026-06-20'
+  - id: 157-5
+    epic: '157'
+    title: '[CONTENT] Tag gulliver by faction (proof world) + verify no bleed'
+    points: 3
+    completed: '2026-06-21'
+  - id: 157-6
+    epic: '157'
+    title: '[CONTENT] Faction-tag fan-out: oz, wonderland, the_circuit'
+    points: 5
+    completed: '2026-06-21'
+  - id: 157-7
+    epic: '157'
+    title: '[ENGINE] Strict zone-tagging load validator (fail-loud, lands last)'
+    points: 3
+    completed: '2026-06-21'
+  - id: 157-8
+    epic: '157'
+    title: '[CONTENT] Tag remaining 3 zoned worlds (perseus_cloud, coyote_star, glenross) — 157-7 validator precondition'
+    points: 2
+    completed: '2026-06-21'
