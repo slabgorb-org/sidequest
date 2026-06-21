@@ -30,7 +30,9 @@ stories:
     title: '[ENGINE] NPC walk-on origin-stamp + authored-cast staging on region entry (Seam 2)'
     points: 5
     priority: p2
-    status: backlog
+    status: in_progress
+    assigned_to: Keith
+    started: '2026-06-20'
     repos: server
     workflow: tdd
     depends_on: 157-2
