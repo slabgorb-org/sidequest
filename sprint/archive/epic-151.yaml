@@ -3,7 +3,7 @@ type: epic
 title: Sidecar Accounting Off the Narrator Hot Path (ADR-150)
 description: "Implement ADR-150: move the narrator's 13 sidecar (game_patch) bookkeeping fields off the Opus hot path. action_rewrite -> pre-narration IntentRouter; 11 prose-readout fields -> a new post-narration Haiku emit_tool extractor (AsideResolver-shaped); private_segments stays narrator-inline (ADR-105 perception firewall, the one irreducible field). Frees the Opus narrator's attention for prose craft and removes ~4k uncached tokens/turn. Extends the live ADR-113 spine (IntentRouter pre-pass + dispatch_engagement_watcher post-narration). Story sizing per ADR-150 Implementation Notes -> 'Sizing the follow-up'; each field-group cutover is atomic with the lie-detector watching, catch-loops kept as the loud net. Fixture-based tests only (no live-content coupling). ADR-150 is the spec of record."
 priority: p2
-status: backlog
+status: done
 repos: server
 stories:
   - id: 151-1
@@ -90,3 +90,4 @@ stories:
     workflow: tdd
     depends_on: 151-6
     type: chore
+completed: '2026-06-21'

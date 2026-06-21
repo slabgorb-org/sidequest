@@ -207,10 +207,14 @@ stories:
     title: '[DUNGEON-ROOM-STATE-NOT-PERSISTED] persist discovered_rooms/current_room/room_states to the snapshot as current_region walks the dungeon graph'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: tdd
+    completed: '2026-06-21'
     type: bug
+    review_findings: 'HIGH SEC-1: room-axis write stores narrator result.location into discovered_rooms/room_states without the validate_region_name structural guard the sibling region axis uses (Story 45-16 leak class reopened; defeats AC4/AC6 trustworthy forensics). LOW: from==to idempotency hole in record_room_discovery. Fix: gate room write on validate_region_name (already imported) + add guard test. Red rework -> TEA.'
+    review_verdict: approved
   - id: 153-25
     title: '[DUNGEON-MAP-UI-NO-ROOMGRAPH] render the procedural room-graph in the Map tab while inside the dungeon, not only the surface cartography regions'
     points: 3
