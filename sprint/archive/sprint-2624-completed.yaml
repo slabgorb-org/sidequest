@@ -48,6 +48,7 @@ completed_epics:
   - '119'
   - '153'
   - '152'
+  - '126'
 completed_stories:
   - id: 91-1
     epic: '91'
@@ -1172,5 +1173,195 @@ completed_stories:
   - id: 152-5
     epic: '152'
     title: "[BUG] MP WN-round wire: 2nd commit misresolves to the 1st PC's seat (round never fires) + non-hermetic narrator transport on the sealed-commit handler path — unskip test_mp_wire_first_commit_seals_second_commit_fires_the_round"
+    points: 3
+    completed: '2026-06-20'
+  - id: 126-1
+    epic: '126'
+    title: '[FATE] Verify + wire Fate-conflict harm to ablate stress/consequences, not core.hp'
+    points: 5
+    completed: '2026-06-17'
+  - id: 126-2
+    epic: '126'
+    title: '[BUG] Re-verify router-driven encounter seating returns the table/card game (poker)'
+    points: 2
+    completed: '2026-06-18'
+  - id: 126-3
+    epic: '126'
+    title: '[FATE/UX] Surface Fate gear so a Fate player isn''t stranded on an empty native Inventory panel'
+    points: 3
+    completed: '2026-06-17'
+  - id: 126-4
+    epic: '126'
+    title: '[BUG] Peer action text not visible during the WAIT phase (ADR-036 violation)'
+    points: 3
+    completed: '2026-06-17'
+  - id: 126-5
+    epic: '126'
+    title: '[UX-LOW] Chargen ''Backstory'' is fed by the ''Description'' input, not ''Background'''
+    points: 1
+    completed: '2026-06-17'
+  - id: 126-6
+    epic: '126'
+    title: '[CHORE] Downgrade intent_router.confrontation_verb_unrouted from WARNING (correct-suppression noise)'
+    points: 1
+    completed: '2026-06-18'
+  - id: 126-7
+    epic: '126'
+    title: "[FATE] Player 4dF roll is determinative — client throws the dF dice, settled faces ARE the result; server rolls only for NPCs"
+    points: 5
+    completed: '2026-06-17'
+  - id: 126-8
+    epic: '126'
+    title: "[FATE] Player defense 4dF is determinative (physics-is-the-roll) — the DEFEND barrier (ADR-148/149)"
+    points: 5
+    completed: '2026-06-18'
+  - id: 126-9
+    epic: '126'
+    title: "[PERF] Narrator + intent_router_pass turn-latency ~3x regression landed Jun 17 (no router thrash) — bisect + fix"
+    points: 5
+    completed: '2026-06-17'
+  - id: 126-10
+    epic: '126'
+    title: "[PERF/FATE] intent_router_pass 37-81s spikes on Fate worlds — trim build_fate_projection router prompt (separate from 126-9 narrator fix)"
+    points: 3
+    completed: '2026-06-18'
+  - id: 126-11
+    epic: '126'
+    title: "[NARRATOR] Drama-aware <length-limit>: scale the verbosity cap to narrative weight (SOUL Cost-Scales-with-Drama). The flat standard cap (8 sentences / 800 chars, orchestrator.py:1588 _build_verbosity_section; static 'BREVITY IS KING' in output_style.md) never widens for a climactic reveal vs a walk to the tavern — it strangles plot beats. Wire a drama/weight signal into the verbosity section so high-weight turns get room and quiet turns stay cheap; OTEL span on the chosen tier. Found in the 2026-06-18 narrator-prompt deep-dive. NOTE: 126-9 (thinking-ON latency regression) is now DONE, so the clean baseline this needs exists."
+    points: 3
+    completed: '2026-06-18'
+  - id: 126-12
+    epic: '126'
+    title: "[NARRATOR][ADR] Design: move sidecar accounting off the narrator hot path. output_only.md is 94% bookkeeping (35% tool-owned + 59% sidecar-owned, ~0% craft, ~4k uncached tokens/turn) and one narrator generation must ALSO emit ~12 sidecar fields + fire 8 tool categories inline alongside prose — the 'ten pounds in a five-pound bag'. Draft an ADR in the ADR-113 intent-router lineage: extract sidecar accounting to a pre/post-narration pass so the narrator turn is mostly storytelling. DESIGN ONLY (Architect, no code) — size the dev work after the ADR lands. Found in the 2026-06-18 deep-dive."
+    points: 3
+    completed: '2026-06-18'
+  - id: 126-13
+    epic: '126'
+    title: '[FATE] OTEL watcher event on defend-path authorization rejection (lie-detector parity with player_id spoof-rejection)'
+    points: 1
+    completed: '2026-06-19'
+  - id: 126-14
+    epic: '126'
+    title: "[FATE] Reconcile concede-at-defend: AC-4 (server records concession) vs AC-6 (no wire) — add a defend-concession protocol field or remove the dead conceded branches"
+    points: 3
+    completed: '2026-06-19'
+  - id: 126-15
+    epic: '126'
+    title: '[DOCS] Author the Fate DEFEND-barrier ADR and fix the wrong ADR-148/149 citations in 9 server files (149 is SRD content)'
+    points: 1
+    completed: '2026-06-19'
+  - id: 126-16
+    epic: '126'
+    title: '[FATE] Defend-barrier test-quality nits + deferred TEA coverage (match=authorization, list-vs-next span, partial-fill + defense-wins unit tests)'
+    points: 1
+    completed: '2026-06-20'
+  - id: 126-17
+    epic: '126'
+    title: "[FATE] Build the Fate defend-throw UI surface — handle FATE_DEFEND_REQUEST + defend tray (4dF thrower) + concede affordance; un-hangs the 126-8 DEFEND barrier"
+    points: 5
+    completed: '2026-06-19'
+  - id: 126-18
+    epic: '126'
+    title: '[FATE] Opening-scene inanimate props persist to room_states so established hooks aren''t retracted (envelope/Pernod/ashtray)'
+    points: 5
+    completed: '2026-06-19'
+  - id: 126-19
+    epic: '126'
+    title: '[FATE/UX] Suppress residual native chrome on Fate characters (HP/level/class across 5 surfaces) + remove the duplicate Fate dock tab'
+    points: 5
+    completed: '2026-06-19'
+  - id: 126-20
+    epic: '126'
+    title: '[FATE/UX] Inventory empty-state copy for legitimately-empty Fate inventories'
+    points: 1
+    completed: '2026-06-19'
+  - id: 126-21
+    epic: '126'
+    title: '[CONTENT] Author significant Fate found-items as extras with grants_aspects (Oz silver shoes + others) so #945 can promote them'
+    points: 2
+    completed: '2026-06-19'
+  - id: 126-22
+    epic: '126'
+    title: "[PERF] projection_cache unbounded growth (~3k rows/session, 4.3M rows) — add eviction/TTL/per-session cap + turn_telemetry retention to stop save-DB bloat"
+    points: 3
+    completed: '2026-06-19'
+  - id: 126-23
+    epic: '126'
+    title: "[BUG] OTEL Inspector Live view not partitioned by session_id — renders the last-emitting session, unusable during concurrent runs"
+    points: 3
+    completed: '2026-06-19'
+  - id: 126-24
+    epic: '126'
+    title: '[FATE/CHARGEN] Narrative chargen seeds the Fate pyramid + aspects as editable defaults (genre translation table + world overrides)'
+    points: 5
+    completed: '2026-06-19'
+  - id: 126-25
+    epic: '126'
+    title: '[SERVER] Wire world-tier Fate gear.yaml into rules.fate.gear_catalog so #945 promotes world-specific found-items'
+    points: 3
+    completed: '2026-06-19'
+  - id: 126-26
+    epic: '126'
+    title: '[FATE/UX] Remove the duplicate Fate dock tab + re-home the non-conflict 4dF roll surface under Character (PART B of 126-19)'
+    points: 3
+    completed: '2026-06-19'
+  - id: 126-27
+    epic: '126'
+    title: '[FATE/CLEANUP] Delete unreferenced FatePanel function + sweep stale FateWidget comments (126-26 follow-up)'
+    points: 1
+    completed: '2026-06-20'
+  - id: 126-28
+    epic: '126'
+    title: '[FATE/TEST] Harden 126-18 opening-prop tests: exercise the real snapshot-slimming projection (seed player_seats so party_location resolves; assert summary[room_states] keeps the prop), add a de-dup/idempotency test, assert the wiring-test span payload (props_persisted==N + prop_ids) not just truthy, assert all 3 props in the forensic test, cover the chassis-anchor path, refresh the stale (RED) docstring + drop now-unnecessary type:ignore suppressors, and promote the 2 local imports in persist_opening_props to top-level'
+    points: 2
+    completed: '2026-06-20'
+  - id: 126-29
+    epic: '126'
+    title: '[BUG] Gate Fate proactive tiles on committed-this-exchange so a resumed mid-exchange conflict doesn''t offer actions the server rejects (#403). Add a per-PC committed bool to FATE_STATE.conflict participant from encounter.fate_commits; UI disables/replaces the proactive Overcome/Create-Advantage/Attack/Concede tiles with the existing fate-sealed-hint when set. Do NOT relax the server dispatch_fate_throw sealed-commit guard (ADR-129/151).'
+    points: 3
+    completed: '2026-06-20'
+  - id: 126-30
+    epic: '126'
+    title: "[ENGINE] De-nativize Fate confrontation SEATING — under ruleset=='fate' seat a standoff/conflict directly as a Fate contest (4dF + ladder, four actions, ablative stress); do NOT seat or feed native beats / a tension dial. Keith ruling 2026-06-19. Upstream of #973 projection; the win signal is opponent stress+consequence fill, not the vestigial opponent_metric.tension dial (#964 gated the overlay but did NOT de-nativize seating; beat_selections=2 still seats native beat_defs). Content follow-on (GM-owned, after seam lands): audit whether Fate packs' confrontations.yaml should carry native dial/beat defs at all."
+    points: 5
+    completed: '2026-06-20'
+  - id: 126-31
+    epic: '126'
+    title: '[FATE/UX] Render the opponent stress/consequence track + a taken-out win-meter in FateConflictSurface from the now-projected FATE_STATE.conflict data (#973 carve-out). Data is on the wire (participants[opponent].stress/consequences + fate.conflict.projected span); mirror ConfrontationOverlay''s EdgeBar. DRIVER''s single highest-impact legibility gap.'
+    points: 2
+    completed: '2026-06-20'
+  - id: 126-32
+    epic: '126'
+    title: "[BUG] Bind narrated NPCs to seeded/registry entities + fix shuffle_fallback culture/region routing (one root seam, three manifestations). (a) narrated antagonist -> seated Fate opponent identity by exact name (dust_and_lead 'Henry Shaw' not the bestiary 'Western Diamondback'; Defect A seater fix shipped, identity-binding residual open); (b) described canonical figure -> seeded registry NPC (Oz Good Witch of the North, not a hollow 'Amaranth Warmacre' mint, carry its hp/pronouns); (c) Defect B namegen — npc.invented_name_routed shuffle_fallback reroutes established Anglo names to the wrong culture/region (Ndé), key the mint to the current region. Timing change in narration_apply.py (promote narrated NPCs to snapshot.npcs before mint/seating). LARGE/RISKY — proper TDD server story."
+    points: 8
+    completed: '2026-06-20'
+  - id: 126-33
+    epic: '126'
+    title: "[BUG] Dedup inventory grants — a state.inventory_update 'gained' of an item the character already holds (same name/id) must be a no-op/merge, not a duplicate stack. Oz turn-7 re-granted 'silver shoes' -> inventory ['silver shoes','silver shoes']. Small/scoped server fix."
+    points: 2
+    completed: '2026-06-20'
+  - id: 126-34
+    epic: '126'
+    title: '[OTEL] Keep test-run sessions out of the live GM dashboard. (1) UI filter: drop test-*/tool-test sessions from liveSessions picker + State-tab debugState (useLiveSource.ts:347-355). (2) Stop bumping last_activity_ts on session-list/state polls so auto-follow tracks the genuinely-active session. (3) Session-tag (or drop) infra/test spans so the per-session pin fully filters them. (4) Root cause: point test runs at a separate port / no-watcher mode so they never reach the operator''s live WatcherHub. 41 stale test-* sessions linger (ADR-122 never-evict); only a restart clears them today.'
+    points: 3
+    completed: '2026-06-20'
+  - id: 126-35
+    epic: '126'
+    title: '[FATE] On-play significant items don''t promote to an invokable aspect/extra (#945 on-play path; chargen path verified GREEN via 126-21/126-25). A narrator-granted story item (the drifter''s surveyor''s map) lands in native core.inventory but fate_sheet.aspects/extras is unchanged. KEITH DESIGN CALL pending: either (a) close as model-correct (no equipment economy; ad-hoc item has no authored grants_aspects) + document, or (b) auto-promote narrator-granted significant items to a situation/story aspect or Fate extra under ruleset==''fate''. Surface the decision in the design phase before implementing.'
+    points: 3
+    completed: '2026-06-20'
+  - id: 126-36
+    epic: '126'
+    title: "[UX-LOW] Solo session uses party-scale framing in openings + quest briefs. dust_and_lead opening establishing_narration (openings.yaml the_drifters_offer) reads 'pours four small glasses … waits for the party'; narrator then says 'fifty each for two riders' in a solo game. Make the authored opening party-count-aware (singular for solo) and tell the narrator the seat count so quest briefs scale ('a rider' vs 'two riders')."
+    points: 2
+    completed: '2026-06-20'
+  - id: 126-37
+    epic: '126'
+    title: '[ENGINE] De-nativize Fate confrontation RESOLUTION — extend fate_conflict to the downstream dial guards (apply_beat suppression + advance_confrontation refusal + narration_apply beat-drop)'
+    points: 3
+    completed: '2026-06-20'
+  - id: 126-38
+    epic: '126'
+    title: '[BUG] Namegen: key the narrator-invented-person mint to the current region instead of a blind culture shuffle. Split from 126-32 (manifestation c) by Keith 2026-06-20. _resolve_invented_naming_context (sidequest/server/narration_apply.py) random.shuffles bound cultures with no region awareness, so an unaffiliated stranger in the Anglo-settler dust_and_lead frontier (region sangre_del_paso) can be rerouted to the Ndé/Apache people-group (npc.invented_name_routed resolution_strategy=shuffle_fallback). DESIGN-GATED: there is no region->culture binding in content today — decide WHERE it lives (per-culture regions: field | cartography region->culture list | world default culture) before implementing. RED contract preserved in git commit 64c60385 (test_invented_name_not_shuffle_routed_to_wrong_people_group: strategy must be region-keyed, not blind shuffle).'
     points: 3
     completed: '2026-06-20'

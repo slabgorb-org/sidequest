@@ -3,7 +3,7 @@ type: epic
 title: "Fate Core playtest follow-ups — annees_folles eval (2026-06-16/17)"
 description: 'Still-open findings from the 2026-06-16/17 Fate Core evaluation playtest (pulp_noir/annees_folles, ADR-144 binding). NOT re-filed here: five blocker/major findings were fixed+merged DURING the session and await only DRIVER re-verification (GameBoard ''thresholds is not iterable'' crash ui#408; stale skill-pyramid validator ui#409; OTEL Inspector live span mis-attribution server#923+ui#407; legacy chargen confirmation card server#926; free-text origin dropped #917); three more were verified in-session (intent-router error_max_turns; FATE-MAJOR identical-static-sheet via 121-8; portrait-picker empty-state #402). This epic captures what''s genuinely left: the marquee in-play Fate-conflict ablation test (finally exercisable now the router + GameBoard blockers are cleared), the router-driven table/card re-seat verify, the Fate-gear visibility UX (Keith decision pending), and three carryover/observation items. Source: sq-playtest-pingpong 2026-06-17.'
 priority: p3
-status: backlog
+status: done
 repos: server,ui
 stories:
   - id: 126-1
@@ -579,11 +579,25 @@ stories:
     review_verdict: approved
   - id: 126-35
     title: '[FATE] On-play significant items don''t promote to an invokable aspect/extra (#945 on-play path; chargen path verified GREEN via 126-21/126-25). A narrator-granted story item (the drifter''s surveyor''s map) lands in native core.inventory but fate_sheet.aspects/extras is unchanged. KEITH DESIGN CALL pending: either (a) close as model-correct (no equipment economy; ad-hoc item has no authored grants_aspects) + document, or (b) auto-promote narrator-granted significant items to a situation/story aspect or Fate extra under ruleset==''fate''. Surface the decision in the design phase before implementing.'
+    description: |-
+      [FATE] On-play significant items don't promote to an invokable aspect (#945 on-play path; chargen path GREEN via 126-21/126-25). A narrator-granted ad-hoc story item (the drifter's surveyor's map) lands in core.inventory but the FateSheet is unchanged because the item matches no authored GearDef.grants_aspects AND the narrator never flags it.
+
+      KEITH DESIGN CALL — RESOLVED 2026-06-20 → PATH (c): ACTIVATE THE DORMANT NARRATOR LEVER. Surface 'grants_aspect' to the narrator item-grant tool-contract + prompt so the narrator DELIBERATELY marks an item significant when it grants one; promotion then runs through the existing consumer. REJECTED: (b) engine auto-promotion (invents the equipment economy Fate omits — ADR-144 'a hat is a hat'; Overbaits per Diamonds-and-Coal; needs an unreliable significance heuristic; an aspect is a +2/reroll power faucet) and (a) pure-document (leaves an INVENTED ad-hoc item unpromotable without pre-authoring it as gear).
+
+      MEASURED FACTS: FateSheet has only aspects: list[Aspect] — NO 'extras' field (target is an Aspect kind 'situation'). Consumer + promoter already exist and are tested: narration_apply.py:5254 reads entry.get('grants_aspect'); game/ruleset/fate_item_promotion.py::promote_gained_item appends the Aspect; tests/server/test_fate_item_promotion_wiring.py::test_narrator_grants_aspect_on_invented_item covers CONSUMPTION. DORMANT gap (grep: only one server ref to grants_aspect, the consumer): nothing in the narrator tool-schema/prompt tells the narrator it MAY set the field. This is the exact follow-up 126-25 named when it resolved AC4 by SPLIT. Server-only.
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-20'
     repos: server
     workflow: tdd
+    acceptance_criteria:
+      - The narrator item-grant tool-contract surfaces an OPTIONAL grants_aspect field (tool-schema + prompt-zone instruction) so the narrator may mark a granted item significant. The instruction is narrator-authored promotion only — it must NOT imply or trigger automatic promotion of every item.
+      - 'Full narrator-set WIRING TEST (not just consumption): for a Fate-bound PC, a narrator grant that sets grants_aspect promotes the item to a situation Aspect on the FateSheet that is invokable in a 4dF resolution. Drives the real narrator-set path end-to-end, mirroring the catalog-path wiring test.'
+      - 'OTEL: fate.item_promoted fires with source=narrator so the GM panel distinguishes the narrator-authored route from the catalog route (source=catalog). The GM panel is the lie detector — the narrator path must be observable.'
+      - "Invariant preserved: an ad-hoc item granted WITHOUT grants_aspect does NOT promote (stays inventory flavor). No engine auto-promotion heuristic is added; Fate's no-equipment-economy model (ADR-144) is untouched."
+    completed: '2026-06-20'
+    review_verdict: approved
   - id: 126-36
     title: "[UX-LOW] Solo session uses party-scale framing in openings + quest briefs. dust_and_lead opening establishing_narration (openings.yaml the_drifters_offer) reads 'pours four small glasses … waits for the party'; narrator then says 'fifty each for two riders' in a solo game. Make the authored opening party-count-aware (singular for solo) and tell the narrator the seat count so quest briefs scale ('a rider' vs 'two riders')."
     points: 2
@@ -616,3 +630,4 @@ stories:
     repos: server
     workflow: tdd
     type: bug
+completed: '2026-06-20'
