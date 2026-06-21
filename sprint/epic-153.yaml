@@ -316,7 +316,10 @@ stories:
     title: '[WN-POINTBUY-DEAD-CONFIG] migrate the 4 WN point-buy packs to standard_array + size-validate the WN default spread against ability count (fail loud at load, not a chargen-time IndexError) — 153-4 review follow-up'
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server,content
     workflow: tdd
+    completed: '2026-06-21'
     type: chore
+    review_verdict: approved
