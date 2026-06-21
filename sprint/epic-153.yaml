@@ -83,12 +83,14 @@ stories:
     title: '[FATE-OTHER-SEATING] router names the scene-active antagonist, not a same-surname roster NPC (ADR-116)'
     points: 3
     priority: p3
-    status: in_progress
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: tdd
+    completed: '2026-06-21'
     type: bug
     branch: feat/153-9-fate-other-seating-scene-active-antagonist
-    started: '2026-06-21'
+    review_verdict: approved
   - id: 153-10
     title: '[WWN-OTHER-SEATING] seater prefers pool/narrative antagonist over an ambient MM entity on vague target (ADR-116)'
     points: 3
