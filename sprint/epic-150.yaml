@@ -398,7 +398,8 @@ stories:
     description: 'Full-stack /sq-playtest verification of road_warrior/the_circuit (ruleset: cwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Chassis/rig (ADR-125): if exercised, confirm chassis bond ledger + interior render. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
@@ -407,6 +408,7 @@ stories:
       - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
       - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+    completed: '2026-06-21'
     type: chore
   - id: 150-21
     title: '[PLAYTEST] mutant_wasteland/flickering_reach — full-stack verify (awn)'
