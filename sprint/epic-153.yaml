@@ -266,10 +266,13 @@ stories:
     title: '[BENEATH_SUNDEN-DARKNESS-STATUS-COSMETICS] environmental darkness status should not tier as severity Wound and should stamp the real created_turn (not 0)'
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: trivial
+    completed: '2026-06-21'
     type: bug
+    review_verdict: approved
   - id: 153-32
     title: '[KNOWLEDGE-CLIENT-REACTIVE-ONLY] decide and wire whether server known_facts must persist (narrator context + cold-reload survival) or confirm client-reactive-by-design per ADR-136'
     points: 2
