@@ -335,7 +335,7 @@ stories:
     description: 'Full-stack /sq-playtest verification of space_opera/aureate_span (ruleset: swn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Orbital/space (ADR-130) + dogfight (ADR-077). Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
     points: 2
     priority: p3
-    status: backlog
+    status: done
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
@@ -351,7 +351,7 @@ stories:
     description: 'Full-stack /sq-playtest verification of space_opera/coyote_star (ruleset: swn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Orbital/space (ADR-130) + dogfight (ADR-077); the 140-turn coyote_star reference session world. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
     points: 2
     priority: p3
-    status: backlog
+    status: done
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
@@ -367,7 +367,7 @@ stories:
     description: 'Full-stack /sq-playtest verification of space_opera/perseus_cloud (ruleset: swn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Orbital/space (ADR-130); Jade is extending this world (homebrew authoring path). Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
     points: 2
     priority: p3
-    status: backlog
+    status: done
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
