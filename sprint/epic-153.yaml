@@ -239,13 +239,16 @@ stories:
     title: '[DUNGEON-CURATE-TIMEOUT] keep dungeon room curate within the 25s wall-clock cap (precurate/stream) so authored room content and encounters are not dropped to the degraded deterministic manifest'
     points: 3
     priority: p1
-    status: in_progress
+    status: done
     assigned_to: keith
     started: '2026-06-21'
     repos: server
     workflow: tdd
     acceptance_criteria: []
+    completed: '2026-06-21'
     type: bug
+    review_verdict: approved
+    review_findings: 'HIGH: degrade-path authored read catches only RoomCreatureBindingError; a malformed/unreadable rooms/<id>.yaml raises yaml.YAMLError/OSError uncaught and crashes the player-facing connect on degrade (same class as round-1, sibling exception). Fix: re-raise read/parse errors from resolve_room_creatures as RoomCreatureBindingError + add malformed-YAML degrade test. 3 round-1 fixes verified GREEN.'
   - id: 153-27
     title: '[DUNGEON-ZONE-ELIGIBILITY-UNKNOWN-REGION] teach zone/cast-eligibility to recognize procedural dungeon region ids (entrance/expNNN.rN) so cast staging stops skipping every generated room'
     points: 3
