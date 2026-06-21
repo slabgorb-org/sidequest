@@ -21,10 +21,13 @@ stories:
     title: '[SWN-OPENING-ESTABLISHING-NARRATION-DROPPED] emit authored establishing_narration verbatim at cold-open'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: tdd
+    completed: '2026-06-21'
     type: bug
+    review_verdict: approved
   - id: 153-3
     title: '[WRY-WHIMSY-NO-FATE-CONTEST-DEFS] port wry_whimsy + pulp_noir confrontation catalogs to Fate contest schema + loud loader guard'
     points: 5
