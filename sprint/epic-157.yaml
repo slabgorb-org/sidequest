@@ -55,10 +55,15 @@ stories:
     title: '[CONTENT] Tag gulliver by faction (proof world) + verify no bleed'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    assigned_to: Keith
+    started: '2026-06-21'
     repos: content
     workflow: trivial
     depends_on: 157-4
+    completed: '2026-06-21'
+    branch: feat/157-5-tag-gulliver-faction-no-bleed
+    review_verdict: approved
   - id: 157-6
     title: '[CONTENT] Faction-tag fan-out: oz, wonderland, the_circuit'
     points: 5
