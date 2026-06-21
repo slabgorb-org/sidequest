@@ -51,10 +51,12 @@ stories:
     title: '[SWN-ORBITAL-COURSE-INERT] wire ADR-130 course/clock to the IntentRouter subsystem bank'
     points: 5
     priority: p3
-    status: backlog
+    status: in_progress
+    started: '2026-06-21'
     repos: server
     workflow: tdd
     type: bug
+    branch: feat/153-5-swn-orbital-course-inert-wire-adr130-intentrouter
   - id: 153-6
     title: '[SWN-DOGFIGHT-UNREACHABLE] wire ADR-077 dogfight to IntentRouter dispatch'
     points: 5
