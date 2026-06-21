@@ -121,10 +121,13 @@ stories:
     title: "[126-34 follow-up] Test-run session isolation root fix — point test runs at a separate port / --no-watcher mode so they never register with the operator's live WatcherHub (design captured in 126-34 Dev Assessment / archived session)"
     points: 5
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: tdd
+    completed: '2026-06-21'
     type: refactor
+    review_verdict: approved
   - id: 125-10
     title: "[126-34 follow-up] Keep the test-session predicate in sync across repos — is_test_session (server watcher_hub.py) and isTestSession (ui useLiveSource.ts) encode the test-/tool-test prefixes independently; add a contract test or shared source so they can't drift"
     points: 2
@@ -136,3 +139,11 @@ stories:
     completed: '2026-06-20'
     type: chore
     review_verdict: approved
+  - id: 125-11
+    title: '[125-9 follow-up] Point playtest + understudy harness at a separate watcher-live port by default; decide pytest --no-watcher default (AC#2)'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: orchestrator,understudy
+    workflow: tdd
+    type: chore
