@@ -1,8 +1,160 @@
 id: '153'
 type: epic
-title: Faction/zone-scoped content eligibility
-description: "Multi-region worlds leak content across zones: the Monster Manual (ADR-059) seeds creatures with no location_tags so they are eligible EVERYWHERE, and format_area_creatures does ZERO location filtering — so a 4th-voyage Yahoo surfaces on the 1st-voyage Lilliput shore (wry_whimsy/gulliver playtest, session 2026-06-20-gulliver-e721409c). Applies to oz (4 countries + Emerald City), road_warrior/the_circuit (subculture territories), and any multi-region/faction world. Architectural direction (Keith, 2026-06-20): group locations by faction; scope content-eligibility by the region's faction-group (region -> faction-group -> eligible NPC/creature/trope pools). Reuse-first: regions already carry controlled_by:<faction>; the Monster Manual already has location_tags + culture + available_at_location(); cartography entities already home NPCs. Work = (a) DESIGN the faction-group eligibility model as an ADR-059 amendment, (b) WIRE the eligibility pools (creature selection, NPC staging), (c) TAG content per multi-region world (gulliver as proof, then fan-out). Design-first per PM scoping 2026-06-20."
+title: Playtest follow-ups — open findings from the 2026-06-20/21 full-stack /sq-playtest sweep
+description: "Collection epic for the genuinely-open, actionable findings surfaced by the 150-x full-stack /sq-playtest sweep (glenross/Fate, oz+wonderland/Fate, the WWN heavy_metal + elemental_harmony worlds, the_circuit/CWN, and the SWN space_opera trio aureate_span/coyote_star/perseus_cloud), recorded on the sq-playtest ping-pong board (sq-playtest-pingpong.md). EXCLUDES: items marked CONFIRM/DO-NOT-RE-FILE, known-red epic-108/ADR-143 carve-outs (WWN empty-beat-pool, unbacked combat damage, WWN-magic-logged-not-resolved), the faction/zone content-bleed work (now epic-157), and already-fixed/verified findings. Each story is a discrete fixable finding with a root-cause direction already scoped on the board."
 priority: p2
 status: backlog
 repos: server,content
-stories: []
+stories:
+  - id: 153-1
+    title: '[CWN-OPPONENT-REPRISAL-NO-DAMAGE] wire damage_spec onto the CWN opponent reprisal beat so landed hits ablate player HP'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-2
+    title: '[SWN-OPENING-ESTABLISHING-NARRATION-DROPPED] emit authored establishing_narration verbatim at cold-open'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-3
+    title: '[WRY-WHIMSY-NO-FATE-CONTEST-DEFS] port wry_whimsy + pulp_noir confrontation catalogs to Fate contest schema + loud loader guard'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: bug
+  - id: 153-4
+    title: '[SWN-CHARGEN-FLAT-STATS] WN 14-to-7 attribute spread + assign skills/foci in SWN narrative chargen'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-5
+    title: '[SWN-ORBITAL-COURSE-INERT] wire ADR-130 course/clock to the IntentRouter subsystem bank'
+    points: 5
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-6
+    title: '[SWN-DOGFIGHT-UNREACHABLE] wire ADR-077 dogfight to IntentRouter dispatch'
+    points: 5
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-7
+    title: '[FATE-DEFEND-RESUME-WEDGE] re-emit pending defends on reconnect + clear orphaned pending_defenses (ADR-151)'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-8
+    title: '[DAEMON-NO-RECONNECT] server daemon-client reconnect/back-off loop (ADR-131)'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-9
+    title: '[FATE-OTHER-SEATING] router names the scene-active antagonist, not a same-surname roster NPC (ADR-116)'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-10
+    title: '[WWN-OTHER-SEATING] seater prefers pool/narrative antagonist over an ambient MM entity on vague target (ADR-116)'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-11
+    title: '[NARRATOR-EMPTY-NARRATION-DEGRADED] harden empty-prose-on-continuation upstream of the degraded-stall guard'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-12
+    title: '[SWN-RESOLUTION-BEAT-NO-EXIT] resolution beat offers a non-lethal confrontation exit under hp_depletion'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-13
+    title: '[glenross-seed-quest] Fate chargen drive-assignment sets a real drive, not the vocation label'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: bug
+  - id: 153-14
+    title: '[NPC-NAME-PCSUBSTRING-SUBSTITUTION] word-boundary-guard the PC-name to you substitution'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: bug
+  - id: 153-15
+    title: '[SWN-CHARGEN-RECAP-GRAMMAR] map background label to a noun form and drop the from-race-space stitch'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
+  - id: 153-16
+    title: '[CHARGEN-NAME-PROSE-REJECT] accept the full natural-language name answer or surface why it was rejected'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: bug
+  - id: 153-17
+    title: '[MISSING-COMBAT-SFX] render+upload road_warrior + heavy_metal sfx_library to R2 or drop the manifest refs'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: content
+    workflow: trivial
+    type: chore
+  - id: 153-18
+    title: '[EVROPI-MISSING-PORTRAITS] render+sync 5 missing evropi picker portraits to R2 or drop from the manifest'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: content
+    workflow: trivial
+    type: chore
+  - id: 153-19
+    title: '[PLAYTEST-DATA-ODDITIES] nottavello header latch + stale Adventurer location key + active_stakes class-name + npcs None-rows'
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
