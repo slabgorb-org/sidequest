@@ -10,10 +10,13 @@ stories:
     title: '[CWN-OPPONENT-REPRISAL-NO-DAMAGE] wire damage_spec onto the CWN opponent reprisal beat so landed hits ablate player HP'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: tdd
+    completed: '2026-06-21'
     type: bug
+    review_verdict: approved
   - id: 153-2
     title: '[SWN-OPENING-ESTABLISHING-NARRATION-DROPPED] emit authored establishing_narration verbatim at cold-open'
     points: 3
