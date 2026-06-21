@@ -38,10 +38,12 @@ stories:
     title: '[ENGINE] factions on trope/seed + trope gate + seed-deck draw (Seams 3 & 4)'
     points: 5
     priority: p2
-    status: backlog
+    status: in_progress
     repos: server
     workflow: tdd
     depends_on: 157-2
+    branch: feat/157-4-factions-trope-seed-gate-deck
+    started: '2026-06-21'
   - id: 157-5
     title: '[CONTENT] Tag gulliver by faction (proof world) + verify no bleed'
     points: 3
