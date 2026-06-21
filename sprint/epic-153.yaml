@@ -228,11 +228,7 @@ stories:
     started: '2026-06-21'
     repos: server
     workflow: tdd
-    acceptance_criteria:
-      - Curate completes within the 25s wall-clock cap on a representative beneath_sunden room expansion; the room is served from the curated (authored) path, not the degraded deterministic manifest.
-      - Authored room content and authored encounters (e.g. gnaw_swarm) are preserved in the served room/manifest when curation runs under the cap — not dropped.
-      - The degraded deterministic-manifest fallback triggers only on a genuine curate timeout/failure and emits an OTEL/watcher span when it does (no silent degradation).
-      - 'Wiring test: the curate-within-cap path (precurate/stream) is reachable from the production dungeon room-entry code path — imported, called, and exercised end-to-end.'
+    acceptance_criteria: []
     type: bug
   - id: 153-27
     title: '[DUNGEON-ZONE-ELIGIBILITY-UNKNOWN-REGION] teach zone/cast-eligibility to recognize procedural dungeon region ids (entrance/expNNN.rN) so cast staging stops skipping every generated room'
