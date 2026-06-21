@@ -104,9 +104,7 @@ stories:
       DISPOSITION: per-world five_points health + the Fate CONFLICT engine are GREEN and well-verified; but the MAJOR out-of-conflict fabrication + dice-font 403 + poker deactivation are genre/engine-wide (not five_points-specific) and warrant FIXER work before the Fate ACs can be called green for spaghetti_western. Held in_progress pending those fixes.
     points: 2
     priority: p2
-    status: in_progress
-    assigned_to: 'keith'
-    started: '2026-06-20'
+    status: backlog
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
@@ -216,8 +214,7 @@ stories:
     description: 'Full-stack /sq-playtest verification of wry_whimsy/wonderland (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Whimsy genre-true narration; if the world hydrates a political layer, witnessed-act vocabulary/classification spans fire (double-gated). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
     points: 2
     priority: p2
-    status: in_progress
-    started: '2026-06-20'
+    status: backlog
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:

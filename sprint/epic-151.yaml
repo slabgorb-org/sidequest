@@ -85,7 +85,7 @@ stories:
     title: '[NARRATOR] Playtest validation gate — prose quality unharmed + sidecar fidelity ≥ catch-loop floor, mismatch-rate metric (ADR-150 step 6)'
     points: 3
     priority: p2
-    status: backlog
+    status: canceled
     repos: server
     workflow: tdd
     depends_on: 151-6
