@@ -215,10 +215,13 @@ stories:
     title: '[DUNGEON-MAP-UI-NO-ROOMGRAPH] render the procedural room-graph in the Map tab while inside the dungeon, not only the surface cartography regions'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: ui
     workflow: tdd
+    completed: '2026-06-21'
     type: bug
+    review_verdict: approved
   - id: 153-26
     title: '[DUNGEON-CURATE-TIMEOUT] keep dungeon room curate within the 25s wall-clock cap (precurate/stream) so authored room content and encounters are not dropped to the degraded deterministic manifest'
     points: 3
