@@ -30,12 +30,15 @@ stories:
     title: '[ENGINE] NPC walk-on origin-stamp + authored-cast staging on region entry (Seam 2)'
     points: 5
     priority: p2
-    status: in_progress
+    status: done
     assigned_to: Keith
     started: '2026-06-20'
     repos: server
     workflow: tdd
     depends_on: 157-2
+    completed: '2026-06-20'
+    review_findings: 'R1[HIGH]: origin-stamp (sub-part A) has no production caller — mark_active(faction=) is never invoked with a faction; mark_active_from_narration must thread the region controlled_by. Half-wired feature. R2[MED]: region-None silent skip (no log). R3[LOW]: docstring overclaims fail-soft vs load_genre_pack_cached raise. Sub-part B (staging) is clean + fully wired.'
+    review_verdict: approved
   - id: 157-4
     title: '[ENGINE] factions on trope/seed + trope gate + seed-deck draw (Seams 3 & 4)'
     points: 5
