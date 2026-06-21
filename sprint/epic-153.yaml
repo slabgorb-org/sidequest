@@ -175,3 +175,99 @@ stories:
     repos: server
     workflow: tdd
     type: bug
+  - id: 153-21
+    title: '[DUNGEON-SEAM-CROSSING-STICKY] descend-the-rope must traverse the the_dropmouth->deep_descent seam into the procedural entrance node, not latch the narrator title back to the static cartography region'
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-22
+    title: '[DUNGEON-MOVEMENT-RESOLVER-MISSES-EDGES] resolve natural-language exits (deeper, leftmost west passage) to room-graph node edges and dedupe identical-neighbor exit lists'
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-23
+    title: '[DUNGEON-ROOM-POPULATION-INERT] place authored encounter_creatures + bestiary creatures into generated rooms so exploration spawns real encounters instead of narrator-improvised ones'
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-24
+    title: '[DUNGEON-ROOM-STATE-NOT-PERSISTED] persist discovered_rooms/current_room/room_states to the snapshot as current_region walks the dungeon graph'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-25
+    title: '[DUNGEON-MAP-UI-NO-ROOMGRAPH] render the procedural room-graph in the Map tab while inside the dungeon, not only the surface cartography regions'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: tdd
+    type: bug
+  - id: 153-26
+    title: '[DUNGEON-CURATE-TIMEOUT] keep dungeon room curate within the 25s wall-clock cap (precurate/stream) so authored room content and encounters are not dropped to the degraded deterministic manifest'
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-27
+    title: '[DUNGEON-ZONE-ELIGIBILITY-UNKNOWN-REGION] teach zone/cast-eligibility to recognize procedural dungeon region ids (entrance/expNNN.rN) so cast staging stops skipping every generated room'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-28
+    title: '[BENEATH_SUNDEN-AUTHOR-CAMP-CAST] author the surface-camp cast (Brecca Half-Hand + rope-keepers) in beneath_sunden npcs.yaml so the hub has persistent name-anchored NPCs (total_authored=0 today)'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: content
+    workflow: trivial
+    type: chore
+  - id: 153-29
+    title: '[MP-PRONOUN-LOCALIZATION-INCOMPLETE] per-recipient localizer must convert possessive/subject pronouns (her->your, he->you), not only the subject noun + verb'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 153-30
+    title: '[MP-CONFRONTATION-ROSTER-VS-DISPLAY] group allied combatants on one side of the confrontation roster; render vs only across the faction boundary'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: ui
+    workflow: trivial
+    type: bug
+  - id: 153-31
+    title: '[BENEATH_SUNDEN-DARKNESS-STATUS-COSMETICS] environmental darkness status should not tier as severity Wound and should stamp the real created_turn (not 0)'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: bug
+  - id: 153-32
+    title: '[KNOWLEDGE-CLIENT-REACTIVE-ONLY] decide and wire whether server known_facts must persist (narrator context + cold-reload survival) or confirm client-reactive-by-design per ADR-136'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: bug
