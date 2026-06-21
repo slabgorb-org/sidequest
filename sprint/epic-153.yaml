@@ -194,10 +194,16 @@ stories:
     title: '[DUNGEON-MOVEMENT-RESOLVER-MISSES-EDGES] resolve natural-language exits (deeper, leftmost west passage) to room-graph node edges and dedupe identical-neighbor exit lists'
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    assigned_to: keith
+    started: '2026-06-21'
     repos: server
     workflow: tdd
+    completed: '2026-06-21'
     type: bug
+    branch: feat/153-22-dungeon-movement-resolver-edges
+    review_findings: "Production code correct (683/0 green); REJECT for test-hardening: named AC-3 example 'middle' (_MIDDLE_WORDS) untested, out-of-range ordinal fail-loud untested, ordinal resolved_via=='ordinal' never pinned (AC-6 hole), dedup prefer-visible untested; plus dedup log at DEBUG contradicts its No-Silent-Fallbacks comment. Route to TEA red rework."
+    review_verdict: approved
   - id: 153-23
     title: '[DUNGEON-ROOM-POPULATION-INERT] place authored encounter_creatures + bestiary creatures into generated rooms so exploration spawns real encounters instead of narrator-improvised ones'
     points: 5
