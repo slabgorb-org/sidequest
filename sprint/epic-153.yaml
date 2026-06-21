@@ -104,10 +104,13 @@ stories:
     title: '[WWN-OTHER-SEATING] seater prefers pool/narrative antagonist over an ambient MM entity on vague target (ADR-116)'
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: tdd
+    completed: '2026-06-21'
     type: bug
+    review_verdict: approved
   - id: 153-11
     title: '[NARRATOR-EMPTY-NARRATION-DEGRADED] harden empty-prose-on-continuation upstream of the degraded-stall guard'
     points: 2
