@@ -151,10 +151,14 @@ stories:
     title: '[SWN-CHARGEN-RECAP-GRAMMAR] map background label to a noun form and drop the from-race-space stitch'
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: trivial
+    completed: '2026-06-21'
     type: chore
+    branch: feat/153-15-swn-chargen-recap-grammar-noun-form
+    review_verdict: approved
   - id: 153-16
     title: '[CHARGEN-NAME-PROSE-REJECT] accept the full natural-language name answer or surface why it was rejected'
     points: 1
