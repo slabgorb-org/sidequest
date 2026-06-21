@@ -71,10 +71,13 @@ stories:
     title: '[FATE-DEFEND-RESUME-WEDGE] re-emit pending defends on reconnect + clear orphaned pending_defenses (ADR-151)'
     points: 3
     priority: p3
-    status: backlog
+    status: in_progress
+    assigned_to: keith
+    started: '2026-06-21'
     repos: server
     workflow: tdd
     type: bug
+    branch: feat/153-7-fate-defend-resume-wedge
   - id: 153-8
     title: '[DAEMON-NO-RECONNECT] server daemon-client reconnect/back-off loop (ADR-131)'
     points: 3
