@@ -68,11 +68,16 @@ stories:
     title: '[CONTENT] Faction-tag fan-out: oz, wonderland, the_circuit'
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    assigned_to: Keith
+    started: '2026-06-21'
     repos: content
     workflow: trivial
     depends_on: 157-5
+    completed: '2026-06-21'
     type: chore
+    review_findings: "APPROVED after in-session rework. Reviewer found 4 MEDIUM/LOW doc/test-label defects (impl was correct: sound factions, additive diff, packs 0 errors). Fixed inline (trivial workflow has no rework loop): repointed oz extends-guard to incomplete_companion (real _merge_trope guard) + added green_spectacles standalone test; added wonderland seam-zone test; corrected oz/wonderland extends-count comments + oz glinda-seed note. Re-verified: 36/36 157-6 tests green, 157-5 regression green, ruff clean, packs validate 0 errors. Cross-repo: content PR must merge before server PR."
+    review_verdict: approved
   - id: 157-7
     title: '[ENGINE] Strict zone-tagging load validator (fail-loud, lands last)'
     points: 3
