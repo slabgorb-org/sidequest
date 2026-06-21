@@ -161,3 +161,11 @@ stories:
     repos: server
     workflow: tdd
     type: bug
+  - id: 153-20
+    title: '[TOOTHLESS-DETECTOR-DRIFT] teach the seating toothless-detector about the WN SRD unarmed floor (153-1 follow-up) so it stops false-flagging weaponless WN opponents as invulnerable'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
