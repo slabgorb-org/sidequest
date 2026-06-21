@@ -107,7 +107,6 @@ stories:
     status: in_progress
     assigned_to: 'keith'
     started: '2026-06-20'
-    branch: 'feat/150-3-five_points-fate-playtest'
     repos: ui,server,content,daemon
     workflow: trivial
     acceptance_criteria:
@@ -118,6 +117,7 @@ stories:
       - Poker/table scene seats via the router (table_resolution cdef → instantiate_table_encounter); antes/seats/sealed-commit loop present (126-2).
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
       - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/spaghetti_western — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('spaghetti_western') emits the section; this AC is the live-page render check."
+    branch: 'feat/150-3-five_points-fate-playtest'
     type: chore
   - id: 150-4
     title: '[PLAYTEST] spaghetti_western/the_real_mccoy — full-stack verify (fate)'
@@ -249,7 +249,7 @@ stories:
     description: 'Full-stack /sq-playtest verification of elemental_harmony/burning_peace (ruleset: wwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Elemental magic (ADR-126 MagicPlugin): exercise a magic working. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
     points: 2
     priority: p3
-    status: in_progress
+    status: done
     started: '2026-06-20'
     repos: ui,server,content,daemon
     workflow: trivial
@@ -260,6 +260,7 @@ stories:
       - A magic working dispatches and magic.* / magic_working OTEL spans fire (ADR-126 MagicPlugin).
       - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
       - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+    completed: '2026-06-20'
     type: chore
   - id: 150-12
     title: '[PLAYTEST] elemental_harmony/shattered_accord — full-stack verify (wwn)'
