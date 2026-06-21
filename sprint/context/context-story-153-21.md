@@ -226,3 +226,219 @@ crossing over the static-region re-anchor.
 ---
 _Enriched from the 2026-06-20/21 /sq-playtest finding; code-area claims verified
 against `sidequest-server` source on 2026-06-21._
+
+---
+
+## Architect Design Decision (153-21)
+
+_All line numbers and call shapes below re-verified against live `sidequest-server`
+source on 2026-06-21 (branch `feat/153-21-dungeon-seam-crossing`)._
+
+### The real bug (re-stated precisely after reading the code)
+
+The finding's "narrator string-matches Dropmouth and parks the PC" framing is the
+*symptom*. The mechanism, verified against the source, is **the apply latch clobbers a
+crossing the movement subsystem already performed earlier in the same turn.**
+
+Turn ordering (verified, `websocket_session_handler.py`): the Intent-Router pre-narrator
+pass runs the dispatch bank — including `run_movement_dispatch` — at ~line 984, which
+**mutates the snapshot before the narrator** (ADR-113 engine-first). `_apply_narration_result_to_snapshot`
+runs later at ~line 1177. `turn_manager.record_interaction()` does not fire until
+NARRATION_END (~line 1359), so `snapshot.turn_manager.interaction` is **stable across the
+whole turn** — the movement crossing and the apply call share one turn number.
+
+When movement crosses the seam, `resolve_deep_descent` (`game/seams/deep_descent.py:54`)
+calls `snapshot.apply_world_patch(WorldStatePatch(pc_region={player: "entrance"}))`. Inside
+`apply_world_patch` (`game/session.py:1537-1594`) this:
+1. sets `pc_regions[player] = "entrance"`,
+2. appends a `RegionTransition(turn=interaction, pc_name=player, to_region="entrance", via="world_patch")` (genuine-change gate),
+3. anchor-syncs: solo party → `region_for()` consensus is `"entrance"` → `current_region = "entrance"`.
+
+So **after** a successful movement crossing, and **before** apply runs:
+`region_for(player) == "entrance"` and `current_region == "entrance"`.
+
+Then apply resolves the heading "The Dropmouth — First Chamber" →
+`known_region_id == "the_dropmouth"` (via `leading_place_segment`, `region_validation.py:172`).
+The drift-strip block at `narration_apply.py:4237` is gated `current_region == known_region_id`
+("the_dropmouth" != "entrance") so it does **not** fire. Control falls to the latch at
+**`narration_apply.py:4291`**: `if _is_region_mode_world and snapshot.current_region != known_region_id:`
+— `"entrance" != "the_dropmouth"` is **True** → the latch **re-sets `current_region = "the_dropmouth"`
+and `pc_regions[player] = "the_dropmouth"`** (lines 4293-4294), appends a *reverse*
+`RegionTransition(... to_region="the_dropmouth", via="narration_apply")`, and logs
+`region.entry_resolved_to_cartography` (line 4374). **That is the clobber-back.** The PC is
+dragged from `entrance` back onto the surface region; only a second descent (when no fresh
+title shadows it) sticks.
+
+This reframing matters because it picks the signal: the engine truth we must respect is the
+**same-turn movement crossing already on the snapshot**, not anything in the heading text.
+
+### 1. The descent-detection signal — candidate (a), the same-turn crossing receipt
+
+**Decision: signal (a). The crossing already lives on the snapshot when apply runs; apply
+must detect it and DECLINE to clobber it back. Apply does NOT perform the crossing itself.**
+
+Why (a) and not (b) or (c):
+- **(b) `turn_context.dispatch_package`** is *not reachable* at the apply call site. The
+  signature of `_apply_narration_result_to_snapshot` (verified, `narration_apply.py:3907-3928`)
+  is `snapshot, result, player_name, *, room, pack, world, dice_failed, dice_actor,
+  from_explicit_action, opposed_*, acting_character_name, monster_manual, is_dice_replay,
+  lookahead_handle`. There is **no `dispatch_package` parameter** and threading one in is
+  unnecessary new surface — the crossing's effects are already recorded on `snapshot`. Reject (b).
+- **(c) apply performs the crossing keyed on `seam_route_for(region) is not None` + a
+  descent marker** reintroduces exactly the text-classification teleportation 105-2 forbade:
+  the only descent marker available in apply is the heading/narration text. There is no
+  non-text descent signal *inside* apply other than the receipt left by movement. Reject (c).
+- **(a)** uses the receipt movement already wrote. It is the only available, non-text,
+  reuse-first signal. **Choose (a).**
+
+**Where the signal lives, concretely.** Read it off the snapshot, two pinned facts:
+- `snapshot.region_for(perspective=player_name) == ENTRANCE_ID` (`"entrance"`,
+  `dungeon/seed_bootstrap.py:31`) — the PC is already standing on the procedural entrance node,
+  AND
+- the crossing happened **this turn**: there is a `RegionTransition` in
+  `snapshot.region_transitions` with `to_region == ENTRANCE_ID` and
+  `turn == snapshot.turn_manager.interaction`.
+
+The `region_for == entrance` check alone is *almost* sufficient, but the same-turn
+`region_transitions` clause makes the intent explicit and guards the resume/re-entry edge
+(a PC who crossed on a *prior* turn and is mid-dungeon must not be special-cased here — that
+is the in-dungeon path, out of scope per 153-22). Use BOTH clauses ANDed.
+
+### 2. Crossing mechanism — DON'T-CLOBBER, not re-cross
+
+**Decision: "don't-clobber a same-turn crossing."** Apply must NOT call `get_seam_resolver`
+itself on this path. The crossing was already performed by `run_movement_dispatch` →
+`resolve_deep_descent`, which **already emitted `movement.resolved`** with
+`resolved_via="surface_descent"` (`movement.py:189`, `deep_descent.py:55-69`) and already
+advanced `current_region`/`pc_regions`/`discovered_regions`. Re-crossing would double-fire the
+span and the frontier hook.
+
+Concretely, the new guard goes at the **top of the `if known_region_id is not None:` block**
+(`narration_apply.py:4210`), before the drift-strip (4237) and before the latch (4291):
+
+> If `_is_region_mode_world`, the PC already stands on `ENTRANCE_ID` via a *this-turn*
+> `region_transitions` crossing, and `known_region_id` is the **surface seam-owner** of that
+> entrance (`surface_owner_for_entrance(_region_cart).from_id == known_region_id`, or simply
+> `seam_route_for(_region_cart, known_region_id) is not None`): the narrator merely
+> re-titled the surface seam region while the engine already crossed. **Do not advance/clobber
+> `current_region` back to `known_region_id`.** Instead, re-anchor the *scene* to the authored
+> entrance room and rewrite the ledger so prose follows the engine (AC3), then fall through
+> without taking the latch.
+
+**Reconciling AC6.** AC6 says the crossing emits `movement.resolved` with `resolved_via`
+indicating a narration-driven crossing, and `region.entry_resolved_to_cartography` is NOT
+emitted. Two honest readings; pick deliberately:
+
+- The **load-bearing** half — *`region.entry_resolved_to_cartography` MUST NOT fire for the
+  crossed descent* — is satisfied directly by the don't-clobber guard returning before line 4374.
+- The `movement.resolved` span **already fired** during the movement-dispatch crossing earlier
+  this turn (with `resolved_via="surface_descent"`). The GM panel therefore already sees the
+  engine crossing on this turn. To make the *narration-apply decision itself* observable (the
+  CLAUDE.md OTEL principle — every subsystem decision emits a span), the apply guard MUST emit
+  its **own** span recording that it honored the same-turn crossing rather than clobbering it.
+  **Emit a `movement.resolved` span from the apply guard with
+  `resolved_via="narration_seam_recovery"`** (the value the existing 105-2 sibling branch
+  already uses, `narration_apply.py:4402`) so AC6's "`resolved_via` indicating a
+  narration-driven crossing" reads true and the panel can distinguish "apply honored the
+  crossing" from "movement performed it." Reuse `movement_resolved_span`
+  (`telemetry/spans/movement.py`, imported by `deep_descent.py:16`). Also fire the
+  `region_current_advanced` watcher publish with `new_region="entrance"` if and only if the
+  apply guard is the thing that observed `entrance` (it will already be `entrance`; publish so
+  the panel's region-advance lane carries the entrance on this turn — AC6 explicitly asks for
+  `region_current_advanced` with `new_region="entrance"`). **Do not** emit
+  `region.entry_resolved_to_cartography`.
+
+  Chosen `resolved_via` value: **`"narration_seam_recovery"`** (string already in use for the
+  sibling 105-2 branch — no new vocabulary).
+
+### 3. Coexistence with 105-2 (`test_drift_strip_on_seam_region` stays GREEN)
+
+The existing `test_drift_strip_on_seam_region` seeds `pc_regions={"Groucho": "the_dropmouth"}`,
+`current_region="the_dropmouth"` and applies a pure re-title `"The Dropmouth — The Deep"` with
+**no movement dispatch** (the test calls apply directly; nothing crossed). Under the chosen
+signal, the new guard's first clause — `region_for(player) == ENTRANCE_ID` — is **False** (the
+PC is at `the_dropmouth`, not `entrance`), and there is **no this-turn `region_transitions`
+entry to `entrance`**. So the new guard does **not** fire; control reaches the drift-strip
+exactly as before, strips to "The Dropmouth", emits `seam_region_sub_location_stripped`. GREEN
+preserved. The signal is specifically "a crossing **already happened** this turn," which a pure
+retitle never satisfies — that is *why* it is the correct non-text discriminator the story asks
+for. `test_oz_drift_retitle_unchanged` and `test_seamless_region_mode_world_unchanged` are
+likewise untouched (oz has no seam, no entrance crossing).
+
+### 4. Fail-loud (AC5)
+
+On this path there is nothing new to reject: the crossing the guard honors **already
+succeeded** during movement dispatch (resolver raised `SeamCrossingError` → `_unresolved`
+there if the store/entrance was dead, so the PC would still be at `the_dropmouth` and the
+guard's `region_for == entrance` clause is False — control then flows to the existing
+unresolvable path). The existing `region_entry_rejected_span(reason="seam_crossing_unresolvable")`
+in the `elif _is_region_mode_world:` branch (`narration_apply.py:4412`) continues to own the
+genuine fail-loud case: heading resolves to NO region, PC on a seam-owner, crossing attempted
+in apply and failed → reject, PC stays put. **Do not** widen or weaken that span; the
+don't-clobber guard never reaches it. If for defensiveness the guard ever finds the
+`region_for == entrance` receipt but the authored entrance room can't be resolved for
+re-anchoring (`_entrance_room_name` returns nothing), prefer leaving the engine's already-correct
+`entrance` region intact and skip the cosmetic re-anchor — never drag the PC back to surface to
+"fail safe." (Staying at the truthful `entrance` is the honest outcome; the clobber-back is the
+dishonest one.)
+
+### 5. Test-construction guidance for TEA
+
+Extend `tests/server/test_narration_seam_recovery.py` using `hybrid_apply_kit`. The
+AC1-cross scenario must be made distinguishable from the AC2-stay scenario **by pre-seeding the
+same-turn crossing receipt on the snapshot**, NOT by a flag on `result`:
+
+**AC1 — the cross/honor case (new test, e.g. `test_resolved_seam_heading_honors_same_turn_crossing`):**
+Build the kit, then BEFORE calling `apply`, simulate what `run_movement_dispatch` already did
+this turn — the most faithful way is to drive the real crossing on the kit's snapshot:
+`from sidequest.game.seams.deep_descent import resolve_deep_descent` and call it with
+`snapshot=kit.snapshot, player_name="Groucho", route=<the Down-the-Rope Route from the hybrid
+cart>, resolved_via="surface_descent", dungeon_store=kit.handle.persistence`. That writes
+`pc_regions["Groucho"]="entrance"`, advances `current_region`, and appends the same-turn
+`RegionTransition`. (Equivalently, hand-seed: `snapshot.apply_world_patch(WorldStatePatch(
+pc_region={"Groucho": ENTRANCE_ID}))` — same receipt, simpler.) THEN
+`result = kit.narration_result(location="The Dropmouth — First Chamber")` and `kit.apply(result)`.
+Assert:
+- `kit.snapshot.region_for(perspective="Groucho") == ENTRANCE_ID` and
+  `kit.snapshot.current_region == ENTRANCE_ID` (NOT dragged back to `the_dropmouth`),
+- `result.location == ENTRANCE_ROOM_NAME` ("Under the Rope") — scene re-anchored (AC3),
+- `kit.snapshot.character_locations["Groucho"] == ENTRANCE_ROOM_NAME` — ledger agrees (AC3),
+- `kit.assert_no_span_reason(...)` has no analogue for `entry_resolved_to_cartography`; assert
+  instead that the apply did NOT log/emit the latch — use the watcher-capture fixture
+  (`captured_watcher_events`) and assert NO `region_current_advanced` event carries
+  `new_region == "the_dropmouth"`, AND assert a `movement.resolved` span fired with
+  `resolved_via == "narration_seam_recovery"` (extend `assert_span` — it already matches on
+  attributes), AND a `region_current_advanced` event with `new_region == "entrance"` (AC6).
+- discovered counter: assert `ENTRANCE_ID in kit.snapshot.discovered_regions` reflects the
+  deep entry on this first descent (AC4 — note the count comes from the crossing's frontier
+  hook / region init; assert membership, not a brittle "1/N" string).
+
+**AC2 — the stay case is the EXISTING `test_drift_strip_on_seam_region`, unchanged** — it
+seeds NO crossing receipt (`pc_regions["Groucho"]="the_dropmouth"`), so it must stay GREEN as
+the negative control. TEA should run it alongside the new test to prove the signal discriminates.
+
+The one moving part TEA introduces is the **pre-seeded same-turn `entrance` receipt** on the
+snapshot. That receipt is the entire signal; a pure-retitle test omits it. No new `result`
+flag, no `dispatch_package` threading.
+
+### Wiring test (AC7)
+
+The AC1 test above IS the wiring/behavior test: it drives the real
+`_apply_narration_result_to_snapshot` through the `hybrid_apply_kit` (real authored
+`rooms/entrance.yaml`, real `resolve_deep_descent`, real `movement.resolved` span capture via
+`otel_capture`). No source-text grep assertions (CLAUDE.md "No Source-Text Wiring Tests") —
+assert on the captured span + the snapshot landing on `entrance`.
+
+### Self-review
+
+- Decision documented with rationale: yes (don't-clobber on same-turn crossing receipt).
+- Alternatives considered: (b) dispatch_package threading — rejected (unreachable at call site);
+  (c) apply re-crosses on text — rejected (re-introduces 105-2 text teleportation).
+- Implementation guidance for Dev: guard placement at `narration_apply.py:4210` top-of-block,
+  read receipt off `region_for`+`region_transitions`, re-anchor via `_entrance_room_name` +
+  `_reanchor_location_ledger`, emit `movement.resolved`/`region_current_advanced`, skip the
+  latch, never emit `region.entry_resolved_to_cartography`.
+- Existing patterns checked first: reuses `resolve_deep_descent`'s already-fired crossing,
+  the 105-2 `narration_seam_recovery` resolved_via vocabulary, `_entrance_room_name` /
+  `_reanchor_location_ledger`, and the existing fail-loud reject span — no new mechanism.
+- Read-only: no source edited; only this context file appended.

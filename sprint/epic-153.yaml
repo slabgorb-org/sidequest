@@ -183,10 +183,13 @@ stories:
     title: '[DUNGEON-SEAM-CROSSING-STICKY] descend-the-rope must traverse the the_dropmouth->deep_descent seam into the procedural entrance node, not latch the narrator title back to the static cartography region'
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server
     workflow: tdd
+    completed: '2026-06-21'
     type: bug
+    review_verdict: approved
   - id: 153-22
     title: '[DUNGEON-MOVEMENT-RESOLVER-MISSES-EDGES] resolve natural-language exits (deeper, leftmost west passage) to room-graph node edges and dedupe identical-neighbor exit lists'
     points: 5
