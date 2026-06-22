@@ -326,10 +326,14 @@ stories:
     title: '[MP-PRONOUN-LOCALIZATION-INCOMPLETE] per-recipient localizer must convert possessive/subject pronouns (her->your, he->you), not only the subject noun + verb'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-22'
     repos: server
     workflow: tdd
+    completed: '2026-06-22'
     type: bug
+    review_findings: "REJECT: two regressions from the ;-clause-split (both correct pre-branch). [HIGH] 153-14 NPC-name-fragment guard re-opens after a semicolon ('…; Vah Kantos bows' → 'Vah you bow'); [MEDIUM] PC name swapped at start of a post-; clause capitalizes mid-sentence ('The torch gutters; Carl steadies it' → '…; You steady it'). Shared root: _is_sentence_start_in / _is_proper_noun_fragment treat a clause boundary as a sentence start. Fix is ~2 lines (thread is_first_clause into _is_proper_noun_fragment; j<0 branch returns clause_is_sentence_start). Plus non-blocking: within-clause same-set NPC bleed, she/her object-before-particle, format/import-json/doc nits."
+    review_verdict: approved
   - id: 153-30
     title: '[MP-CONFRONTATION-ROSTER-VS-DISPLAY] group allied combatants on one side of the confrontation roster; render vs only across the faction boundary'
     points: 1
