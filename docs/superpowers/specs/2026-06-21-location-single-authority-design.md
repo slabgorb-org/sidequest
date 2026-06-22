@@ -1,5 +1,12 @@
 # Location Has One Author — The Engine. The Narrator Goes Cosmetic.
 
+> **⚠️ SUPERSEDED / WRONG — DO NOT FOLLOW (stamped 2026-06-22).** Reasoned from saves and
+> code, not a live run; wrong on the central facts. Its "single-authority / sever the
+> narrator / drop attempt #8" direction was reversed by the live evidence. Superseded by
+> `2026-06-22-sunden-crossing-FINDINGS.md` (corrected diagnosis) and
+> `2026-06-22-dungeon-affordance-design.md` (the design that shipped — the real defect was
+> the generate-before-narrate affordance race, not location authority). Kept for history only.
+
 **Date:** 2026-06-21
 **Author:** Architect (Atlas the Endurer)
 **Status:** Proposed design — pre-implementation

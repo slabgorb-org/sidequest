@@ -1,5 +1,12 @@
 # The Static→Procedural Crossing: Engine-Authoritative, One-Action Descent, Observable
 
+> **⚠️ SUPERSEDED / WRONG — DO NOT FOLLOW (stamped 2026-06-22).** Reasoned from saves and
+> code, not a live run; wrong on the central facts (its "Bug B = expand the ring" framing was a
+> misdiagnosis — the ring was already materialized; the player just couldn't see the exits).
+> Superseded by `2026-06-22-sunden-crossing-FINDINGS.md` (corrected diagnosis) and
+> `2026-06-22-dungeon-affordance-design.md` (the design that shipped — generate-before-narrate
+> affordance race, live-verified in PR #1042). Kept for history only.
+
 **Date:** 2026-06-22
 **Author:** Architect (Atlas the Endurer)
 **Status:** Proposed design — approved in shape, pre-implementation
