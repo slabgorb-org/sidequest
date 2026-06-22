@@ -1,4 +1,4 @@
-# Story 153-23 Context
+# Story 153-23: DUNGEON-ROOM-POPULATION-INERT
 
 ## Title
 [DUNGEON-ROOM-POPULATION-INERT] place authored encounter_creatures + bestiary creatures into generated rooms so exploration spawns real encounters instead of narrator-improvised ones
@@ -8,6 +8,7 @@
 - **Type:** bug
 - **Points:** 5
 - **Priority:** p1
+- **Repos:** server
 - **Workflow:** tdd
 - **Repo:** server
 - **Epic:** 153 — Playtest follow-ups (open findings from the 2026-06-20/21 full-stack /sq-playtest sweep)
