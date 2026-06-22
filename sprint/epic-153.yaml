@@ -138,10 +138,13 @@ stories:
     title: '[SWN-RESOLUTION-BEAT-NO-EXIT] resolution beat offers a non-lethal confrontation exit under hp_depletion'
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-22'
     repos: server
     workflow: tdd
+    completed: '2026-06-22'
     type: bug
+    review_verdict: approved
   - id: 153-13
     title: '[glenross-seed-quest] Fate chargen drive-assignment sets a real drive, not the vocation label'
     points: 2
