@@ -67,12 +67,14 @@ stories:
     title: '[SWN-DOGFIGHT-UNREACHABLE] wire ADR-077 dogfight to IntentRouter dispatch'
     points: 5
     priority: p3
-    status: in_progress
+    status: done
     started: '2026-06-22'
     repos: server
     workflow: tdd
+    completed: '2026-06-22'
     type: bug
     branch: feat/153-6-swn-dogfight-unreachable-wire-intentrouter
+    review_verdict: approved
   - id: 153-7
     title: '[FATE-DEFEND-RESUME-WEDGE] re-emit pending defends on reconnect + clear orphaned pending_defenses (ADR-151)'
     points: 3
