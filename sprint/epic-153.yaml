@@ -222,10 +222,13 @@ stories:
     title: '[TOOTHLESS-DETECTOR-DRIFT] teach the seating toothless-detector about the WN SRD unarmed floor (153-1 follow-up) so it stops false-flagging weaponless WN opponents as invulnerable'
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-22'
     repos: server
     workflow: tdd
+    completed: '2026-06-22'
     type: bug
+    review_verdict: approved
   - id: 153-21
     title: '[DUNGEON-SEAM-CROSSING-STICKY] descend-the-rope must traverse the the_dropmouth->deep_descent seam into the procedural entrance node, not latch the narrator title back to the static cartography region'
     points: 5
