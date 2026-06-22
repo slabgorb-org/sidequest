@@ -3,6 +3,19 @@
 ## Title
 [PLAYTEST-DATA-ODDITIES] nottavello header latch + stale Adventurer location key + active_stakes class-name + npcs None-rows
 
+## ⚠️ Scope Amendment (2026-06-22, SM)
+
+**Oddity 1 (nottavello header latch) is DEFERRED out of this story.** It is a session-create
+*location-seeding* bug that overlaps the in-flight **location-single-authority** effort (server PR
+#1029 "Plan 1: engine-authoritative lateral region travel", with Plans 2–3 to follow that *sever
+the narrator's `location_drift_repaired` title-scrape authority* — the exact mechanism oddity 1
+leans on). Fixing the seeding symptom here would race the root-cause work, so it folds into that
+effort instead.
+
+**In scope for 153-19: oddities 2, 3, 4 only.** Below, oddity 1 and AC-1 are retained for history
+but marked DEFERRED — do not write tests or code for them. The wiring AC (AC-5) draws from oddities
+2–4.
+
 ## Metadata
 - **Story ID:** 153-19
 - **Type:** bug
@@ -21,7 +34,7 @@ the snapshot exposed to the narrator and the UI is transiently dirty on turn 1 o
 in named fields. This story exists to actually fix the family rather than re-confirming it on
 another world.
 
-### Oddity 1 — nottavello header latch (the_circuit)
+### Oddity 1 — nottavello header latch (the_circuit) — ⚠️ DEFERRED (see Scope Amendment)
 
 Turn-1 location chip shows **`nottavello`** — a raw lowercase region id that is neither the
 cartography `starting_region` (`sturmichi`) nor the opening `location_label`. The session-create
@@ -84,10 +97,12 @@ of snapshot/projection cleanliness and recur as a family.
 
 ## Acceptance Criteria
 
-1. **Header shows resolved location on turn 1.** On a fresh session, the turn-1 location chip/header
-   shows the resolved `location_label` (e.g. "Kannai Onramp — Kanjō Loop"), never a raw region id
-   like `nottavello`. The `narrator.location_drift_repaired` telemetry should not fire on turn 1
-   because the location was never wrong to begin with.
+1. **⚠️ DEFERRED — Header shows resolved location on turn 1.** (Folded into the location-single-authority
+   effort, server PR #1029 + Plans 2–3. NOT in scope for 153-19 — do not write tests or code for this
+   AC.) On a fresh session, the turn-1 location chip/header shows the resolved `location_label` (e.g.
+   "Kannai Onramp — Kanjō Loop"), never a raw region id like `nottavello`. The
+   `narrator.location_drift_repaired` telemetry should not fire on turn 1 because the location was
+   never wrong to begin with.
 
 2. **No stale "Adventurer" location key.** After character finalization, `character_locations` in
    the snapshot contains only the real character key — no stale pre-name default key (`Adventurer`
@@ -119,14 +134,15 @@ of snapshot/projection cleanliness and recur as a family.
 
 ## Scope Notes
 
-In scope:
-- All four named oddities: nottavello latch, stale Adventurer key, active_stakes class-name, npcs
-  None-rows.
-- Fixes at source (session-create seeding, character finalization cleanup, stakes serialization,
-  None-filtering before snapshot exposure).
-- Integration test reproducing at least one oddity through the real snapshot/projection path.
+In scope (oddities 2–4 only — see Scope Amendment):
+- Oddity 2 (stale Adventurer key), oddity 3 (active_stakes class-name), oddity 4 (npcs None-rows).
+- Fixes at source (character finalization cleanup, stakes serialization, None-filtering before
+  snapshot exposure).
+- Integration test reproducing at least one of oddities 2–4 through the real snapshot/projection path.
 
 Out of scope:
+- **Oddity 1 (nottavello header latch / session-create location seeding) — DEFERRED** into the
+  location-single-authority effort (server PR #1029 + Plans 2–3). Do not fix here.
 - ADR-145 SRD inventory skinning (generic barsoom kit) — that is a separate deferred item.
 - Any new snapshot/projection architecture — targeted fixes only.
 - Re-filing any of these as new items on additional worlds; this story closes the family.
