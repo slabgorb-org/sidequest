@@ -314,10 +314,12 @@ stories:
     title: '[DUNGEON-ZONE-ELIGIBILITY-UNKNOWN-REGION] teach zone/cast-eligibility to recognize procedural dungeon region ids (entrance/expNNN.rN) so cast staging stops skipping every generated room'
     points: 3
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-06-22'
     repos: server
     workflow: tdd
     type: bug
+    branch: feat/153-27-dungeon-zone-region-eligibility
   - id: 153-28
     title: '[BENEATH_SUNDEN-AUTHOR-CAMP-CAST] author the surface-camp cast (Brecca Half-Hand + rope-keepers) in beneath_sunden npcs.yaml so the hub has persistent name-anchored NPCs (total_authored=0 today)'
     points: 2
