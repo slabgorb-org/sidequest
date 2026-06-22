@@ -384,3 +384,21 @@ stories:
     completed: '2026-06-21'
     type: chore
     review_verdict: approved
+  - id: 153-35
+    title: '[LONG_FOUNDRY-MISSING-PORTRAITS] remap 2 long_foundry picker backdrop_poi to real catalog slugs + render to R2'
+    points: 2
+    priority: p2
+    status: done
+    repos: content
+    workflow: trivial
+    completed: '2026-06-22'
+    type: bug
+  - id: 153-36
+    title: '[BACKDROP-POI-VALIDATOR-GAP] promote dangling backdrop_poi from waiver_warning to content_error in pack validator'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 153-35
+    type: refactor
