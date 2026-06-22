@@ -340,11 +340,13 @@ stories:
     title: '[KNOWLEDGE-CLIENT-REACTIVE-ONLY] decide and wire whether server known_facts must persist (narrator context + cold-reload survival) or confirm client-reactive-by-design per ADR-136'
     points: 2
     priority: p3
-    status: in_progress
+    status: in_review
     started: '2026-06-22'
     repos: server
     workflow: trivial
     type: bug
+    review_findings: "[MEDIUM][DOC] deliverable accuracy: documents GM-panel observability 'via the state.footnotes_forwarded span' — no such span; it is a logger.info label (websocket_session_handler.py:1775). Real feed watcher events are state_transition(field=footnotes,:1779) + state.footnote_fact_id_minted(:1758). Blocks because it fails AC2/AC3 accuracy in both the code comment and the durable ADR-100 amendment. Decision/verdict itself sound. Fix: correct event name in comment + ADR + session Decision Record. Green rework."
+    review_verdict: rejected
   - id: 153-33
     title: '[SWN-CHARGEN-NO-SKILLS-FOCI] author space_opera backgrounds + foci so SWN narrative chargen grants skills/foci per WWN SRD §1.3/§1.5 (completes 153-4 deferred AC-2)'
     points: 3
