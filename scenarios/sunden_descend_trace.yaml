@@ -1,0 +1,40 @@
+# Sünden descent + EXPANSION trace — does the procedural dungeon keep
+# materializing new sections AHEAD of the party as they explore onward, and does
+# the narrator surface the real exits each room so the player can navigate?
+#
+# Phase 1 (actions 1-3): the static→procedural CROSSING (ropefoot → entrance →
+#   first rings). The original 3-action regression repro lives here unchanged.
+# Phase 2 (actions 4-14): EXPANSION — follow the exits the narrator now names,
+#   deeper and laterally, plus one backtrack-and-branch, so each move enters
+#   undiscovered ground and triggers a fresh materialize/expand cycle.
+#
+# Inspect afterward (Jaeger jsonl + turn_telemetry):
+#   - movement.resolved onward_ring_drained=True  (generate-before-narrate engaged)
+#   - dungeon.materialize.attach expansion_id=1,2,3,…  (new SECTIONS keep forming)
+#   - frontier.expand from_region_id=…  (the ring stays ahead of the party)
+#   - NO movement.unresolved / dispatch_engagement.movement.mismatch  (never dead-ends)
+#   - narration names exits each turn  (the affordance the player navigates by)
+name: Sünden descend + expand trace — crossing then multi-section exploration
+genre: caverns_and_claudes
+world: beneath_sunden
+
+character:
+  strategy: auto
+
+actions:
+  # --- Phase 1: the crossing (regression repro — unchanged) ---
+  - "I take hold of the rope at the winch-house and climb down into the Deep."
+  - "I keep climbing down the rope, descending into the dark."
+  - "I press deeper into the cavern below."
+  # --- Phase 2: expansion — follow the named exits into new ground ---
+  - "I follow the passage that runs onward, deeper into the dungeon."
+  - "I take the corridor leading further in, away from the way I came."
+  - "I head down the shaft to the level below."
+  - "I press on through the next opening, into ground I haven't seen yet."
+  - "I follow the tunnel as it bends off into the dark."
+  - "I double back, then take a different passage than the one I came in by."
+  - "I push deeper still, toward the heart of this place."
+  - "I take the eastern way and explore the side passages there."
+  - "I keep going, further into the megadungeon."
+  - "I descend whatever way leads down from here."
+  - "I press on into the next stretch of unexplored dark."
