@@ -1,5 +1,13 @@
 ## Architect Decisions
 
+### Sünden static→procedural crossing — KEEP attempt #8; the "single-authority sever" was over-engineering (2026-06-22)
+- **Status: supersedes the 2026-06-21 + 2026-06-22 location-single-authority design notes.** Those said drop attempt #8 (`fix/dungeon-seam-reachable-from-surface` / `seam_route_via_adjacency` / `surface_descent_adjacent`) and proposed a system-wide "engine owns region, sever the narrator, single authority" re-architecture touching every region-mode world. A **live headless playtest disproves that** (session 15331, 2026-06-22): attempt #8 already crosses `ropefoot → entrance` — the winch straight into the generated ADR-106 dungeon — in ONE action, engine-resolved (`movement.resolved resolved_via=surface_descent_adjacent edge_kind=surface_descent`). **It works. The branch we were told to throw away is the fix.**
+- **Decision:** keep / merge attempt #8. Remaining work is NARROW, not a re-architecture:
+  - **(A)** deny the narrator's `apply_world_patch` tool the `/current_region` (+`/pc_regions`) path for seam/region-mode worlds — a scoped if-statement. The title-scrape is ALREADY fenced (`region.entry_rejected: sub_location_in_region_mode_world` from `narration_apply.location_update`); the tool is the remaining hole. This is the real "stop the clobber," not a `narration_apply` rewrite.
+  - **(B)** keep the dungeon lookahead ahead of the descent so the engine doesn't hit `no_candidate_edges` (it stalled at `exp002.r2` → `dispatch_engagement.movement.mismatch`, narrator improvised the move).
+  - **(C)** route movement spans into `turn_telemetry` (the real observability fix — see architect-gotchas).
+- **Touches NOTHING in oz / wonderland / gulliver / orbitals.** The recurring failure mode on this transit is escalating one world's specific bug into system-wide doctrine — DON'T. Full detail: `docs/superpowers/specs/2026-06-22-sunden-crossing-FINDINGS.md`. Plan-1 lateral mover (`feat/region-lateral-mover`, PR #1029) is beside the point for sünden (the descent is a seam crossing, not a named lateral move; the lateral resolver only matches by name, not `direction=deeper`).
+
 ### Product direction (settled — don't revisit)
 - **Narrative consistency is the #1 product goal.** The solo narrative experience is the core value prop. Mechanical state (known_facts, LoreStore, NPC registry, inventory) exists specifically as guardrails for the LLM — not as game mechanics for the player. Every bug that breaks consistency (NPC name changes, forgotten items, lost facts, turn count resets) is high priority.
 - **Book conceit is retired.** UI has pivoted to persistent docked sidebar + Current Turn Focus + Scrollable History. No modal overlays to ask for your own state. Decided 2026-04-05.
