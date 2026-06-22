@@ -1,15 +1,12 @@
 sprint:
-  name: TO Sprint 2624
+  name: TO Sprint 2626
   jira_sprint_id: 0
-  jira_sprint_name: TO Sprint 2624
-  goal: Ruleset-world combat & magic, cost observability, and the reference SPA migration
-  start_date: '2026-06-08'
-  end_date: '2026-06-21'
+  jira_sprint_name: TO Sprint 2626
+  goal: Playtest follow-up fixes — open findings from the full-stack /sq-playtest sweep
+  start_date: '2026-06-22'
+  end_date: '2026-07-05'
   status: active
-  number: 2624
+  number: 2626
 epics:
-  - '84'
-  - '125'
-  - '150'
   - '153'
 standalone_stories: []

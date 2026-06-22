@@ -1,0 +1,465 @@
+id: '150'
+type: epic
+title: Full-stack playtest verification — ruleset bindings, per-world health, recent-fix regression
+description: "Full-stack playtest verification sweep across all 22 live worlds (11 genres, 5 ruleset bindings). Each story is a /sq-playtest full-stack run (real UI + Playwright + UX Designer) of ONE world, verifying three things in one pass: (1) the world's RULESET BINDING delivers in play — the Fate / Without-Number engine engages, OTEL spans fire in the GM panel (the lie detector); (2) per-world HEALTH — loads, connects, chargen completes, a multi-turn session runs, narration is genre-true, UI controls are wired (no dead controls); (3) recent-fix REGRESSION — the merged sprint work touching that world's stack holds at the table, not just in unit tests. Bugs reported cross-workspace via the ping-pong file to FIXER. WAVE 1 (p2) = the 9 Fate worlds (ADR-144 binding live + this sprint's Fate work: Contest #936, item-aspects #945, FATE_STATE hydrate #942, fate-chargen #941, harm-routing 126-1, native-inventory-hide 126-3, determinative 4dF 126-7); pulp_noir/annees_folles also closes 126-10 AC1/AC4 (router latency 37-81s→~4-6s + routing accuracy survives the projection trim). WAVE 2 (p3) = the 13 Without-Number-family worlds (WWN/CWN/AWN/SWN), held at p3 until the in-flight WN-owns-the-round combat work (epic-108 / ADR-143) stabilizes — a full-stack combat verify there will surface that KNOWN beat-pool breakage. Cost is not a constraint: narrator inference runs free on the Max subscription via the Anthropic SDK."
+priority: p2
+status: done
+repos: ui,server,content,daemon
+stories:
+- id: 150-1
+  title: '[PLAYTEST] pulp_noir/annees_folles — full-stack verify (fate) + 126-10 AC1/AC4'
+  description: |-
+    Full-stack /sq-playtest verification of pulp_noir/annees_folles (ruleset: fate). The marquee Fate world + the 126-10 anchor. Confirm in play: Fate-conflict harm ablates stress/consequences not core.hp (126-1); FATE_STATE hydrates on connect/resume (#942); items gained become invokable aspects (#945); Contest engine resolves opposed checks (#936); player 4dF is determinative (126-7); native Inventory tab hidden for Fate (126-3); router-driven table seating (126-2). 126-10 specifics: intent_router_pass ~4-6s (NOT 37-81s) on the GM-panel Timeline + the intent_router.fate_vocabulary span shows bytes_after<bytes_before; routing accuracy survives the aspect trim (create_advantage/invoke still classify). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); report bugs cross-workspace via ping-pong to FIXER.
+
+    --- PLAYTEST CONTEXT UPDATE (2026-06-19, GM/DRIVER) ---
+    Ran solo full-stack on player1.local against the oq-1=develop stack (daemon down; all live ACs are mechanical/OTEL so images N/A; concurrent headless test on the same stack contaminated the OTEL Live view).
+
+    OUTCOME: the marquee MECHANICAL ACs are UNVERIFIED / BLOCKED. Root cause = the intent router on the running stack is unreliable: intermittent error_max_turns AND it never escalates opposed actions to a Fate contest. Across 4 turns (study-NPC create-advantage, Provoke interrogation, physical Overcome-vs-resistance) NO 4dF / contest / confrontation ever fired (server log: confrontation=None + in_conflict=False every turn; PC auto-succeeds with zero mechanical stakes). So 126-7 / #936 / #945 / 126-1 CANNOT be exercised until a fixed router on a clean rebuild.
+
+    VERIFIED / OK: world loads, connects, chargen completes through the real UI (no GameBoard crash); FATE_STATE renders and hydrates the full sheet (aspects/skills/fate points/stress/consequences) before turn 1; narration is genre-true hardboiled 1920s Paris.
+
+    AC CORRECTION: "native Inventory tab hidden for Fate (126-3)" is STALE — superseded by ui#419 (show a Fate PC's carried inventory). Live behavior is a visible-but-BLANK Inventory (needs an empty-state, NOT a hidden tab). The real intent is #945 (significant items -> invokable aspects) + a non-broken empty state.
+
+    FIXES LANDED during the run: server #958 (intent_router structured-output max_turns 2->4, merged to develop, awaiting stack restart); save DB rotated (5.1GB pg_dump backup) + cleared (was 4.3M projection_cache rows + 1399 junk sessions).
+
+    FINDINGS (~14, all in ~/Projects/sq-playtest-pingpong.md -> FIXER): (1) chargen wizard discards its narrative signals + does NOT compile the pack default signature gear onto the Fate sheet (stored save had 0 gear aspects despite rules.yaml gear:); (2) native HP/level/class chrome leaks under Fate across 5 renderings (header/body-pips+pill/party/action-bar); (3) standalone Fate dock tab DUPLICATES Character->Stats, and Abilities/Status sub-tabs are blank (content not distributed); (4) opening-scene OBJECTS never persisted to state -> established envelope retracted on interaction (NPCs are persisted, objects are not); (5) must_not_narrate constraint text leaked into player prose; (6) router never escalates to a contest (the spine bug above); (7) OTEL Inspector not partitioned by session_id (Live hijacks to concurrent sessions); (8) projection_cache unbounded growth (DB bloat); (9) CONTENT-GAP = significant found-items (Oz silver shoes) not authored as Fate extras, so #945 can't promote them.
+
+    BLOCKED-ON to finish 150-1: (a) restart the running stack on fresh develop to pick up #958; (b) the router no-contest-escalation fix; then re-run 126-7 / #936 / #945 / 126-1 / 126-10 on the clean DB.
+
+    --- GM CLOSEOUT (2026-06-19) — SUPERSEDES THE 'BLOCKED/UNVERIFIED' NOTE ABOVE ---
+    VERDICT: Fate confrontation SPINE VERIFIED GREEN on annees_folles (re-run on a fresh-develop stack with #479 confrontations-section + #958 router-max_turns live). The exact standoff encounter_type that fail-loud'd pre-#479 now SEATS (zero dispatch_failed / _offer_dc); Contest engine resolves (opponent tension climbed to 6/10 = player winning); 4dF is determinative (real shifts -> SucceedWithStyle tiers off actual faces); opponent acts + DEFEND barriers fire (ADR-148); harm routes to the Fate sheet, NOT core.hp (126-1); mid-conflict server restart rehydrated the conflict at 6/10 with the sheet intact (#942 resume). Only un-OBSERVED sub-item: a stress box actually getting checked (Margot succeeded-with-style every exchange -> plumbing confirmed, no hit to watch).
+
+    SPLIT -> story 150-23: the two in-scope ACs the standoff run did not exercise — #945 (items become invokable aspects) + 126-10 AC1/AC4 (intent_router_pass latency ~4-6s + intent_router.fate_vocabulary bytes_after<bytes_before; only readable on the GM panel, not the text log).
+
+    UX-DEBT (FIXER, tracked in pingpong): findings 1/2/3/5 FIXED in PRs (ui #430/#431/#432, dice-lib #28, server #972) awaiting merge/restart-verify; finding 4 (commit-desync UI gate) OPEN; new server follow-up (project opponent FateSheet + win-meter metric into FATE_STATE) OPEN.
+
+    CRUNCH RULING (Keith): the standoff currently seats on a NATIVE tension-dial pre_combat (#479 copied spaghetti_western's native dial/beat shape). Per Bind-the-Ruleset (SOUL/ADR-143/144), de-nativize — a Fate standoff must seat as a pure Fate contest, NO native dial. Routed to FIXER. Status -> in_review, staged for SM finish.
+  points: 2
+  priority: p2
+  status: done
+  started: '2026-06-19'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI (no GameBoard crash — confirm the 'thresholds is not iterable' fix ui#408 holds).
+  - A multi-turn Fate session runs end-to-end; FATE_STATE renders (aspects/skills/fate points/stress) and hydrates on reconnect.
+  - '126-10 latency: GM-panel Timeline shows intent_router_pass at ~4-6s, not 37-81s; intent_router.fate_vocabulary span fires with bytes_after<bytes_before.'
+  - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
+  - 'Routing accuracy: a create_advantage / invoke-an-aspect action still classifies correctly despite the router no longer carrying live aspects (126-10 AC2).'
+  - Narration is genre-true (hardboiled 1920s Paris); no dead UI controls; any finding filed via ping-pong to FIXER.
+  - "SRD Rules page (ADR-149; merged today via server #948 + content #476 + ui #420): open /reference/rules/pulp_noir — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level already confirmed: build_rules_projection('pulp_noir') emits the section; this AC is the live-page render check."
+  completed: '2026-06-20'
+  type: chore
+- id: 150-2
+  title: '[PLAYTEST] spaghetti_western/dust_and_lead — full-stack verify (fate)'
+  description: |-
+    Full-stack /sq-playtest verification of spaghetti_western/dust_and_lead (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Poker/table game live: trigger a table scene and confirm router-driven seating (126-2). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.
+
+    --- GM GAP-DRIVE CLOSEOUT (2026-06-19, slug 2026-06-19-dust_and_lead-97fbb4b2, PC Wren Halloway) ---
+    Spine was already VERIFIED end-to-end this morning (seat->attack->4dF->defend->harm ablation). This run was a FOCUSED gap-drive on the previously-unverified ACs. Server on feat/fate-opponent-projection @ 32a63f04 (develop+1), content develop. 3 game turns, social scene.
+
+    VERIFIED THIS RUN:
+    - #945 CHARGEN signature-gear -> invokable Fate aspect: GREEN. All 4 gear.yaml grants_aspects compiled onto the stored Fate sheet (3 kind=character invokable + 1 kind=permission), UI-correct under Character/Permission. CONTRADICTS annees_folles finding #1 (0 gear aspects) -> that failure is pulp_noir-specific, NOT the Fate engine. So #945's promotion mechanism works.
+    - #960 must_not_narrate: CLEAN under a deliberate hidden-info probe (belief firewall held: tell + deflection, no leak).
+    - ui#419 visible Fate inventory: WORKS (gained map shown with description).
+    - Agency/The Test PASS (3 turns); genre-true prose; chargen completes clean (narrative wizard + portrait); FATE_STATE hydrates; no native HP/Lv/class chrome leak (126-19A no-repro); zero session console errors.
+    - #126-2 router table seating: covered by the prior verified spine (no conflict seated this social run).
+
+    OPEN / FOLLOW-UP (logged to pingpong -> FIXER/Keith):
+    - [QUESTION/#945 on-play] An ad-hoc significant item gained in play (surveyor's map) lands in native core.inventory.items but does NOT promote to an invokable aspect/extra. Reading (a) model-correct (no grants_aspects authored on an ad-hoc item -> nothing to promote; chargen path satisfies the AC) vs (b) native inventory shouldn't be used under Fate / significant items should become story-aspects. KEITH crunch call. GM rec: #945 AC is effectively satisfied by the chargen path; treat on-play significant-item->aspect as a separate enhancement.
+    - [UX-LOW] dust_and_lead opening uses party-scale framing in solo (four glasses / 'waits for the party' / 'two riders'). Content + narrator both assume a table.
+    - [namegen #5 data-point] authored-unnamed drifter minted 'Faye Smith' (generic Anglo + feminine-leaning for a he/him sangre_frontera NPC).
+
+    DISPOSITION: spine + Fate binding suite VERIFIED for dust_and_lead -> in_review, staged for SM finish (mirrors 150-1). The #945 on-play question is a separate crunch/enhancement item, not a verification blocker.
+  points: 2
+  priority: p2
+  status: done
+  started: '2026-06-19'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn Fate session runs end-to-end; FATE_STATE renders (aspects/skills/fate points/stress) and hydrates on reconnect (#942).
+  - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
+  - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
+  - Poker/table scene seats via the router (table_resolution cdef → instantiate_table_encounter); antes/seats/sealed-commit loop present (126-2).
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/spaghetti_western — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('spaghetti_western') emits the section; this AC is the live-page render check."
+  completed: '2026-06-20'
+  type: chore
+- id: 150-3
+  title: '[PLAYTEST] spaghetti_western/five_points — full-stack verify (fate)'
+  description: |-
+    Full-stack /sq-playtest verification of spaghetti_western/five_points (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Poker/table game live: trigger a table scene and confirm router-driven seating (126-2). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.
+
+    --- GM CLOSEOUT (2026-06-20, slug 2026-06-20-five_points-effe36cd, PC Cormac Brennan Famine-Irish shootist) — HELD in_progress (MAJOR systemic finding, not a clean close like 150-1/150-2) ---
+    Verified OTEL-first (GM panel + stored /snapshot, never prose — caught a fabricated roll mid-session that prose alone would have passed). Running oq-1 stack: server #972, ui develop (#430/#431/#432 + dice-lib #28 reconciled live mid-session after a UI<->dice-lib skew white-screened the game), content #479.
+
+    VERIFIED GREEN: chargen end-to-end (5-step narrative wizard -> correct Fate sheet); IN-CONFLICT 4dF determinative (126-7, real dice [0,0,-1,1] in encounter.fate_commits); 126-1 harm ablation (2-shift hit checked physical stress 2-box, core.hp UNTOUCHED 10/10); ADR-151 DEFEND barrier (pending_defenses -> throw -> resolve); #942 FATE_STATE hydrate on reconnect (full reload rehydrated conflict+stress+aspects+FP); #945 chargen gear->aspect (4 gear aspects, invokable in-conflict); 126-3 native inventory hidden; ADR-116 participants; SRD Rules page ADR-149 (leads with Fate Core, chapters render, ToC anchors, CC-BY footer); per-world five_points content is EXCELLENT (niche reference-stacking: Anbinder/Dickens/Leone/Yojimbo; period-true funnels, portraits, real-figure cast).
+
+    BUGS -> FIXER (ping-pong sq-playtest-pingpong.md): (1) [MAJOR] out-of-conflict skill checks FABRICATE the 4dF — no engine roll, narrator invents faces+result (the fate_commits path only engages INSIDE a seated conflict; in-conflict is sound); (2) [HIGH] dice render blank — #430 same-origin font proxies to a 403 R2 path while local /fonts/Inter-Bold.ttf serves 200 unused; (3) [HIGH] poker (126-2) SEATS (router instantiate_table_encounter + dealt 5-card hand, ADR-129) but is deactivated by the same-turn location change -> no playable table; (4) [HIGH/CONTENT] no chargen_seed_table for spaghetti_western/tea_and_murder/wry_whimsy -> blank Fate pyramid on the narrative on-ramp (8 worlds 150-3..150-9; crunch decision -> Keith; 126-24 shipped infra + pulp_noir content only); (5) LOW: possessive place-ref ("Rynders's grocery") mints a phantom NPC (Keith reframed: store can't represent referenced-but-absent person); historical pre-gens get conlang-mangled names; Isaiah Rynders double-seeded.
+
+    CONFIRMED (storied): de-nativize standoff — native tension dial runs in PARALLEL with the Fate exchange (ENCOUNTER_NARRATOR_DIAL_ADVANCE), native core.hp present-but-bypassed. 126-17 chargen-aspect placeholder repro confirmed.
+
+    DISPOSITION: per-world five_points health + the Fate CONFLICT engine are GREEN and well-verified; but the MAJOR out-of-conflict fabrication + dice-font 403 + poker deactivation are genre/engine-wide (not five_points-specific) and warrant FIXER work before the Fate ACs can be called green for spaghetti_western. Held in_progress pending those fixes.
+  points: 2
+  priority: p2
+  status: canceled
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn Fate session runs end-to-end; FATE_STATE renders (aspects/skills/fate points/stress) and hydrates on reconnect (#942).
+  - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
+  - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
+  - Poker/table scene seats via the router (table_resolution cdef → instantiate_table_encounter); antes/seats/sealed-commit loop present (126-2).
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/spaghetti_western — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('spaghetti_western') emits the section; this AC is the live-page render check."
+  branch: 'feat/150-3-five_points-fate-playtest'
+  type: chore
+- id: 150-4
+  title: '[PLAYTEST] spaghetti_western/the_real_mccoy — full-stack verify (fate)'
+  description: 'Full-stack /sq-playtest verification of spaghetti_western/the_real_mccoy (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Poker/table game live: trigger a table scene and confirm router-driven seating (126-2). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p2
+  status: canceled
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn Fate session runs end-to-end; FATE_STATE renders (aspects/skills/fate points/stress) and hydrates on reconnect (#942).
+  - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
+  - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
+  - Poker/table scene seats via the router (table_resolution cdef → instantiate_table_encounter); antes/seats/sealed-commit loop present (126-2).
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/spaghetti_western — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('spaghetti_western') emits the section; this AC is the live-page render check."
+  type: chore
+- id: 150-5
+  title: '[PLAYTEST] tea_and_murder/blackthorn_moor — full-stack verify (fate)'
+  description: 'Full-stack /sq-playtest verification of tea_and_murder/blackthorn_moor (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Cozy-mystery: exercise the scenario/clue graph (ADR-053) and a social Fate contest. Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p2
+  status: done
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn Fate session runs end-to-end; FATE_STATE renders (aspects/skills/fate points/stress) and hydrates on reconnect (#942).
+  - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
+  - A scenario clue is discovered and clue-graph/belief-state spans fire (ADR-053); a social Fate contest (Deceive/Empathy) resolves.
+  - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/tea_and_murder — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('tea_and_murder') emits the section; this AC is the live-page render check."
+  completed: '2026-06-20'
+  type: chore
+- id: 150-6
+  title: '[PLAYTEST] tea_and_murder/glenross — full-stack verify (fate)'
+  description: 'Full-stack /sq-playtest verification of tea_and_murder/glenross (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Cozy-mystery: exercise the scenario/clue graph (ADR-053) and a social Fate contest. Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p2
+  status: done
+  started: '2026-06-20'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn Fate session runs end-to-end; FATE_STATE renders (aspects/skills/fate points/stress) and hydrates on reconnect (#942).
+  - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
+  - A scenario clue is discovered and clue-graph/belief-state spans fire (ADR-053); a social Fate contest (Deceive/Empathy) resolves.
+  - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/tea_and_murder — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('tea_and_murder') emits the section; this AC is the live-page render check."
+  completed: '2026-06-20'
+  type: chore
+- id: 150-7
+  title: '[PLAYTEST] wry_whimsy/gulliver — full-stack verify (fate)'
+  description: 'Full-stack /sq-playtest verification of wry_whimsy/gulliver (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Whimsy genre-true narration; if the world hydrates a political layer, witnessed-act vocabulary/classification spans fire (double-gated). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p2
+  status: done
+  started: '2026-06-20'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn Fate session runs end-to-end; FATE_STATE renders (aspects/skills/fate points/stress) and hydrates on reconnect (#942).
+  - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
+  - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/wry_whimsy — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('wry_whimsy') emits the section; this AC is the live-page render check."
+  completed: '2026-06-20'
+  type: chore
+  review_verdict: approved
+- id: 150-8
+  title: '[PLAYTEST] wry_whimsy/oz — full-stack verify (fate)'
+  description: 'Full-stack /sq-playtest verification of wry_whimsy/oz (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Whimsy genre-true narration; if the world hydrates a political layer, witnessed-act vocabulary/classification spans fire (double-gated). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p2
+  status: done
+  started: '2026-06-20'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn Fate session runs end-to-end; FATE_STATE renders (aspects/skills/fate points/stress) and hydrates on reconnect (#942).
+  - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
+  - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/wry_whimsy — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('wry_whimsy') emits the section; this AC is the live-page render check."
+  completed: '2026-06-20'
+  type: chore
+  review_verdict: approved
+- id: 150-9
+  title: '[PLAYTEST] wry_whimsy/wonderland — full-stack verify (fate)'
+  description: 'Full-stack /sq-playtest verification of wry_whimsy/wonderland (ruleset: fate). Confirm in play: Fate engine engages (FATE_ROLL + fate.* + confrontation.* spans), harm ablates stress/consequences not core.hp (126-1), FATE_STATE hydrates on connect/resume (#942), items become invokable aspects (#945), Contest resolves opposed checks (#936), 4dF determinative (126-7), native Inventory hidden (126-3). Whimsy genre-true narration; if the world hydrates a political layer, witnessed-act vocabulary/classification spans fire (double-gated). Execute via /sq-playtest full-stack (UI + Playwright + UX Designer); bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p2
+  status: canceled
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn Fate session runs end-to-end; FATE_STATE renders (aspects/skills/fate points/stress) and hydrates on reconnect (#942).
+  - 'Seat a Fate conflict: FATE_ROLL + fate.* + confrontation.* OTEL spans fire (GM-panel lie detector); harm ablates Fate stress/consequences, core.hp untouched (126-1).'
+  - Player 4dF is determinative (thrown dice ARE the roll, 126-7); native Inventory tab hidden for the Fate PC (126-3).
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  - "SRD Rules page (ADR-149; merged via server #948 + content #476 + ui #420): open /reference/rules/wry_whimsy — the page leads with the 'The Rules of Fate Core' ruleset_reference (rules_document) section. Fate player chapters render as readable prose, each chapter appears in the sticky ToC with a working anchor link, and the CC-BY attribution footer is present. Verifies the new player-facing reference surface for this Fate pack (recent-fix regression). Code-level confirmed: build_rules_projection('wry_whimsy') emits the section; this AC is the live-page render check."
+  type: chore
+- id: 150-10
+  title: '[PLAYTEST] caverns_and_claudes/beneath_sunden — full-stack verify (wwn)'
+  description: 'Full-stack /sq-playtest verification of caverns_and_claudes/beneath_sunden (ruleset: wwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Runtime procedural megadungeon (ADR-106): exercise room-graph navigation + region projection. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: canceled
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - 'Megadungeon navigation works: room-graph moves resolve and dungeon.region_projection spans fire (ADR-106).'
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  type: chore
+- id: 150-11
+  title: '[PLAYTEST] elemental_harmony/burning_peace — full-stack verify (wwn)'
+  description: 'Full-stack /sq-playtest verification of elemental_harmony/burning_peace (ruleset: wwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Elemental magic (ADR-126 MagicPlugin): exercise a magic working. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: done
+  started: '2026-06-20'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - A magic working dispatches and magic.* / magic_working OTEL spans fire (ADR-126 MagicPlugin).
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  completed: '2026-06-20'
+  type: chore
+- id: 150-12
+  title: '[PLAYTEST] elemental_harmony/shattered_accord — full-stack verify (wwn)'
+  description: 'Full-stack /sq-playtest verification of elemental_harmony/shattered_accord (ruleset: wwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Elemental magic (ADR-126 MagicPlugin): exercise a magic working. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: done
+  assigned_to: keith
+  started: '2026-06-21'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - A magic working dispatches and magic.* / magic_working OTEL spans fire (ADR-126 MagicPlugin).
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  completed: '2026-06-20'
+  type: chore
+- id: 150-13
+  title: '[PLAYTEST] heavy_metal/barsoom — full-stack verify (wwn)'
+  description: 'Full-stack /sq-playtest verification of heavy_metal/barsoom (ruleset: wwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Newest WWN port (105-2 seam registry + entrance room): confirm seam registry loads and portraits resolve. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: done
+  started: '2026-06-21'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  completed: '2026-06-21'
+  type: chore
+- id: 150-14
+  title: '[PLAYTEST] heavy_metal/evropi — full-stack verify (wwn)'
+  description: 'Full-stack /sq-playtest verification of heavy_metal/evropi (ruleset: wwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression.  Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: done
+  started: '2026-06-21'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  completed: '2026-06-21'
+  type: chore
+- id: 150-15
+  title: '[PLAYTEST] heavy_metal/long_foundry — full-stack verify (wwn)'
+  description: 'Full-stack /sq-playtest verification of heavy_metal/long_foundry (ruleset: wwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression.  Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: canceled
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  type: chore
+- id: 150-16
+  title: '[PLAYTEST] space_opera/aureate_span — full-stack verify (swn)'
+  description: 'Full-stack /sq-playtest verification of space_opera/aureate_span (ruleset: swn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Orbital/space (ADR-130) + dogfight (ADR-077). Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: done
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - 'If a space scene is exercised: orbital story-clock advances (ADR-130) and/or dogfight spans fire (ADR-077).'
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  type: chore
+- id: 150-17
+  title: '[PLAYTEST] space_opera/coyote_star — full-stack verify (swn)'
+  description: 'Full-stack /sq-playtest verification of space_opera/coyote_star (ruleset: swn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Orbital/space (ADR-130) + dogfight (ADR-077); the 140-turn coyote_star reference session world. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: done
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - 'If a space scene is exercised: orbital story-clock advances (ADR-130) and/or dogfight spans fire (ADR-077).'
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  type: chore
+- id: 150-18
+  title: '[PLAYTEST] space_opera/perseus_cloud — full-stack verify (swn)'
+  description: 'Full-stack /sq-playtest verification of space_opera/perseus_cloud (ruleset: swn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Orbital/space (ADR-130); Jade is extending this world (homebrew authoring path). Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: done
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - 'If a space scene is exercised: orbital story-clock advances (ADR-130) and/or dogfight spans fire (ADR-077).'
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  type: chore
+- id: 150-19
+  title: '[PLAYTEST] neon_dystopia/franchise_nations — full-stack verify (cwn)'
+  description: 'Full-stack /sq-playtest verification of neon_dystopia/franchise_nations (ruleset: cwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression.  Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: canceled
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  type: chore
+- id: 150-20
+  title: '[PLAYTEST] road_warrior/the_circuit — full-stack verify (cwn)'
+  description: 'Full-stack /sq-playtest verification of road_warrior/the_circuit (ruleset: cwn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. Chassis/rig (ADR-125): if exercised, confirm chassis bond ledger + interior render. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: done
+  started: '2026-06-21'
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  completed: '2026-06-21'
+  type: chore
+- id: 150-21
+  title: '[PLAYTEST] mutant_wasteland/flickering_reach — full-stack verify (awn)'
+  description: 'Full-stack /sq-playtest verification of mutant_wasteland/flickering_reach (ruleset: awn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. AWN mutation system (ADR-102). NOTE: this is the one fully-spoilable world. Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: canceled
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - A mutation acquire/use op resolves and mutation.* spans fire (ADR-102 AWN mutation system).
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  type: chore
+- id: 150-22
+  title: '[PLAYTEST] mutant_wasteland/seaboard_of_saints — full-stack verify (awn)'
+  description: 'Full-stack /sq-playtest verification of mutant_wasteland/seaboard_of_saints (ruleset: awn). Confirm in play: the Without-Number engine engages for combat (ablative HP, hp_depletion, state_patch_hp spans) and per-world health (loads/chargen/multi-turn/narration/UI). HELD AT p3: the WN-owns-the-round combat work (epic-108/ADR-143) is in-flight and currently red (empty beat-pool) — a combat verify will likely surface that KNOWN breakage; confirm the symptom from the player seat and attribute to epic-108, not a new regression. AWN mutation system (ADR-102). Execute via /sq-playtest full-stack; bugs via ping-pong to FIXER.'
+  points: 2
+  priority: p3
+  status: canceled
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - World loads, connects, and chargen completes through the real UI.
+  - A multi-turn session runs end-to-end; per-world state renders (ablative HP pool, gear/inventory).
+  - 'Seat combat: the Without-Number engine engages — ablative HP (HpPool), 0-HP triggers hp_depletion win condition, state_patch_hp OTEL spans fire.'
+  - A mutation acquire/use op resolves and mutation.* spans fire (ADR-102 AWN mutation system).
+  - 'KNOWN-RISK (epic-108 / ADR-143): WN-owns-the-round is in-flight; an empty confrontation beat-pool (PackError: encounter_beat_choices ... not in pool) is the EXPECTED pre-existing breakage — confirm the player-seat symptom and attribute to epic-108, NOT a new 150 regression.'
+  - Narration is genre-true; no dead UI controls; findings filed via ping-pong to FIXER.
+  type: chore
+- id: 150-23
+  title: '[PLAYTEST] pulp_noir/annees_folles — Fate item-aspects (#945) + 126-10 router latency/vocab-trim (AC1/AC4)'
+  points: 2
+  priority: p2
+  status: canceled
+  repos: ui,server,content
+  workflow: trivial
+  depends_on: 150-1
+  type: chore
+- id: 150-24
+  title: '[PLAYTEST] 153-1 IntentRouter output-slim — router-latency + zero-mismatch verify (pulp_noir/annees_folles + combat)'
+  description: "Full-stack /sq-playtest verification of the Story 153-1 IntentRouter output-slim (merged via slabgorb-org/sidequest-server#997, squash 28dc4d77). The slim cut DispatchPackage to the fields consumed pre-narration to drop decompose latency (0.94-correlated with output tokens). This story IS 153-1's outstanding AC7 — it must run on a live server with the GM panel / Jaeger up, because latency + mismatch are runtime properties not provable in unit tests. Default world pulp_noir/annees_folles (Fate) for latency continuity with the 126-10 baseline; add a combat scenario (e.g. combat_otel / a Fate conflict) for the zero-mismatch regression. Baseline to beat (intent_router.decompose, 2026-06-20): output p50 314 tok; latency p50 8.6s / p95 18.4s / max 26.6s. Bugs reported cross-workspace via the ping-pong file to FIXER. Belongs to epic 150's playtest-verification sweep; revert #997 if latency/mismatch regresses."
+  points: 2
+  priority: p2
+  status: canceled
+  repos: ui,server,content,daemon
+  workflow: trivial
+  acceptance_criteria:
+  - 'Latency win: intent_router.decompose output_tokens p50 roughly halved (~150 tok) and latency p50 down to ~4-5s, with the 15-26s tail crushed vs the 2026-06-20 baseline — read from GM-panel/Jaeger spans over a multi-turn annees_folles session.'
+  - "Zero regression: a combat/conflict turn shows ZERO new dispatch_engagement.*.mismatch spans + identical dispatch counts vs a pre-153-1 baseline run. Drive a pronoun-heavy action ('hit him with it') to prove no consumer depended on the removed resolved[] list."
+  - "Death-RP belt intact: if a combat turn drops an NPC to HP=0, the LethalityArbiter verdict + paired must/must-not directives still fire (the slim removed only the router's directive-less lethality suspenders)."
+  - 'Per-world health holds: annees_folles loads, connects, chargen completes, a multi-turn Fate session runs genre-true, no dead UI controls; mechanical resolution legible in the player UI.'
+  type: chore
+completed: '2026-06-22'
