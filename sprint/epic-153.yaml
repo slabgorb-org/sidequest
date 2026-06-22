@@ -88,10 +88,12 @@ stories:
     title: '[DAEMON-NO-RECONNECT] server daemon-client reconnect/back-off loop (ADR-131)'
     points: 3
     priority: p3
-    status: backlog
+    status: in_progress
+    started: '2026-06-22'
     repos: server
     workflow: tdd
     type: bug
+    branch: feat/153-8-daemon-no-reconnect
   - id: 153-9
     title: '[FATE-OTHER-SEATING] router names the scene-active antagonist, not a same-surname roster NPC (ADR-116)'
     points: 3
