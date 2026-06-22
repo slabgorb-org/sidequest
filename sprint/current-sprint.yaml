@@ -3,8 +3,8 @@ sprint:
   jira_sprint_id: 0
   jira_sprint_name: TO Sprint 2626
   goal: Playtest follow-up fixes — open findings from the full-stack /sq-playtest sweep
-  start_date: '2026-06-22'
-  end_date: '2026-07-05'
+  start_date: '2026-06-21'
+  end_date: '2026-06-28'
   status: active
   number: 2626
 epics:
