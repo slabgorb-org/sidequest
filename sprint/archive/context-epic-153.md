@@ -1,14 +1,14 @@
 # Epic 153 Context
 
 ## Title
-Intent Router output-slim — cut per-turn latency at the output contract
+Playtest follow-ups — open findings from the 2026-06-20/21 full-stack /sq-playtest sweep
 
 ## Overview
-Cut the IntentRouter's per-turn latency at its output contract. Diagnosed 2026-06-20 (headless latency_diag_82_9 + Jaeger spans): latency is 100% in-SDK, zero-retry, single-iteration, with NO confidence correlation but a 0.94 correlation with output_tokens — p50 8.6s / p95 18.4s / max 26.6s on a DispatchPackage that accreted fields nothing reads (resolved[], action_rewrite.you, the router's lethality[]). Fix: cut the dead/redundant fields, server-default VisibilityTag, reorder so narrator-critical fields generate first, slim the system prompt. Server-only; no UI, no 2nd LLM call (the async-enrichment tier was verified empty). Spec: docs/superpowers/specs/2026-06-20-intent-router-output-slim-design.md. Plan: docs/superpowers/plans/2026-06-20-intent-router-output-slim.md. Future stories under this epic: the parked clarify-loop (quality + Epic-48 local-router tuning data), narrator-honors-mechanical-death compliance, local-Qwen router migration.
+Collection epic for the genuinely-open, actionable findings surfaced by the 150-x full-stack /sq-playtest sweep (glenross/Fate, oz+wonderland/Fate, the WWN heavy_metal + elemental_harmony worlds, the_circuit/CWN, and the SWN space_opera trio aureate_span/coyote_star/perseus_cloud), recorded on the sq-playtest ping-pong board (sq-playtest-pingpong.md). EXCLUDES: items marked CONFIRM/DO-NOT-RE-FILE, known-red epic-108/ADR-143 carve-outs (WWN empty-beat-pool, unbacked combat damage, WWN-magic-logged-not-resolved), the faction/zone content-bleed work (now epic-157), and already-fixed/verified findings. Each story is a discrete fixable finding with a root-cause direction already scoped on the board.
 
 ## Metadata
 - **Epic ID:** 153
-- **Repo:** server
+- **Repo:** server,content
 
 ## Background
 _Cross-story constraints and guardrails to be filled in as the epic

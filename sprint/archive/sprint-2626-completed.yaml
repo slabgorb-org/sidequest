@@ -1,7 +1,3 @@
-# Sprint TO Sprint 2626 - Completed Work
-# Jira Sprint ID: 0
-# Archived: 2026-06-22
-
 sprint:
   name: "TO Sprint 2626"
   number: 2626
@@ -12,5 +8,186 @@ sprint:
   end_date: 2026-07-05
   status: active
 
-completed_epics: []
-completed_stories: []
+completed_epics:
+  - '153'
+completed_stories:
+  - id: 153-1
+    epic: '153'
+    title: '[CWN-OPPONENT-REPRISAL-NO-DAMAGE] wire damage_spec onto the CWN opponent reprisal beat so landed hits ablate player HP'
+    points: 3
+    completed: '2026-06-21'
+  - id: 153-2
+    epic: '153'
+    title: '[SWN-OPENING-ESTABLISHING-NARRATION-DROPPED] emit authored establishing_narration verbatim at cold-open'
+    points: 3
+    completed: '2026-06-21'
+  - id: 153-3
+    epic: '153'
+    title: '[WRY-WHIMSY-NO-FATE-CONTEST-DEFS] port wry_whimsy + pulp_noir confrontation catalogs to Fate contest schema + loud loader guard'
+    points: 5
+    completed: '2026-06-21'
+  - id: 153-4
+    epic: '153'
+    title: '[SWN-CHARGEN-FLAT-STATS] WN 14-to-7 attribute spread + assign skills/foci in SWN narrative chargen'
+    points: 5
+    completed: '2026-06-21'
+  - id: 153-5
+    epic: '153'
+    title: '[SWN-ORBITAL-COURSE-INERT] wire ADR-130 course/clock to the IntentRouter subsystem bank'
+    points: 5
+    completed: '2026-06-21'
+  - id: 153-6
+    epic: '153'
+    title: '[SWN-DOGFIGHT-UNREACHABLE] wire ADR-077 dogfight to IntentRouter dispatch'
+    points: 5
+    completed: '2026-06-22'
+  - id: 153-7
+    epic: '153'
+    title: '[FATE-DEFEND-RESUME-WEDGE] re-emit pending defends on reconnect + clear orphaned pending_defenses (ADR-151)'
+    points: 3
+    completed: '2026-06-21'
+  - id: 153-8
+    epic: '153'
+    title: '[DAEMON-NO-RECONNECT] server daemon-client reconnect/back-off loop (ADR-131)'
+    points: 3
+    completed: '2026-06-22'
+  - id: 153-9
+    epic: '153'
+    title: '[FATE-OTHER-SEATING] router names the scene-active antagonist, not a same-surname roster NPC (ADR-116)'
+    points: 3
+    completed: '2026-06-21'
+  - id: 153-10
+    epic: '153'
+    title: '[WWN-OTHER-SEATING] seater prefers pool/narrative antagonist over an ambient MM entity on vague target (ADR-116)'
+    points: 3
+    completed: '2026-06-21'
+  - id: 153-11
+    epic: '153'
+    title: '[NARRATOR-EMPTY-NARRATION-DEGRADED] harden empty-prose-on-continuation upstream of the degraded-stall guard'
+    points: 2
+    completed: '2026-06-22'
+  - id: 153-12
+    epic: '153'
+    title: '[SWN-RESOLUTION-BEAT-NO-EXIT] resolution beat offers a non-lethal confrontation exit under hp_depletion'
+    points: 2
+    completed: '2026-06-22'
+  - id: 153-13
+    epic: '153'
+    title: '[glenross-seed-quest] Fate chargen drive-assignment sets a real drive, not the vocation label'
+    points: 2
+    completed: '2026-06-22'
+  - id: 153-14
+    epic: '153'
+    title: '[NPC-NAME-PCSUBSTRING-SUBSTITUTION] word-boundary-guard the PC-name to you substitution'
+    points: 1
+    completed: '2026-06-21'
+  - id: 153-15
+    epic: '153'
+    title: '[SWN-CHARGEN-RECAP-GRAMMAR] map background label to a noun form and drop the from-race-space stitch'
+    points: 1
+    completed: '2026-06-21'
+  - id: 153-16
+    epic: '153'
+    title: '[CHARGEN-NAME-PROSE-REJECT] accept the full natural-language name answer or surface why it was rejected'
+    points: 1
+    completed: '2026-06-22'
+  - id: 153-17
+    epic: '153'
+    title: '[MISSING-COMBAT-SFX] render+upload road_warrior + heavy_metal sfx_library to R2 or drop the manifest refs'
+    points: 3
+    completed: '2026-06-22'
+  - id: 153-18
+    epic: '153'
+    title: '[EVROPI-MISSING-PORTRAITS] render+sync 5 missing evropi picker portraits to R2 or drop from the manifest'
+    points: 2
+    completed: '2026-06-22'
+  - id: 153-19
+    epic: '153'
+    title: '[PLAYTEST-DATA-ODDITIES] nottavello header latch + stale Adventurer location key + active_stakes class-name + npcs None-rows'
+    points: 3
+    completed: '2026-06-22'
+  - id: 153-20
+    epic: '153'
+    title: '[TOOTHLESS-DETECTOR-DRIFT] teach the seating toothless-detector about the WN SRD unarmed floor (153-1 follow-up) so it stops false-flagging weaponless WN opponents as invulnerable'
+    points: 2
+    completed: '2026-06-22'
+  - id: 153-21
+    epic: '153'
+    title: '[DUNGEON-SEAM-CROSSING-STICKY] descend-the-rope must traverse the the_dropmouth->deep_descent seam into the procedural entrance node, not latch the narrator title back to the static cartography region'
+    points: 5
+    completed: '2026-06-21'
+  - id: 153-22
+    epic: '153'
+    title: '[DUNGEON-MOVEMENT-RESOLVER-MISSES-EDGES] resolve natural-language exits (deeper, leftmost west passage) to room-graph node edges and dedupe identical-neighbor exit lists'
+    points: 5
+    completed: '2026-06-21'
+  - id: 153-23
+    epic: '153'
+    title: '[DUNGEON-ROOM-POPULATION-INERT] place authored encounter_creatures + bestiary creatures into generated rooms so exploration spawns real encounters instead of narrator-improvised ones'
+    points: 5
+    completed: '2026-06-22'
+  - id: 153-24
+    epic: '153'
+    title: '[DUNGEON-ROOM-STATE-NOT-PERSISTED] persist discovered_rooms/current_room/room_states to the snapshot as current_region walks the dungeon graph'
+    points: 3
+    completed: '2026-06-21'
+  - id: 153-25
+    epic: '153'
+    title: '[DUNGEON-MAP-UI-NO-ROOMGRAPH] render the procedural room-graph in the Map tab while inside the dungeon, not only the surface cartography regions'
+    points: 3
+    completed: '2026-06-21'
+  - id: 153-26
+    epic: '153'
+    title: '[DUNGEON-CURATE-TIMEOUT] keep dungeon room curate within the 25s wall-clock cap (precurate/stream) so authored room content and encounters are not dropped to the degraded deterministic manifest'
+    points: 3
+    completed: '2026-06-21'
+  - id: 153-27
+    epic: '153'
+    title: '[DUNGEON-ZONE-ELIGIBILITY-UNKNOWN-REGION] teach zone/cast-eligibility to recognize procedural dungeon region ids (entrance/expNNN.rN) so cast staging stops skipping every generated room'
+    points: 3
+    completed: '2026-06-22'
+  - id: 153-28
+    epic: '153'
+    title: '[BENEATH_SUNDEN-AUTHOR-CAMP-CAST] author the surface-camp cast (Brecca Half-Hand + rope-keepers) in beneath_sunden npcs.yaml so the hub has persistent name-anchored NPCs (total_authored=0 today)'
+    points: 2
+    completed: '2026-06-22'
+  - id: 153-29
+    epic: '153'
+    title: '[MP-PRONOUN-LOCALIZATION-INCOMPLETE] per-recipient localizer must convert possessive/subject pronouns (her->your, he->you), not only the subject noun + verb'
+    points: 3
+    completed: '2026-06-22'
+  - id: 153-30
+    epic: '153'
+    title: '[MP-CONFRONTATION-ROSTER-VS-DISPLAY] group allied combatants on one side of the confrontation roster; render vs only across the faction boundary'
+    points: 1
+    completed: '2026-06-22'
+  - id: 153-31
+    epic: '153'
+    title: '[BENEATH_SUNDEN-DARKNESS-STATUS-COSMETICS] environmental darkness status should not tier as severity Wound and should stamp the real created_turn (not 0)'
+    points: 1
+    completed: '2026-06-21'
+  - id: 153-32
+    epic: '153'
+    title: '[KNOWLEDGE-CLIENT-REACTIVE-ONLY] decide and wire whether server known_facts must persist (narrator context + cold-reload survival) or confirm client-reactive-by-design per ADR-136'
+    points: 2
+    completed: '2026-06-22'
+  - id: 153-33
+    epic: '153'
+    title: '[SWN-CHARGEN-NO-SKILLS-FOCI] author space_opera backgrounds + foci so SWN narrative chargen grants skills/foci per WWN SRD §1.3/§1.5 (completes 153-4 deferred AC-2)'
+    points: 3
+    completed: '2026-06-22'
+  - id: 153-34
+    epic: '153'
+    title: '[WN-POINTBUY-DEAD-CONFIG] migrate the 4 WN point-buy packs to standard_array + size-validate the WN default spread against ability count (fail loud at load, not a chargen-time IndexError) — 153-4 review follow-up'
+    points: 2
+    completed: '2026-06-21'
+  - id: 153-35
+    epic: '153'
+    title: '[LONG_FOUNDRY-MISSING-PORTRAITS] remap 2 long_foundry picker backdrop_poi to real catalog slugs + render to R2'
+    points: 2
+    completed: '2026-06-22'
+  - id: 153-36
+    epic: '153'
+    title: '[BACKDROP-POI-VALIDATOR-GAP] promote dangling backdrop_poi from waiver_warning to content_error in pack validator'
+    points: 2
+    completed: '2026-06-22'

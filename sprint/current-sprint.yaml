@@ -7,6 +7,5 @@ sprint:
   end_date: '2026-06-28'
   status: active
   number: 2626
-epics:
-  - '153'
+epics: []
 standalone_stories: []
