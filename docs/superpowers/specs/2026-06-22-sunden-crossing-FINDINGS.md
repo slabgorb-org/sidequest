@@ -10,6 +10,61 @@ the central facts.**
 
 ---
 
+## ⟳ UPDATE 2026-06-22 (afternoon) — most of the "narrow path forward" LANDED; read this before re-investigating
+
+The TL;DR below was written in the morning **while the server ran attempt #8 on the
+unmerged branch `fix/dungeon-seam-reachable-from-surface`, not `--reload`.** Since then
+the fixes merged to **develop**, and a fresh afternoon playtest (PC "Puck", session
+`2026-06-22-beneath_sunden-926f23f6`, server HEAD `d19afd32` with `--reload`) reconciles
+the doc against reality. **Three of the four path-forward items are DONE on develop:**
+
+| Path-forward item | Status now |
+|---|---|
+| Keep attempt #8's `surface_descent_adjacent` crossing | ✅ **Landed** — PR **#1042** (`43a899ea`, "land the sünden surface→procedural crossing + make movement observable") |
+| Bug A — deny narrator `/current_region` write in region-mode | ✅ **Enforced** — `apply_world_patch.py:182-198` returns a recoverable error for `navigation_mode: region` worlds (not just a span) |
+| Telemetry gap — route `component="movement"` into `turn_telemetry` | ✅ **Mirrored** by #1042; post-fix saves carry non-zero `mechanical_rows` (Puck = 14, vs 0 on the old AM saves) |
+| Bug B — engine runs dry deeper in (`no_candidate_edges` lookahead) | ❓ **Not re-verified.** Puck reached `exp001.r3` (deeper than the AM `exp002.r2` dry-out) without an obvious stall, but the deep turns weren't span-traced this session. Still the one open suspect. |
+
+`#1029` (`feat/region-lateral-mover`, "engine-authoritative lateral region travel") also
+merged but is **beside the point for sünden** (it matches named lateral moves, not the
+`direction=deeper` seam crossing) — exactly as this doc's "Code/branch state" section
+predicted.
+
+### THE TRAP THIS DOC DIDN'T COVER — the room axis is empty BY DESIGN
+
+A fresh investigation burned ~30 min re-deriving "the engine is dead" from a **different**
+wrong signal than the AM one. Capture it so nobody does it again:
+
+- **`beneath_sunden/cartography.yaml:17` → `navigation_mode: region`** (deliberate). The
+  ADR-106 procedural deep is a **REGION frontier graph** (`discovered_regions` grows
+  `entrance → exp001.r0 → exp001.r3 …`; `pc_regions`, `region_transitions` are the ledger).
+- The **room axis** (`discovered_rooms`, `room_states`, `current_room`) is the **`room_graph`**
+  representation and is **intentionally left empty** under region nav. **153-24's own commit
+  ships a passing test: "region-mode regression guard (room axis untouched under region
+  nav)."** Reading `discovered_rooms: 0 / current_room: None` as "dungeon is fake" is a
+  **misdiagnosis** — and the ping-pong task *"153-24 room axis stays inert after crossing
+  onto the procedural graph"* is that misdiagnosis for this world. (153-24 is for room_graph
+  worlds.)
+- **Likely source of "I'm entering the dungeon… it is NOT" in play:** the **Map tab** (153-25)
+  renders the **room** graph, so on a region-mode world it draws **nothing** even while the
+  engine generates a real region frontier. That's a UI/representation gap, **not** a dead
+  engine. ← the real candidate finding to confirm in the UI.
+
+### How to read sünden dungeon state correctly (so we never re-discover)
+
+1. **Verify the crawl on the REGION axis, not the room axis.** Real descent = `discovered_regions`
+   gains `expNNN.rN` frontier nodes + `region_transitions` ledger grows. Empty room axis is expected.
+2. **`via=world_patch` in `region_transitions` cannot tell engine from narrator** — both commit
+   through `apply_world_patch`. To prove the *engine* moved the PC, read the **Jaeger**
+   `movement.resolved` / `resolved_via=surface_descent_adjacent` spans (jsonl), or just note the
+   narrator is now *denied* region writes (Bug A fix), so a region advance *is* the engine.
+3. **`mechanical_rows`/movement now lands in the DB sink** post-#1042 — but the discriminating
+   `resolved_via` detail is still cleanest from the live span dump.
+4. **Server freshness:** confirm the uvicorn cwd + HEAD before trusting behavior. `lsof -p <pid> -d cwd`
+   → repo path; `git -C <path> log -1` → HEAD. A reboot of a clone behind develop is still stale.
+
+---
+
 ## TL;DR (the answer, after a very long investigation)
 
 1. **The crossing WORKS. Attempt #8 — `fix/dungeon-seam-reachable-from-surface`
