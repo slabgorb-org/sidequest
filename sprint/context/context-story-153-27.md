@@ -30,6 +30,30 @@ content is ever staged into a generated room, and the warning is the symptom on 
 move. This is the *cast* (NPC/faction) sibling of the 153-23 creature-population gap — both are
 "authored content never reaches the procedural room."
 
+## Status Update (2026-06-22) — re-confirmed live; STILL OPEN, untouched
+
+**Do NOT close this story on the back of the dungeon-affordance / crossing work.** That work
+(server PR #1042, squash-merged to `develop` 2026-06-22 — the sünden surface→procedural crossing,
+movement→`turn_telemetry` observability, the narrator `/current_region` denial, and the
+generate-before-narrate "affordance race" fix) is the **movement/observability layer only**. It
+does **not** touch `region_cast_staging` / `zone_eligibility` and satisfies no AC here.
+
+This story's exact symptom was **re-confirmed live and unchanged** on 2026-06-22 (14-turn
+`sunden_descend_trace` expansion run, server log `~/.sidequest/logs/sidequest-server.log`) — the
+`unknown_region` skip fired on **every region the party entered**:
+```
+WARNING zone_eligibility.cast_staged.skip reason=unknown_region world='beneath_sunden'
+  to_region='entrance' / 'exp002.r2' / 'exp002.r3' / 'exp004.r0' / 'exp005.r4' / 'exp007.r3' / 'exp007.r1'
+```
+So `stage_region_cast` still hard-returns on every procedural node and no cast is staged into any
+generated room — ACs 1–6 all UNMET.
+
+The only thing PR #1042 changed for this story is *helpful, not done*: the party now actually
+transits these procedural regions cleanly (movement works) and each transition is observable in
+`turn_telemetry`, so the `unknown_region` skip is now trivially reproducible and verifiable on a
+real crawl — i.e. this story is **unblocked and easy to test**, but not begun. Keep at `backlog`,
+p2. The fix is still the resolver extension described below.
+
 ## Root Cause Direction
 
 `region_cast_staging.stage_region_cast` is a frontier observer (registered once at startup) that,

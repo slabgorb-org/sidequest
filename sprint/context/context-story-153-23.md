@@ -34,6 +34,35 @@ Net: the dungeon generates topology, but rooms are UNPOPULATED by the engine. Th
 improvises creatures and loot with zero mechanical backing — textbook Illusionism, the exact
 failure the GM panel exists to catch.
 
+## Status Update (2026-06-22) — movement confound removed; THIS story STILL OPEN
+
+**Do NOT close this story on the back of the dungeon-affordance / crossing work.** That work
+(server PR #1042, squash-merged to `develop` 2026-06-22 — the sünden surface→procedural crossing,
+movement→`turn_telemetry` observability, the narrator `/current_region` denial, and the
+generate-before-narrate "affordance race" fix) is the **movement/observability layer only**. It is
+orthogonal to room population and does **not** satisfy any AC here.
+
+What it *did* change for this story (helpful, not done):
+- The original Problem Statement's lead symptom — *"`current_region` was STILL `exp002.r2` — the
+  party never actually moved region"* — is **fixed.** The party now moves cleanly room-to-room and
+  every move is recorded in `turn_telemetry` (was Jaeger-only), so this story's forensics are no
+  longer muddied by a stuck PC + a narrator improvising the *movement*. The story is now cleanly
+  testable: you can drive a party through real generated rooms and watch placement fire or skip.
+
+What it did **not** change — re-verified live 2026-06-22 (14-turn `sunden_descend_trace` expansion
+run; spans `/tmp/sunden_expand.spans.jsonl`, server log `~/.sidequest/logs/sidequest-server.log`):
+- **The authored `entrance → encounter_creatures: [gnaw_swarm]` STILL never fired** (0 occurrences
+  across the whole run) — AC-1 unmet.
+- **Every room logged `state.room_state_injected … retrieved_count=0`** (The Drowned Cavern, The
+  Bend, Going Deeper, Eastern Side Passage, The Winding Catacomb) — rooms entered, nothing placed.
+- **The narrator still improvised hostiles with no mechanical backing** (a "dragging pursuer in the
+  dark"), the exact Illusionism this story targets — AC-3/AC-5 unmet.
+- `inject()` at `websocket_session_handler.py` is still called **without `room_id`** — the wiring
+  gap in Root Cause Direction below is intact.
+
+**Net:** all ACs remain UNMET. Keep at `backlog`, p1. The fix is still the `inject(room_id=…)`
+threading described below — now unblocked and observable thanks to PR #1042, but not begun by it.
+
 ## Root Cause Direction
 
 **The room-binding placement path already exists and is simply not called in production.**
