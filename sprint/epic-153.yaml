@@ -178,10 +178,13 @@ stories:
     title: '[CHARGEN-NAME-PROSE-REJECT] accept the full natural-language name answer or surface why it was rejected'
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-22'
     repos: server
     workflow: trivial
+    completed: '2026-06-22'
     type: bug
+    review_verdict: approved
   - id: 153-17
     title: '[MISSING-COMBAT-SFX] render+upload road_warrior + heavy_metal sfx_library to R2 or drop the manifest refs'
     points: 3
