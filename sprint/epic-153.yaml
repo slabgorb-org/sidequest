@@ -321,10 +321,13 @@ stories:
     title: '[MP-CONFRONTATION-ROSTER-VS-DISPLAY] group allied combatants on one side of the confrontation roster; render vs only across the faction boundary'
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-22'
     repos: ui
     workflow: trivial
+    completed: '2026-06-22'
     type: bug
+    review_verdict: approved
   - id: 153-31
     title: '[BENEATH_SUNDEN-DARKNESS-STATUS-COSMETICS] environmental darkness status should not tier as severity Wound and should stamp the real created_turn (not 0)'
     points: 1
