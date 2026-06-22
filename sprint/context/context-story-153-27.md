@@ -39,25 +39,60 @@ However, the zone/cast-eligibility subsystem that gates NPC cast staging into re
 
 ## Technical Approach
 
-Teach the zone/cast-eligibility check to recognize procedural region ids so they pass validation without requiring an authored cartography entry. Two options:
+> **⚠️ CORRECTED 2026-06-22 by Architect (Neo) — see "Architect Decision" below. The
+> original draft's "authored NPC cast stages into a procedural room" premise was
+> architecturally wrong; the corrected scope is recognition + warning-suppression +
+> observability. The original ACs are superseded by the Acceptance Criteria section as
+> rewritten here.**
 
-**Option A (preferred):** Add a validation function that recognizes the procedural format (entrance + expNNN.rN), and short-circuit the cartography lookup for procedural regions — allow them to stage cast without an authored cartography entry (they are valid dynamically-generated regions).
+Teach the cast-staging path (and any shared region resolution) to **recognize**
+procedural region ids as legitimate runtime regions so the frontier observer stops
+misclassifying them as misconfigured cartography ids.
 
-**Option B:** Populate a synthetic pseudo-cartography with Region entries for procedural expansions as they are materialized, so the lookup works transparently. More complex, larger surface area.
+**Approach (decided):** Add **one shared recognizer** `is_procedural_region_id(region_id)`
+co-located with the id *minter* so the pattern cannot drift from its producer
+(`sidequest/dungeon/seed_bootstrap.py:ENTRANCE_ID = "entrance"` and
+`sidequest/dungeon/region_graph/generator.py`'s `f"exp{expansion_id:03d}.r{i}"` →
+match `entrance` literal + `^exp\d{3}\.r\d+$`). In
+`region_cast_staging.stage_region_cast`, when `cartography.regions.get(to_region)`
+misses AND the id is procedural → skip staging **quietly** and emit an OTEL recognition
+span (NOT the `unknown_region` warning). When the id misses AND is **not** procedural →
+keep the existing `unknown_region` warning (the misconfiguration guard for a
+misspelled/narrator-authored WorldStatePatch region id is real and must survive).
 
-Option A is simpler and more durable — procedural regions are a fundamental design element (ADR-106), so recognizing them explicitly is correct.
+**Why not stage cast into the deep:** the procedural deep is *generated, not authored*
+(`beneath_sunden/cartography.yaml` says so explicitly), and across all 17
+`beneath_sunden/rooms/*.yaml` there are **0 `kind: npc`** bindings — so Seam 2 has
+nothing legitimate to stage. Per-room authored content (creatures via
+`encounter_creatures`, location features) is already owned by a *separate* pipeline:
+curate → materializer → `monster_manual.room_bound` (fixed by 153-26 / #1022). 153-27
+must not entangle Seam 2 with that pipeline.
+
+## Architect Decision (2026-06-22, Neo)
+
+**Recognize procedural region ids; suppress the false warning; make it OTEL-observable.
+Do NOT extend Seam 2 cast-staging onto the dungeon room-content pipeline.** Authored
+NPCs *in* procedural rooms, if ever desired, belong in Pipeline 1 (author a cast /
+`kind: npc` block in `rooms/<id>.yaml`, surface via curate) — a separate content-driven
+feature + design amendment, **explicitly deferred / out of scope for 153-27**. Full
+rationale and the two-pipeline analysis are in the session file's
+`## Architect Assessment (design decision)`.
 
 ## Scope
-- In scope: teach the zone/cast-eligibility subsystem to recognize and permit `entrance` and `expNNN.rN` region ids
-- In scope: verify cast staging now succeeds for procedurally-generated dungeon rooms
-- In scope: add a regression test that a generated-region room receives authored NPC cast
-- Out of scope: changes to the dungeon generation itself or to the authored cartography model
+- **In scope:** a shared `is_procedural_region_id()` recognizer (entrance + `expNNN.rN`), co-located with the id minter to prevent format drift
+- **In scope:** `region_cast_staging` recognizes procedural ids → quiet skip + OTEL recognition span instead of the `unknown_region` warning
+- **In scope:** preserve the `unknown_region` warning for genuinely-unknown, non-procedural region ids (misconfiguration guard)
+- **In scope:** no-regression for authored-cartography worlds (a real `kind: npc` cartography region still stages its cast)
+- **Out of scope:** staging authored NPC cast into procedural rooms (no cast source exists by design; deferred to a Pipeline-1 feature)
+- **Out of scope:** changes to dungeon generation, the curate/monster_manual pipeline, or the authored cartography model
 
-## Acceptance Criteria
-1. A PC transitioning to a procedurally-generated dungeon region (entrance or expNNN.rN format) no longer triggers a "unknown_region" warning
-2. Authored NPC cast (drawn from beneath_sunden npcs.yaml) successfully stages into a procedurally-generated room
-3. Test: `test_region_cast_staging_recognizes_procedural_dungeon_regions` — creates a synthetic snapshot with a procedural region id, calls `stage_region_cast`, asserts the cast was staged and the OTEL span fired
-4. OTEL span `zone_eligibility.cast_staged` fires with the procedural region id in the data
+## Acceptance Criteria (rewritten 2026-06-22 — supersedes the original draft)
+1. A PC transitioning to a procedurally-generated dungeon region (`entrance` or `expNNN.rN`) no longer triggers the `unknown_region` warning.
+2. `is_procedural_region_id()` recognizes `entrance` and the `expNNN.rN` shape, and rejects a non-procedural id (e.g. `ropefoot`, `Lilliput-Court`, `exp1.r0` without zero-pad, empty string).
+3. A genuinely-unknown, non-procedural region id that is absent from cartography STILL triggers the `unknown_region` warning (misconfiguration guard preserved).
+4. Entering a procedural region emits an OTEL span recording the recognition (procedural region → no authored cartography cast, by design), carrying the region id — verifiable on the GM panel per the OTEL Observability Principle.
+5. No regression: entering an authored-cartography region that has `kind: npc` entities still stages them into `npc_pool` (Seam 2 behavior unchanged for gulliver/oz-style worlds).
+6. Wiring: at least one test drives the real `stage_region_cast` frontier-observer path (not just the predicate in isolation) so the recognition is proven reachable from the production transition path.
 
 ---
-_Generated by `pf context create story 153-27` from the sprint YAML._
+_Generated by `pf context create story 153-27` from the sprint YAML; Technical Approach + Acceptance Criteria corrected 2026-06-22 by Architect per the design decision recorded in the session file._
