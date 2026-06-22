@@ -400,8 +400,9 @@ stories:
     title: '[BACKDROP-POI-VALIDATOR-GAP] promote dangling backdrop_poi from waiver_warning to content_error in pack validator'
     points: 2
     priority: p2
-    status: backlog
+    status: done
     repos: server
     workflow: tdd
     depends_on: 153-35
+    completed: '2026-06-22'
     type: refactor
