@@ -32,10 +32,14 @@ stories:
     title: '[WRY-WHIMSY-NO-FATE-CONTEST-DEFS] port wry_whimsy + pulp_noir confrontation catalogs to Fate contest schema + loud loader guard'
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-21'
     repos: server,content
     workflow: tdd
+    completed: '2026-06-21'
     type: bug
+    review_findings: "REJECTED: conflict mode introduced without contest's display-only handling — narrator.py:434 crashes on b.kind.value (kind=None stub), and narration_apply else-branch leaks the native dial for conflict. Two HIGH blockers; mirror the contest M1 fix for conflict."
+    review_verdict: approved
   - id: 153-4
     title: '[SWN-CHARGEN-FLAT-STATS] WN 14-to-7 attribute spread + assign skills/foci in SWN narrative chargen'
     points: 5
