@@ -265,10 +265,14 @@ stories:
     title: '[DUNGEON-ROOM-POPULATION-INERT] place authored encounter_creatures + bestiary creatures into generated rooms so exploration spawns real encounters instead of narrator-improvised ones'
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-22'
     repos: server
     workflow: tdd
+    completed: '2026-06-22'
     type: bug
+    review_findings: Fix is correct + GREEN, but test file fails ruff check (F401 unused monster_manual_inject import, line 62) and ruff format --check — merge-blocking via just server-check. Plus 2 LOW doc-accuracy fixes (handler comment omits combat_encounters gate; docstring tense). Green rework → Dev.
+    review_verdict: approved
   - id: 153-24
     title: '[DUNGEON-ROOM-STATE-NOT-PERSISTED] persist discovered_rooms/current_room/room_states to the snapshot as current_region walks the dungeon graph'
     points: 3
