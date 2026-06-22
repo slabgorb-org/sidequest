@@ -340,7 +340,8 @@ stories:
     title: '[KNOWLEDGE-CLIENT-REACTIVE-ONLY] decide and wire whether server known_facts must persist (narrator context + cold-reload survival) or confirm client-reactive-by-design per ADR-136'
     points: 2
     priority: p3
-    status: backlog
+    status: in_progress
+    started: '2026-06-22'
     repos: server
     workflow: trivial
     type: bug
