@@ -195,10 +195,13 @@ stories:
     title: '[MISSING-COMBAT-SFX] render+upload road_warrior + heavy_metal sfx_library to R2 or drop the manifest refs'
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-22'
     repos: content
     workflow: trivial
+    completed: '2026-06-22'
     type: chore
+    review_verdict: approved
   - id: 153-18
     title: '[EVROPI-MISSING-PORTRAITS] render+sync 5 missing evropi picker portraits to R2 or drop from the manifest'
     points: 2
