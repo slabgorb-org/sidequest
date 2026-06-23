@@ -142,12 +142,14 @@ stories:
     title: '158-7 follow-up: harden party-advance tests (surface_ascent + lateral coverage, OTEL party_advance/anchor_pc span assertions) + cleanups (drain_calls counter, dogfight witness-key, telemetry comment)'
     points: 2
     priority: p3
-    status: in_progress
+    status: done
     started: '2026-06-23T23:59:59Z'
     repos: server
     workflow: trivial
+    completed: '2026-06-23'
     type: refactor
     branch: feat/158-13-harden-party-advance-tests
+    review_verdict: approved
   - id: 158-14
     title: '158-8 follow-up: harden Character.pronouns (validated grammatical set + chargen normalization) and instrument the remaining _apply_pov_swap skip paths'
     description: 'Durable hardening of the 158-8 freeform-pronoun crash class (158-8 shipped only an in-function fail-open guard in sidequest/server/emitters.py::_apply_pov_swap). Root cause: Character.pronouns: str (character.py) is unconstrained while the localizer swap_to_second_person only accepts the canonical grammatical set {he/him, she/her, they/them}. DESIGN CAVEAT (load-bearing): freeform pronouns are an INCLUSIVE chargen feature (builder.py pronouns_allow_freeform) — do NOT force Character.pronouns to a 3-value Literal and break inclusive display. Separate concerns: keep freeform DISPLAY pronouns (what the player chose) and derive/validate a canonical GRAMMATICAL projection for the localizer (or normalize at chargen). Server-only. Source: archived sprint/archive/158-8-session.md Delivery Findings ([TYPE] root cause, [SEC][LOW] span-attr, [SILENT] skip paths).'
