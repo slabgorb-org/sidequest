@@ -79,10 +79,14 @@ stories:
     title: MP party-split across the seam — co-located party advances to the same region node
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-23T08:40:16+00:00'
     repos: server
     workflow: tdd
+    completed: '2026-06-23'
     type: bug
+    branch: feat/158-7-mp-party-split-seam
+    review_verdict: approved
   - id: 158-8
     title: MP pronoun localization — recipient's own action renders third-person (+ solo reconnect/replay variant)
     points: 3
