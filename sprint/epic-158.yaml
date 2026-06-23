@@ -159,3 +159,26 @@ stories:
       - "Complete _apply_pov_swap skip-path observability: route the pre-existing empty-pronoun guard (emitters.py:292) through narration.pov_swap_skipped, splitting the _pronouns_for_pc conflation into reason='pronouns_empty' vs reason='pc_not_in_snapshot'; and the invalid-text guard (emitters.py:314) with reason='text_missing_or_invalid'."
       - "Bound the pronouns span attribute: truncate/normalize the player-supplied value written to the narration.pov_swap_skipped 'pronouns' attribute ([SEC][LOW] PII/length nit from 158-8 review)."
     type: refactor
+  - id: 158-15
+    title: QUESTS not re-emitted on connect/resume — mirror the FATE_STATE bootstrap re-emit so the Quests tab survives reload/reconnect
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-16
+    title: beneath_sunden seeds an empty quest spine — author opening active_stakes/quest_seed so the Quests tab isn't blank on driveless WWN PCs
+    points: 1
+    priority: p3
+    status: backlog
+    repos: content
+    workflow: trivial
+    type: bug
+  - id: 158-17
+    title: big_bad signature resolution for per-expansion quests — collect defeated-NPC names at the turn handshake and guarantee seeded big_bad name matches the minted encounter-actor name
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
