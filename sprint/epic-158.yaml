@@ -59,9 +59,10 @@ stories:
     title: Persist known_facts server-side — Journal/Knowledge currently renders client-only
     points: 3
     priority: p2
-    status: backlog
+    status: canceled
     repos: server
     workflow: tdd
+    completed: "Closed by-design 2026-06-23: known_facts persistence already works end-to-end (commit_known_fact -> repository.save -> reload, proven by test_commit_known_fact.py:134; JOURNAL_RESPONSE Seam C live). The 'Knowledge Gained' UI badge is the ephemeral footnote channel (ADR-100 Ch.1), intentionally client-only; empty store on no-scenario beneath_sunden is the two-channel design working as designed per 153-32. No server gap. Misdiagnosis; nothing to build."
     type: bug
   - id: 158-6
     title: Map deep-view gives distinct region nodes distinct labels (dedupe duplicate 'The Drowned Cavern')
