@@ -42,10 +42,14 @@ stories:
     title: NPC roster place-name leak — narrator NpcMention place-names register as NPCs (Torchdeep/Torchhold)
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-23T03:54:54.037628+00:00'
     repos: server
     workflow: tdd
+    completed: '2026-06-23'
     type: bug
+    review_findings: detect_sidecar_extraction_mismatch is is_place-blind -> false-positive sidecar_extraction.mismatch span for correctly-declined places (LIVE via websocket_session_handler.py:1189); complete is_place wiring across all npcs_present consumers + add a regression test asserting no mismatch span for an is_place entry
+    review_verdict: approved
   - id: 158-5
     title: Persist known_facts server-side — Journal/Knowledge currently renders client-only
     points: 3
