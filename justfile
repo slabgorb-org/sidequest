@@ -586,7 +586,7 @@ playtest-scenario file:
 
 # Naive simulated-player table (sidequest-understudy)
 understudy manifest *flags:
-    cd {{root}}/sidequest-understudy && uv run understudy run runs/{{manifest}}.yaml {{flags}}
+    cd {{root}}/sidequest-understudy && PYTHONUNBUFFERED=1 uv run understudy run runs/{{manifest}}.yaml {{flags}}
 
 # tmuxinator session — server, client, daemon, otel in four panes
 tmux:
