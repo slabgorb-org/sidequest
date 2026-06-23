@@ -95,10 +95,13 @@ stories:
     title: Genre theme CSS never arrives on connect — repro/confirm (not reproduced in sweep 2; add guard)
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-23'
     repos: ui
     workflow: trivial
+    completed: '2026-06-23'
     type: bug
+    review_verdict: approved
   - id: 158-10
     title: Replace static 'crack in the hillside' chargen establishing template — off-geography for a winch-shaft world
     points: 1
