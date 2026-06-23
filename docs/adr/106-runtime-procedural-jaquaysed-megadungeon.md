@@ -358,3 +358,105 @@ spec tracker shows beyond this seam (e.g. `beneath_sunden` content
 authoring + `caverns_sunden` retirement, item 8); the runtime-reachability
 bottleneck the original status called "the project's real bottleneck" is
 resolved.
+
+### Amendment C — Curate is deterministic; the narrator owns the prose (2026-06-23, Keith Avery / Architect)
+
+**Status:** Reverses the core mechanism of Amendment A. The Stage-3 curate pass
+**no longer calls an LLM.** Materialization becomes pure-deterministic end-to-end and
+the live narrator owns all creature prose at narration time. Does not change
+frontmatter or supersession relationships; the §10 spec tracker remains the live
+implementation tracker. Implementation is a sprint-story handoff (Dev), not landed by
+this amendment.
+
+**Context — what the LLM was actually doing.** `_stage_curate`
+(`dungeon/materializer.py:1200`) issued one `complete_with_tools` call per expansion on
+`CallType.SCRATCH` (= `claude-haiku-4-5`, `model_routing.py:62`), `max_tokens=16384`,
+covering the whole region band in a single JSON round-trip. The prompt
+(`_build_curation_prompt`, `:921`) asked Haiku to do exactly two **cosmetic** things and
+forbade it from touching anything mechanical: *PASS 1* — drop wandering-table rows that
+"read as noise"; *PASS 2* — rewrite each kept row's telegraph to "one grave, specific
+sentence"; **"Preserve every kept row's name/cr/xp/type verbatim … it does not invent
+stats."** All load-bearing mechanics — which creatures, CR→HP (`_hp_from_cr` = CR×8),
+threat band, big_bad, loot, specials, room prose — are produced **deterministically** by
+`assemble_region` (`game/cookbook/assemble.py:279`, a pure seeded function) *before*
+curate runs. The proof that the deterministic manifest is already shippable is Amendment
+A's own Layer-2 path: `_degrade_region` (`:1153`) ships precisely
+`_creatures_from_manifest(...) + _append_authored_creatures(...)` with no LLM.
+
+**Why it was wrong.** Three findings:
+1. **Mis-shaped task.** To perform two cosmetic edits, the contract forced the model to
+   **re-emit the entire manifest as strict JSON**, copying `name/cr/xp/type/weight/count`
+   verbatim for every row of every region. Output was dominated by structural echo.
+2. **Named flakiness.** That echo, under a token/wall-clock cap, makes mid-JSON
+   truncation a *routine, named* failure — `_classify_parse_failure` (`:984`) has a
+   dedicated `truncated` kind keyed on `"Unterminated string"`. Large bands blow the cap
+   (the playtest `30337ms-vs-25000ms` on `exp001.r2..r5`), both attempts fail, the region
+   degrades. A region therefore materialized its **curated** roster or its **raw** roster
+   non-deterministically depending on whether Haiku finished in time — intermittent by
+   construction.
+3. **Batching bought nothing.** The prompt curates each region **independently** against
+   its own look/CR band; there is no cross-region coherence instruction. The single
+   all-regions call carried all of the truncation cost and none of the only benefit
+   (holistic dungeon context) that could have justified an LLM here.
+
+The narrator already receives every seated creature (`name/creature_type/telegraph/hp/
+threat_level`) via `region_population` → `RegionCreature` → Monster-Manual inject →
+`snapshot.npcs`, and renders it as world truth with the full genre/world prompt. The
+Haiku telegraph rewrite was a strictly-worse pre-bake of the narrator's own job (SOUL:
+*Crunch in the Genre, Flavor in the World* — prose belongs to the narrator at the moment
+the creature surfaces, not to a materialization-time janitor).
+
+**Decision.**
+- **Remove the LLM from the curate stage entirely.** `_stage_curate` becomes
+  pure-deterministic: for each region, `assemble_region` (already called) →
+  `_creatures_from_manifest(manifest, bundle)` → `_append_authored_creatures(...)`. This
+  is the Amendment-A Layer-2 payload promoted to the **only** path. Delete
+  `_build_curation_prompt`, `_parse_curation_verdict`, `_classify_parse_failure`, the
+  `complete_with_tools`/Ollama `_one_attempt` body, the `asyncio.timeout` retry ladder,
+  and the constants `CURATE_DEADLINE_S` / `MAX_BAND_DEADLINE_S` / the `max_tokens=16384`
+  curate ceiling. The `claude_client` argument is dropped from the curate path (and from
+  `attach_dungeon_to_session` / the lookahead worker's `build_llm_client(purpose="tool")`
+  that exists only to feed it).
+- **Retire most of Amendment A.** Layers 1 (retry) and 2 (degrade), the wall-clock
+  deadline, and the `dungeon.curate.parse_failed` / `dungeon.curate.degraded` span
+  taxonomy are **moot** — they exist only to survive an LLM call that no longer happens.
+  **Retained from Amendment A:** the `CurationError` carve-out **(i)** — a structurally
+  invalid *assembled* manifest (missing `cr`, unknown `cr_band`) is a real upstream
+  content bug and still fails loud, never degraded. Carve-out (ii) (curated row dropped
+  `cr`) disappears with the verdict.
+- **The narrator does the prose job at the end.** No new narrator code is required: the
+  deterministic `telegraph` flows through as a hint and the narrator renders the grave,
+  specific encounter prose when the creature actually surfaces, exactly as it already
+  does for every other NPC. Any region-entry "telegraph beat" is the narrator's, at
+  narration time.
+
+**Settled sub-decisions.**
+- **Ship the full budgeted wandering table.** `assemble_region` already bounds the table
+  via `budget_for_burst`; the LLM's extra "drop noise" trim is removed. If a table reads
+  as noisy, fix the cookbook affinity **weights/data**, not a runtime trim. The
+  player-facing surface is already capped downstream (Monster-Manual inject caps at 2
+  out-of-combat / all in-combat).
+- **Keep the corpus telegraph** as the narrator's deterministic hint; it is no longer
+  "the" prose.
+
+**Consequences.**
+- Materialization is now **deterministic and seed-reproducible end-to-end.** The
+  `RegionCuration` docstring note that curation "deliberately breaks byte-reproducibility"
+  (`:514`) is reversed — same seed ⇒ same roster.
+- `_stage_curate` becomes synchronous (no `await`). `materialize` and the lookahead
+  worker may collapse to synchronous calls in the same change (≈3 `await` sites:
+  `session_integration.py`, `lookahead_worker.py`, tests) — recommended but separable.
+- **The lookahead race largely dissolves** (the open a/b decision from the 2026-06-23
+  audit). With materialization reduced to microseconds of pure compute, "block on
+  arrival" (a) blocks on Python, not a 30 s Haiku round-trip, and "prefetch deeper" (b)
+  no longer multiplies an API call. Both fixes now sit on a deterministic seat; the a/b
+  story should be re-scoped on top of this amendment.
+- Removes one `SCRATCH`-tier API call per expansion (cost + daemon/API load).
+
+**Handoff.** Dev story scope: the deletion above + the deterministic `_stage_curate` +
+signature/`claude_client` cleanup + sync collapse. Verify by OTEL, not source text: a
+`dungeon.materialize.curate` span fires with `curated=true` on every region and
+**zero** `dungeon.curate.parse_failed` / `dungeon.curate.degraded` spans are reachable;
+a fixture-driven test materializes a band twice from one seed and asserts identical
+rosters (the new determinism guarantee). No `complete_with_tools` call originates from
+`dungeon/`.
