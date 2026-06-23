@@ -91,10 +91,14 @@ stories:
     title: MP pronoun localization — recipient's own action renders third-person (+ solo reconnect/replay variant)
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-23'
     repos: server,ui
     workflow: tdd
+    completed: '2026-06-23'
     type: bug
+    review_findings: "[HIGH][SEC] Non-canonical freeform pronouns (she/they, any, xe/xem) make swap_to_second_person raise ValueError (pov_swap.py:877); _apply_pov_swap guards empty but not non-canonical pronouns, so it propagates inside emit_event's repo.transaction() and rolls back the NARRATION turn for the whole table. Chargen allows freeform (builder.py:2194). The Facet-2 re-anchor widened the trigger from anchor-only to every recipient/every pc_anchored card. Fix: guard pronouns in _PRONOUN_FORMS -> fail-open to canonical prose + skip OTEL span. Firewall ordering verified sound; fix itself correct. Routed to red rework."
+    review_verdict: approved
   - id: 158-9
     title: Genre theme CSS never arrives on connect — repro/confirm (not reproduced in sweep 2; add guard)
     points: 2
