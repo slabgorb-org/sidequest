@@ -18,10 +18,14 @@ stories:
     title: IntentRouter routes literary/described attacks to combat, not only blunt 'attacks X with Y'
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-22'
     repos: server
     workflow: tdd
+    completed: '2026-06-22'
     type: bug
+    review_findings: '2 MEDIUM on the new unrouted-verb log: (1) [SEC] raw player text action[:120] logged at INFO (CWE-532/rule#4 PII; codebase uses action_len); (2) log fires during active combat (verified) diluting AC3 signal — gate on no-active-encounter. +2 LOW (stale docstring, all-stopword verb skip). Detector+prompt logic correct; fingerprints/canaries green.'
+    review_verdict: approved
   - id: 158-3
     title: Block narrator apply-path opponent-HP writes when no confrontation is seated (no-encounter case)
     points: 3
