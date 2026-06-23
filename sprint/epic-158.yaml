@@ -10,10 +10,14 @@ stories:
     title: WWN combat never seats on a fresh descent — reconcile surfaced-creature zone to PC region so the router projects a co-located Other
     points: 5
     priority: p0
-    status: backlog
+    status: done
+    started: '2026-06-22'
     repos: server
     workflow: tdd
+    completed: '2026-06-22'
     type: bug
+    review_findings: "Recency filter admits never-surfaced (last_seen_turn==0) creatures at interaction==1 — violates AC-4 no-over-reach + helper docstring (HIGH; add last_seen_turn>0). Filter also admits both-None-location creatures, firing span with from_location='' (MEDIUM; require non-None location). Both untested (AC-4 guard used gap-4). Plus LOW reconcile-then-decline ordering + span string length-bound. Route: red rework (TEA adds boundary guards, Dev tightens filter)."
+    review_verdict: approved
   - id: 158-2
     title: IntentRouter routes literary/described attacks to combat, not only blunt 'attacks X with Y'
     points: 3
