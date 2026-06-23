@@ -34,10 +34,12 @@ stories:
     title: Block narrator apply-path opponent-HP writes when no confrontation is seated (no-encounter case)
     points: 3
     priority: p1
-    status: backlog
+    status: started
+    started: '2026-06-23'
     repos: server
     workflow: tdd
     type: bug
+    branch: feat/158-3-block-unbacked-opponent-hp-writes
   - id: 158-4
     title: NPC roster place-name leak — narrator NpcMention place-names register as NPCs (Torchdeep/Torchhold)
     points: 3
