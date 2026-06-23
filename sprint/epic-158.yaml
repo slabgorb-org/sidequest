@@ -118,3 +118,11 @@ stories:
     repos: content,server
     workflow: trivial
     type: bug
+  - id: 158-12
+    title: Remove the LLM from dungeon curate — deterministic materialization, narrator owns creature prose
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
