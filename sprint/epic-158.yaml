@@ -1,0 +1,96 @@
+id: '158'
+type: epic
+title: 'Playtest sweep follow-ups: WWN combat seating, narrator grounding, roster/map/MP polish'
+description: 'Open findings from the 2026-06-22 full-stack /sq-playtest sweep on caverns_and_claudes/beneath_sunden (Chico + Harpo solo descents). Tracks the open ping-pong issues that survived the epic-153 close: WWN combat never seats on a fresh descent (router declines — surfaced creature in a stale zone), brittle combat-verb routing, unbacked narrator HP writes, Map-tab deep-view labeling, NPC place-name leak, known_facts persistence, genre theme CSS, and the two MP desync items, plus two new content/seed defects surfaced this sweep. Source of truth: ~/Projects/sq-playtest-pingpong.md.'
+priority: p1
+status: ready
+repos: server,ui,content
+stories:
+  - id: 158-1
+    title: WWN combat never seats on a fresh descent — reconcile surfaced-creature zone to PC region so the router projects a co-located Other
+    points: 5
+    priority: p0
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-2
+    title: IntentRouter routes literary/described attacks to combat, not only blunt 'attacks X with Y'
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-3
+    title: Block narrator apply-path opponent-HP writes when no confrontation is seated (no-encounter case)
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-4
+    title: NPC roster place-name leak — narrator NpcMention place-names register as NPCs (Torchdeep/Torchhold)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-5
+    title: Persist known_facts server-side — Journal/Knowledge currently renders client-only
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-6
+    title: Map deep-view gives distinct region nodes distinct labels (dedupe duplicate 'The Drowned Cavern')
+    points: 2
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: trivial
+    type: bug
+  - id: 158-7
+    title: MP party-split across the seam — co-located party advances to the same region node
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-8
+    title: MP pronoun localization — recipient's own action renders third-person (+ solo reconnect/replay variant)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server,ui
+    workflow: tdd
+    type: bug
+  - id: 158-9
+    title: Genre theme CSS never arrives on connect — repro/confirm (not reproduced in sweep 2; add guard)
+    points: 2
+    priority: p3
+    status: backlog
+    repos: ui
+    workflow: trivial
+    type: bug
+  - id: 158-10
+    title: Replace static 'crack in the hillside' chargen establishing template — off-geography for a winch-shaft world
+    points: 1
+    priority: p3
+    status: backlog
+    repos: content
+    workflow: trivial
+    type: bug
+  - id: 158-11
+    title: Harmund Fuel-Count seeds manual_origin=false/location=None while 3 camp siblings seed authored — reconcile 4th NPC
+    points: 1
+    priority: p3
+    status: backlog
+    repos: content,server
+    workflow: trivial
+    type: bug
