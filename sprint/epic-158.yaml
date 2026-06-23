@@ -34,12 +34,15 @@ stories:
     title: Block narrator apply-path opponent-HP writes when no confrontation is seated (no-encounter case)
     points: 3
     priority: p1
-    status: started
+    status: done
     started: '2026-06-23'
     repos: server
     workflow: tdd
+    completed: '2026-06-23'
     type: bug
     branch: feat/158-3-block-unbacked-opponent-hp-writes
+    review_findings: "2 blocking [EDGE] findings routed to red rework: (1) guard ignores encounter.resolved — a resolved husk (kept on the dice-replay re-entry) lets a freeform NPC HP write land on a settled opponent (ADR-139); fix: 'encounter is None or encounter.resolved' + distinct guard_reason + test. (2) reject OTEL span omits damage_type/source — asymmetric with the accept span in an observability story (AC-2); fix: set both attrs on reject branch + extend test. Core guard otherwise correct: reviewer-security clean (4 rules), preflight green (17 tests), ordering/player-exemption verified."
+    review_verdict: approved
   - id: 158-4
     title: NPC roster place-name leak — narrator NpcMention place-names register as NPCs (Torchdeep/Torchhold)
     points: 3
