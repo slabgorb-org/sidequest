@@ -126,10 +126,13 @@ stories:
     title: Harmund Fuel-Count seeds manual_origin=false/location=None while 3 camp siblings seed authored — reconcile 4th NPC
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-24'
     repos: content,server
     workflow: trivial
+    completed: '2026-06-24'
     type: bug
+    review_verdict: approved
   - id: 158-12
     title: Remove the LLM from dungeon curate — deterministic materialization, narrator owns creature prose
     points: 3
