@@ -189,10 +189,13 @@ stories:
     title: beneath_sunden seeds an empty quest spine — author opening active_stakes/quest_seed so the Quests tab isn't blank on driveless WWN PCs
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-24'
     repos: content
     workflow: trivial
+    completed: '2026-06-24'
     type: bug
+    review_verdict: approved
   - id: 158-17
     title: big_bad signature resolution for per-expansion quests — collect defeated-NPC names at the turn handshake and guarantee seeded big_bad name matches the minted encounter-actor name
     points: 3
