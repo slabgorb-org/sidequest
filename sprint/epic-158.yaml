@@ -253,10 +253,13 @@ stories:
     title: WWN bestiary-curation recipe — generalize the beneath_sunden pattern (world_register genre-truth gate -> tone curation -> WWN stat ladder -> pack-validate) as the per-world contract + reusable tooling
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-24'
     repos: content
     workflow: trivial
+    completed: '2026-06-24'
     type: chore
+    review_verdict: approved
   - id: 158-21
     title: Curate heavy_metal/barsoom WWN bestiary — expand 14 entries to setting-true ERB Barsoom fauna (tharks, banths, white apes, calots, thoats); source is Barsoom, NOT the D&D SRD
     points: 3
