@@ -194,9 +194,13 @@ stories:
     title: big_bad signature resolution for per-expansion quests — collect defeated-NPC names at the turn handshake and guarantee seeded big_bad name matches the minted encounter-actor name
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-24'
     repos: server
     workflow: tdd
+    completed: '2026-06-24'
+    review_findings: "Asymmetric sanitization: collect_defeated_npc_names reads npc.core.name raw, but the procedural big_bad mint path (region_population) bypasses _sanitize_patch_names while select_signature binds the ref_id to the sanitized form. A bracket-named big_bad on beneath_sunden's path -> quest silently never resolves after the kill. AC2 'guarantee' is conditional. Fix: sanitize in collect_defeated_npc_names + regression test."
+    review_verdict: approved
   - id: 158-18
     title: 'Sünden tactical map: generation-sourced token+feature pipeline (v1 visual/positional) — see docs/superpowers/specs/2026-06-23-sunden-tactical-map-design.md'
     points: 8
