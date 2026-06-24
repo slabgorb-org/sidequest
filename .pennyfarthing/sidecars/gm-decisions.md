@@ -122,3 +122,60 @@ creature binding feeding the WN seater (the WN round must seat its Other from th
 room roster, per ADR-116, not improvise one — this is the 107-2 finding, and it is a
 *seating* fix, not a balance patch). Dial **chase/negotiation** confrontations are not WN
 combat and keep the native dial engine even in WN packs.
+
+### Random-dungeon theme eligibility (Keith, 2026-06-24, story 158-19)
+- **It's a RANDOM DUNGEON, not an authored progression.** Themes must be broadly
+  eligible at EVERY depth — every depth offers MULTIPLE theme choices (target ≥2–3),
+  never collapses to one. The opening descent was monotone ("water every time")
+  because drowned_cavern was the only theme with min=0; the others were deep-gated.
+- **Depth tunes ENCOUNTERS, not THEMES.** Do NOT stratify themes into depth bands to
+  form a strict shallow→deep staircase. A theme can appear at any depth; what scales
+  with depth is encounter DIFFICULTY — handled by the cookbook `cr_bands`
+  (shallow/mid/deep CR by depth, `cookbook/affinities.yaml`) and per-creature
+  `depth_band` entries in a theme's creature_table (easy rows shallow, hard rows deep).
+  drowned_cavern at depth 5 = shallow creatures; drowned_cavern at depth 50 = deep
+  creatures. Same theme, scaled threat.
+- **Anti-domination invariant (replaces "narrow drowned's max"):** drowned must be
+  1-of-N at every depth, INCLUDING deep — not banished from the deep. The fix is wide
+  overlapping bands across the whole palette, not capping drowned shallow. (This
+  overturned the original 158-19 AC-2 "narrow drowned_cavern's max" framing and the
+  TEA test `test_drowned_cavern_no_longer_dominates_deep_slot`.)
+- **Two orthogonal axes (confirmed):** `theme` (drowned/bone/etc.) → interior generator
+  + narrator register + depth eligibility + quest. `look` (necropolis/sunken/delvehold)
+  → cookbook RACE faction → creatures. Theme does NOT pick the race; `look` does. The
+  theme's own creature_table is currently decorative (Plan 6 deferred) — keep its refs
+  REAL (existing bestiary ids / newly-authored gated entries), never phantom.
+
+### Theme-variety targets + encounter ownership (Keith, 2026-06-24, story 158-19)
+- **≥5 themes eligible PER STRATUM, not 2-3.** "Having 2 or so per stratum will be
+  repetitive" — quests + encounters ride on themes, so a thin per-stratum set repeats
+  fast. Flatten all themes to {0,null} so every depth offers the full grab-bag.
+  beneath_sunden: 5 existing + 3 new seeds = 8 broadly-eligible themes (clears the 5 floor).
+- **Keith owns/seeds ENCOUNTERS.** "Trust me, I can come up with seeds for encounters."
+  Do NOT author new creature stat lines for new themes. New themes reference REAL existing
+  bestiary ids in creature_table; signature big-bads (the animated suit, the fungal
+  spawner, the coffin-thing) are SET-PIECES (prose + trope), not wandering-monster rows.
+  Keith layers encounter seeds on top later.
+- **Test invariant follow-on:** the TEA shallow-variety test floor (≥2) should rise toward
+  ≥5 per stratum to match this bar; the drowned-banishment test is dropped entirely
+  (see "Random-dungeon theme eligibility").
+
+### sunless_temple re-themed built→labyrinthine (Keith, 2026-06-24, story 158-19)
+- **Why:** flattening all themes to {0,null} (random-dungeon eligibility) made
+  `sunless_temple` (generator_class `built` → roomcorridor) shallow-eligible, but
+  beneath_sunden ships NO roomcorridor cookbook look (only depthfirst/cellular/prim) and
+  `KNOWN_GENERATOR_BINDINGS` excludes roomcorridor — so roomcorridor is unmaterializable
+  here and the materializer fail-loud'd at the look seam (seed-dependent red across
+  session/projection tests). Keeping it roomcorridor would need SERVER code (extend
+  KNOWN_GENERATOR_BINDINGS + author a look + dim-validation) — out of the content lane.
+- **Decision:** content-only re-theme to `labyrinthine` (algorithm depthfirst, params {},
+  braid_ratio 0.3), binding the existing **necropolis** look. Chosen over cellular because
+  the look picks the MONSTER FACTION: cellular→sunken is ooze-heavy + "drowned/wet"
+  register (wrong for a dry colonnaded temple); depthfirst→necropolis is undead-heavy +
+  "mausoleum-formal, straight lines" (right — matches the temple's own acolyte-shade /
+  altar-horror creature_table). braid 0.3 = hall connectivity, not a pristine trap maze.
+- **Supersedes** the earlier "validate region dims before dispatch" delivery finding —
+  that was a mis-diagnosis (the failure fired earlier, at look resolution, dim-independent).
+- **Standing rule:** beneath_sunden supports 3 generator families (depthfirst/cellular/prim).
+  Do not author or flatten a `built`/roomcorridor theme into its eligible pool without the
+  server-side roomcorridor support landing first.

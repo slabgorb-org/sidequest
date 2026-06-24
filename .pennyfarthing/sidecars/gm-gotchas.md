@@ -103,3 +103,32 @@
 - **Verify-target worlds carry no world-tier rules.yaml** — crunch loads from the genre tier for all WWN worlds (beneath_sunden, evropi, long_foundry, barsoom, burning_peace). Every edit is in genre `rules.yaml`; the worlds are where you playtest, not separate edit sites.
 - **Still-pending under ADR-143 doctrine:** CWN (road_warrior, neon_dystopia), AWN (mutant_wasteland), SWN (space_opera) packs STILL have `resolution_mode: beat_selection` combat defs — they belong to their own ruleset epics (114-x), explicitly out of 108-3's WWN-only scope. Same de-nativization pattern will apply when those land.
 - **Signature abilities (ADR-095) reference combat beats in PROSE** ("on a successful strike beat", "an incoming strike that would reduce your HP to a guard beat"). These are NOT loader-validated (no structured `trigger_beat:` field — pure description text) so they don't break load, but they're now stale flavor pointing at vanished beats, AND how those abilities re-hook to the WN round (attack/move/item-use/cast) is a mechanical question = Keith's crunch lane + partly server-side (108-7/108-8). Flag as a finding; don't silently reword class crunch in a content-strip story.
+
+### Dungeon theme creature_table / loot_table are DECORATIVE (beneath_sunden, 2026-06-24)
+- A `themes/*.yaml` `creature_table`/`loot_table` ref does NOT drive runtime
+  encounters/loot. Plan 6 (ref resolution) was deferred and never wired. The
+  existing 5 themes reference creatures that exist NOWHERE (`blind_cave_eel`,
+  `crypt_warden`, `ossuary_crawler`…) and loot that resolves nowhere
+  (`silt_pearl`, `grave_silver`) — and nothing breaks, because they're unread.
+- **Real runtime creatures** come from the region `look` (necropolis / sunken /
+  delvehold) → `cookbook/affinities.yaml` `look_race_affinity` → cookbook RACE
+  faction (`cookbook/races/*.yaml`) → world `bestiary.yaml`. **Real loot** comes
+  from the cookbook `loot_bias` + SRD inventory. THEME and LOOK are two parallel
+  axes: theme = interior generator + narrator register + depth eligibility +
+  quest_template; look = creatures. Theme does not pick the race.
+- So when authoring a new theme, the creature_table is honesty/future-proofing
+  only — use REAL `bestiary.yaml` ids anyway (`hold_skeleton`, `the_seep`,
+  `gnaw_swarm`, `wight`, `grave_ghoul`, `otyugh`, …) and put signature
+  big-bads in `set_pieces` (prose + a REAL pack trope), not as wandering rows.
+- `bestiary.yaml` is genre-truth-gated: `world_register.yaml` allow_types
+  [Undead, Aberration, Ooze, Monstrosity, Construct, Giant, Humanoid, Beast],
+  deny [Celestial, Fey]; the roster draws from 5 cookbook RACE factions
+  (undead/ooze/aberration/goblinoid/vermin) + Humanoid-as-delved-too-deep. The
+  `undead` faction filter already grabs `{type: Construct, name_glob: '*animated*'}`
+  — animated constructs read as "the Restless" without a new faction.
+
+### Content is VALIDATED, not unit-tested — and a theme's generator must have a cookbook look (beneath_sunden sunless_temple, 2026-06-24)
+- **Doctrine (Keith, emphatic):** "WE DO NOT UNIT TEST CONTENT, we VALIDATE IT." The authority on content correctness is the content validator (`sidequest validate` / `just`-driven pack validation), NOT server unit tests. Server materialization tests (`tests/dungeon/test_session_*`, `test_region_projection_*`) may go red when content changes, but they are exercising the engine, not gating the content — fix the content, confirm with the VALIDATOR, and the engine tests follow. Never add a server unit test to "lock" a content invariant.
+- **The look↔theme seam (why a theme can be unmaterializable):** a `themes/*.yaml` `interior.algorithm` (built→roomcorridor, organic→cellular, labyrinthine→depthfirst, structured→prim) must be matched by a cookbook LOOK whose `generator_binding` == that algorithm (`_resolve_look_for_theme`, materializer.py). beneath_sunden's `cookbook/looks.yaml` ships only necropolis(depthfirst)/sunken(cellular)/delvehold(prim) — **no roomcorridor look at all** — AND `KNOWN_GENERATOR_BINDINGS` (server `loader.py`) is `{cellular,depthfirst,prim,braid}`, so even authoring a roomcorridor look would fail the cookbook load until a server code change. Net: **"built"/roomcorridor themes are unsupported in beneath_sunden.**
+- **Trigger that exposed it (story 158-19):** flattening every theme to `depth_band {0,null}` (random-dungeon eligibility) made `sunless_temple` (built/roomcorridor) shallow-eligible → materializer fail-loud at the look seam, seed-dependently red across session/projection tests. The `sunless_temple.yaml` comment mis-diagnosed it as a roomcorridor <5×5 *dim* issue; the real failure fires earlier, at look resolution, dim-independent.
+- **Fix taken (content-only, no code):** re-themed `sunless_temple` built→**labyrinthine** (roomcorridor→depthfirst, params {}, braid_ratio 0.3), binding the existing **necropolis** look. Decisive reason = FACTION, not just map shape: cellular→sunken is ooze-heavy + "drowned/wet" register (wrong for a dry colonnaded temple); depthfirst→necropolis is undead-heavy + "mausoleum-formal, straight lines" (right — matches the temple's own `temple_acolyte_shade`/`altar_horror` creature_table). A theme's look choice picks its monsters; choose the look whose faction fits the fiction.

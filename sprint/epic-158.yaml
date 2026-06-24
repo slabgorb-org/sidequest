@@ -231,7 +231,8 @@ stories:
       Repos: content (theme depth_bands + title text) + server (expansion_quest binding/projection logic). The exact depth_band values are a crunch/pacing call -> Keith owns them. Related but separately filed: stale-active quests never GC; multi-expansion-per-turn pacing; theme/depth-band incoherence (bone_crypt region at depth_score 8.2).
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-24T08:39:20Z'
     repos: server,content
     workflow: tdd
     acceptance_criteria:
@@ -241,7 +242,10 @@ stories:
       - Same-theme expansions produce distinguishable quest titles (region/depth/ordinal token; needs a new slot in expansion_quest._fill).
       - 'OTEL: the dungeon.quest.bound span carries the bound theme id so the GM panel can verify which theme each quest used.'
       - 'No regression to the working mint->project->complete path: the per-expansion quest still completes on its reach_deep beat.'
+    completed: '2026-06-24'
+    branch: feat/158-19-shallow-quest-template-variety
     type: bug
+    review_verdict: approved
   - id: 158-20
     title: WWN bestiary-curation recipe — generalize the beneath_sunden pattern (world_register genre-truth gate -> tone curation -> WWN stat ladder -> pack-validate) as the per-world contract + reusable tooling
     points: 2
