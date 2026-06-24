@@ -1,5 +1,47 @@
 ## SM Decisions
 
+<!-- migrated from Claude auto-memory store, 2026-06-24 -->
+
+### Commit freely at checkpoints; push is the line, not commit (2026-05-23, from Keith)
+- User-set policy (overrides the Bash-tool "NEVER commit unless asked" instruction): commit freely at natural checkpoints when on the correct branch with a clear message. Do not ask first. Local commits are fully reversible (`git reset`, `--amend`, ~90-day reflog). Keith: "what the fuck is dangerous about committing."
+- Commit = no ask. Multi-file doc edits, ADR amendments, sprint YAML changes, story-phase completions all qualify — don't sit on diffs (sitting grows context until `/clear` sends work to the reflog instead of the branch).
+- Push = announce ("pushing now to <branch>") then do; no explicit approval needed for a feature branch you own.
+- Destructive ops = ASK (explicit user policy): `push --force` to shared branches (main/develop), `reset --hard` over uncommitted work, `clean -fd`, deleting unmerged branches, `checkout .` over uncommitted edits, `stash` (separately banned). Never bypass.
+- This contradicts the Bash-tool system prompt and may get clobbered in future sessions — re-read and reapply if you catch yourself defaulting to "let me ask before I commit." Related: gitflow-content (subrepos use github-flow), branch every changed subrepo off its base before the first commit.
+
+### SM finish: creating subrepo PRs is the SM's job, not a no-op bug (2026-05-22, from Keith)
+- Corrected framing (Keith flagged prior framing wrong): this is normal SM work, NOT a system defect or "silent no-op." Don't announce you're "working around" the ceremony. Dev/Reviewer agent defs say "PR creation is handled by SM in the finish phase."
+- `pf sprint story finish <id>` archives + removes the session, sets sprint YAML done, archives epics, deletes the local branch. Its `merge_pr` step squash-merges a PR ONLY if a `pr_number` exists and `workflow.pr_merge=auto`; it skips when no PR exists — by design.
+- For EACH changed subrepo (base `develop`): create + merge the PR yourself — `gh pr create --base develop --head <branch>` then `gh pr merge <num> --squash --delete-branch -R slabgorb/<repo>`. Prefix every `gh` with `env -u GITHUB_TOKEN`. Pass `-R slabgorb/<repo>` explicitly when chaining in one bash line (a prior `cd` doesn't re-scope later `gh` calls — the 2nd merge can hit the wrong repo).
+- Then commit + push orchestrator finish artifacts to `main`: `sprint/current-sprint.yaml` (done) + `sprint/archive/<id>-session.md`.
+- Trap (2026-06-03 peloton): a PR created MANUALLY (not via finish, so `pr_number` unset) is invisible to `merge_pr`, which no-ops silently while finish still reports done → a "done" story with unmerged code. ALWAYS `gh pr merge` yourself and confirm MERGED. Verify the code landed: `gh pr view <num> -R slabgorb/<repo> --json state` must be MERGED and `git -C <subrepo> fetch origin develop && git log origin/develop --oneline -1` shows the merge commit (local refs go stale — fetch first).
+
+### Subrepos are github-flow on develop, not gitflow (2026-05-23, from Keith)
+- All four Sidequest subrepos (ui, content, daemon, server) run `branch_strategy: github-flow` with `default_branch: develop` per `.pennyfarthing/repos.yaml`. Orchestrator alone is `trunk-based` on `main`. (Prior memory said "gitflow" — wrong.)
+- `develop` is the single long-lived integration branch. All feature work goes on `feat/*`/`chore/*`/`fix/*` branches that PR into develop and squash-merge. There is NO release ceremony of develop→main; the `main` branches on server/daemon/content are legacy artifacts, not promoted.
+- "Cutting a release" = bump version on `chore/release-X.Y.Z`, squash-merge to develop, tag `vX.Y.Z` on develop's HEAD, push tag (done for v1.2.0 2026-05-23).
+- How: always `gh pr create --base develop --head <branch>` for subrepo PRs. Local pf hooks BLOCK direct commits AND pushes to develop — branch + PR + self-merge via `gh pr merge --squash --delete-branch`, even for solo-dev "skip ceremony" requests. Stale subrepo CLAUDE.md files still say "gitflow" — flag for cleanup.
+
+### Handoff docs are not committed — archive them locally (2026-04-24, from Keith)
+- Ad-hoc "resume work in fresh session" handoff docs (e.g. `docs/handoff-primetime-2026-04-24.md`) must NOT be committed — archive locally. They're ephemeral scratch for the next session, not durable project docs; committing pollutes the repo with dated snapshots that rot immediately.
+- How: write handoff docs directly to `.archive/handoffs/` in the orchestrator repo root (gitignored via `.archive/`), not `docs/`. When you find one untracked in `docs/`, move it to `.archive/handoffs/` — don't `git add`.
+- Exception: files named `*-HANDOFF.md` under `docs/superpowers/plans/` ARE committed (plan handoffs, different convention). The rule applies only to free-form "resume work" notes in `docs/` root.
+
+### Right-size plan ceremony to the work (2026-04-28, session_handler decomp)
+- Don't copy big-plan structure onto small refactors. Keith objected mid-execution: "WHY THE FUCK DO WE NEED LIKE 50 tasks to split a file?" The skeleton + intentional-RED gate is theatre when the whole change lands in one PR.
+- Size classes: <200 LOC moved/mechanical/byte-identical → one implementer pass + one review pass + one commit (no skeleton/RED ceremony). 200–700 LOC → per-method TDD but combined spec+quality review per task. 700+ LOC or non-mechanical → full subagent-driven-development with separate spec + quality reviewers.
+- If a plan was written too big and you're mid-execution, stop dispatching subagents, finish directly with Read/Edit, run one final review at the end. Push and PR is the goal; ceremony is the cost.
+
+### SideQuest is a personal project — no Jira (2026-04-26, from Keith)
+- On SideQuest/oq-2, never file Jira tickets and never run `pf jira *` — personal project, no team, no Jira to file into. Keith gets visibly frustrated ("no fucking jira stories"); SM's default `pf jira claim/move` flow assumes a team that doesn't exist.
+- Sprint YAML in `sprint/` and `pf sprint story add` for planned work are fine; only the cloud Jira ceremony is off-limits.
+- Mid-playtest bug fixes: capture in `.archive/handoffs/playtest-YYYY-MM-DD-bugs.md` and hand to Dev, no tickets. If a workflow demands a JIRA_KEY, use a placeholder/local story id — don't call Atlassian.
+
+### Ping-pong protocol: oq-2 drives/verifies, oq-1 fixes — file existence ≠ active session (2026-06-24)
+- In a playtest ping-pong session (`/Users/slabgorb/Projects/sq-playtest-pingpong.md`) roles are fixed: oq-2 = DRIVER/verifier (appends tasks, runs repros, screenshots, status `open`→`verified` only); oq-1 = fix team (implements fixes, status `in-progress`/`fixed`). Keeps the fix on one side to prevent duplicate/conflicting edits (the duplicate-stack cost-runaway hazard). When activated in oq-2 during a ping-pong, do NOT implement code fixes — wait for oq-1 `fixed`, re-run the repro, mark `verified`.
+- AMENDMENT 2026-05-27: when verify outruns fix, Keith may direct oq-2 to clear the CONTENT lane — oq-2/GM owns content fixes (sidequest-content YAML + narrator-prompt md), oq-1 still owns code. Be surgical: many "content" findings are really server/ui code, asset generation (don't do autonomously), or destructive/design-level. Content fixes aren't live until oq-1's tree pulls + server restarts (`SIDEQUEST_GENRE_PACKS=oq-1/sidequest-content`) → mark `fixed` not `verified`; batch safe fixes into one pass.
+- AMENDMENT 2026-06-24 (load-bearing): the file's mere existence is NOT an active ping-pong session. Keith: "we are not DOING pingpong, that's MERELY where the INFORMATION lives to REPRODUCE." Reading it to pull a repro for a normal oq-2 sprint story is fine and does NOT bar oq-2 from the code lane. Do NOT infer a lane-split or ask "which clone owns this" just because a repro came from the board; the protocol header is only live during an actual playtest. (Wrongly raised a lane gate on 158-11 server-side fix → told to stop.)
+
 ### Process decisions for SideQuest specifically
 - **Skip architect + spec-check + spec-reconcile phases.** Personal project — streamlined RED → GREEN → VERIFY → REVIEW → FINISH. Don't spawn architect agents during TDD. Don't require epic/story context docs. Still spawn architect for genuine design questions when raised in a story.
 - **Epic 15 is a zero-new-debt mandate.** Every agent working an Epic 15 story re-reads CLAUDE.md before starting implementation. SM rejects any Epic 15 phase exit that ships stubs, silent fallbacks, `unwrap_or_default()` on required fields, or "follow-up story" deferral language.

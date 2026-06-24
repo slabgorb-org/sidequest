@@ -1,5 +1,33 @@
 ## PM Decisions
 
+<!-- migrated from Claude auto-memory store, 2026-06-24 -->
+
+### Don't invent deadlines like "tonight's playtest" (2026-05-07, from Keith)
+- Don't manufacture urgency. Phrases like "for tonight's playtest", "in time for X", "the smallest cut that buys you Y by Z" are off-limits unless the user named the deadline.
+- Inventing one biases recommendations toward smaller/hackier cuts. Keith is a 40-year GM and senior architect; if there's a real deadline he names it.
+- Frame fix options in their own terms — "smallest viable", "full restoration", "follow-up story" — not against an imagined wall-clock. The SM session timestamp, the word "playtest" in a title, and playtest-driven doctrine are NOT deadlines.
+
+### Divide hour estimates by ~10 for AI-driven work (2026-05-03, from Keith)
+- Phase/task hour estimates are pre-AI-era; in this codebase divide by ~10 for AI-driven implementation. A 4-5 hour phase ≈ 30 minutes wall-clock; a "weekend project" is an evening; a "two-day refactor" is an hour or two. Keith has 40 years of estimating and corrected this twice.
+- Pre-AI estimates assume human typing/reading/context-switching; with Claude driving, edits + test runs + commits compress dramatically.
+- Apply: divide the instinctive number by 10 before showing the user; "too big for one session" is often comfortably one session here. Relative phase costs are unchanged (Step 3 still ~3× Step 1, just at the new scale).
+
+### Trust the user's diagnosis — senior and lazy on purpose (2026-04-26, from Keith)
+- When the user says "I think X is wrong" / "we may not have any Y", he has usually already diagnosed it ("I usually know WHAT is wrong, and I am making you go FIX it"). Re-diagnosing or asking "but what's the actual symptom" reads as not listening and resistance ("please stop fighting me").
+- Three-step pattern: (1) confirm the diagnosis with one quick check, (2) execute the fix, (3) brief verify — no "want me to?" between steps. When he says "fix it", fix it; auto mode is on by default for this reason. If his diagnosis is wrong, say so directly with evidence — but assume right first.
+- Own the flag soup, don't explain concepts. He knows concepts (sessions/panes/rebase/registers); he deliberately offloads flags/option syntax/obscure config keys ("That's what you are here for!"). Set all the gnarly options without asking; report what changed and what's now true, not a tutorial on the mechanic.
+
+### Playtest 4 (2026-05-03) playgroup feedback — sealed-letter relaxes, journal needs synthesis (2026-05-03)
+- Whole playgroup had a great time. Shipped well, keep building: Map (strong positive) and Narration (Keith didn't notice slip-time issues despite the effort).
+- Coordination problem → DECISION: show players what other players are typing in real time. Sealed-letter turn discipline (built to prevent fast-typist monopolies and protect Alex's pacing) was hiding too much; coordination collapses when nobody sees what allies attempt until simultaneous resolution. The default for ORDINARY coordination shifts toward visibility. Do NOT read as "remove sealed letters" — they still serve perception-rewriter moments, traitor objectives, charmed players (cf. story 45-33 sealed-letter bypass test); scope contracts, machinery stays.
+- Journal/lore got fantastic reviews — DO NOT cut content; the problem is structure not volume. It's turn-by-turn, hard to assemble an arc. Future additive stories: keyword tagging, searchable journal, cross-turn synthesis grouping by quest/NPC/location. Players want MORE shown, organized better.
+
+### Jade — new playgroup member, mechanics-first, long-time DM and content author (2026-05-25)
+- New SideQuest playgroup member (added ~2026-05-25). Long-time DM in her own right, NOT previously known to Keith — introduced to the group by Sebastien.
+- Jade + Sebastien are the pair who ran the 5-hour, 140+ turn coyote_star session, and did it WHILE the confrontation engine was broken, on narrative/NPC/relationship strength alone. Pumped for narrative/NPCs/relationship continuity but MISS the mechanical crunch that wasn't firing.
+- Jade is a "forever GM who also wants to play along" — Keith's own model mirrored. Critically she is the kind of person who will AUTHOR content (genre packs, worlds, lore), making her a real user of the AUTHORING surfaces (pack YAML, world-building tooling, the "Yes, And" collaborative-worldbuilding path), not only the player UI. Design content tools as if Jade will pick them up.
+- Design implication: second mechanics-first player alongside Sebastien. The lesson from their session is NOT "narrative is enough" — it's "narrative landed, but mechanics-first players felt the missing crunch." Don't tear out the narrative layer to add crunch; add crunch underneath it. And because she authors, the crunch she wants should be expressible IN content (pack/world YAML), not buried in engine code only Keith can touch.
+
 ### Product direction (settled — don't revisit in grooming or retros)
 - **Narrative consistency is the #1 product goal.** The solo narrative experience is the core value prop. Mechanical state (known_facts, LoreStore, NPC registry, inventory) exists specifically as guardrails for the LLM — not as game mechanics for the player. Prioritize consistency bugs (NPC name changes, forgotten items, lost facts, turn count resets) over any feature work. Every sprint.
 - **Book conceit is retired.** UI pivoted to persistent docked sidebar + Current Turn Focus + Scrollable History. Decided 2026-04-05. Don't groom stories that rebuild book-metaphor UI or propose "maybe we bring the book back for X." It's dead.

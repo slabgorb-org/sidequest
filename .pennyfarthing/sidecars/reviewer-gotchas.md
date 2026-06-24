@@ -1,5 +1,12 @@
 ## Reviewer Gotchas
 
+<!-- migrated from Claude auto-memory store, 2026-06-24 -->
+
+### Guard relaxation → run the full owning module's tests (2026-05-27, 59-17)
+- When a fix relaxes a guard or broadens a condition (e.g. removing `and resolution_mode != X` from an `if`), the risk is NOT the new behavior — it's the OLD invariant some pre-existing test pins. Run the whole owning module's suite, not just the story's new test dir.
+- Why (59-17): relaxing the sealed-letter NPC-fallback guard in `encounter_lifecycle.py` passed green + TEA-verify scoped to `tests/server/dispatch/` + `tests/integration/`, but a four-stories-old regression test `tests/server/test_encounter_lifecycle.py::test_sealed_letter_empty_npcs_present_raises_without_consuming_fallback` (Story 45-33, one dir up) went RED — a lone bystander now leaks into a sealed-letter duel because the arity check only catches 0 or >1; a count==1 wrong candidate sails through.
+- How: after a guard relaxation, run the test file that OWNS the changed function plus the parent dir / full suite — never trust the story's new test dir alone. "The arity validator catches it" is only true for 0 and >1; assert the exactly-one-wrong-candidate case explicitly. The seat-vs-refuse discriminator for sealed-letter is `npc_role_id` (hostile vs bystander), NOT disposition (narrator NPCs default NEUTRAL) and NOT `_is_adversarial` (encounter-level).
+
 ### A "background task fired without await/drain" advisory is BENIGN when the new write targets a node the prior path already drained (158-7, 2026-06-23)
 - rule-checker flagged (HIGH confidence, advisory): `_advance_colocated_peers` (movement.py) calls `snapshot.apply_world_patch` per co-located peer, which fires a background `notify_region_transition` → lookahead `create_task` that is NOT awaited, AND it runs AFTER the acting PC's `await lookahead_handle.drain()`. Looks like an onward-ring race (the narrator could describe a half-materialized room).
 - **Why it's benign — the resolution to write in the assessment, not just "looks fine":** the peers co-locate to the ACTING PC's destination node. The acting PC's own patch already enqueued + drained THAT node's onward ring. Peer patches to the SAME node enqueue redundant lookahead tasks for an already-materialized ring → idempotent no-ops. The narrator reads the committed ring regardless. Net effect: N redundant `create_task`s (minor efficiency), zero correctness impact. The "advisory" was correct to ask; the confirmation is "shared destination + prior drain," not hand-waving.

@@ -1,5 +1,12 @@
 ## Reviewer Decisions
 
+<!-- migrated from Claude auto-memory store, 2026-06-24 -->
+
+### Never leave dead code in place — delete it in the same PR (2026-04-24, from Keith)
+- When you discover dead code during a fix (classes with zero live callers, stale APIs from a half-finished migration, abandoned modules, tests for the above), delete it in the same PR. Do not flag-and-leave; do not propose a separate cleanup PR unless the user explicitly scopes it out.
+- Why: recurring failure mode. Keith called it out explicitly ("do not skip dead code this is a recurring problem"). Leaving it means the next person re-discovers, re-verifies dead, redoes the analysis — cleanup never happens. Contrary to CLAUDE.md "No Stubbing... Dead code is worse than no code."
+- How: grep thoroughly for callers across ALL repos (server, ui, daemon, content, scripts, tests) before declaring dead — test-only callers with no prod consumer = dead. Add deletion to the current PR's plan (separate commit within the same branch OK; separate PR not). Bias hard toward delete; git preserves history.
+
 ### Default posture
 - **Adversarial by design.** The Reviewer role exists to reject. Default verdict is REJECT unless every rule and wiring check passes cleanly. No approval-with-footnote patterns. No "non-blocking observation" hedges that let a real issue slide. Every finding is a fix item for the current story — binary, not triaged.
 - **Fix what you see, now, in this story.** Real findings don't get split into "blocking" vs "non-blocking" as a hedge. Keith is the only dev — there's no cross-team coordination cost to expanding scope, and debt you catalog today compounds on him tomorrow. Reject with a complete fix list, not a "pick your battles" list.

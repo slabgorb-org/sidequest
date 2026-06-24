@@ -1,5 +1,33 @@
 ## Dev Decisions
 
+<!-- migrated from Claude auto-memory store, 2026-06-24 -->
+
+### Measure, don't assert — no runtime root cause from indirect evidence (2026-05-22, 60-3)
+- When debugging runtime behavior (cache TTLs, model routing, what the server actually sends), never assert a conclusion from indirect evidence. Code defaults, token-count archaeology, and a couple of stale log lines are hypotheses to test, not findings to announce. In the 60-3 cache diagnosis a root cause was declared 4× and each overturned (e.g. "narrator is on Sonnet" read from `_DEFAULT` map, never logged `response.model`).
+- Measure the actual artifact: log `response.model` from the live call, `cache_creation.ephemeral_5m/1h` from the real request, the real dicts sent to the SDK.
+- Isolate one variable with a minimal reproducer (the `/tmp/ttl_probe.py` approach). When probe diverges from prod, the cause is in the unreplicated difference — enumerate and close those.
+- State confidence honestly ("Measured: X. Unconfirmed: Y"). No "damning"/theatrics. Stale logs mix sessions/builds — mark an offset, run fresh, read only new lines.
+
+### Don't bury bombs with null-checks on a shared init path (2026-05-06, playtest)
+- When a shared init path (e.g. chargen-completion) raises AttributeError because a special-case world/data-shape leaves expected fields None, do NOT add per-site null-guards to silence the crash — that buries the bomb: downstream subsystems silently no-op and the narrator runs against undercooked state (the "Claude wings it" anti-pattern).
+- Incident: hub-world `caverns_three_sins` had no top-level cartography → `init_region_location` AttributeError'd. Null-guards cleared the crash but skipped magic init, chassis registry, scenario binding, opening narration (the earlier blank opening was the consequence). Fix was reverting the hub-world special case to a normal leaf world.
+- Two acceptable responses: (1) restore the data so the special case is no longer special, or (2) own a complete end-to-end init pipeline for the special case. Adding null-checks one crash at a time is bomb-burial — never the right move.
+
+### Banned: git stash, and "verify failure is pre-existing" forensic checks (2026-05-10, from Keith)
+- Never use `git stash` in any form (`-u`, `pop`, `--keep-index`, etc.) — stashes get lost and are invisible in `git branch`. Commit WIP to a feature branch instead (`git checkout -b wip/<topic>`, commit, push, switch back).
+- Never check out a prior commit / use worktree / `git show` / `git checkout` to prove a failure is pre-existing. The user doesn't want forensic verification of pre-existing failures. Just report "regression: N pre-existing failures, not related to this change" and move on.
+- Both prohibitions apply to every dispatched subagent — include them explicitly in subagent prompts (project memory doesn't propagate). Watch the slip pattern of chaining `git stash --keep-index` inside a `;`/`&&` bash chain to disguise it.
+
+### `claude -p` cannot do reactive tool calls during generation — a transport constraint under ADR-001 (2026-05-02, from Keith)
+- `claude -p` is a one-shot subprocess returning a single text response. There is NO execution model under ADR-001 that lets the narrator call `set_mood` at line 4 and reference its return value at line 7. The `--allowedTools` flag exists but does not give `claude -p` the streaming tool-then-resume-generation loop the Anthropic SDK supports.
+- Any narrator-architecture ADR/design that has the narrator calling `set_X`/`lore_mark`/`item_acquire` tools DURING generation is dead on arrival — flag immediately. ADR-057 specified exactly this (narrator-calls-tools-mid-generation + post-narration `assemble_turn`) and was infeasible from inception, never implemented.
+- The only way the narrator emits structured data is by writing it directly into its single text response — a fenced `game_patch` JSON block (`sidequest-server/sidequest/agents/narrator.py:80`, the `NARRATOR_OUTPUT_ONLY` constant). Server-side tool calls (orchestrator invoking namegen/encountergen/loadoutgen BETWEEN turns per ADR-059) are fine — they run outside the narrator's generation context. If a future design genuinely needs reactive tools, ADR-001 itself (CLI → SDK) must be revisited.
+
+### Live repos are under slabgorb-org, not slabgorb (2026-06-14)
+- All six live SideQuest repos (orchestrator `sidequest` + `-server`, `-ui`, `-daemon`, `-content`, `-composer`) are under GitHub org `slabgorb-org`, NOT `slabgorb`. Every `gh` PR command at SM finish must target `-R slabgorb-org/<repo>` (git remotes are `git@github.com:slabgorb-org/<repo>.git`). CLAUDE.md/README were stale and corrected 2026-06-14.
+- Exceptions, both under `github.com/slabgorb/`: (1) the historical Rust prototype `sidequest-api` (leave URLs at `slabgorb/`); (2) `dice-lib` — the 3D dice library (`../dice-lib`, 7th repo), remote `git@github.com:slabgorb/dice-lib.git`, base branch `main` (no `develop`), consumed by UI as source (`package.json main/types → ./src/index.ts`, no build step). dice-lib PR at finish: `-R slabgorb/dice-lib --base main`.
+- `slabgorb` is also the local macOS home dir (`/Users/slabgorb/...`) — those filesystem paths are correct and unrelated. Compounds with the GITHUB_TOKEN shadow (prefix `env -u GITHUB_TOKEN`).
+
 ### Fate-SRD genres — preserve vs. drop native behavior: the governing axis (Keith, 2026-06-17)
 - **The native vision is being retired** (dials/beats/edge-tags were fun but un-balanceable, and homebrew authors can't write against native — they need an SRD to write against). When converting a genre to a bound SRD (Fate/WN), and you hit a "should we honor / port the native behavior?" call, decide by **which layer the behavior belongs to:**
   - **Multiplayer / remote-substrate mechanics → PRESERVE, and make the SRD engine bend to accommodate them.** These exist *because* SideQuest is remote with no human at a table and no human GM, so the system must track things a tabletop GM just knows. Examples: the **sealed-turn / all-submit-at-once barrier** (wait for everyone), **who is present / who acted this turn** (ADR-72-12 presence stamping + `npc.edge_published`, so the 72-6 last-seen prune doesn't drop an actively-engaged NPC), the **universal `encounter.resolved` signal** (panel teardown, input unlock, render trigger, the forensic-timeline / GM-panel lie-detector row — `watcher_hub` maps `op:"resolved"`→`ENCOUNTER_RESOLVED`), and **ADR-116 "a confrontation requires an Other"** (seating + fail-loud). Fate has to allow these even though tabletop Fate doesn't need them.

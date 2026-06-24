@@ -1,5 +1,12 @@
 ## TEA Decisions
 
+<!-- migrated from Claude auto-memory store, 2026-06-24 -->
+
+### Tests/fixtures must not reference live genre-pack content (2026-05-17, from Keith)
+- Tests and scenario fixtures must not point at live genre-pack content (a real world slug, a real pack's authored YAML) — fixtures must be self-contained or use dedicated test content. Keith: pointing a test at `genre_packs/.../worlds/caverns_sunden` is "like pointing at prod rows in a database."
+- When that content is deprecated/removed the fixtures break or keep a dead world alive as a lobby false positive that fools humans and agents — it directly caused 25 portraits rendered for a deprecated world the tooling presented as legitimate.
+- Apply: when you see `scenarios/fixtures/*.yaml` or tests referencing a real world/pack slug, treat it as debt; delete the coupling in the same pass when removing that content (don't preserve it to keep tests green). Never bind new fixtures to a shippable world. Keith already wants existing offenders removed — don't ask, remove.
+
 ### Product direction (settled — don't revisit)
 - **Narrative consistency is the #1 product goal.** The solo narrative experience is the core value prop. Mechanical state (known_facts, LoreStore, NPC registry, inventory) exists specifically as guardrails for the LLM — not as game mechanics for the player. Every bug that breaks consistency (NPC name changes, forgotten items, lost facts, turn count resets) is high priority.
 - **Book conceit is retired.** UI has pivoted to persistent docked sidebar + Current Turn Focus + Scrollable History. No modal overlays to ask for your own state. Decided 2026-04-05.

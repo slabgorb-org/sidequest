@@ -1,5 +1,18 @@
 ## Architect Gotchas
 
+<!-- migrated from Claude auto-memory store, 2026-06-24 -->
+
+### road_warrior CWN rig binding SHIPPED (epic 86); RigComposurePool retirement = 108-8 staged behind WWN cutover (2026-06-15)
+- Epic 86 DONE (86-1..86-7). road_warrior binds `ruleset: cwn` (rules.yaml:20), driver on live ablative CWN HP (Driver Edge removed, ADR-078), standard CWN six on the sheet. CWN vehicle chapter is BOUND not dormant: `game/vehicle_combat.py` (CWN SRD §2.4.8, 86-2), `game/chase_pace.py` (§2.6.2, 86-3), `game/war_rig_combat.py` (86-6 crewed `WarRigHull`, vessel-scoped, reuses `rig_pool.*` spans but is NOT RigComposurePool). ~25 tests live. Specs in `docs/superpowers/specs/completed/`.
+- RigComposurePool still LIVE (`rig_composure_pool.py`, EdgePool-derived, refs in views/protocol/models/creature_core/vessel_tags/chargen_loadout). Epic 86 DELIBERATELY kept the solo two-pool model ("Solo-rig combat stays on RigComposurePool … not a replacement"); the solo CRASH consequence (Composure→0 dismount) is the one "dormant Plan 2" piece; crewed Hull→0 crash DOES fire.
+- 114-6 was a STALE-premise story (haiku-authored ACs asked to build CWN vehicle/chase models epic 86 already shipped, invented `VehicleTemplate`/`ChaseRound` + nonexistent dirs); TEA caught pre-RED, canceled 2026-06-15. Genuine remnant = story 108-8 (epic 108, ADR-143 WN combat cutover, NOT inventory epic 114): retire bespoke RigComposurePool as native scaffolding; rig combat resolves purely through CWN vehicle_combat/chase_pace + driver ablative HP. Staged behind WWN cutover (`depends_on: 108-3`). Open pre-RED Qs: (1) does CWN vehicle HP §2.4.8 replace the composure pool 1:1? (2) does crewed WarRigHull retire/convert or stay?
+
+### Port-history reference repos for auditing ADR drift (2026-05-02)
+- When an ADR mentions a port from sq-2 (original Python pre-Rust) or the Rust era (`sidequest-api`), check local sibling repos for the original code:
+  - `/Users/slabgorb/Projects/python-sidequest` — sq-2, original Python implementation pre-Rust port.
+  - `/Users/slabgorb/Projects/sidequest-api` — Rust era (~2026-03-30 to 2026-04-19, ported back to Python per ADR-082).
+- Use these to decide whether ADR "drift" is a port casualty (design was implemented before, lost in transition) vs. always-aspirational. The Rust repo is also at https://github.com/slabgorb/sidequest-api, but the local working copy is faster to grep.
+
 ### Subagent-driven-development on this repo — three traps (2026-06-22, dungeon-region-population)
 - **Never put `ruff format .` (repo-wide) in a plan's final gate step.** `develop` carries format drift, so `ruff format .` reformats 30-40 UNRELATED files into the working tree (formatting-only, but pollutes the PR). Scope it: `uv run ruff format <feature files>` or `uv run ruff check --select I` for import order. One SDD run left 42 uncommitted reformats (36 non-feature) from this single plan line.
 - **Implementer/fixer subagent dispatches MUST carry the "never `git stash`; use temp branches" rule.** A general-purpose subagent used `git stash` to test a baseline (forbidden per git-gotchas). They don't inherit the sidecar — put the constraint in the dispatch prompt for any task that might compare against develop.

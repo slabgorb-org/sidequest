@@ -123,7 +123,100 @@ room roster, per ADR-116, not improvise one — this is the 107-2 finding, and i
 *seating* fix, not a balance patch). Dial **chase/negotiation** confrontations are not WN
 combat and keep the native dial engine even in WN packs.
 
-### Random-dungeon theme eligibility (Keith, 2026-06-24, story 158-19)
+<!-- migrated from Claude auto-memory store, 2026-06-24 -->
+
+## Content is validated, not tested → hand to the GM (2026-06-11, from Keith)
+- Keith: "this should merely be handed off to the GM. WE DO NOT TEST CONTENT WE VALIDATE IT."
+- Content-only stories (genre pack / world YAML — cartography, encounter_tables, stocks, cultures, factions, openings, tropes, lore) go to the GM agent (`/pf-gm` / `sq-world-builder`) and are VALIDATED (load via `load_genre_pack`, schema/loader checks, cliché-judge audit), NOT run through the TDD red→green→review cycle. Do not route content to TEA to write failing tests.
+- Why: content has no code under test; the lie-detector is "does the pack load + validate + pass cliché bans," not "does a pytest go red then green." TDD on content invents vacuous tests and wastes a RED phase.
+- How: when a story's repos are content-only (`sidequest-content`), ignore a stale `workflow: tdd` tag and route to the GM. TDD/phased TEA→Dev→Reviewer is for server/ui/daemon CODE only. Note the real loader catches what the validator misses (validate-pack vs loader gaps).
+
+## Legacy save compatibility is not a goal (2026-04-26, from Keith)
+- Failures loading legacy saves at `/Users/slabgorb/.sidequest/saves/games/` (e.g. `debug_state.snapshot_load_failed` warnings, schema-validator rejections from old field names) are NOT bugs worth fixing. Don't propose `model_validator` migrations, a migrations/ framework, or accept-both-shapes shims for old saves.
+- Why: personal project in active development with frequent schema churn; Keith doesn't replay old saves (each playtest spawns a fresh slug). Old saves are throwaway test data; the schema migration was correct, the warnings are cosmetic noise.
+- How: ignore `snapshot_load_failed` for old slugs unless Keith asks to recover a specific save. Don't propose schema-migration code during playtest bug-hunting. If "save won't load" comes up, ASK whether it's a fresh or old save — fresh-save load failure IS a real bug; old-save load failure is not. Don't recommend `model_validator(mode="before")` for legacy field rejection; the forward break is intended.
+
+## Don't default to stock fantasy/SF naming words ("Reach", "Veil", "Spire") (2026-05-01, from Keith)
+- When naming places/factions/worlds, do NOT default to the grab-bag: "Reach", "Veil", "Spire", "Hollow", "Drift" (as a place suffix), "Mire", "Shroud", "Sanctum", "Bastion". Keith forced "Coyote Reach" → "Coyote Star".
+- Force at least one alternative that avoids these suffixes; prefer names derived from the world's own geography/language/history; lean on the genre pack's `cultures.yaml` and `corpus/`.
+- When the user has named something, use their name verbatim — don't "improve" it with a stock suffix.
+
+## OTEL-first — never mark a mechanical AC green off narration prose (2026-06-20, 150-3)
+- During a playtest, never verify mechanics from prose. The narrator fabricates convincing mechanics with zero engine backing — exactly what the OTEL architecture exists to catch. Have the GM panel (Inspector `localhost:5173/#/dashboard`) UP and the by-slug session pinned BEFORE verifying anything (Phase 1, not "when something looks wrong").
+- 150-3 five_points: prose rendered "Mapped to Fate dice: −1,+1,+1,0 = +4 — a solid Success" for an out-of-conflict check. GM panel showed `lethality_arbiter 0ms`, beats none, patches `npc_pool()` only, no FATE_ROLL span; the roll was even rejected as a `dice_roll` footnote (pydantic `extra_forbidden`). Pure fabrication.
+- Verify against the panel: Timeline (beats/patches/spans), Encounters, Mechanical census, and stored `/api/debug/save/{slug}/snapshot` (`encounter.fate_commits` = real dice faces; `fate_sheet.stress` = real harm). Stored state is ground truth. OTEL spans NEVER hit `sidequest-server.log` — grepping the text log for FATE_ROLL/state_patch/beats always comes up empty. A result that exists only in prose = the lie detector firing; file it, don't pass it.
+
+## The playtest IS the dev cycle — don't plan-mode out of mid-playtest crashes (2026-05-06, from Keith)
+- When the user is mid-playtest and bugs surface, don't propose "let me write a real plan and do this properly tomorrow." Keith: "why do you think I am playing this game other than for the express purpose of fixing it." The play loop and the fix loop are the same loop; suggesting an exit suggests stopping development.
+- Apply: fix-fast, restart-fast, ready for the next bomb. Don't pause for ceremony.
+- Exception: when the right fix is genuinely architectural (whole-subsystem revert, e.g. Sünden 2026-05-06), propose the revert as the fastest path back to playable — not as a reason to stop the playtest. Plan mode is for designing the new direction, not for stalling.
+
+## Victoria pack success = relationship dynamics, not confrontation firing (2026-05-12, Glenross playtest)
+- For the Victoria pack (and social-first genres), don't grade success by `beat_selections`/`confrontation` OTEL spans the way caverns_and_claudes does. Keith mid-playtest: "in this world the important thing is the relationships, dice throwing not so much." Victoria is Brontë-gothic-cosy (axis_snapshot cosy 0.75, gossip 0.7, gothic 0.05).
+- The load-bearing layer is Journal extraction (PERSON/PLACE/QUEST/LORE with certainty tags) + NPC pool consistency + relational continuity. `beat_selections=0 confrontation=None` is NORMAL — don't file it as a problem.
+- Audit instead: Journal entries appearing, NPC pool_hits across turns, narrator remembering established trust/withholding, standing changes when scandals surface. For a "what's mechanically real" check, look at the Knowledge journal (ADR-053 fact-extraction half is the lie detector), not the confrontation panel. Cross-applies to pulp_noir and future drawing-room/mystery/social genres; NOT to combat-first packs.
+
+## Barsoom — faithful-Burroughs sword-and-planet on the heavy_metal (WWN) chassis (2026-06-05, from Keith)
+- New heavy_metal world `barsoom` (ERB's Mars), GM content with Keith. Faithful = heroic sword-and-planet pulp (Frazetta), NOT grimdark — Keith twice corrected the instinct to refract it into heavy_metal's old elegiac-doom; that doom/pact-magic was flavor-leaking-into-rules and got PRUNED in the WWN port, so heavy_metal is now a clean WWN chassis and Barsoom sets its own flavor at the world tier.
+- Locked design: (D1) PC origins = native Barsoomian cultures + transported-Earthman origin (gravity boon). (D2) Scope = whole planet (all 11 books). (D3) Magic = two WWN caster traditions — Lotharian Mentalist + Barsoomian Super-scientist on the inherited Effort/System-Strain engine; super-science also as gear; telepathy = universal narrator-framed baseline. (D4) multiple openings (solo/MP, per-origin), Helium default anchor. (D5) Earthman boon = world-tier origin trait, light mechanics — engine consumer MUST be verified (don't ship unwired crunch).
+- Story 1 (world skeleton) DONE (content PR #363/#364), verified via the REAL loader (`load_genre_pack`, not validate-pack). 8 POIs rendered @28 steps (20-step grainy) on R2; POIs live under `history.yaml` chapters[].points_of_interest[] (NOT top-level). 6-story decomposition: 1 skeleton ✅, 2 the South, 3 North & Lothar, 4 magic content, 5 chargen surface (crunch flags resolve here with Keith), 6 assets.
+- Gotchas (Stories 2-6): WorldLore `Faction` requires name+summary+description; Markov corpus needs ≥200 tokens (FAIL_BELOW_WORDS=200); genre `archetypes.yaml` is intentionally `[]`. FINDING (epic-87, not a Barsoom story): genre-tier `heavy_metal/archetype_constraints.yaml` doom labels leak into every heavy_metal world's namegen — needs the world-tier migration cultures/archetypes already got. Barsoom is invented sci-fi → conlang Markov is correct.
+
+## beneath_sunden's deep is procedurally generated & unmapped BY DESIGN (2026-05-25, from Keith)
+- beneath_sunden (caverns_and_claudes) authors NO dungeon map. `world.yaml` (8-12): "The DUNGEON IS NOT AUTHORED HERE. The deep is generated, unbounded, by the Sünden Deep procedural engine (Plans 5-7)." Cartography authors only two surface regions — `ropefoot` and `the_dropmouth`. Lore: "unmapped and unmappable by design."
+- How to read the telemetry (do NOT re-file as a bug): on descent, `dungeon.map_emitted current=ropefoot discovered=0/6` staying unchanged, the Map showing "No locations explored yet," and the narrator improvising rooms are all CONSISTENT with intended design — there is no fixed room-graph that "should advance." `discovered=0/6` counts authored SURFACE nodes, not a failing deep. ADR-106 is still partial, so narrator-improv may be the intended interim.
+- Keith corrected a wrong "procedural dungeon never materializes" high-priority bug filed here 2026-05-25. The only legitimate (softened) question is whether the Sünden Deep engine is expected to be live yet — a design question, not a code chase.
+
+## caverns_sunden world is DEPRECATED in favor of beneath_sunden (2026-05-17)
+- `caverns_and_claudes/worlds/caverns_sunden` (old three-sins hub: Grimvault/Horden/Mawdeep, Seven Deadly Sins, Keeper-of-sins) is deprecated; relocated to `sidequest-content/genre_workshopping/caverns_sunden/` — kept for salvage, NOT deleted. `beneath_sunden` (Moria-as-tragedy) is the canonical Sünden.
+- Why: it was a lobby false positive (`sidequest-server rest.py list_genres` enumerates worlds by pure filesystem scan of `worlds/` — no content visibility flag exists); the only content-side removal is moving the dir out of that tree. An agent began rendering 25 portraits for it because tooling presented it as a live world.
+- Apply: do NOT re-render its assets, re-add it under `worlds/`, or migrate its legacy save (`~/.sidequest/saves/caverns_and_claudes_caverns_sunden.db` — resuming fails loudly, which is correct). If asked to "fix" its missing-image gap, the answer is: deprecated, not under-rendered. beneath_sunden keeps prose-contrast/provenance comments referencing it as identity guardrails — intentional.
+
+## Epic 114 inventory: ADR-145 supersedes the audit — all four WN SRDs are verbatim (2026-06-16)
+- Licensing flipped: the 2026-06-14 audit said SWN/AWN "derive-only" / CWN "unverified"; ADR-145 D4 voids that — all four WN SRDs (WWN/CWN/SWN/AWN) reproduce VERBATIM under Sine Nomine free-use. Stamp `provenance: {mode: verbatim, srd: <wwn|cwn|swn|awn>, license: wn-free, srd_ref}`, NOT derived. `ItemProvenance` (server `genre/models/inventory.py`) enforces verbatim⇒wn-free. D4a (no implied Sine Nomine/Crawford endorsement), D4b (source bare SRD doc, never the commercial book). So 114-7 SWN / 114-10 / 114-12 assert verbatim, not "derive against schema".
+- Foundation landed: 114-3 (schema delta), 114-11 (D3 non-droppable by-id merge in `dispatch/inventory_resolve.py:resolve_inventory` — world merges OVER genre), 114-4/114-5/114-2 done. 114-8's "power_glove regression" premise was stale (already fixed). 114-14 (D3 no-genre-bespoke validator, `loader._validate_genre_baseline_no_bespoke`, WN-family only, bespoke-only NOT verbatim-only) + 114-13 (road_warrior CWN weapon re-categorize in-place) DONE.
+- World-replaces-genre kit trap (load-bearing): `resolve_inventory` merges `item_catalog` non-droppably BUT takes `starting_equipment`/`starting_gold`/`currency` from a world's inventory.yaml WHOLESALE — so creating `worlds/<w>/inventory.yaml` STOPS that world inheriting genre kits → empty loadouts unless it copies them. A genre kit must reference only genre-catalog ids.
+- Weapon-category topology: strike-damage resolver `combat_rules.resolve_damage_spec_from_beat_and_actor` is category-AGNOSTIC (keys on `damage`/name) — re-categorizing weapons is safe, needs no strike change. Only sites keying on `category=="weapon"`: `builder.py:2484` (stub default) and `narration_apply._narrator_item_dict` items_gained allowlist (~4607, widened to accept melee/ranged + emits `inventory/narrator_item_category_coerced`). Real SRD PDFs: `~/Documents/DriveThruRPG/Sine Nomine Publishing/`; WWN/CWN have extraction CLIs (`sidequest/cli/{wwn,cwn}_equip_extract`), no AWN/SWN tool yet.
+
+## Historical worlds name NPCs from curated real word lists, not conlang Markov (2026-06-01, from Keith)
+- Keith's decision (during the_real_mccoy playtest): historically-grounded / real-Earth worlds must name NPCs from curated real period-name WORD LISTS sampled directly, NOT conlang Markov (ADR-091). Markov-from-corpus is built for invented cultures; for real ethnicities it produces non-names — "Gawainwen Boyer" (Welsh), "Arthonovan Bolan" / "Gilligan, Denis" (Irish), "Schrer, Hardina" (German).
+- Apply: real-Earth/historical worlds → word lists: spaghetti_western (the_real_mccoy/five_points/dust_and_lead), tea_and_murder (blackthorn_moor/glenross), pulp_noir (annees_folles), neon_dystopia (franchise_nations). Invented cultures keep conlang Markov: caverns_and_claudes, elemental_harmony, space_opera, mutant_wasteland, road_warrior, heavy_metal.
+- LANDED + VERIFIED: mechanism is the `names_file:` slot field (direct line-sampling, fires when a slot has `names_file:` and no `corpora:`). Content PRs #319 (spaghetti_western), #320 (pulp_noir annees_folles), #321 (neon_dystopia franchise_nations) converted every person-name slot. Pairs with engine #567 `named_individual: true` (excludes named people from random spawn). Residual cosmetic nits: apostrophe/nickname title-casing. Needs a content pull + server bounce to take effect.
+
+## Every server-resolved combat outcome needs a MECHANICAL TRUTH next_turn_directive anchor (2026-06-10, playtest #800-#804)
+- The narrator never sees server-rolled dice or HP mutations (dice messages go to the table, not the prompt), so EVERY mechanically-resolved outcome in `dispatch_dice_throw` needs a `snapshot.next_turn_directives` MECHANICAL TRUTH anchor. Each gap produced a distinct lie: player-beat resolution silence → narrated DEFEAT over a resolved player_victory; reprisal-miss silence → fabricated hit + false HP; non-killing-hit silence → kill prose at 3/10. "Engine right, prose wrong" bugs are anchor gaps, not narrator-prompt bugs — check the directive the path appends before touching prompts.
+- Any new server-resolved combat seam must (1) append a MECHANICAL TRUTH directive, (2) persist the HP delta in the beat event (`opponent_hp_removed` total — `apply_beat_hp_channel` returns are easy to discard), (3) emit a watcher event + INFO log (live OTEL spans alone are grep-blind).
+- WWN Shock chips on a MISS vs AC ≤ shock_ac (+ Warrior Killing Blow rider) can legitimately kill on a CritFail — forensics showing `opponent_hp_removed=0` + a resolution is the shock-blindness signature, NOT an inverted resolver. `advance_confrontation` now refuses hp_depletion dials; any nonzero `final_*_metric` in old hp_depletion saves is pre-#800 narrator drift.
+
+## Gaslight the narrator with game state, never with appended text (2026-05-12, ADR-059)
+- The narrator treats `<game_state>` (the JSON-dumped snapshot) as world truth. To stop it inventing untracked entities, materialize authored content into the snapshot BEFORE the turn so it believes those entities have always existed. Reference: `game/world_materialization.py` `preload_authored_npcs()` / `_apply_npc()` — authored YAML → typed model → upsert into `snap.npcs`. ADR-059 found "available NPCs list" XML tags and meta-instructions are ignored; only world facts in the structured snapshot fields land.
+- How to apply: new encounter/creature/NPC/item subsystem → add typed entries to `snap.npcs`/`snap.adversaries`/`snap.inventory` (game-state patch). NEVER append "Hostile creatures in the area:" text to state_summary (the Rust `MonsterManual.format_area_creatures()` text-append was the WRONG pattern). HP-style stat blocks translate to ADR-014 edge/composure/momentum at materialization (runtime carries `CreatureCore.edge: EdgePool`, not `hp:int`). Lifecycle is patch-in/patch-out, not text. Emit an OTEL span at the patch point.
+
+## Seaboard of Saints is content over AWN — "AWN wins always" (2026-06-09, from Keith)
+- `mutant_wasteland/seaboard_of_saints` is a world/content layer over the AWN ruleset (`awn = AwnRulesetModule(CwnRulesetModule)`), NOT a genre-mechanics overhaul. Wherever Seaboard's original (2026-05-14) spec diverges from AWN, AWN is authoritative; Seaboard contributes flavor/geography/cosmology/factions/Saint content and ZERO divergent mechanics.
+- The spec's homebrew chargen (7-step, Saint-Bundle mutation engine, Qud defects-for-power, flavor-six, Edge) was written for the native dial engine and is superseded. Read rebase addendum `docs/superpowers/specs/2026-06-09-seaboard-of-saints-awn-rebase-addendum.md`.
+- Resolutions: flavor-six→standard six (D4); homebrew mutations→AWN MutationPlugin (D5); Edge→System Strain; native callings/Penitent survive only as flavor-foci over AWN classes; Saints = curated bundles of AWN mutation IDs + one AWN negative as drawback (not a parallel engine); `saints.yaml` lives, `mutations.yaml` dies. Gamma-World "defects-for-power" is already native AWN (§5.1 MP economy). flickering_reach stays Saint-less. Build order: Seaboard world plan slots AFTER AWN Plan 2 (Mutations).
+
+## Playgroup mandate: reintroduce SWN-style crunch + ablative HP, supersedes ADRs (2026-05-25, from Sebastien+Jade via Keith)
+- Direct playgroup request (mechanics-first Sebastien + Jade) to reintroduce mechanical crunch modeled on the Stars Without Number: Revised SRD. Three content lanes greenlit for `space_opera`: (A) richer gear/armor + SWN pharmacopeia/stims, (B) Tech-Level TL0–6 + Maltech spine, (C) chassis roster from SWN hull taxonomy + fittings.
+- The big reversal: Keith authorized bringing back ablative HP and said "yes, this supersedes ADRs." Reverses ADR-078 (HP→Edge), reaches into ADR-040 (no raw stats), ADR-033 (dial confrontations), likely ADR-014. Needs new superseding ADR(s).
+- Apply: HP never fully left — content YAML still carries B/X HP, discarded at the materializer seam, so restore = stop discarding, not rebuild. NOT space_opera-only — backport to beneath_sunden too (engine-level). Keep the narrative/dial layer (serves Alex/James); add ablative HP as the lethality substrate underneath, surfaced in player UI for mechanics-first players. Skip SWN's resolution math (d20-to-hit / 2d6 / saves) and encumbrance unless explicitly extended — adopt the HP/ablation lethality model, translate nouns/flavor.
+
+## Reference-page theme.yaml is CSS styling (genre/app tier), not world flavor (2026-06-01, from Keith)
+- `genre_packs/<pack>/theme.yaml` (palette/fonts/dinkus/archetype for the static reference Rules & Lore HTML, read by `load_reference_theme` in `reference_theme.py`) is CSS STYLING — neither Rules (mechanics) nor Lore (flavor). Keith: "this is neither Rules nor Lore, but CSS, so styling."
+- Epic 74 ("genre = mechanics, flavor = world") tempts treating every genre-tier file as flavor to push to the world; theme.yaml is the trap. World aesthetic lives in per-world `visual_style.yaml` (image-gen positive_suffix); the reference CSS theme correctly stays genre/app tier.
+- Do NOT repoint the reference renderer to a world theme.yaml, do NOT author per-world theme.yaml, and EXCLUDE theme.yaml from the epic-74 flavor-deletion pass (renderer hard-requires it via `MissingThemeFieldError` → every /reference/rules and /reference/lore 500s). Story 74-2 ("repoint flavor consumers to world tier") was a category error, cancelled 2026-06-01.
+
+## Victoria genre is social-first, not combat-first (2026-04-26, from Keith)
+- The `victoria` pack (Brontë/Austen/Henry James gothic drawing-room intrigue) is a social-mechanics game with little to no combat — no `category: combat` confrontations in rules.yaml (correctly skipped in the opposed-check migration). Stakes are social ruin, scandal, banishment, slow gothic undoing — not duels. It is a love-letter pack for Sonia (hard-to-engage player); the mechanical surface must fit the genre, not D&D.
+- Apply: weight social/intrigue/atmosphere mechanics over combat; tropes about scandal, betrothal, will-readings, séances, locked-wing secrets. Lethality is `pc: defeated` (social collapse) / `npc: dying` (slow undoing), `permanent` reversibility, narration emphasizes "cold tea service, half-written letter, window left open to the moor" — not blood. When opposed-check/combat-balance changes land elsewhere, victoria likely needs different treatment or none. Don't pattern-match it off heavy_metal/spaghetti_western — closer to caverns_and_claudes in consequence shape, but consequences are social not comedic.
+
+## Visual style is WORLD-level only — no genre/pack-level visual prompts (2026-05-29, from Keith, 64-12)
+- Keith's directive: all visual prompts live at world level; NO genre/pack-level visual prompts. Implemented across 3 repos + schema: server `GenrePack.visual_style: VisualStyle|None=None` (loader.py:1134 `_load_yaml_optional`, only non-world consumer encountergen.py guarded, PR #526); daemon `StyleCatalog.load` skips an absent genre visual_style.yaml but still fails loud on present-but-empty `positive_suffix` (PR #95); content deleted `elemental_harmony/visual_style.yaml`, dropped it from genre-level `required_files` in pack_schema.yaml (world-level still requires it — worlds are self-contained, PRs #301/#302).
+- Filing gotcha: this looks server-only but the daemon hard-requires the genre `positive_suffix` independently — a server-only change is a no-op. Any "move X from genre to world level" touches BOTH loaders + pack_schema. Safe because every recipe cascade is [GENRE, WORLD, CULTURE] and the composer skips GENRE whenever WORLD style is present (`prompt_composer.py:515`).
+- Still stale (separate epic-64 cleanup): pack_schema.yaml requires `assets/images/portraits`/`poi` dirs but real layout is `assets/portraits`/`poi` (world-level) — perennial baseline failures in `test_all_live_packs_pass_content_validation`/`_crossref`.
+
+## Random-dungeon theme eligibility (Keith, 2026-06-24, story 158-19)
 - **It's a RANDOM DUNGEON, not an authored progression.** Themes must be broadly
   eligible at EVERY depth — every depth offers MULTIPLE theme choices (target ≥2–3),
   never collapses to one. The opening descent was monotone ("water every time")
@@ -146,7 +239,7 @@ combat and keep the native dial engine even in WN packs.
   theme's own creature_table is currently decorative (Plan 6 deferred) — keep its refs
   REAL (existing bestiary ids / newly-authored gated entries), never phantom.
 
-### Theme-variety targets + encounter ownership (Keith, 2026-06-24, story 158-19)
+## Theme-variety targets + encounter ownership (Keith, 2026-06-24, story 158-19)
 - **≥5 themes eligible PER STRATUM, not 2-3.** "Having 2 or so per stratum will be
   repetitive" — quests + encounters ride on themes, so a thin per-stratum set repeats
   fast. Flatten all themes to {0,null} so every depth offers the full grab-bag.
@@ -160,7 +253,7 @@ combat and keep the native dial engine even in WN packs.
   ≥5 per stratum to match this bar; the drowned-banishment test is dropped entirely
   (see "Random-dungeon theme eligibility").
 
-### sunless_temple re-themed built→labyrinthine (Keith, 2026-06-24, story 158-19)
+## sunless_temple re-themed built→labyrinthine (Keith, 2026-06-24, story 158-19)
 - **Why:** flattening all themes to {0,null} (random-dungeon eligibility) made
   `sunless_temple` (generator_class `built` → roomcorridor) shallow-eligible, but
   beneath_sunden ships NO roomcorridor cookbook look (only depthfirst/cellular/prim) and
