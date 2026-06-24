@@ -194,7 +194,8 @@ stories:
     title: 'Sünden tactical map: generation-sourced token+feature pipeline (v1 visual/positional) — see docs/superpowers/specs/2026-06-23-sunden-tactical-map-design.md'
     points: 8
     priority: p2
-    status: backlog
+    status: in_review
+    started: '2026-06-23'
     repos: server,ui,content
     workflow: superpowers
   - id: 158-19
