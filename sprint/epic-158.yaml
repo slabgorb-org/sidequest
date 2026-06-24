@@ -159,14 +159,17 @@ stories:
     description: 'Durable hardening of the 158-8 freeform-pronoun crash class (158-8 shipped only an in-function fail-open guard in sidequest/server/emitters.py::_apply_pov_swap). Root cause: Character.pronouns: str (character.py) is unconstrained while the localizer swap_to_second_person only accepts the canonical grammatical set {he/him, she/her, they/them}. DESIGN CAVEAT (load-bearing): freeform pronouns are an INCLUSIVE chargen feature (builder.py pronouns_allow_freeform) — do NOT force Character.pronouns to a 3-value Literal and break inclusive display. Separate concerns: keep freeform DISPLAY pronouns (what the player chose) and derive/validate a canonical GRAMMATICAL projection for the localizer (or normalize at chargen). Server-only. Source: archived sprint/archive/158-8-session.md Delivery Findings ([TYPE] root cause, [SEC][LOW] span-attr, [SILENT] skip paths).'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-24T08:32:04Z'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - 'Character.pronouns hardening: the localizer is fed a validated canonical grammatical pronoun set (Literal/validator or chargen-time normalization) so a non-canonical value can never reach swap_to_second_person from ANY caller — without removing the inclusive freeform DISPLAY choice at chargen.'
       - "Complete _apply_pov_swap skip-path observability: route the pre-existing empty-pronoun guard (emitters.py:292) through narration.pov_swap_skipped, splitting the _pronouns_for_pc conflation into reason='pronouns_empty' vs reason='pc_not_in_snapshot'; and the invalid-text guard (emitters.py:314) with reason='text_missing_or_invalid'."
       - "Bound the pronouns span attribute: truncate/normalize the player-supplied value written to the narration.pov_swap_skipped 'pronouns' attribute ([SEC][LOW] PII/length nit from 158-8 review)."
+    completed: '2026-06-24'
     type: refactor
+    review_verdict: approved
   - id: 158-15
     title: QUESTS not re-emitted on connect/resume — mirror the FATE_STATE bootstrap re-emit so the Quests tab survives reload/reconnect
     points: 2
