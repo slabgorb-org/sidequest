@@ -114,12 +114,14 @@ stories:
     title: Replace static 'crack in the hillside' chargen establishing template — off-geography for a winch-shaft world
     points: 1
     priority: p3
-    status: started
+    status: done
     started: '2026-06-23T23:58:20Z'
     repos: content
     workflow: trivial
+    completed: '2026-06-23'
     type: bug
     branch: feat/158-10-winch-shaft-chargen
+    review_verdict: approved
   - id: 158-11
     title: Harmund Fuel-Count seeds manual_origin=false/location=None while 3 camp siblings seed authored — reconcile 4th NPC
     points: 1
