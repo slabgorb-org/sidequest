@@ -194,10 +194,11 @@ stories:
     title: 'Sünden tactical map: generation-sourced token+feature pipeline (v1 visual/positional) — see docs/superpowers/specs/2026-06-23-sunden-tactical-map-design.md'
     points: 8
     priority: p2
-    status: in_review
+    status: done
     started: '2026-06-23'
     repos: server,ui,content
     workflow: superpowers
+    completed: '2026-06-24'
   - id: 158-19
     title: Per-expansion quests surface only one theme — quest binds deepest region (wide drowned_cavern band) + sparse projection skips diverse expansions
     description: |-
