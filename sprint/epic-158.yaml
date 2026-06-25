@@ -379,10 +379,13 @@ stories:
     description: "Playtest finding (pingpong 2026-06-25, heavy_metal/barsoom, session 2026-06-25-barsoom-84c17bdf). Snapshot npcs[] (all manual_origin=True, ADR-059 MM-seeded) includes Foundry Automaton, Grave Knight, Knight of the Ashen Banner, authored ONLY in sibling world genre_packs/heavy_metal/worlds/long_foundry/bestiary.yaml (lines 102/136/155), NOT in barsoom's (correctly canon: Banth, White Ape, Apt, Calot, Thern Zealot, Plant-Man, Kaldane, Sith). monster_manual.injected world=barsoom patches=7 confirms they entered barsoom's MM injection. Player-visible: Salensus Oll's 'Throw him the Knight' latched the long_foundry Knight of the Ashen Banner as the Barsoom arena champion, a Genre/World-Truth break (SOUL: Crunch in Genre, Flavor in World). Root: MM pre-gen pulling from a genre-wide or sibling-world creature pool instead of being scoped to the CURRENT world bestiary. Selective bleed (3 Barsoom-flavored seeds came through fine). CROSS-CHECK whether 158-21..25 WWN bestiary curation changed MM source scoping. Memory: MM cache ~/.sidequest/manuals/<genre>_<world>.json keyed by genre+world. Repos: server (MM scoping) + content (verify world-ownership)."
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-25T18:58:16Z'
     repos: server,content
     workflow: tdd
+    completed: '2026-06-25'
     type: bug
+    review_verdict: approved
   - id: 158-34
     title: Dogfight seats a ground/personal creature as the ship-duel opponent — seater should source a hostile chassis, not a personal-scale MM creature (category mismatch)
     description: "Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, @aed2d812). The cold contact is narratively a hostile SHIP, but the seated dogfight opponent is 'Gengineered Killer' — a Monster-Manual-injected ground/personal threat (creature_id=creature, disp -20) co-located into the cockpit by monster_manual.injected; its stat block (HP 18->30) set opponent_metric_threshold=30. A ship-scale dogfight (chassis vs chassis, ADR-125, chassis_registry has the Kestrel) bound a PERSON as the enemy vessel. The seater grabbed the nearest co-located hostile creature instead of resolving/instantiating a hostile chassis. Distinct from WWN zone-reconcile (there: NO co-located Other; here: there IS one but wrong scale/kind). Fix: dogfight seating should source a ship/chassis opponent. Related: 158-33 (MM scoping)."
