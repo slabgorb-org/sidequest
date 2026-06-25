@@ -427,7 +427,10 @@ stories:
     description: "Residual follow-ups to DONE 158-8 + 158-14 (_apply_pov_swap / pronoun-localizer hardening), surfaced in later sessions. (1) VERB-AGREEMENT (pingpong 2026-06-23, MP beneath_sunden): name->you swap fixes the noun but leaves the governing verb 3rd-person-singular — 'Which way does you mean to go' (should be do you); 'You check the anchor then grips the rope and swing' (grips should be grip). Two misses in one turn: the localizer swaps name->pronoun but does not re-agree all verb positions. (2) SOLO RESUME/REPLAY (pingpong 2026-06-24): _apply_pov_swap runs at live-emit only; resume/replay (ADR-133 full-replay mirror) re-emits stored 3rd-person prose without re-applying the swap for the resuming acting player (Zeppo touches flame vs live You touch flame); narrative_log empty, history reconstructed from stored turn events holding the un-swapped form. Both are skip paths 158-14 named but did not fully close. Cosmetic, immersion-breaking on the acting player own screen after reconnect."
     points: 3
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-25T20:59:11.932257+00:00'
     repos: server
     workflow: tdd
+    completed: '2026-06-25'
     type: bug
+    review_verdict: approved
