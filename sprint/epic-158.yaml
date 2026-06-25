@@ -322,10 +322,13 @@ stories:
     description: "Playtest finding (pingpong 2026-06-25, coyote_star SWN). Clear course intent ('plot a course to the Broken Drift, lay in the burn') leaves plotted_course null. The IntentRouter DOES classify+dispatch course (153-5 #1026 wired it), but the engagement EFFECT does not land. UPDATE (cont.2 session): clock_t_hours DID advance 0.0->1.0 across the session (generic per-turn/beat advance), so the clock primitive is NOT frozen — the gap is specifically the COURSE half: plotted_course stays null, no Hohmann transit engaged (ADR-130). Scope the fix to writing plotted_course on a course dispatch + engaging transit. Verification depends on 158-26 (the dispatch_engagement watcher must not crash to see the course mismatch on the GM panel)."
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-25T18:32:58Z'
     repos: server
     workflow: tdd
+    completed: '2026-06-25'
     type: bug
+    review_verdict: approved
   - id: 158-28
     title: WWN combat is narration-only — confrontation never seats, narrator confabulates kills with zero mechanical backing (IntentRouter combat-verb routing + opponent seater)
     description: "Playtest finding (pingpong 2026-06-24 beneath_sunden + 2026-06-25 barsoom, WWN, @aed2d812). Post-#1072 the crash is gone but combat is NARRATION-ONLY: attack -> narrator narrates a KILL while ground truth shows encounter=null, total_beats_fired=0, creature untouched, no Other seated; plus weapon confab (narrates 'mace' vs the PC long-blade kit). #1072 scoped to don't-crash, not do-seat. UPDATE (barsoom, plain world region=helium, NOT region-mode): reproduced cleanly — banth killed in pure prose, encounter_events=[], no Confrontation panel. RULES OUT literary-phrasing brittleness (blunt 'I attack X with my Y' also failed to seat) AND the beneath_sunden zone/location-reconcile theory. The never-SEATS failure is fundamental to the WWN combat dispatch/seater path (router classifies, encounter subsystem reached once, but no ENCOUNTER_STARTED created), independent of geography or phrasing; gating for ALL WWN worlds. 158-1 seat-reconcile + 158-2 literary-routing do NOT generalize. Real fix = the combat-SEATS path so a confrontation seats and the WN ruleset owns resolution (ADR-143). Lie-detector ACs: after an attack encounter != null, beats fire, creature HP changes, weapon sourced from inventory. Also folds the medium 'narrator apply-path mutates creature HP with no roll/beat/encounter' finding. Related robustness follow-up: make max_turns exhaustion degrade loudly (ADR-006) not crash+wedge."
