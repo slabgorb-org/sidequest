@@ -1,0 +1,48 @@
+id: '159'
+type: epic
+title: Companion Seat — full-PC AI companion over WS
+description: 'A full-PC AI companion (Donut-to-your-Carl) that joins a live session as its own WS seat: role dial (pet/peer/hireling) gating type-scoped perception, full mechanical play, evolving bond. Spec: docs/superpowers/specs/2026-06-25-companion-seat-design.md. Plans A/B/C: docs/superpowers/plans/2026-06-25-companion-{A,B,C}-*.md. Build order: 1.1->1.2, 1.1->1.4->1.5; 1.3 independent. v1 only (v2 cross-campaign memory = separate epic).'
+priority: p2
+status: backlog
+repos: sidequest-understudy,sidequest-server
+stories:
+  - id: 159-1
+    title: Extract sidequest-seat-core (schema-generic backends + persona axes)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-seat-core
+    workflow: tdd
+    type: refactor
+  - id: 159-2
+    title: Migrate understudy onto seat-core
+    points: 2
+    priority: p2
+    status: backlog
+    repos: sidequest-understudy
+    workflow: tdd
+    depends_on: 159-1
+    type: refactor
+  - id: 159-3
+    title: Server companion bond + perception seam
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+  - id: 159-4
+    title: Companion package core — intent, manifest, persona, dice, protocol, brain, actuation
+    points: 4
+    priority: p2
+    status: backlog
+    repos: sidequest-companion
+    workflow: tdd
+    depends_on: 159-1
+  - id: 159-5
+    title: Companion run loop, WebSocket transport, CLI, and full-loop wiring
+    points: 4
+    priority: p2
+    status: backlog
+    repos: sidequest-companion
+    workflow: tdd
+    depends_on: 159-4
