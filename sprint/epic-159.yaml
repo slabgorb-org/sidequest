@@ -10,10 +10,13 @@ stories:
     title: Extract sidequest-seat-core (schema-generic backends + persona axes)
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-25'
     repos: sidequest-seat-core
     workflow: tdd
+    completed: '2026-06-25'
     type: refactor
+    review_verdict: approved
   - id: 159-2
     title: Migrate understudy onto seat-core
     points: 2
