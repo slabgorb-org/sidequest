@@ -19,6 +19,7 @@ stories:
     review_verdict: approved
   - id: 159-2
     title: Migrate understudy onto seat-core
+    description: "RE-SCOPED by 159-6 (2026-06-25): seat_core now lives IN-TREE in sidequest-understudy (src/seat_core/), not as a '../sidequest-seat-core' uv path dependency. This story's original framing — 'migrate understudy onto the standalone seat-core path package' — largely DISSOLVES: understudy already contains seat_core. What remains (if anything) is convergence work — whether understudy's pre-existing parallel backends (understudy.brain.llm.*) should be unified onto the in-tree seat_core.llm.* or coexist. That convergence is NOT required by 159-6 and is flagged for the Architect. Drop the path-dep assumption."
     points: 2
     priority: p2
     status: backlog
@@ -35,6 +36,7 @@ stories:
     workflow: tdd
   - id: 159-4
     title: Companion package core — intent, manifest, persona, dice, protocol, brain, actuation
+    description: "PATH-DEP ASSUMPTION VOID — re-scoped by 159-6 (2026-06-25): the standalone sidequest-seat-core repo was deleted; seat_core now lives in-tree inside sidequest-understudy. This story assumed the companion could import seat_core as an INDEPENDENT shared package via a '../sidequest-seat-core' path dependency. That path no longer exists. ARCHITECT DECISION REQUIRED before starting: does the shipping companion depend on sidequest-understudy (to reach the in-tree seat_core), or should seat_core be re-extracted / kept independently importable for the companion? Resolve the companion-vs-understudy coupling first."
     points: 4
     priority: p2
     status: backlog
@@ -43,6 +45,7 @@ stories:
     depends_on: 159-1
   - id: 159-5
     title: Companion run loop, WebSocket transport, CLI, and full-loop wiring
+    description: "Depends on 159-4. PATH-DEP ASSUMPTION VOID — re-scoped by 159-6 (2026-06-25): seat_core is now in-tree in sidequest-understudy (standalone repo deleted). The companion run loop / WS transport / CLI must source seat_core via whatever coupling the Architect settles in 159-4 (companion depends on understudy, vs. seat_core re-extracted). No '../sidequest-seat-core' path dependency exists. Do not start until 159-4's coupling decision lands."
     points: 4
     priority: p2
     status: backlog
@@ -54,7 +57,8 @@ stories:
     description: "Decision (Keith, 2026-06-25): seat_core should live INSIDE sidequest-understudy, not as its own repo. This reverses Plan A's standalone-extraction decision delivered in 159-1. Move the seat_core package + its 34 tests out of the local standalone repo sidequest-seat-core and into sidequest-understudy, then delete the standalone repo (and its orchestrator .gitignore entry). RIPPLE: stories 159-2/159-4/159-5 assumed a '../sidequest-seat-core' uv path dependency — they must be re-scoped. 159-2 ('Migrate understudy onto seat-core') largely dissolves once seat_core is in-tree; the companion (159-4/5) can no longer import seat_core as an independent shared package, so the Architect must decide whether the shipping companion depends on understudy or seat_core stays independently importable. Spec/plan: docs/superpowers/plans/2026-06-25-companion-A-seat-core.md, docs/superpowers/specs/2026-06-25-companion-seat-design.md."
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-25'
     repos: sidequest-understudy
     workflow: tdd
     depends_on: 159-1
@@ -64,4 +68,6 @@ stories:
       - All 34 seat_core tests pass within understudy's pytest suite, AND understudy's pre-existing test suite stays green (regression gate).
       - The standalone sidequest-seat-core/ repo is removed and its entry in the orchestrator .gitignore is deleted.
       - Plan A and the companion spec are updated to reflect seat_core's new home; 159-2/159-4/159-5 are re-scoped or annotated to drop the path-dep assumption, with the companion-vs-understudy coupling question flagged for the Architect.
+    completed: '2026-06-25'
     type: refactor
+    review_verdict: approved
