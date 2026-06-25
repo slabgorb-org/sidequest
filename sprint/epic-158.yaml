@@ -334,10 +334,14 @@ stories:
     description: "Playtest finding (pingpong 2026-06-24 beneath_sunden + 2026-06-25 barsoom, WWN, @aed2d812). Post-#1072 the crash is gone but combat is NARRATION-ONLY: attack -> narrator narrates a KILL while ground truth shows encounter=null, total_beats_fired=0, creature untouched, no Other seated; plus weapon confab (narrates 'mace' vs the PC long-blade kit). #1072 scoped to don't-crash, not do-seat. UPDATE (barsoom, plain world region=helium, NOT region-mode): reproduced cleanly — banth killed in pure prose, encounter_events=[], no Confrontation panel. RULES OUT literary-phrasing brittleness (blunt 'I attack X with my Y' also failed to seat) AND the beneath_sunden zone/location-reconcile theory. The never-SEATS failure is fundamental to the WWN combat dispatch/seater path (router classifies, encounter subsystem reached once, but no ENCOUNTER_STARTED created), independent of geography or phrasing; gating for ALL WWN worlds. 158-1 seat-reconcile + 158-2 literary-routing do NOT generalize. Real fix = the combat-SEATS path so a confrontation seats and the WN ruleset owns resolution (ADR-143). Lie-detector ACs: after an attack encounter != null, beats fire, creature HP changes, weapon sourced from inventory. Also folds the medium 'narrator apply-path mutates creature HP with no roll/beat/encounter' finding. Related robustness follow-up: make max_turns exhaustion degrade loudly (ADR-006) not crash+wedge."
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-25'
     repos: server
     workflow: tdd
+    completed: '2026-06-25'
     type: bug
+    branch: feat/158-28-wwn-combat-seats
+    review_verdict: approved
   - id: 158-29
     title: "DOGFIGHT seating turn crashes via narrator max_turns=8 on SWN — #1072's WN tool-withhold does not cover the native dial_threshold dogfight path"
     description: "Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, session 2026-06-25-coyote_star-1890cfbd, develop @aed2d812). Ship-combat verb ('bring guns online, lock a firing solution') -> intent_router.confrontation_verb_unrouted (verb_hits dogfight:lock,dogfight:gun): router declined to dispatch -> narrator grinds the SDK tool loop -> AnthropicSdkLoopExceeded max_turns=8 (anthropic_sdk_client.py:518) -> session.disconnect_save -> room teardown -> reconnect. The dogfight is a native dial_threshold confrontation (ADR-077), NOT WN hp_depletion, so #1072 wn_binding_owns_combat_resolution tool-withhold does NOT cover it. OPEN DISAMBIGUATION (confirm from watcher stream / unit drive): did narrator.tools.ruleset_filter fire with wn_binding_owns_combat=true on this space_opera turn? If NO, space_opera/SWN isn't recognized as WN-family by the predicate; if YES and it still ground to max_turns, the dogfight drives a different (native dial/beat) tool path the 5-tool withhold misses. encounter STARTED mid-crash via narrator tool-grinding, not the deterministic seater. Related: the general 'max_turns should degrade loudly (ADR-006) not crash+wedge' robustness gap."
