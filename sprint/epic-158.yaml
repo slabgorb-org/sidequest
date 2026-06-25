@@ -316,7 +316,7 @@ stories:
     type: bug
   - id: 158-27
     title: Orbital course/clock dispatch is inert in play — clear course intent leaves plotted_course=null + clock_t_hours frozen despite 153-5 wiring (SWN-ORBITAL-COURSE-INERT)
-    description: "Playtest finding (pingpong 2026-06-25, coyote_star SWN, session 2026-06-25-coyote_star-1890cfbd, develop @aed2d812). Clear course intent ('plot a course to the Broken Drift, lay in the burn') leaves plotted_course null->null, clock_t_hours 0.0->0.0, days_elapsed 0->0; narrator improvises the burn ('Burn in ten') with no mechanical backing (SWN-ORBITAL-COURSE-INERT). The IntentRouter DOES classify+dispatch course (153-5 #1026 wired it onto the bank) but the engagement EFFECT — writing plotted_course + advancing clock_t_hours — never lands in play. ADR-130 orbital story-time clock. Verification depends on 158-26 (the dispatch_engagement watcher must not crash to see the course mismatch on the GM panel)."
+    description: "Playtest finding (pingpong 2026-06-25, coyote_star SWN). Clear course intent ('plot a course to the Broken Drift, lay in the burn') leaves plotted_course null. The IntentRouter DOES classify+dispatch course (153-5 #1026 wired it), but the engagement EFFECT does not land. UPDATE (cont.2 session): clock_t_hours DID advance 0.0->1.0 across the session (generic per-turn/beat advance), so the clock primitive is NOT frozen — the gap is specifically the COURSE half: plotted_course stays null, no Hohmann transit engaged (ADR-130). Scope the fix to writing plotted_course on a course dispatch + engaging transit. Verification depends on 158-26 (the dispatch_engagement watcher must not crash to see the course mismatch on the GM panel)."
     points: 3
     priority: p2
     status: backlog
@@ -325,10 +325,55 @@ stories:
     type: bug
   - id: 158-28
     title: WWN combat is narration-only — confrontation never seats, narrator confabulates kills with zero mechanical backing (IntentRouter combat-verb routing + opponent seater)
-    description: "Playtest finding (pingpong 2026-06-24, beneath_sunden WWN, develop @aed2d812). Post-#1072 the combat crash is gone, but combat is NARRATION-ONLY: attack ('drive the point into the pale thing') -> narrator narrates a KILL while ground truth shows encounter:null, total_beats_fired:0, the creature at hp 4/4 untouched, no Other seated. Plus weapon confab (narration 'mace' vs the PC's 'long blade' kit — not sourcing weapon from inventory). #1072 scoped to 'don't crash', not 'do seat'. Real fix = the combat-SEATS path: IntentRouter combat-verb routing (literary phrasing must route) + opponent seater so a confrontation seats; then the WN ruleset owns resolution (beats/dice/HP per ADR-143) and narration is forced to match mechanics. Builds on 158-1 seater half-fix. Lie-detector ACs: after an attack, encounter != null, beats fire, creature HP changes, weapon sourced from inventory. Core 'is the game lying to the player?' failure (Keith/Sebastien/Jade). Related robustness follow-up (board-flagged, may be separate story): make max_turns exhaustion degrade loudly (ADR-006) instead of crash+wedge."
+    description: "Playtest finding (pingpong 2026-06-24 beneath_sunden + 2026-06-25 barsoom, WWN, @aed2d812). Post-#1072 the crash is gone but combat is NARRATION-ONLY: attack -> narrator narrates a KILL while ground truth shows encounter=null, total_beats_fired=0, creature untouched, no Other seated; plus weapon confab (narrates 'mace' vs the PC long-blade kit). #1072 scoped to don't-crash, not do-seat. UPDATE (barsoom, plain world region=helium, NOT region-mode): reproduced cleanly — banth killed in pure prose, encounter_events=[], no Confrontation panel. RULES OUT literary-phrasing brittleness (blunt 'I attack X with my Y' also failed to seat) AND the beneath_sunden zone/location-reconcile theory. The never-SEATS failure is fundamental to the WWN combat dispatch/seater path (router classifies, encounter subsystem reached once, but no ENCOUNTER_STARTED created), independent of geography or phrasing; gating for ALL WWN worlds. 158-1 seat-reconcile + 158-2 literary-routing do NOT generalize. Real fix = the combat-SEATS path so a confrontation seats and the WN ruleset owns resolution (ADR-143). Lie-detector ACs: after an attack encounter != null, beats fire, creature HP changes, weapon sourced from inventory. Also folds the medium 'narrator apply-path mutates creature HP with no roll/beat/encounter' finding. Related robustness follow-up: make max_turns exhaustion degrade loudly (ADR-006) not crash+wedge."
     points: 5
     priority: p1
     status: backlog
     repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-29
+    title: "DOGFIGHT seating turn crashes via narrator max_turns=8 on SWN — #1072's WN tool-withhold does not cover the native dial_threshold dogfight path"
+    description: "Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, session 2026-06-25-coyote_star-1890cfbd, develop @aed2d812). Ship-combat verb ('bring guns online, lock a firing solution') -> intent_router.confrontation_verb_unrouted (verb_hits dogfight:lock,dogfight:gun): router declined to dispatch -> narrator grinds the SDK tool loop -> AnthropicSdkLoopExceeded max_turns=8 (anthropic_sdk_client.py:518) -> session.disconnect_save -> room teardown -> reconnect. The dogfight is a native dial_threshold confrontation (ADR-077), NOT WN hp_depletion, so #1072 wn_binding_owns_combat_resolution tool-withhold does NOT cover it. OPEN DISAMBIGUATION (confirm from watcher stream / unit drive): did narrator.tools.ruleset_filter fire with wn_binding_owns_combat=true on this space_opera turn? If NO, space_opera/SWN isn't recognized as WN-family by the predicate; if YES and it still ground to max_turns, the dogfight drives a different (native dial/beat) tool path the 5-tool withhold misses. encounter STARTED mid-crash via narrator tool-grinding, not the deterministic seater. Related: the general 'max_turns should degrade loudly (ADR-006) not crash+wedge' robustness gap."
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-30
+    title: Resolved dogfight RESURRECTS via continued_same_region_drift overriding husk_reaped — soft-locks player into ship maneuvers while on foot
+    description: 'Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, @aed2d812). After a dogfight RESOLVES (resolution_beat:straight, dials 0/30, active=False), a normal non-combat action in the same region re-summons it. encounter.husk_reaped correctly clears the resolved encounter at turn start, but later the SAME turn encounter.continued_same_region_drift (region=broken_drift, location label drift Kestrel->Cold Contact) re-attaches it and resets structured_phase Resolution->Setup; snapshot: encounter PRESENT, phase=Setup, total_beats_fired=1 carried. Player soft-locked into ship-maneuver beats while on foot in a derelict; Enter disabled. Root: two lifecycle rules disagree (husk_reaped clear vs continued_same_region_drift keep-alive-across-label-drift) and drift-continue wins. Fix: continued_same_region_drift must NOT re-attach a RESOLVED/reaped encounter, only carry over a LIVE one. Wedges the session + blocks ground/personal SWN combat seating (occupies the encounter slot).'
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-31
+    title: DOGFIGHT is mechanically inert — push beats apply zero dial delta AND the encounter resolves after one beat regardless of the 0/30 threshold (hollow dial)
+    description: 'Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, @aed2d812). encounter_events ground truth: ENCOUNTER_BEAT_APPLIED beat_kind=push outcome=Success own_delta=0 opponent_delta=0 (a Success that moves the dial by ZERO), then ENCOUNTER_RESOLVED outcome=resolution_beat:straight final dials 0/0 (no side reached 30). Two defects: (1) push beats apply zero dial delta (either dogfight ConfrontationDef beats carry no dial delta = content, or dial-delta computation returns 0 for dogfight push = code); a dial_threshold duel where Success builds 0 energy can never reach 30. (2) the engine fires ENCOUNTER_RESOLVED after a single resolution beat (straight) instead of checking the 30 threshold. Beat-by-beat across Fail/Success/CritSuccess the dial never leaves 0/30; a CritSuccess Counter Stance showed -5 to their edge but applied delta 0. Net: dogfight is mechanically inert, cannot be played to a win/loss. Mirrors the WWN hollow-strike on the dial track.'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-32
+    title: Literary NPC name-shuffle corrupts canon — source='world' proper nouns run through ADR-091 shuffle_fallback fracture into multiple registry identities; must be name-locked
+    description: "Playtest finding (pingpong 2026-06-25, heavy_metal/barsoom, session 2026-06-25-barsoom-84c17bdf, turn 3-4). OTEL: npc.invented_name_routed original='Salensus Oll' minted='Dentos Foun' culture='Yellow Martian' source='world' strategy='shuffle_fallback' -> npc.auto_registered name='Dentos Foun'. One canonical antagonist fractured into 3 names: narration 'Salensus Oll' (canonical Burroughs), this turn mint 'Dentos Foun', Relationships/disposition 'Neon Sill'; npc_pool=['Kantos Vah','Neon Sill','Dentos Foun'] with canonical Salensus Oll nowhere in the registry. Root: source='world' proper nouns are run through ADR-091 shuffle_fallback instead of being name-LOCKED. barsoom and every canon-proper-noun world (Dejah Thoris, Tars Tarkas, Helium, Zodanga) need source='world' names locked. Player-visible to mechanics-watchers (Relationships shows Neon Sill Neutral with no link to the jeddak just taunted). Latent seating hazard: if WWN combat ever seats against the jeddak it could seat a phantom minted identity (ties to FATE/OTHER-seating). Related: 158-28. See memory three-divergent-slug-rules / npc-reference-recency-scene-guard."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-33
+    title: Monster Manual cross-world bestiary bleed — MM injection seeds sibling-world creatures (long_foundry into barsoom); scope pre-gen to the current world's bestiary
+    description: "Playtest finding (pingpong 2026-06-25, heavy_metal/barsoom, session 2026-06-25-barsoom-84c17bdf). Snapshot npcs[] (all manual_origin=True, ADR-059 MM-seeded) includes Foundry Automaton, Grave Knight, Knight of the Ashen Banner, authored ONLY in sibling world genre_packs/heavy_metal/worlds/long_foundry/bestiary.yaml (lines 102/136/155), NOT in barsoom's (correctly canon: Banth, White Ape, Apt, Calot, Thern Zealot, Plant-Man, Kaldane, Sith). monster_manual.injected world=barsoom patches=7 confirms they entered barsoom's MM injection. Player-visible: Salensus Oll's 'Throw him the Knight' latched the long_foundry Knight of the Ashen Banner as the Barsoom arena champion, a Genre/World-Truth break (SOUL: Crunch in Genre, Flavor in World). Root: MM pre-gen pulling from a genre-wide or sibling-world creature pool instead of being scoped to the CURRENT world bestiary. Selective bleed (3 Barsoom-flavored seeds came through fine). CROSS-CHECK whether 158-21..25 WWN bestiary curation changed MM source scoping. Memory: MM cache ~/.sidequest/manuals/<genre>_<world>.json keyed by genre+world. Repos: server (MM scoping) + content (verify world-ownership)."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server,content
     workflow: tdd
     type: bug
