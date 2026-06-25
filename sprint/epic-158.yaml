@@ -305,3 +305,30 @@ stories:
     workflow: trivial
     completed: 'merged via PR #505 to develop (0b84950)'
     type: chore
+  - id: 158-26
+    title: dispatch_engagement watcher crashes KeyError on course/dogfight — add missing _SUBSYSTEM_TO_SPAN_NAME entries so the GM-panel lie-detector covers both new space-scale subsystems
+    description: "Playtest finding (pingpong 2026-06-25, coyote_star SWN). _SUBSYSTEM_TO_SPAN_NAME (sidequest-server sidequest/telemetry/spans/dispatch_engagement.py:100) is missing 'course' + 'dogfight' keys added by 153-5 (#1026) / 153-6 (#1036). span_name_for_subsystem() (:155) does a fail-loud dict lookup -> KeyError -> run_dispatch_engagement_watcher (:570) catches it and emits watcher_crashed, losing mismatch coverage. GM-panel lie-detector is blind on both newest subsystems. Fix: add the two keys with their mismatch-span-name constants; confirm constants exist + registered in SPAN_ROUTES. Wiring test: drive a course/dogfight mismatch, assert dispatch_engagement.{course,dogfight}.mismatch span fires (not watcher_crashed). Prereq for verifying 158-27 on the GM panel."
+    points: 1
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: bug
+  - id: 158-27
+    title: Orbital course/clock dispatch is inert in play — clear course intent leaves plotted_course=null + clock_t_hours frozen despite 153-5 wiring (SWN-ORBITAL-COURSE-INERT)
+    description: "Playtest finding (pingpong 2026-06-25, coyote_star SWN, session 2026-06-25-coyote_star-1890cfbd, develop @aed2d812). Clear course intent ('plot a course to the Broken Drift, lay in the burn') leaves plotted_course null->null, clock_t_hours 0.0->0.0, days_elapsed 0->0; narrator improvises the burn ('Burn in ten') with no mechanical backing (SWN-ORBITAL-COURSE-INERT). The IntentRouter DOES classify+dispatch course (153-5 #1026 wired it onto the bank) but the engagement EFFECT — writing plotted_course + advancing clock_t_hours — never lands in play. ADR-130 orbital story-time clock. Verification depends on 158-26 (the dispatch_engagement watcher must not crash to see the course mismatch on the GM panel)."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-28
+    title: WWN combat is narration-only — confrontation never seats, narrator confabulates kills with zero mechanical backing (IntentRouter combat-verb routing + opponent seater)
+    description: "Playtest finding (pingpong 2026-06-24, beneath_sunden WWN, develop @aed2d812). Post-#1072 the combat crash is gone, but combat is NARRATION-ONLY: attack ('drive the point into the pale thing') -> narrator narrates a KILL while ground truth shows encounter:null, total_beats_fired:0, the creature at hp 4/4 untouched, no Other seated. Plus weapon confab (narration 'mace' vs the PC's 'long blade' kit — not sourcing weapon from inventory). #1072 scoped to 'don't crash', not 'do seat'. Real fix = the combat-SEATS path: IntentRouter combat-verb routing (literary phrasing must route) + opponent seater so a confrontation seats; then the WN ruleset owns resolution (beats/dice/HP per ADR-143) and narration is forced to match mechanics. Builds on 158-1 seater half-fix. Lie-detector ACs: after an attack, encounter != null, beats fire, creature HP changes, weapon sourced from inventory. Core 'is the game lying to the player?' failure (Keith/Sebastien/Jade). Related robustness follow-up (board-flagged, may be separate story): make max_turns exhaustion degrade loudly (ADR-006) instead of crash+wedge."
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
