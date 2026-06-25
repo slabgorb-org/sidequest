@@ -2,6 +2,20 @@
 
 <!-- migrated from Claude auto-memory store, 2026-06-24 -->
 
+### Production-path wiring test for an `emit_event` call site — and proving it actually guards (2026-06-25, 159-3)
+- To guard a call inside `emit_event`'s fan-out (e.g. `expand_visibility_for_companions` at emitters.py:658), a test that calls the helper directly is NOT enough (delete the call site, test stays green). Drive the REAL `emit_event` and assert on the per-recipient `projection.filter.decide` OTEL spans. Scaffold (mirror `tests/server/test_merged_mp_emitter_projection.py`):
+  - autouse `_pg_isolation(migrated_db, monkeypatch)` fixture (TRUNCATE all tables, set `SIDEQUEST_DATABASE_URL`, `db_pool.close_pool()`); needs `SIDEQUEST_TEST_DATABASE_URL` + `just pg-up`.
+  - `repo = _build_pg_repos_for_slug(db_pool.get_pool(), slug=, mode=str(GameMode.MULTIPLAYER), genre_slug=, world_slug=)`; `handler._event_log = EventLog(repo)`; `handler._projection_cache = ProjectionCache(repo)`.
+  - `handler._projection_filter = ComposedFilter(rules=load_rules_from_yaml_str("rules: []"), pack_slug=None)` — empty genre rules suffice when the kind is gated structurally in `CoreInvariantStage` (NARRATION_SEGMENT / SECRET_NOTE are).
+  - `handler._session_data = _SessionData.__new__(_SessionData)` then set `.snapshot` (a `GameSnapshot` with ≥1 character), `.player_id`, `.genre_slug`, `.world_slug`.
+  - `RoomRegistry().get_or_create(...)` → `room.connect(pid, socket_id=...)` + `room.seat(...)` for each player; `room.set_player_identity(...)`; attach `asyncio.Queue` outbound queues.
+  - In the test: `monkeypatch.setitem(session_handler._KIND_TO_MESSAGE_CLS, "<KIND>", _FakeMsg)` and `monkeypatch.setattr(views, "status_effects_by_player", lambda _h: {})` to skip delivery-wrapping + status-overlay complexity. Pass a plain dict as `payload_model` (it's `json.dumps`'d). Use `author_player_id=<emitter>` so the emitter is projected too (Track A); recipients = connected − emitter.
+  - Assert: `{span.attributes["player_id"]: span.attributes["decision.include"] for span in exporter.get_finished_spans() if span.name == "projection.filter.decide"}` has the expected include per recipient.
+- **ALWAYS prove the guard bites:** after the test is green, temporarily disable the production call (`envelope = envelope  # disabled`), run ONLY the new test, confirm it FAILS, then restore. A wiring test that can't fail when the wiring is removed is theater. (This is exactly the gap a reviewer caught here — the original "wiring test" called the helper directly and stayed green with the call site deleted.)
+
+### PII out of telemetry: emit a source/boolean, never the identity value (2026-06-25, 159-3)
+- When a new `_watcher_publish`/`publish_event` carries an identity (Cf-Access email, token), drop the raw value — watcher events are broadcast to the GM panel AND persisted (`_persist_turn_telemetry`). Mirror `bind_player_identity` (connect.py): it publishes `{"player_id", "source"}`, never the identity string. For correlation, lean on server-minted `player_id`s (not PII) in a downstream span (`companion.routed_as_pet` carries `pet_player_id`/`owner_player_id`). Bound any user-supplied connect-payload string with `Annotated[str, Field(max_length=N)] | None` (lang-review #11) so it can't bloat the dict/telemetry.
+
 ### Without-Number ruleset module wiring checklist — 3 non-obvious touchpoints (2026-05-29, PRs #520/#521)
 - Adding a new SWN-family module (`class XwnRulesetModule(SwnRulesetModule)`): module + `XwnConfig(SwnConfig)` + `RulesConfig.xwn` validator + registry entry are obvious. Three plans keep omitting:
 - (1) `sidequest/telemetry/spans/__init__.py` re-export — add `from .<x>wn import *  # noqa: F401, F403` (alphabetical), else SPAN_X* constants are unreachable and `tests/telemetry/test_routing_completeness.py` silently SKIPS them.

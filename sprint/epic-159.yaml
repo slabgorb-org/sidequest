@@ -40,9 +40,13 @@ stories:
     title: Server companion bond + perception seam
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-25'
     repos: sidequest-server
     workflow: tdd
+    completed: '2026-06-25'
+    review_findings: '1 High (PII: owner email in companion.bond_resolved telemetry span) + 7 Medium (wiring test bypasses emit_event; dead emitters._watcher_publish patch; dropped severity assertion; missing hireling/exclusion-span tests; no logger.warning on fail-closed paths; companion_of unbounded at boundary; companion_owner_identity orphan). Feature logic correct + default-closed; spoofing out-of-scope per spec. Route red rework -> TEA.'
+    review_verdict: approved
   - id: 159-4
     title: Companion package core — intent, manifest, persona, dice, protocol, brain, actuation
     description: "PATH-DEP ASSUMPTION VOID — re-scoped by 159-6 (2026-06-25): the standalone sidequest-seat-core repo was deleted; seat_core now lives in-tree inside sidequest-understudy. This story assumed the companion could import seat_core as an INDEPENDENT shared package via a '../sidequest-seat-core' path dependency. That path no longer exists. ARCHITECT DECISION REQUIRED before starting: does the shipping companion depend on sidequest-understudy (to reach the in-tree seat_core), or should seat_core be re-extracted / kept independently importable for the companion? Resolve the companion-vs-understudy coupling first."
