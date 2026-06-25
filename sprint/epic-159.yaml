@@ -19,14 +19,23 @@ stories:
     review_verdict: approved
   - id: 159-2
     title: Migrate understudy onto seat-core
-    description: "RE-SCOPED by 159-6 (2026-06-25): seat_core now lives IN-TREE in sidequest-understudy (src/seat_core/), not as a '../sidequest-seat-core' uv path dependency. This story's original framing — 'migrate understudy onto the standalone seat-core path package' — largely DISSOLVES: understudy already contains seat_core. What remains (if anything) is convergence work — whether understudy's pre-existing parallel backends (understudy.brain.llm.*) should be unified onto the in-tree seat_core.llm.* or coexist. That convergence is NOT required by 159-6 and is flagged for the Architect. Drop the path-dep assumption."
+    description: "RULING (Architect, 2026-06-25): UNIFY. seat_core is the generalized lift of understudy.brain.llm.* but has ZERO production consumers (live run loop wires to brain.*) — a standing wiring violation. Unify understudy onto in-tree seat_core (arrow: understudy -> seat_core), making understudy seat_core's proof consumer and keeping the leaf clean for the 159-4/5 companion (spec: companion must not depend on the test harness). Execute Plan A Tasks 8-9 (docs/superpowers/plans/2026-06-25-companion-A-seat-core.md) MINUS packaging (159-6 already brought seat_core in-tree; no path-dep, no branch scaffold). Pure redirect-and-delete; seat_core suite + tests/wiring/test_full_loop.py are the regression net. No ADR (below threshold); resolve spec 'Shared-core packaging' open decision to 'in-tree, understudy unified'."
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-25'
     repos: sidequest-understudy
-    workflow: tdd
+    workflow: trivial
     depends_on: 159-1
+    acceptance_criteria:
+      - understudy/brain/core.py is a shim re-exporting seat_core.core (DecideResult, Message, ModelError, StructuredModel as ActionModel, parse_structured); defines parse_intent(raw)=parse_structured(raw, Intent) and FakeActionModel(FakeStructuredModel) defaulting to Intent(kind=WAIT)
+      - understudy/brain/llm/factory.py binds seat_core.llm.factory.make_model(spec, Intent); 'fake' returns FakeActionModel([]); public make_model API preserved so existing import sites (seat.py:17, run.py:16, wiring tests) need no change
+      - 'Duplicate modules deleted: understudy/brain/llm/{anthropic_model,ollama_model,claude_p_model}.py and tests/test_backends.py (coverage already in tests/seat_core/*)'
+      - Field rename DecideResult.intent -> .value applied at orchestrate/seat.py:134, tests/test_brain_core.py, tests/test_seat_loop.py:84
+      - seat_core now has a production importer (understudy run loop); cd sidequest-understudy && uv run pytest -q AND uv run ruff check . both green
+    completed: '2026-06-25'
     type: refactor
+    review_verdict: approved
   - id: 159-3
     title: Server companion bond + perception seam
     points: 3

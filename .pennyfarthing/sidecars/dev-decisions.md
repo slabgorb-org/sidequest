@@ -2,6 +2,11 @@
 
 <!-- migrated from Claude auto-memory store, 2026-06-24 -->
 
+### understudy/brain is a thin Intent-binding shim over seat_core — add backends to seat_core, not brain (2026-06-25, 159-2)
+- After 159-2, `sidequest-understudy/src/understudy/brain/core.py` and `brain/llm/factory.py` are SHIMS over `seat_core.*`. The single source of LLM-backend code (anthropic/claude_p/ollama) is `src/seat_core/llm/`. The old duplicate backend modules under `brain/llm/` were deleted. `brain.core` re-exports seat_core's generic protocol and specialises it to understudy's `Intent` (`parse_intent = parse_structured(raw, Intent)`, `FakeActionModel(FakeStructuredModel)` with a WAIT default); `brain.llm.factory.make_model(spec)` delegates to `seat_core.llm.factory.make_model(spec, Intent)`, intercepting `fake`.
+- Implication: to add/change a model backend, edit `seat_core.llm.*` and `tests/seat_core/*`. Do NOT re-create backend code under `brain/llm/` — that re-opens the duplication 159-2 removed. seat_core is the leaf; understudy (and the future 159-4/5 companion) are its consumers (arrow points understudy → seat_core, never the reverse).
+- Key seam difference to remember: `seat_core.core.DecideResult` exposes `.value` (generic BaseModel), NOT `.intent`. The understudy run loop reads `result.value` (`orchestrate/seat.py`). seat_core's generic `make_model('fake', Model)` REQUIRES a `default=`; understudy's shim `make_model('fake')` does not (FakeActionModel bakes in WAIT).
+
 ### Measure, don't assert — no runtime root cause from indirect evidence (2026-05-22, 60-3)
 - When debugging runtime behavior (cache TTLs, model routing, what the server actually sends), never assert a conclusion from indirect evidence. Code defaults, token-count archaeology, and a couple of stale log lines are hypotheses to test, not findings to announce. In the 60-3 cache diagnosis a root cause was declared 4× and each overturned (e.g. "narrator is on Sonnet" read from `_DEFAULT` map, never logged `response.model`).
 - Measure the actual artifact: log `response.model` from the live call, `cache_creation.ephemeral_5m/1h` from the real request, the real dicts sent to the SDK.
