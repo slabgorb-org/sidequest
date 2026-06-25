@@ -264,39 +264,44 @@ stories:
     title: Curate heavy_metal/barsoom WWN bestiary — expand 14 entries to setting-true ERB Barsoom fauna (tharks, banths, white apes, calots, thoats); source is Barsoom, NOT the D&D SRD
     points: 3
     priority: p3
-    status: backlog
+    status: done
     repos: content
     workflow: trivial
+    completed: 'merged via PR #503 to develop (e611f4b)'
     type: chore
   - id: 158-22
     title: Curate heavy_metal/evropi WWN bestiary — baroque pact/decay roster on the WWN ladder; author a world_register gate (SRD undead + fiends-as-pacts only, no high-fantasy menagerie)
     points: 3
     priority: p3
-    status: backlog
+    status: done
     repos: content
     workflow: trivial
+    completed: 'merged via PR #504 to develop (4a78b5f)'
     type: chore
   - id: 158-23
     title: Curate heavy_metal/long_foundry WWN bestiary — baroque blood-priced roster, world-owned cast per ADR-140 (shares the evropi palette)
     points: 3
     priority: p3
-    status: backlog
+    status: done
     repos: content
     workflow: trivial
+    completed: 'merged via PR #504 to develop (4a78b5f)'
     type: chore
   - id: 158-24
     title: Curate elemental_harmony/burning_peace WWN bestiary — wuxia/elemental roster (spirits, cultivators, dao-beasts); D&D SRD largely inapplicable, source is the setting
     points: 3
     priority: p3
-    status: backlog
+    status: done
     repos: content
     workflow: trivial
+    completed: 'merged via PR #505 to develop (0b84950)'
     type: chore
   - id: 158-25
     title: Curate elemental_harmony/shattered_accord WWN bestiary — wuxia/elemental roster, setting-true (shares the burning_peace palette)
     points: 3
     priority: p3
-    status: backlog
+    status: done
     repos: content
     workflow: trivial
+    completed: 'merged via PR #505 to develop (0b84950)'
     type: chore
