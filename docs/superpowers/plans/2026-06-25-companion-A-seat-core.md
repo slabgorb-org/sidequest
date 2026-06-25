@@ -1,5 +1,18 @@
 # Plan A — `sidequest-seat-core` Extraction Implementation Plan
 
+> ⚠️ **PARTIALLY REVERSED by story 159-6 (Keith, 2026-06-25).** The standalone-repo
+> direction in this plan was undone: `seat_core` now lives **in-tree** inside
+> `sidequest-understudy` (`sidequest-understudy/src/seat_core/`), the standalone
+> `sidequest-seat-core` repo has been **deleted**, and there is **no
+> `../sidequest-seat-core` uv path dependency** anywhere. Tasks below that scaffold
+> a standalone repo, set up a uv path source, or "migrate understudy onto the path
+> package" are historical — read them for the package's internal shape (modules,
+> generic-over-output-model backends, the load-bearing invariants), not for its
+> location or packaging. The **open question** this plan no longer answers: how the
+> shipping companion (159-4/159-5) reaches `seat_core` now that it is inside the
+> charter-bound understudy harness — companion-depends-on-understudy vs.
+> seat_core-re-extracted. **Flagged for the Architect.**
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Extract a charter-neutral `sidequest-seat-core` package (schema-generic model backends + a shared persona-axis model + the new role dial) out of `sidequest-understudy`, then migrate understudy onto it, leaving understudy's test suite green.

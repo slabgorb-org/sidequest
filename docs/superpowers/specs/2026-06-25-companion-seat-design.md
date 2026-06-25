@@ -4,6 +4,19 @@
 **Author:** Architect (design mode)
 **Supersedes:** nothing — new direction
 
+> ⚠️ **Packaging amended by story 159-6 (Keith, 2026-06-25).** This spec describes
+> `seat_core` as "one new package" extracted into a standalone repo and shared by
+> understudy and the companion. That packaging was reversed: `seat_core` now lives
+> **in-tree** in `sidequest-understudy/src/seat_core/`; the standalone
+> `sidequest-seat-core` repo is **deleted**; there is **no `../sidequest-seat-core`
+> path dependency**. The *design* (charter-neutral core: schema-generic backends +
+> persona axes + role dial, no prompts/naivety/transport) is unchanged — only its
+> home moved. **OPEN — Architect decision (blocks 159-4/159-5):** the companion
+> *ships*, but `seat_core` now lives inside the charter-bound *understudy* harness.
+> Either the companion depends on `sidequest-understudy` to reach `seat_core`, or
+> `seat_core` is re-extracted / kept independently importable. Resolve before
+> building the companion package.
+
 ## Context
 
 `sidequest-understudy` is a naive-player playtest harness: bots join a real
