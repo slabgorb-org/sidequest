@@ -422,10 +422,13 @@ stories:
     description: 'Playtest finding (pingpong 2026-06-23, beneath_sunden MP, session 2026-06-23-beneath_sunden-mp-e88e04d6). psql dungeon_map: exp011.r2 has theme=bone_crypt at depth_score=8.216 but bone_crypt depth_band is {min:30.0} — region themed for a depth its own score excludes by 22 points (several similar cases). Root: _stage_design builds theme_pool from palette.themes_for_depth(frontier_edge.spawn_depth_score) (ONE value per expansion), but each node final depth_score is computed later and independently by assign_depth_scores, so a node theme and its own depth_score can disagree on which band they are in. Makes the depth->theme->difficulty gradient incoherent per-region (a deep bone_crypt at shallow depth). Engine fix. Shares the _deepest/depth-band machinery with 158-19 quest-pileup but distinct.'
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-26T03:54:46Z'
     repos: server
     workflow: tdd
+    completed: '2026-06-26'
     type: bug
+    review_verdict: approved
   - id: 158-38
     title: Pronoun/POV localizer residuals after 158-8/14 — verb-agreement stays 3rd-person-singular after name->you swap (does you / grips); solo resume/replay still drops the POV swap entirely
     description: "Residual follow-ups to DONE 158-8 + 158-14 (_apply_pov_swap / pronoun-localizer hardening), surfaced in later sessions. (1) VERB-AGREEMENT (pingpong 2026-06-23, MP beneath_sunden): name->you swap fixes the noun but leaves the governing verb 3rd-person-singular — 'Which way does you mean to go' (should be do you); 'You check the anchor then grips the rope and swing' (grips should be grip). Two misses in one turn: the localizer swaps name->pronoun but does not re-agree all verb positions. (2) SOLO RESUME/REPLAY (pingpong 2026-06-24): _apply_pov_swap runs at live-emit only; resume/replay (ADR-133 full-replay mirror) re-emits stored 3rd-person prose without re-applying the swap for the resuming acting player (Zeppo touches flame vs live You touch flame); narrative_log empty, history reconstructed from stored turn events holding the un-swapped form. Both are skip paths 158-14 named but did not fully close. Cosmetic, immersion-breaking on the acting player own screen after reconnect."
