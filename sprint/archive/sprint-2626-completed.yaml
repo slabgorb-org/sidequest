@@ -196,3 +196,8 @@ completed_stories:
     title: Companion package core — intent, manifest, persona, dice, protocol, brain, actuation
     points: 4
     completed: '2026-06-26'
+  - id: 158-32
+    epic: '158'
+    title: Literary NPC name-shuffle corrupts canon — source='world' proper nouns run through ADR-091 shuffle_fallback fracture into multiple registry identities; must be name-locked
+    points: 3
+    completed: '2026-06-26'
