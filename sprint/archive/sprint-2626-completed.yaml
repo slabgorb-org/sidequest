@@ -191,3 +191,8 @@ completed_stories:
     title: '[BACKDROP-POI-VALIDATOR-GAP] promote dangling backdrop_poi from waiver_warning to content_error in pack validator'
     points: 2
     completed: '2026-06-22'
+  - id: 159-4
+    epic: '159'
+    title: Companion package core — intent, manifest, persona, dice, protocol, brain, actuation
+    points: 4
+    completed: '2026-06-26'

@@ -49,13 +49,16 @@ stories:
     review_verdict: approved
   - id: 159-4
     title: Companion package core — intent, manifest, persona, dice, protocol, brain, actuation
-    description: "PATH-DEP ASSUMPTION VOID — re-scoped by 159-6 (2026-06-25): the standalone sidequest-seat-core repo was deleted; seat_core now lives in-tree inside sidequest-understudy. This story assumed the companion could import seat_core as an INDEPENDENT shared package via a '../sidequest-seat-core' path dependency. That path no longer exists. ARCHITECT DECISION REQUIRED before starting: does the shipping companion depend on sidequest-understudy (to reach the in-tree seat_core), or should seat_core be re-extracted / kept independently importable for the companion? Resolve the companion-vs-understudy coupling first."
+    description: "RULING (owner, 2026-06-26): ONE REPO — sidequest-understudy — MULTIPLE PACKAGES. The companion ships as a SIBLING package inside the sidequest-understudy repo, alongside the seat_core package and the understudy package. It imports the in-tree seat_core PACKAGE directly; it does NOT depend on the understudy (test-harness) package — the 'companion must not depend on the test harness' constraint is honored at the package boundary, not the repo boundary. NO new sidequest-companion repo: the prior 'repos: sidequest-companion' target is VOID; all 159-4 work lands in sidequest-understudy. Coupling blocker (159-2 leaf-clean intent vs 159-6 in-tree relocation) RESOLVED. Story is READY for TDD setup. Implementing team owns the concrete multi-package mechanics (uv workspace members / pyproject layout). --- ORIGINAL: PATH-DEP ASSUMPTION VOID — re-scoped by 159-6 (2026-06-25): the standalone sidequest-seat-core repo was deleted; seat_core now lives in-tree inside sidequest-understudy. This story assumed the companion could import seat_core as an INDEPENDENT shared package via a '../sidequest-seat-core' path dependency. That path no longer exists. (Coupling now resolved per RULING above: in-tree sibling package.)"
     points: 4
     priority: p2
-    status: backlog
-    repos: sidequest-companion
+    status: done
+    started: '2026-06-26'
+    repos: sidequest-understudy
     workflow: tdd
     depends_on: 159-1
+    completed: '2026-06-26'
+    review_verdict: approved
   - id: 159-5
     title: Companion run loop, WebSocket transport, CLI, and full-loop wiring
     description: "Depends on 159-4. PATH-DEP ASSUMPTION VOID — re-scoped by 159-6 (2026-06-25): seat_core is now in-tree in sidequest-understudy (standalone repo deleted). The companion run loop / WS transport / CLI must source seat_core via whatever coupling the Architect settles in 159-4 (companion depends on understudy, vs. seat_core re-extracted). No '../sidequest-seat-core' path dependency exists. Do not start until 159-4's coupling decision lands."
