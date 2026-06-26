@@ -413,7 +413,8 @@ stories:
     description: 'Playtest findings (pingpong 2026-06-23 + 2026-06-24, beneath_sunden). After descending into a procedural expansion the region-mode Map tab renders only the static surface cartography (Ropefoot + The Dropmouth); it does not plot the procedural regions the player occupies (entrance / Oathbound Armoury), and discovered_routes stays empty even when a connected node cluster IS drawn (nodes render, routes do not). Server logs dungeon.map_emitted region=entrance discovered=1/7 but UI never plots it; surface map drops off entirely in the deep (no breadcrumb back). DISTINCT from 158-6 (done, label dedup) and 158-18 (done, tactical token/feature grid, which also does not surface in region-mode per board). The world premise is the descent; a player two hops down has no usable map. Likely 153-25 DUNGEON_MAP frame layer mismatch + dropped ropefoot frames + route persistence. Repos: server (route/region emit) + ui (region-mode plot).'
     points: 3
     priority: p2
-    status: backlog
+    status: canceled
+    started: '2026-06-26'
     repos: server,ui
     workflow: tdd
     type: bug
