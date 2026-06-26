@@ -9,5 +9,4 @@ sprint:
   number: 2626
 epics:
   - '158'
-  - '159'
 standalone_stories: []

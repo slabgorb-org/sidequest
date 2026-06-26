@@ -10,6 +10,7 @@ sprint:
 
 completed_epics:
   - '153'
+  - '159'
 completed_stories:
   - id: 153-1
     epic: '153'
@@ -201,3 +202,28 @@ completed_stories:
     title: Literary NPC name-shuffle corrupts canon — source='world' proper nouns run through ADR-091 shuffle_fallback fracture into multiple registry identities; must be name-locked
     points: 3
     completed: '2026-06-26'
+  - id: 159-5
+    epic: '159'
+    title: Companion run loop, WebSocket transport, CLI, and full-loop wiring
+    points: 4
+    completed: '2026-06-26'
+  - id: 159-1
+    epic: '159'
+    title: Extract sidequest-seat-core (schema-generic backends + persona axes)
+    points: 3
+    completed: '2026-06-25'
+  - id: 159-2
+    epic: '159'
+    title: Migrate understudy onto seat-core
+    points: 2
+    completed: '2026-06-25'
+  - id: 159-3
+    epic: '159'
+    title: Server companion bond + perception seam
+    points: 3
+    completed: '2026-06-25'
+  - id: 159-6
+    epic: '159'
+    title: Relocate seat_core into sidequest-understudy (reverse standalone-repo extraction)
+    points: 2
+    completed: '2026-06-25'
