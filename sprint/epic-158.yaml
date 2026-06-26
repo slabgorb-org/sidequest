@@ -343,9 +343,12 @@ stories:
     branch: feat/158-28-wwn-combat-seats
     review_verdict: approved
   - id: 158-29
-    title: "DOGFIGHT seating turn crashes via narrator max_turns=8 on SWN — #1072's WN tool-withhold does not cover the native dial_threshold dogfight path"
-    description: "Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, session 2026-06-25-coyote_star-1890cfbd, develop @aed2d812). Ship-combat verb ('bring guns online, lock a firing solution') -> intent_router.confrontation_verb_unrouted (verb_hits dogfight:lock,dogfight:gun): router declined to dispatch -> narrator grinds the SDK tool loop -> AnthropicSdkLoopExceeded max_turns=8 (anthropic_sdk_client.py:518) -> session.disconnect_save -> room teardown -> reconnect. The dogfight is a native dial_threshold confrontation (ADR-077), NOT WN hp_depletion, so #1072 wn_binding_owns_combat_resolution tool-withhold does NOT cover it. OPEN DISAMBIGUATION (confirm from watcher stream / unit drive): did narrator.tools.ruleset_filter fire with wn_binding_owns_combat=true on this space_opera turn? If NO, space_opera/SWN isn't recognized as WN-family by the predicate; if YES and it still ground to max_turns, the dogfight drives a different (native dial/beat) tool path the 5-tool withhold misses. encounter STARTED mid-crash via narrator tool-grinding, not the deterministic seater. Related: the general 'max_turns should degrade loudly (ADR-006) not crash+wedge' robustness gap."
-    points: 3
+    title: "Dogfight router→seater→lifecycle — degrade loudly when no engine seats; never wedge the narrator (ADR-153 Plan 2)"
+    description: |-
+      REBUILD per ADR-153 Plan 2 (router→seater→lifecycle contract). Plan 2 is written AFTER a live repro — build Plan 1 (firewall) first, then a /sq-playtest reproduces this. WORK: when a ship-combat verb routes to the dogfight but the engine cannot seat, degrade loudly and observably (OTEL) — never leave the narrator grinding the SDK tool loop. SCOPE: the dogfight dispatch path only. The GENERAL "narrator max_turns must degrade, not crash the session" robustness fix is split out to 158-41 (not dogfight scope) — do not solve it here.
+
+      ━━ Symptom / why (2026-06-25 coyote_star playtest, develop @aed2d812): a ship-combat verb ('bring guns online, lock a firing solution') produced intent_router.confrontation_verb_unrouted (verb_hits dogfight:lock, dogfight:gun) — the router declined to dispatch the dogfight. With no engine seated the narrator ground the SDK tool loop to max_turns=8 and the turn crashed. NOTE: the old "native dial_threshold dogfight / WN tool-withhold" framing in the original finding is obsolete — ADR-153 deletes the native dial; this story is now purely about the routing→seating→degradation contract. OPEN DISAMBIGUATION (confirm from the watcher stream): did the router fail to emit a ship-combat dispatch key, or dispatch-then-reject?
+    points: 2
     priority: p1
     status: backlog
     repos: server
@@ -354,8 +357,11 @@ stories:
       - 'Re-scoped under ADR-153 Plan 2 (router->seater->lifecycle contract): dogfight path must degrade loudly, not max_turns-crash. General max_turns-degrade robustness tracked separately. Plan 2 pending live repro.'
     type: bug
   - id: 158-30
-    title: Resolved dogfight RESURRECTS via continued_same_region_drift overriding husk_reaped — soft-locks player into ship maneuvers while on foot
-    description: 'Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, @aed2d812). After a dogfight RESOLVES (resolution_beat:straight, dials 0/30, active=False), a normal non-combat action in the same region re-summons it. encounter.husk_reaped correctly clears the resolved encounter at turn start, but later the SAME turn encounter.continued_same_region_drift (region=broken_drift, location label drift Kestrel->Cold Contact) re-attaches it and resets structured_phase Resolution->Setup; snapshot: encounter PRESENT, phase=Setup, total_beats_fired=1 carried. Player soft-locked into ship-maneuver beats while on foot in a derelict; Enter disabled. Root: two lifecycle rules disagree (husk_reaped clear vs continued_same_region_drift keep-alive-across-label-drift) and drift-continue wins. Fix: continued_same_region_drift must NOT re-attach a RESOLVED/reaped encounter, only carry over a LIVE one. Wedges the session + blocks ground/personal SWN combat seating (occupies the encounter slot).'
+    title: Dogfight lifecycle — region drift must not resurrect a resolved/reaped duel (ADR-153 Plan 2)
+    description: |-
+      REBUILD per ADR-153 Plan 2 (lifecycle). Plan 2 is written AFTER a live repro — build Plan 1 first. WORK: continued_same_region_drift must carry over only a LIVE encounter — never re-attach a resolved/reaped one — and must respect the created_turn fresh-this-turn exemption, so a finished dogfight stays finished and the player is never soft-locked into ship maneuvers on foot. Plan 2 pending.
+
+      ━━ Symptom / why (2026-06-25 coyote_star playtest): after a dogfight RESOLVED (active=False), a normal non-combat action in the same region re-summoned it. encounter.husk_reaped correctly cleared the resolved encounter at turn start, but later the SAME turn encounter.continued_same_region_drift (location label drift Kestrel→Cold Contact) re-attached it and reset structured_phase Resolution→Setup; the player was soft-locked into ship-maneuver beats while on foot in a derelict, Enter disabled. Two lifecycle rules disagree (husk_reaped clear vs drift keep-alive) and drift wins.
     points: 3
     priority: p1
     status: backlog
@@ -365,9 +371,12 @@ stories:
       - 'Re-scoped under ADR-153 Plan 2 (lifecycle): continued_same_region_drift must not re-attach a resolved/reaped encounter; respect created_turn. Plan 2 pending live repro.'
     type: bug
   - id: 158-31
-    title: DOGFIGHT is mechanically inert — push beats apply zero dial delta AND the encounter resolves after one beat regardless of the 0/30 threshold (hollow dial)
-    description: 'Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, @aed2d812). encounter_events ground truth: ENCOUNTER_BEAT_APPLIED beat_kind=push outcome=Success own_delta=0 opponent_delta=0 (a Success that moves the dial by ZERO), then ENCOUNTER_RESOLVED outcome=resolution_beat:straight final dials 0/0 (no side reached 30). Two defects: (1) push beats apply zero dial delta (either dogfight ConfrontationDef beats carry no dial delta = content, or dial-delta computation returns 0 for dogfight push = code); a dial_threshold duel where Success builds 0 energy can never reach 30. (2) the engine fires ENCOUNTER_RESOLVED after a single resolution beat (straight) instead of checking the 30 threshold. Beat-by-beat across Fail/Success/CritSuccess the dial never leaves 0/30; a CritSuccess Counter Stance showed -5 to their edge but applied delta 0. Net: dogfight is mechanically inert, cannot be played to a win/loss. Mirrors the WWN hollow-strike on the dial track.'
-    points: 3
+    title: Dogfight firewall — resolve via SWN hp_depletion; DELETE the native dial + beats (ADR-153 Plan 1)
+    description: |-
+      REBUILD per ADR-153 Plan 1 (firewall). WORK: in the space_opera dogfight ConfrontationDef set win_condition: hp_depletion and DELETE the native energy dial (player_metric/opponent_metric) and the beats list. The duel then resolves through the existing SWN HP path (resolve_dogfight_shots → check_hp_depletion) — which already works. DO NOT "fix" the zero dial-delta or the one-beat threshold check: the dial is being REMOVED, not repaired (SOUL: Bind the Ruleset, Don't Balance It). Mostly a content change; the engine is already there. Plan: docs/superpowers/plans/2026-06-26-dogfight-rebuild-plan-1-firewall-seating.md.
+
+      ━━ Symptom / why (2026-06-25 coyote_star playtest — the machinery described below is DELETED by this rebuild, NOT fixed): ENCOUNTER_BEAT_APPLIED beat_kind=push outcome=Success own_delta=0 opponent_delta=0 (a Success that moved the dial by ZERO), then ENCOUNTER_RESOLVED outcome=resolution_beat:straight at dials 0/0 (no side reached 30). The native dial duel could never build energy to 30 and resolved after one beat — i.e. the native-dial dogfight was mechanically inert. That contradiction (sealed_letter_lookup resolution + a dial_threshold win + beats) is exactly what ADR-153 removes.
+    points: 2
     priority: p2
     status: backlog
     repos: server
@@ -401,8 +410,11 @@ stories:
     type: bug
     review_verdict: approved
   - id: 158-34
-    title: Dogfight seats a ground/personal creature as the ship-duel opponent — seater should source a hostile chassis, not a personal-scale MM creature (category mismatch)
-    description: "Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, @aed2d812). The cold contact is narratively a hostile SHIP, but the seated dogfight opponent is 'Gengineered Killer' — a Monster-Manual-injected ground/personal threat (creature_id=creature, disp -20) co-located into the cockpit by monster_manual.injected; its stat block (HP 18->30) set opponent_metric_threshold=30. A ship-scale dogfight (chassis vs chassis, ADR-125, chassis_registry has the Kestrel) bound a PERSON as the enemy vessel. The seater grabbed the nearest co-located hostile creature instead of resolving/instantiating a hostile chassis. Distinct from WWN zone-reconcile (there: NO co-located Other; here: there IS one but wrong scale/kind). Fix: dogfight seating should source a ship/chassis opponent. Related: 158-33 (MM scoping)."
+    title: Dogfight seating — ship/chassis opponent, ship-scale; never a co-located ground creature (ADR-153 Plan 1)
+    description: |-
+      REBUILD per ADR-153 Plan 1 (seating). WORK: treat resolution_mode: sealed_letter_lookup as ship-scale so the personal-NPC location fallback never seats a ground creature as the enemy ship; when no opponent is router-named, seat a default ship opponent from the def frame (opponent_default_stats) so the duel always has a ship Other (ADR-116). Plan: docs/superpowers/plans/2026-06-26-dogfight-rebuild-plan-1-firewall-seating.md.
+
+      ━━ Symptom / why (2026-06-25 coyote_star playtest): the cold contact was narratively a hostile SHIP, but the seated opponent was "Gengineered Killer" — a Monster-Manual-injected ground/personal creature co-located into the cockpit (its stat block set the opponent metric). The seater grabbed the nearest co-located hostile via the location fallback instead of sourcing a ship/chassis (ADR-125; the Kestrel is in chassis_registry). Distinct from WWN zone-reconcile (there: no co-located Other; here: there IS one, but wrong scale/kind).
     points: 2
     priority: p3
     status: backlog
@@ -412,8 +424,11 @@ stories:
       - 'Implement per ADR-153 Plan 1 (seating): treat sealed_letter_lookup as ship-scale; seat default ship opponent from def frame; never seat a co-located ground creature. Plan: docs/superpowers/plans/2026-06-26-dogfight-rebuild-plan-1-firewall-seating.md'
     type: bug
   - id: 158-35
-    title: Dogfight post-beat narration desync — after committing a beat the returned narration re-describes the prior sensor sweep, leaving the dogfight unnarrated end-to-end
-    description: Playtest finding (pingpong 2026-06-25 cont.2, coyote_star SWN, @aed2d812). Committed 'firewall the throttle, gun pass' + Throttle Up beat; the returned narration re-described the PRIOR turn sensor sweep (rock, debris, an old claim beacon) — never mentioning the maneuver, gun pass, dogfight, or opponent. Acting player gets no narrative acknowledgement of the beat. Likely downstream of dice-replay re-entry (intent_router.replay_suppressed dice-replay re-entry) re-emitting stale narration instead of narrating the resolved beat. Cosmetic relative to 158-31 mechanical inertness but leaves the dogfight unnarrated end-to-end.
+    title: Dogfight lifecycle — narrate the resolved beat; no dice-replay stale narration (ADR-153 Plan 2)
+    description: |-
+      REBUILD per ADR-153 Plan 2 (lifecycle/narration). Plan 2 is written AFTER a live repro — build Plan 1 first. WORK: dice-replay / dogfight-shot re-entry must narrate the RESOLVED maneuver and shot (this turn's gun pass + outcome), not re-emit the prior turn's prose. Plan 2 pending.
+
+      ━━ Symptom / why (2026-06-25 coyote_star playtest): committed 'firewall the throttle, gun pass' + a Throttle Up beat; the returned narration re-described the PRIOR turn's sensor sweep (rock, debris, an old claim beacon) — never mentioning the maneuver, gun pass, dogfight, or opponent. Likely downstream of dice-replay re-entry (intent_router.replay_suppressed) re-emitting stale narration. Leaves the dogfight unnarrated end-to-end; cosmetic relative to the firewall (158-31) but real.
     points: 1
     priority: p3
     status: backlog
@@ -472,3 +487,12 @@ stories:
     status: backlog
     repos: pennyfarthing
     workflow: tdd
+  - id: 158-41
+    title: Narrator max_turns must degrade loudly (ADR-006), not crash+teardown — GENERAL narrator robustness, not dogfight-specific
+    description: 'GENERAL narrator robustness — NOT dogfight-specific (split out of 158-29). When the Anthropic SDK tool loop hits its turn cap (AnthropicSdkLoopExceeded, anthropic_sdk_client.py ~line 518), the turn currently HARD-CRASHES: session.disconnect_save -> room teardown -> forced reconnect. Per ADR-006 (graceful degradation) it must degrade loudly and observably and KEEP THE SESSION ALIVE — emit an OTEL span, surface a player-facing "the engine could not resolve that, try rephrasing", and continue the room rather than wedge it. Any subsystem that fails to seat can trigger this; the dogfight router-decline (158-29) was one trigger, but the fix is generic and lives in the narrator/SDK loop, not in the dogfight. Repro: coyote_star 2026-06-25 (a ship-combat verb that did not route).'
+    points: 3
+    priority: p1
+    status: backlog
+    repos: pennyfarthing
+    workflow: tdd
+    type: bug
