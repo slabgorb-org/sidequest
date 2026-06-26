@@ -74,6 +74,10 @@
 
 - [ADR-120: Genre/World Flavor Boundary — Mandatory-File Loader Contract, Mechanics-in-Genre, Flavor-in-World](120-genre-world-flavor-boundary.md) — superseded
 
+### Superseded by [ADR-153: The Ace of Aces Dogfight — A Homebrew Relative-Position Positioning Graph Feeding Bound SWN Resolution, the Positioning/Resolution Firewall, and Narrator-Motivated Maneuver Selection](153-ace-of-aces-dogfight-positioning-swn-resolution.md)
+
+- [ADR-077: Dogfight Subsystem via StructuredEncounter Extension](077-dogfight-subsystem.md) — superseded
+
 ## Historical — no successor
 
 These ADRs describe features or decisions that were cut without direct replacement.

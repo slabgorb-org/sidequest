@@ -121,7 +121,6 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-024: Dual-Track Tension Model](024-dual-track-tension-model.md) | ✓ accepted | live |
 | [ADR-025: Pacing Detection](025-pacing-detection.md) | ✓ accepted | live |
 | [ADR-074: Dice Resolution Protocol — Player-Facing Rolls via WebSocket](074-dice-resolution-protocol.md) | ✓ accepted | live |
-| [ADR-077: Dogfight Subsystem via StructuredEncounter Extension](077-dogfight-subsystem.md) | ✓ accepted | live |
 | [ADR-080: Unified Narrative Weight Trait](080-unified-narrative-weight-trait.md) | ✓ accepted | — |
 | [ADR-081: Advancement Effect Variant Expansion (v1)](081-advancement-effect-variant-expansion.md) | ✓ accepted | deferred → ADR-087 |
 | [ADR-096: Cavern Renderer Revival — Pre-Rendered Cellular Caverns for Tactical Maps](096-cavern-renderer-revival.md) | ✓ accepted | live → sidequest-server/sidequest/dungeon/materializer.py (runtime gen, mask_sha OTEL) + sidequest-ui TacticalGridRenderer.tsx (image-mode) |
@@ -147,6 +146,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-146: Quest-Seed Authoring Contract](146-quest-seed-authoring-contract.md) | ✓ accepted | deferred → Design only — implemented by epic 117 story 117-3 (QuestSeed model + quest_offer subsystem + minting handler + OTEL span) and 117-4 (retune the redundant keyword lie-detector). Schema target: sidequest-server/sidequest/genre/models/narrative.py (QuestSeed sub-model on Opening.tone.complication + seed_trope). Mint seam: sidequest/agents/subsystems/ (quest_offer handler). Stash seam: sidequest/server/websocket_handlers/opening_helpers.py + chargen_mixin.py:1399. |
 | [ADR-151: The Fate DEFEND Follow-Up Barrier — A Conditional Second Sealed-Commit Phase for Physics-Is-The-Roll Player Defense, the pending_defenses Ledger, and Defender Authorization](151-fate-defend-followup-barrier.md) | ✓ accepted | live → sidequest-server sidequest/server/dispatch/fate_conflict.py (REVEAL/park/resume, dispatch_fate_defense) + sidequest/handlers/fate_throw.py (FATE_DEFEND_REQUEST broadcast, defend routing) + sidequest/game/encounter.py (FatePendingDefense ledger) |
 | [ADR-152: Faction/Zone-Scoped Content Eligibility — Region→Zone Grouping Gates the NPC/Creature/Trope Pools, and the Authored Region-Cast Is Push-Staged, Not Pull-Fetched](152-faction-zone-scoped-content-eligibility.md) | ◇ proposed | — → PROPOSED. Seams to wire (none implemented yet): sidequest-content cartography.yaml (region.controlled_by faction + region.entities kind:npc — already authored) + bestiary.yaml (needs zone tags); sidequest-server sidequest/game/monster_manual.py (location_tags/culture/available_at_location — placement substrate exists, unfed) + sidequest/agents/tools/resolve_location_entity.py (cartography entities, today PULL-only) + sidequest/server/snapshot_slimming.py + sidequest/game/npc_scene.py (in-scene NPC projection — the push-stage target). |
+| [ADR-153: The Ace of Aces Dogfight — A Homebrew Relative-Position Positioning Graph Feeding Bound SWN Resolution, the Positioning/Resolution Firewall, and Narrator-Motivated Maneuver Selection](153-ace-of-aces-dogfight-positioning-swn-resolution.md) | ✓ accepted | deferred |
 
 ## Frontend / Protocol
 
@@ -304,6 +304,7 @@ Retired ADRs. See [SUPERSEDED.md](SUPERSEDED.md) for the grouped view.
 | [ADR-069: Scenario Fixtures — Pre-configured World States for Testing](069-scenario-fixtures.md) | ✗ superseded | [ADR-092](092-scene-harness-http-endpoint.md) |
 | [ADR-071: Tactical ASCII Grid Maps — Deterministic Room Layout via ASCII Art](071-tactical-ascii-grid-maps.md) | ✗ superseded | [ADR-086](086-image-composition-taxonomy.md) |
 | [ADR-072: System/Milieu Decomposition — Separating Mechanics from Aesthetic](072-system-milieu-decomposition.md) | ✗ historical | — |
+| [ADR-077: Dogfight Subsystem via StructuredEncounter Extension](077-dogfight-subsystem.md) | ✗ superseded | [ADR-153](153-ace-of-aces-dogfight-positioning-swn-resolution.md) |
 | [ADR-078: Edge / Composure Combat, Mechanical Advancement, and Push-Currency Rituals](078-edge-composure-advancement-rituals.md) | ✗ superseded | [ADR-114](114-ablative-hp-substrate.md) |
 | [ADR-083: Multi-LoRA Stacking and Verification Pipeline](083-multi-lora-stacking-and-verification.md) | ✗ historical | — |
 | [ADR-084: Compositional-Dimension Specialization for Style LoRAs](084-lora-composition-dimension.md) | ✗ superseded | [ADR-070](070-mlx-image-renderer.md) |
@@ -325,6 +326,7 @@ ADRs whose implementation is absent, partial, or deferred. See [DRIFT.md](DRIFT.
 | [ADR-146: Quest-Seed Authoring Contract](146-quest-seed-authoring-contract.md) | deferred | Design only — implemented by epic 117 story 117-3 (QuestSeed model + quest_offer subsystem + minting handler + OTEL span) and 117-4 (retune the redundant keyword lie-detector). Schema target: sidequest-server/sidequest/genre/models/narrative.py (QuestSeed sub-model on Opening.tone.complication + seed_trope). Mint seam: sidequest/agents/subsystems/ (quest_offer handler). Stash seam: sidequest/server/websocket_handlers/opening_helpers.py + chargen_mixin.py:1399. |
 | [ADR-147: Honest Layering — Pure Logic and Utilities Belong Below the Server Tier, Not Inside It](147-honest-layering-pure-logic-below-server.md) | deferred | — |
 | [ADR-150: Sidecar Accounting Leaves the Narrator Hot Path — Pre-Narration Rewrite, Post-Narration Extraction, and the One Field That Stays](150-sidecar-accounting-off-narrator-hot-path.md) | deferred | — |
+| [ADR-153: The Ace of Aces Dogfight — A Homebrew Relative-Position Positioning Graph Feeding Bound SWN Resolution, the Positioning/Resolution Firewall, and Narrator-Motivated Maneuver Selection](153-ace-of-aces-dogfight-positioning-swn-resolution.md) | deferred | — |
 | [ADR-013: Lazy JSON Extraction](013-lazy-json-extraction.md) | **drift** | [ADR-102](102-tool-use-protocol-for-structured-output.md) |
 | [ADR-041: Genie Wish / Consequence Engine](041-genie-wish-consequence-engine.md) | **drift** | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
 | [ADR-042: OCEAN Personality Live Evolution](042-ocean-personality-live-evolution.md) | **drift** | [ADR-087](087-post-port-subsystem-restoration-plan.md) |

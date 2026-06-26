@@ -1,14 +1,14 @@
 ---
 id: 77
 title: "Dogfight Subsystem via StructuredEncounter Extension"
-status: accepted
+status: superseded
 date: 2026-04-11
 deciders: [Keith]
 supersedes: []
-superseded-by: null
-related: [33, 67, 74]
+superseded-by: 153
+related: [33, 67, 74, 153]
 tags: [game-systems]
-implementation-status: live
+implementation-status: retired
 implementation-pointer: null
 ---
 
