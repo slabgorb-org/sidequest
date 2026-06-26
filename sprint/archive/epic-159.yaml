@@ -91,4 +91,23 @@ stories:
     completed: '2026-06-25'
     type: refactor
     review_verdict: approved
+  - id: 159-7
+    title: Companion chargen choice maps brain selection to scene index/label — unblock real-server character creation
+    description: "Found by the first real-server companion playtest (2026-06-26, Architect / sq-playtest). Donut connects, seats, and its claude_p/sonnet brain fires in-character — but STALLS at character creation. Root cause: companion/run.py::_chargen_choice forwards the brain's ACT prose verbatim as the scene choice, and companion/protocol.py::chargen_choice_frame sends {phase:'scene', choice:<prose>}. The server (sidequest-server/sidequest/server/websocket_handlers/chargen_mixin.py::_chargen_scene) resolves a choice by (1) int(choice_str) as a 1-based index, else (2) EXACT case-insensitive match against choice.label, else falls through to builder.apply_freeform() — wrong for a select scene (class pick Warrior/Expert/Mage). A whole prose paragraph matches neither numeric nor exact-label, so chargen never advances and the entire companion lifecycle (play, dice, bond/pet-widening) is blocked behind it. The scripted full-loop fixture (tests/companion/test_full_loop.py) missed this because it accepts whatever the companion sends and does not enforce the real server's choice contract. Detail: ~/Projects/sq-playtest-pingpong.md (2026-06-26 companion playtest, BLOCKING entry)."
+    points: 3
+    priority: p1
+    status: done
+    started: '2026-06-26'
+    repos: sidequest-understudy
+    workflow: tdd
+    acceptance_criteria:
+      - "Select-type CHARACTER_CREATION scenes (choices present, not allows_freeform): the companion maps the brain's selection to a valid choice and sends {phase:'scene', choice:'<1-based index>'} (or the exact label) — never a prose paragraph."
+      - The chargen brain-decision contract surfaces the enumerated choices to the brain and returns a selection the actuation maps DETERMINISTICALLY to one offered choice. No fuzzy server-side rescue; an unmappable pick fails loud / logs (No Silent Fallbacks), it does not silent-stall.
+      - Freeform scenes (allows_freeform / AwaitingFollowup) still send the brain's prose as the freeform answer — the select-vs-freeform branch is explicit and tested both ways.
+      - "A wiring/integration test exercises chargen against the REAL server choice contract (not only the scripted fixture): asserts the server resolves the companion's choice to a non-None index AND the builder advances past the scene. This is the contract-drift tripwire the spec called for."
+      - 'Re-run the live smoke (Donut, pet, caverns_and_claudes/beneath_sunden, claude_p/sonnet): the companion gets past chargen into the play loop. Document the result in the playtest ping-pong.'
+    completed: '2026-06-26'
+    type: bug
+    review_findings: 'REJECTED (all Medium/Low, but a confirmed rule violation + untested contract branches): [RULE] mutable-default _CLASSES in _run_select (lang-review #2, cannot dismiss); [TEST] bare-index/ambiguous/select+freeform branches untested; [DOC] example def setup comment contradicts its game_slug note; plus redundant test, weak caplog, oracle TypeError/is_in_progress nuances, 3 docstring inaccuracies. Code logic correct (205 green). Red-rework → TEA.'
+    review_verdict: approved
 completed: '2026-06-26'

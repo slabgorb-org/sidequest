@@ -227,3 +227,8 @@ completed_stories:
     title: Relocate seat_core into sidequest-understudy (reverse standalone-repo extraction)
     points: 2
     completed: '2026-06-25'
+  - id: 159-7
+    epic: '159'
+    title: Companion chargen choice maps brain selection to scene index/label — unblock real-server character creation
+    points: 3
+    completed: '2026-06-26'
