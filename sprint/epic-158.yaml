@@ -350,6 +350,8 @@ stories:
     status: backlog
     repos: server
     workflow: tdd
+    acceptance_criteria:
+      - 'Re-scoped under ADR-153 Plan 2 (router->seater->lifecycle contract): dogfight path must degrade loudly, not max_turns-crash. General max_turns-degrade robustness tracked separately. Plan 2 pending live repro.'
     type: bug
   - id: 158-30
     title: Resolved dogfight RESURRECTS via continued_same_region_drift overriding husk_reaped — soft-locks player into ship maneuvers while on foot
@@ -359,6 +361,8 @@ stories:
     status: backlog
     repos: server
     workflow: tdd
+    acceptance_criteria:
+      - 'Re-scoped under ADR-153 Plan 2 (lifecycle): continued_same_region_drift must not re-attach a resolved/reaped encounter; respect created_turn. Plan 2 pending live repro.'
     type: bug
   - id: 158-31
     title: DOGFIGHT is mechanically inert — push beats apply zero dial delta AND the encounter resolves after one beat regardless of the 0/30 threshold (hollow dial)
@@ -368,6 +372,8 @@ stories:
     status: backlog
     repos: server
     workflow: tdd
+    acceptance_criteria:
+      - 'Implement per ADR-153 Plan 1 (firewall): dogfight def -> win_condition: hp_depletion, drop native energy dial + beats; resolves via existing SWN HP path. Plan: docs/superpowers/plans/2026-06-26-dogfight-rebuild-plan-1-firewall-seating.md'
     type: bug
   - id: 158-32
     title: Literary NPC name-shuffle corrupts canon — source='world' proper nouns run through ADR-091 shuffle_fallback fracture into multiple registry identities; must be name-locked
@@ -398,6 +404,8 @@ stories:
     status: backlog
     repos: server
     workflow: tdd
+    acceptance_criteria:
+      - 'Implement per ADR-153 Plan 1 (seating): treat sealed_letter_lookup as ship-scale; seat default ship opponent from def frame; never seat a co-located ground creature. Plan: docs/superpowers/plans/2026-06-26-dogfight-rebuild-plan-1-firewall-seating.md'
     type: bug
   - id: 158-35
     title: Dogfight post-beat narration desync — after committing a beat the returned narration re-describes the prior sensor sweep, leaving the dogfight unnarrated end-to-end
@@ -407,6 +415,8 @@ stories:
     status: backlog
     repos: server
     workflow: trivial
+    acceptance_criteria:
+      - 'Re-scoped under ADR-153 Plan 2 (lifecycle/narration): dice-replay re-entry must narrate the resolved beat, not the prior turn. Plan 2 pending live repro.'
     type: bug
   - id: 158-36
     title: Map incoherent in the deep — region-mode map renders only the static surface cartography; the procedural regions the player occupies + discovered_routes are not plotted (distinct from 158-6 labels / 158-18 tactical grid)
@@ -442,3 +452,19 @@ stories:
     completed: '2026-06-25'
     type: bug
     review_verdict: approved
+  - id: 158-39
+    title: Dogfight opponent brain — narrator-motivated maneuver selection + deterministic disposition fallback (ADR-153 Plan 3)
+    description: 'ADR-153 section 4 (opponent brain). The NPC ace picks its maneuver each turn from the legal menu, motivated by its goal/disposition (revenge / escape / protect the convoy / prove itself) — the same authority the narrator already has for any NPC beat. The engine gates legality (energy + pilot tier) and resolves geometry; SWN resolves the shot; the positioning layer never picks position or computes damage (firewall). A deterministic disposition-derived fallback (ADR-006) keeps the duel moving if the narrator pass is skipped — the floor, not the default. OTEL: dogfight.maneuver_committed carries the chosen maneuver_id + stance source (narrator vs fallback). Depends on Plan 1 (firewall) landing.'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: pennyfarthing
+    workflow: tdd
+  - id: 158-40
+    title: Dogfight full relative-position state graph — author beam/overhead/scissors/overshoot + extend-and-return (ADR-153 Plan 4)
+    description: "ADR-153 section 3 (full relative-position state graph). Build out the graph beyond the prototype's merge + tail_chase: author beam + overhead (stubbed 'future' in dogfight/descriptor_schema.yaml) plus scissors + overshoot, each with its own maneuver-pair transition table (geometry + gun_solution only — firewall, no damage). Add the extend-and-return rule (reset toward merge when the engagement breaks with no gun solution, energy carried over). Pure content authoring in genre_packs/space_opera/dogfight/. Depends on Plan 1 (firewall) landing."
+    points: 5
+    priority: p3
+    status: backlog
+    repos: pennyfarthing
+    workflow: tdd
