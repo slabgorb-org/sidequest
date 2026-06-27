@@ -242,3 +242,8 @@ completed_stories:
     title: Dogfight firewall — resolve via SWN hp_depletion; DELETE the native dial + beats (ADR-153 Plan 1)
     points: 2
     completed: '2026-06-27'
+  - id: 158-29
+    epic: '158'
+    title: "Dogfight router→seater→lifecycle — degrade loudly when no engine seats; never wedge the narrator (ADR-153 Plan 2)"
+    points: 2
+    completed: '2026-06-27'

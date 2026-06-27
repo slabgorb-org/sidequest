@@ -350,12 +350,15 @@ stories:
       ━━ Symptom / why (2026-06-25 coyote_star playtest, develop @aed2d812): a ship-combat verb ('bring guns online, lock a firing solution') produced intent_router.confrontation_verb_unrouted (verb_hits dogfight:lock, dogfight:gun) — the router declined to dispatch the dogfight. With no engine seated the narrator ground the SDK tool loop to max_turns=8 and the turn crashed. NOTE: the old "native dial_threshold dogfight / WN tool-withhold" framing in the original finding is obsolete — ADR-153 deletes the native dial; this story is now purely about the routing→seating→degradation contract. OPEN DISAMBIGUATION (confirm from the watcher stream): did the router fail to emit a ship-combat dispatch key, or dispatch-then-reject?
     points: 2
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-27'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - 'Re-scoped under ADR-153 Plan 2 (router->seater->lifecycle contract): dogfight path must degrade loudly, not max_turns-crash. General max_turns-degrade robustness tracked separately. Plan 2 pending live repro.'
+    completed: '2026-06-27'
     type: bug
+    review_verdict: approved
   - id: 158-30
     title: Dogfight lifecycle — region drift must not resurrect a resolved/reaped duel (ADR-153 Plan 2)
     description: |-
