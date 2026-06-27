@@ -63,3 +63,30 @@ stories:
       - The understudy run loop fails loud on an unhandled type=ERROR connect rejection — logs the server message and exits non-zero instead of hanging at recv() (No Silent Fallbacks). Covered by a test driving a rejected connect frame.
       - 'A companion seats end-to-end on the supported room type: chargen.complete + companion.bond_resolved + routed_as_pet + a distinct per-species voice all fire (the four 160-3 dogfood signals), with an OTEL/wiring assertion.'
     type: bug
+  - id: 160-5
+    title: Pet companion avatar shows a letter-fallback instead of its rendered companion_creature portrait — resolve a role:pet seat's Party-panel avatar to companion_<species>.png (already on R2) instead of the portrait_ref=None initial letter
+    description: 'Keith-flagged in the 2026-06-27 MP beneath_sunden dogfood (Zeppo human + Tolliver owl, companion play owl). The Party panel shows the pet as a "T" letter tile, not the owl portrait. Stored snapshot (ground truth): Tolliver portrait_ref=None; Zeppo portrait_ref=picker_surface_folk_fighter_m01. The rendered owl portrait EXISTS on R2 — genre_packs/caverns_and_claudes/worlds/beneath_sunden/assets/portraits/companion_owl.png (r2_manifest.json:1865; portrait_manifest.yaml has 5 companion_creature entries from 160-2) — but nothing maps the pets species to it, so the avatar falls back to the initial letter. The species lives in the CompanionDef (species: owl) + the bond (room.pets_of); the avatar resolver should use it. Narrow player-facing fix; the broader "species not projected onto the character" gap is 160-6.'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server,ui
+    workflow: tdd
+    acceptance_criteria:
+      - A role:pet seat with a known species resolves its Party-panel avatar to that species companion_creature portrait (companion_<species>.png on R2), not the portrait_ref=None initial-letter fallback.
+      - 'Verified live: the owl companion shows companion_owl.png in the human Party panel in an MP beneath_sunden session.'
+      - An OTEL/watcher span fires when the pet avatar is resolved from the companion_creature portrait (GM-panel lie-detector for the wiring).
+      - 'Regression: a human seat portrait_ref (e.g. a picker_* selection) is unaffected.'
+    type: bug
+  - id: 160-6
+    title: Pet identity not projected onto the seated character — a role:pet companion seats as a generic Warrior/Human (species/role live only in CompanionDef + bond); resolve the seating-path design fork so the creature identity is recorded on the character
+    description: 'Surfaced alongside 160-5 in the same MP dogfood. A role:pet companion drives the naive human chargen UI and seats as a generic class=Warrior race=Human (chargen.complete schema=adr-114), with NO species/role/companion field on the seated character — the owl-ness exists only in the CompanionDef (species: owl) and the bond. Two contributing observations: (1) the bots chargen picks are unmappable (verbose persona prose does not string-match the choice buttons) so actuation defaults to the first option ("never stall the table"), making every species seat as Warrior + first-background; (2) there is no pet-specific seating path that records species/role on the character. Design fork to resolve here: should a pet seat via human chargen at all, or via a species/role path that records the creature identity? The 160-5 avatar fix is one facet; closing 160-6 may subsume it.'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: understudy,server
+    workflow: tdd
+    acceptance_criteria:
+      - A role:pet companion seated character records its species and pet role (queryable in the snapshot), rather than presenting as an indistinguishable generic Warrior/Human.
+      - The seating-path design fork (human-chargen-for-pets vs a species/role seating path) is resolved and documented.
+      - An OTEL span confirms the species/role projection at seat/bind time.
+      - 'Naivety invariant preserved: no engine-knowledge alias tables or pick-rescue smuggled into the understudy bot (per understudy CLAUDE.md).'
