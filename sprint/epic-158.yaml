@@ -443,12 +443,16 @@ stories:
       ━━ Symptom / why (2026-06-25 coyote_star playtest): committed 'firewall the throttle, gun pass' + a Throttle Up beat; the returned narration re-described the PRIOR turn's sensor sweep (rock, debris, an old claim beacon) — never mentioning the maneuver, gun pass, dogfight, or opponent. Likely downstream of dice-replay re-entry (intent_router.replay_suppressed) re-emitting stale narration. Leaves the dogfight unnarrated end-to-end; cosmetic relative to the firewall (158-31) but real.
     points: 1
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-27T17:54:53Z'
     repos: server
     workflow: trivial
     acceptance_criteria:
       - 'Re-scoped under ADR-153 Plan 2 (lifecycle/narration): dice-replay re-entry must narrate the resolved beat, not the prior turn. Plan 2 pending live repro.'
+    completed: '2026-06-27'
     type: bug
+    review_findings: "LOW (comment-only, CLAUDE.md violation): test comment at tests/server/test_dogfight_player_throw_roundtrip.py:515 attributes a backend OTEL span to 'Sebastien's GM-panel lie-detector' — forbidden by CLAUDE.md (Keith/dev tool, not a Sebastien feature). Reword to drop 'Sebastien's'. All else clean (lint/format pass, 9/9 affected tests, 0 new full-suite failures, silent+security subagents clean). Green-rework."
+    review_verdict: approved
   - id: 158-36
     title: Map incoherent in the deep — region-mode map renders only the static surface cartography; the procedural regions the player occupies + discovered_routes are not plotted (distinct from 158-6 labels / 158-18 tactical grid)
     description: 'Playtest findings (pingpong 2026-06-23 + 2026-06-24, beneath_sunden). After descending into a procedural expansion the region-mode Map tab renders only the static surface cartography (Ropefoot + The Dropmouth); it does not plot the procedural regions the player occupies (entrance / Oathbound Armoury), and discovered_routes stays empty even when a connected node cluster IS drawn (nodes render, routes do not). Server logs dungeon.map_emitted region=entrance discovered=1/7 but UI never plots it; surface map drops off entirely in the deep (no breadcrumb back). DISTINCT from 158-6 (done, label dedup) and 158-18 (done, tactical token/feature grid, which also does not surface in region-mode per board). The world premise is the descent; a player two hops down has no usable map. Likely 153-25 DUNGEON_MAP frame layer mismatch + dropped ropefoot frames + route persistence. Repos: server (route/region emit) + ui (region-mode plot).'

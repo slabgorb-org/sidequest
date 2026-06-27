@@ -272,3 +272,8 @@ completed_stories:
     title: 'Quest tracker: region quest marks completed before its objective is met; quest mint/complete emits no OTEL'
     points: 2
     completed: '2026-06-27'
+  - id: 158-35
+    epic: '158'
+    title: Dogfight lifecycle — narrate the resolved beat; no dice-replay stale narration (ADR-153 Plan 2)
+    points: 1
+    completed: '2026-06-27'
