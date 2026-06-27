@@ -206,3 +206,35 @@ The server `DUNGEON_MAP` payload (`map_emit.py` `DungeonMapLocation`/`DungeonMap
   - Everything between (seed_tick `ensure_initial_draw` 888, `refresh_turn_context_post_dispatch` 1072) is deterministic — no further stubs needed. `handler._validator = MagicMock(submit=AsyncMock(), is_running=MagicMock(return_value=True))`.
 - **The crash itself:** the method-level `try:` at 821 has only a `finally:` (2857) — NO `except`. So a raise from `run_narration_turn` files the degraded `TurnRecord` in the finally and then **re-raises**, escaping to the WS layer → `disconnect_save` (578) → teardown. The "session stays alive" RED is simply `await handler._execute_narration_turn(...)` must NOT raise (a raise IS the teardown trigger). `AnthropicSdkLoopExceeded`/`AnthropicSdkCostCeilingExceeded` are caught NOWHERE in `server/` or `handlers/`.
 - **Observability assertion:** capture the GM-panel degrade via `monkeypatch.setattr(wsh, "_watcher_publish", capture)` (signature `(event_type, fields, *, component=, severity=)`), NOT a span exporter — `publish_event` only mints an OTLP span when `SIDEQUEST_WATCHER_AS_SPANS=1`. **Player-message assertion robust to Dev's message-type choice:** `json.dumps([m.model_dump(mode="json") for m in outbound]).lower()` then search the phrase token; check `payload.reconnect_required` falsy across all messages (the crisp "no forced reconnect" = session-alive signal at the message layer).
+
+### A firewall has multiple doors — enumerate the sibling gates (158-34)
+When RED-testing a fix that firewalls ONE entry gate, enumerate every *sibling* gate before
+declaring the invariant covered. A firewall is routinely bolted onto the gate that produced the
+repro and leaves the sibling open — same symptom, different door.
+
+Concrete (dogfight opponent seating, `encounter_lifecycle.py`): the opponent is seated through TWO
+doors, both guarded by `not npcs_present`:
+1. **location-fallback door** — `_npc_fallback_at_location` grabs a co-located hostile when the
+   router named none. #1084 (158-31) firewalled THIS door (`resolution_mode != sealed_letter_lookup`).
+2. **router door** — `npcs_present=[NpcMention(...)]` from the intent-router pre-pass (ADR-113).
+   #1084 left it OPEN: a router-named `NpcMention(is_creature=True)` skips both seating branches
+   (both gated on `not npcs_present`), passes the sealed-letter arity check (`len == 1`), and is
+   seated as the enemy *ship* — 158-34's exact ground-creature symptom via the second door. The
+   router runs FIRST, so it's the *more* likely real path. RED test:
+   `tests/server/dispatch/test_dogfight_router_named_scale.py`.
+
+**Check for sibling-story over-delivery before writing RED.** 158-34's *literal* scope shipped under
+sibling **158-31's PR #1084** (one dev followed the whole ADR-153 Plan-1 doc, Tasks 1-5, under one
+story). Run the existing tests first (`test_dogfight_seating_scale.py`,
+`test_dogfight_default_opponent.py` → GREEN) and `git log --oneline -- <testfile>` to find the
+delivering commit. Don't fabricate a duplicate RED; find the genuine remaining gap (here: the router door).
+
+**OTEL span capture in `tests/server/dispatch/`** — there is NO `otel_capture` fixture there (it lives
+in `tests/agents/conftest.py`). Replicate as a local fixture: `init_tracer()` →
+`otel_trace.get_tracer_provider()` (assert `isinstance(..., TracerProvider)` or spans are NoOp) →
+`provider.add_span_processor(SimpleSpanProcessor(InMemorySpanExporter()))`, `yield`, `processor.shutdown()`
+in `finally`. The seating lie-detector is the `participant.joined` span `source` attr ∈ {`router_named`,
+`location_fallback`, `roster_resolved`, `materialized`, `frame_default`, `friendly_fallback`} (set at
+`encounter_lifecycle.py` ~1702/1748/1764/1793, read ~2011). A frame-default *replacement* of a rejected
+mention must show `source="frame_default"`, never `router_named` on the rejected name — that's how you
+prove a substitution is observable, not silent.

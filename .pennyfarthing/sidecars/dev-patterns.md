@@ -319,3 +319,26 @@ The `pf hooks dispatch PreToolUse` commit-guard evaluates the repo's branch at t
 - Player message: `return [_error_msg("…try rephrasing it.", reconnect_required=False, code="…")]`. **`reconnect_required=False` is the load-bearing bit** — it's an ERROR frame the client renders WITHOUT tearing down (the crash path is what forced the reconnect). Simpler + more honest than dressing an engine failure as in-world NARRATION; avoids the heavy `_emit_event` projection/MP path. The early `return` runs the method-level finally (degraded TurnRecord still filed) — `result` stays None there and the finally is None-safe.
 - Mirror the in-method `IntentRouterFailure` degrade precedent (~1025) for shape. Do NOT re-route/balance the dogfight here — the fix is generic narrator robustness (SOUL "Bind the Ruleset").
 - **Pre-existing broken window (confirmed via baseline A/B, NOT mine):** ~76 server tests that drive `_execute_narration_turn` through `session_fixture` are RED in-workspace, almost all dying at `monster_manual_inject.py:184` `ValueError: not enough values to unpack` (the fixture pack's MagicMock `effective_bestiary` unpacks to 0) plus a few `pregen` bestiary baselines (flickering_reach). Prove your change is clean by `git show HEAD:<file> > <file>` (back up your edit to scratch first — NOT `git stash`/`git checkout --`), run the failing-file set, restore, compare counts. Filed as a delivery finding; out of scope for a p1 narrator-degrade bug.
+
+### Adding a guard to the opponent-seating cascade — filter the input, don't add a branch (2026-06-27, 158-34)
+`instantiate_encounter_from_trigger` (`encounter_lifecycle.py` ~1708) seats the Other through a
+`if materialized_threat / elif not npcs_present + location-fallback / elif not npcs_present +
+frame_default` cascade. **Every `elif` is gated on `not npcs_present`** — so anything already in
+`npcs_present` (a router-named `NpcMention`) bypasses all of them and is seated as-is
+(`seating_source="router_named"`).
+- **To firewall a class of router-named opponent (158-34: a personal-scale `is_creature` mention
+  on a ship-scale `sealed_letter_lookup` dogfight), FILTER `npcs_present` BEFORE the cascade** —
+  don't add a new `elif`. Emptying the list lets it fall through to the existing `frame_default`
+  branch, which already seats a ship Other + emits `participant.joined source="frame_default"`.
+  Adding a branch would duplicate that seating logic. The filter is ~6 lines; the branch would be ~20.
+- **`npcs_present` is typed bare `list`** and elsewhere holds non-`NpcMention` items (table path uses
+  `getattr(n, "name", None) or str(n)`, line ~1607). Use `getattr(m, "is_creature", False)`, not
+  `m.is_creature`, to match the file's defensive idiom.
+- **OTEL without a new span family:** the seating decision is already observable via the existing
+  `participant.joined` `source` attribute (`router_named` → `frame_default`). That flip IS the
+  GM-panel lie-detector — reuse it instead of minting a new span. Pair with a `_log.warning` at the
+  drop so the rejection isn't silent (No Silent Fallbacks). The test asserts the span `source`, not a
+  new span.
+- **Scope discipline:** `materialized_threat` (free-string narrator threat, reconciled via
+  `_resolve_opponent_from_roster`) is a SEPARATE seating door — out of scope for the npcs_present
+  fix; flag it as a sibling door in Delivery Findings rather than guarding it speculatively.
