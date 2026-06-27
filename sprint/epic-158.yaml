@@ -566,3 +566,15 @@ stories:
     workflow: tdd
     completed: '2026-06-27'
     type: bug
+  - id: 158-47
+    title: "WWN caster spell-seeding: heavy_metal caster's prepared damage spell / casts_remaining assertion fails (test_wwn_cast_spell_routes_through_wwn_module)"
+    description: 'Surfaced 2026-06-27 when the heavy_metal/barsoom content-load blocker was cleared (the test errored on pack load before, now loads and fails an assertion). PRE-EXISTING on develop; UNRELATED to the 2026-06-27 cold-seat/GM-NOTE/shock fixes (#1086/#1087/#1089). test_wwn_heavy_metal_dispatch.py::test_wwn_cast_spell_routes_through_wwn_module_on_real_heavy_metal builds a real heavy_metal WWN caster via chargen and asserts it is seeded with a SpellcastingState whose prepared list contains a discovered damage spell and casts_remaining >= 1; one of those assertions fails — the caster chargen does not seed the prepared spell / casts as expected. Engine + content (heavy_metal caster spellcasting seeding). Repro: uv run pytest tests/integration/test_wwn_heavy_metal_dispatch.py::test_wwn_cast_spell_routes_through_wwn_module_on_real_heavy_metal -n0 -q (after a content clone synced to develop so barsoom loads).'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    acceptance_criteria:
+      - A heavy_metal WWN caster built through real chargen is seeded with a SpellcastingState whose prepared list includes the genre's damage spell and casts_remaining >= 1 (pin the exact failing assertion in setup).
+      - test_wwn_cast_spell_routes_through_wwn_module_on_real_heavy_metal passes; the WWN cast spine routes the committed cast_spell as expected.
+    type: bug
