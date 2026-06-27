@@ -252,3 +252,8 @@ completed_stories:
     title: Dogfight lifecycle — region drift must not resurrect a resolved/reaped duel (ADR-153 Plan 2)
     points: 3
     completed: '2026-06-27'
+  - id: 160-2
+    epic: '160'
+    title: Animal companion portraits — companion_creature entries (cat/owl/raven/toad/goat) across 9 worlds, world-specific appearance prose, rendered via Z-Image and pushed to R2; cliche-judge + sidequest-validate pass
+    points: 5
+    completed: '2026-06-27'
