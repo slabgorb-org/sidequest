@@ -232,3 +232,8 @@ completed_stories:
     title: Companion chargen choice maps brain selection to scene index/label — unblock real-server character creation
     points: 3
     completed: '2026-06-26'
+  - id: 160-1
+    epic: '160'
+    title: Animal companion persona templates — cat/owl/raven/toad/goat CompanionDef YAMLs bound to beneath_sunden, reusing the epic-159 run loop, with a wiring test asserting each parses as a valid role:pet CompanionDef
+    points: 2
+    completed: '2026-06-27'

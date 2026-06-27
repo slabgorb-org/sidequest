@@ -10,9 +10,12 @@ stories:
     title: Animal companion persona templates — cat/owl/raven/toad/goat CompanionDef YAMLs bound to beneath_sunden, reusing the epic-159 run loop, with a wiring test asserting each parses as a valid role:pet CompanionDef
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-27'
     repos: understudy
     workflow: tdd
+    completed: '2026-06-27'
+    review_verdict: approved
   - id: 160-2
     title: Animal companion portraits — companion_creature entries (cat/owl/raven/toad/goat) across 9 worlds, world-specific appearance prose, rendered via Z-Image and pushed to R2; cliche-judge + sidequest-validate pass
     points: 5
