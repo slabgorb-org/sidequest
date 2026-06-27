@@ -587,12 +587,14 @@ stories:
     description: 'Surfaced 2026-06-27 when the heavy_metal/barsoom content-load blocker was cleared (the test errored on pack load before, now loads and fails an assertion). PRE-EXISTING on develop; UNRELATED to the 2026-06-27 cold-seat/GM-NOTE/shock fixes (#1086/#1087/#1089). test_wwn_heavy_metal_dispatch.py::test_wwn_cast_spell_routes_through_wwn_module_on_real_heavy_metal builds a real heavy_metal WWN caster via chargen and asserts it is seeded with a SpellcastingState whose prepared list contains a discovered damage spell and casts_remaining >= 1; one of those assertions fails — the caster chargen does not seed the prepared spell / casts as expected. Engine + content (heavy_metal caster spellcasting seeding). Repro: uv run pytest tests/integration/test_wwn_heavy_metal_dispatch.py::test_wwn_cast_spell_routes_through_wwn_module_on_real_heavy_metal -n0 -q (after a content clone synced to develop so barsoom loads).'
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-27'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
       - A heavy_metal WWN caster built through real chargen is seeded with a SpellcastingState whose prepared list includes the genre's damage spell and casts_remaining >= 1 (pin the exact failing assertion in setup).
       - test_wwn_cast_spell_routes_through_wwn_module_on_real_heavy_metal passes; the WWN cast spine routes the committed cast_spell as expected.
+    completed: '2026-06-27'
     type: bug
   - id: 158-48
     title: 'WWN combat resolution (kill) turn crashes the narrator SDK loop (AnthropicSdkLoopExceeded max_turns=8) — victory NARRATION never persists; client falls back to the opening card (resolution-turn twin of #1086)'
@@ -626,6 +628,7 @@ stories:
       - The cold-seat turn (#1086) and non-resolution beat-commit turns are unchanged.
     type: bug
   - id: 158-49
+<<<<<<< Updated upstream
     title: "Forced-dispatch dogfight (158-29/§7) crashes the SWN resolver: WWN STR/DEX default beats from beat_filter handed to SWN attack_params (KeyError stat 'STR') -> ws disconnect + confrontation soft-lock"
     description: |-
       Found in the 2026-06-27 GM /sq-playtest dogfight verification (solo space_opera/coyote_star, SWN, player "Moe", slug 2026-06-27-coyote_star-5cd27aa6).
@@ -693,3 +696,14 @@ stories:
       - The dispatch_engagement.course.mismatch lie-detector fires when the narrator prose claims a transit but no course dispatch backed it — so the GM panel flags this class of improvisation going forward.
       - 'Regression: non-orbital worlds (no orbital tier) are unaffected — no <courses> block, no course dispatch, no spurious clock advance.'
     type: bug
+=======
+    title: WN attribute canonicalization — drop flavor stat names; space_opera/elemental_harmony/neon_dystopia use the shared canonical STR/DEX/CON/INT/WIS/CHA block
+    points: 3
+    priority: p2
+    status: done
+    started: '2026-06-27'
+    repos: sidequest-content sidequest-server
+    workflow: tdd
+    completed: '2026-06-27'
+    type: refactor
+>>>>>>> Stashed changes

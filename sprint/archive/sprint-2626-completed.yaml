@@ -267,6 +267,7 @@ completed_stories:
     title: Dogfight seating — ship/chassis opponent, ship-scale; never a co-located ground creature (ADR-153 Plan 1)
     points: 2
     completed: '2026-06-27'
+<<<<<<< Updated upstream
   - id: 158-42
     epic: '158'
     title: 'Quest tracker: region quest marks completed before its objective is met; quest mint/complete emits no OTEL'
@@ -276,4 +277,15 @@ completed_stories:
     epic: '158'
     title: Dogfight lifecycle — narrate the resolved beat; no dice-replay stale narration (ADR-153 Plan 2)
     points: 1
+=======
+  - id: 158-47
+    epic: '158'
+    title: "WWN caster spell-seeding: heavy_metal caster's prepared damage spell / casts_remaining assertion fails (test_wwn_cast_spell_routes_through_wwn_module)"
+    points: 2
+    completed: '2026-06-27'
+  - id: 158-49
+    epic: '158'
+    title: WN attribute canonicalization — drop flavor stat names; space_opera/elemental_harmony/neon_dystopia use the shared canonical STR/DEX/CON/INT/WIS/CHA block
+    points: 3
+>>>>>>> Stashed changes
     completed: '2026-06-27'
