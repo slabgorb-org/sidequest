@@ -1,0 +1,30 @@
+id: '160'
+type: epic
+title: 'Companion playtest follow-up: animal companions'
+description: 'Net-new animal companions extending epic-159 (Donut the cat). Ship companion-seat persona templates for cat/owl/raven/toad/goat (understudy, role: pet, bound to caverns_and_claudes/beneath_sunden, reusing the epic-159 run loop), plus companion_creature portraits for those five species across 9 worlds (wry_whimsy oz/wonderland/gulliver, caverns_and_claudes/beneath_sunden, elemental_harmony burning_peace/shattered_accord, heavy_metal evropi/long_foundry/barsoom). An explicit dogfood-validation story keeps the epic open while playtest findings are fixed. Design: docs/superpowers/specs/2026-06-27-animal-companions-design.md. Builds on docs/superpowers/specs/2026-06-26-companion-chargen-driver-decision.md.'
+priority: p2
+status: backlog
+repos: understudy,content
+stories:
+  - id: 160-1
+    title: Animal companion persona templates — cat/owl/raven/toad/goat CompanionDef YAMLs bound to beneath_sunden, reusing the epic-159 run loop, with a wiring test asserting each parses as a valid role:pet CompanionDef
+    points: 2
+    priority: p2
+    status: backlog
+    repos: understudy
+    workflow: tdd
+  - id: 160-2
+    title: Animal companion portraits — companion_creature entries (cat/owl/raven/toad/goat) across 9 worlds, world-specific appearance prose, rendered via Z-Image and pushed to R2; cliche-judge + sidequest-validate pass
+    points: 5
+    priority: p2
+    status: backlog
+    repos: content
+    workflow: trivial
+  - id: 160-3
+    title: Animal companion dogfood validation — spawn all five species against live beneath_sunden, verify chargen.complete + bond_resolved + routed_as_pet + distinct per-species voice; file findings. Epic stays open until all five dogfood clean
+    points: 3
+    priority: p2
+    status: backlog
+    repos: understudy
+    workflow: trivial
+    type: chore
