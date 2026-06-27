@@ -536,13 +536,15 @@ stories:
     description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo) — secondary observation on the GM-NOTE-leak turn (the leak itself is fixed in PR #1087). On Harpo's first Attack the to-hit MISSED but the WWN engine still applied Shock=3 (dice.shock_chip_applied chip=3, opponent 4/4 -> 1/4). The HP bar updated, but the prose called it a clean 'Miss' and never told the player the spear-skid still chipped the tender for 3 — so a mechanics-first player (Sebastien/Jade) sees 'miss' and wouldn't know real damage landed. WWN Shock-on-a-failed-to-hit should be narrated as a graze that drew blood. Narrator-prompt change in the de-nativized WN zone (narrator.py build_encounter_context). Full context on ~/Projects/sq-playtest-pingpong.md."
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-27'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
       - When a WWN attack misses the to-hit but still applies Shock damage, the de-nativized WN narration directive instructs the narrator to narrate a glancing hit that still drew blood — not a clean 'miss'.
       - Shock damage stays surfaced in the dice/HP UI (regression — the HP bar already ablates).
       - No fabricated mechanical numbers in player prose (narrate the fiction of the graze, never 'you take 3 damage').
+    completed: '2026-06-27'
     type: bug
   - id: 158-45
     title: Fresh WWN combat cold-seat turn crashes the narrator SDK loop (max_turns=8) and disconnects the client
