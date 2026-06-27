@@ -1,0 +1,29 @@
+id: '161'
+type: epic
+title: Companion-seat brain telemetry surfaces in the SideQuest Inspector
+description: 'The companion seat (understudy claude_p/sonnet brain, role:pet — e.g. owl Tolliver) makes one Sonnet decision per turn, and that work is invisible to SideQuest today. The claude_p backend (seat_core/llm/claude_p_model.py) hardcodes input_tokens=0/output_tokens=0 (no token metering) and companion/run.py wraps each brain.decide() in a timeout but records no duration or span. The only telemetry that exists is the Claude Code native OTEL the claude -p subprocess emits via the inherited CLAUDE_CODE_ENABLE_TELEMETRY -> OTLP :55801 (the SideQuest OTEL collector, process pf.frame.app). Today that telemetry is NOT surfaced in the Inspector dashboard at :5173/#/dashboard (currently fed by the server WatcherHub). Goal: route/surface companion-seat brain telemetry (per-decision duration, model, tokens, cost, YIELD-vs-act outcome) into the same Inspector dashboard as the rest of the SideQuest spans, in a dedicated NEW TAB — giving the dev the same lie-detector visibility into the companion brain that the GM panel gives for the server narrator. Found during epic-160 dogfood (2026-06-27, MP beneath_sunden, owl Tolliver). The design story must resolve the ingestion path (how :55801 telemetry reaches the Inspector — shared-collector read vs a SideQuest OTLP receiver vs understudy->server WatcherHub emit) and how companion spans get attributed to session slug + seat; the implementation breakdown below is provisional and may be reshaped by that design.'
+priority: p2
+status: backlog
+repos: understudy,server,ui
+stories:
+  - id: 161-1
+    title: 'DESIGN/ADR: ingestion path for companion-seat brain telemetry into the SideQuest Inspector — resolve how the claude -p OTEL at :55801 reaches the dashboard (shared-collector read vs SideQuest OTLP receiver vs understudy->server WatcherHub emit), define the companion.brain.decide span taxonomy (duration/model/tokens/cost/YIELD-vs-act), session-slug + seat attribution, and the new-tab contract; refine the 161 breakdown'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server,understudy,ui
+    workflow: superpowers
+  - id: 161-2
+    title: Understudy/companion run loop emits per-decision brain telemetry — wrap brain.decide() with duration + model + outcome (YIELD vs act) + tokens (claude_p reports zeros; anthropic backend has real tokens) and route it to the SideQuest OTEL system per the 161-1 design, tagged with session slug + seat identity
+    points: 3
+    priority: p2
+    status: backlog
+    repos: understudy
+    workflow: tdd
+  - id: 161-3
+    title: 'New Inspector tab renders companion-seat brain telemetry for the selected session (per-turn: duration, model, tokens/cost, YIELD-vs-act outcome) alongside Timeline/State/Subsystems; dual-registration in widgetRegistry + MobileTabView TABS'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: tdd
