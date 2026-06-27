@@ -367,12 +367,15 @@ stories:
       ━━ Symptom / why (2026-06-25 coyote_star playtest): after a dogfight RESOLVED (active=False), a normal non-combat action in the same region re-summoned it. encounter.husk_reaped correctly cleared the resolved encounter at turn start, but later the SAME turn encounter.continued_same_region_drift (location label drift Kestrel→Cold Contact) re-attached it and reset structured_phase Resolution→Setup; the player was soft-locked into ship-maneuver beats while on foot in a derelict, Enter disabled. Two lifecycle rules disagree (husk_reaped clear vs drift keep-alive) and drift wins.
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-27'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - 'Re-scoped under ADR-153 Plan 2 (lifecycle): continued_same_region_drift must not re-attach a resolved/reaped encounter; respect created_turn. Plan 2 pending live repro.'
+    completed: '2026-06-27'
     type: bug
+    review_verdict: approved
   - id: 158-31
     title: Dogfight firewall — resolve via SWN hp_depletion; DELETE the native dial + beats (ADR-153 Plan 1)
     description: |-

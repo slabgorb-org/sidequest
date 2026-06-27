@@ -247,3 +247,8 @@ completed_stories:
     title: "Dogfight router→seater→lifecycle — degrade loudly when no engine seats; never wedge the narrator (ADR-153 Plan 2)"
     points: 2
     completed: '2026-06-27'
+  - id: 158-30
+    epic: '158'
+    title: Dogfight lifecycle — region drift must not resurrect a resolved/reaped duel (ADR-153 Plan 2)
+    points: 3
+    completed: '2026-06-27'
