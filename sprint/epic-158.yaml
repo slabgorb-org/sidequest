@@ -505,3 +505,62 @@ stories:
     repos: pennyfarthing
     workflow: tdd
     type: bug
+  - id: 158-42
+    title: 'Quest tracker: region quest marks completed before its objective is met; quest mint/complete emits no OTEL'
+    description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo). The Quests tab shows ONE quest — 'Below the Tended Rows — exp001.r0' marked status=completed — even though its objective ('find the seed-gallery … and the way down past it') is unmet (Harpo just entered exp001.r0, killed one tender, found no gallery/way-down). Stored ground truth: quest_log['dungeon:exp1'].status=completed with objective unmet. Timeline rounds 1-5 contain NO QUEST_* event kind — quest mint AND completion are silent state writes (observability gap vs the OTEL principle). UI<->store fidelity is fine (Quests tab matches quest_log exactly); the bug is in quest STATE + observability, not rendering. Full repro + evidence on ~/Projects/sq-playtest-pingpong.md. Sibling: 158-43 (authored quest never mints)."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    acceptance_criteria:
+      - A region-anchor quest does NOT flip to completed on region ENTRY; it completes only when its objective's real exit condition (e.g. 'the way down past it') is met.
+      - Quest mint and completion each emit a watcher event (e.g. quest.minted / quest.completed) so the GM panel sees quest state move — driven through the real path, asserted via OTEL span, not a source-grep.
+      - 'Regression: a quest whose objective IS satisfied still transitions to completed.'
+    type: bug
+  - id: 158-43
+    title: Authored quest offer never mints into quest_log (pending_quest_offers -> record_quest) — needs design call
+    description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo). The authored opening-hook quest that frames the adventure — 'The Unspent Hold' (go down the Dropmouth after the unspent hold, come back up the rope) — sits in pending_quest_offers and is NEVER minted into quest_log, so the player never sees it. Known epic-117 gap: the narrator must call record_quest and doesn't. DESIGN CALL (Keith): decide HOW an authored pending offer becomes a visible quest_log entry. Full context on ~/Projects/sq-playtest-pingpong.md. Sibling: 158-42 (premature completion + OTEL)."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    acceptance_criteria:
+      - '[DESIGN] Decide + document how a pending_quest_offers entry becomes a visible quest_log entry (auto-mint on offer / narrator record_quest tool / player-accept). This is the blocked half — resolve before implementation.'
+      - The authored opening-hook quest (e.g. the_unspent_hold) reaches quest_log and renders in the Quests tab as the player's framing objective.
+      - Minting emits the quest.minted watcher event (shared with 158-42) so the GM panel can verify the mint fired.
+    type: bug
+  - id: 158-44
+    title: Narrate WWN Shock damage on a missed to-hit (a missed swing that still chips HP must be legible to mechanics-first players)
+    description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo) — secondary observation on the GM-NOTE-leak turn (the leak itself is fixed in PR #1087). On Harpo's first Attack the to-hit MISSED but the WWN engine still applied Shock=3 (dice.shock_chip_applied chip=3, opponent 4/4 -> 1/4). The HP bar updated, but the prose called it a clean 'Miss' and never told the player the spear-skid still chipped the tender for 3 — so a mechanics-first player (Sebastien/Jade) sees 'miss' and wouldn't know real damage landed. WWN Shock-on-a-failed-to-hit should be narrated as a graze that drew blood. Narrator-prompt change in the de-nativized WN zone (narrator.py build_encounter_context). Full context on ~/Projects/sq-playtest-pingpong.md."
+    points: 2
+    priority: p3
+    status: backlog
+    repos: sidequest-server
+    workflow: tdd
+    acceptance_criteria:
+      - When a WWN attack misses the to-hit but still applies Shock damage, the de-nativized WN narration directive instructs the narrator to narrate a glancing hit that still drew blood — not a clean 'miss'.
+      - Shock damage stays surfaced in the dice/HP UI (regression — the HP bar already ablates).
+      - No fabricated mechanical numbers in player prose (narrate the fiction of the graze, never 'you take 3 damage').
+    type: bug
+  - id: 158-45
+    title: Fresh WWN combat cold-seat turn crashes the narrator SDK loop (max_turns=8) and disconnects the client
+    description: 'sq-playtest 2026-06-27 (beneath_sunden, Harpo), PRIMARY lie-detector target. The cold-seat turn (an attack that first SEATS a WN confrontation) blew the narrator agent-SDK loop with AnthropicSdkLoopExceeded (max_turns=8) and tore down the websocket. ROOT CAUSE: _build_turn_context computes the encounter projection (in_combat/encounter/confrontation_def) BEFORE the dispatch bank seats the encounter; refresh_turn_context_post_dispatch refreshed npcs+region but NOT the encounter fields, so context.in_combat stayed False -> the A2 de-nativized WN prompt zone never fired and the start-a-confrontation menu fired instead -> with resolution tools withheld the narrator flailed past max_turns. Same pre-dispatch-staleness pattern already fixed for region_projection. FIX: shared _project_encounter_fields helper recomputed in the refresh + cold_seat_context_refreshed OTEL event.'
+    points: 3
+    priority: p1
+    status: done
+    repos: sidequest-server
+    workflow: tdd
+    completed: '2026-06-27'
+    type: bug
+  - id: 158-46
+    title: Narrator GM-NOTE / chain-of-thought leaks into player-facing combat prose (scratchpad --- prose)
+    description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo). On a WWN combat beat the narration card began with the model's internal scratchpad verbatim ('The GM-NOTE tells me … I don't need to call wn_attack again … I just need to narrate it.') then a --- rule then the prose — leaking the internal GM-NOTE, the tool name wn_attack, and the engine's pre-resolution. scrub_meta_preamble (already wired) missed it: the closing phrase 'I just need to narrate it' wasn't in the marker regex, and the 'reasoning --- prose' FORM wasn't handled. FIX: horizontal-rule strip gated on an out-of-fiction tell (GM-NOTE / internal tool name / 'I need to call|narrate'), plus the marker now covers 'I (just) need to narrate'."
+    points: 2
+    priority: p2
+    status: done
+    repos: sidequest-server
+    workflow: tdd
+    completed: '2026-06-27'
+    type: bug
