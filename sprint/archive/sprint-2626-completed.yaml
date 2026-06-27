@@ -257,3 +257,8 @@ completed_stories:
     title: Animal companion portraits — companion_creature entries (cat/owl/raven/toad/goat) across 9 worlds, world-specific appearance prose, rendered via Z-Image and pushed to R2; cliche-judge + sidequest-validate pass
     points: 5
     completed: '2026-06-27'
+  - id: 158-41
+    epic: '158'
+    title: Narrator max_turns must degrade loudly (ADR-006), not crash+teardown — GENERAL narrator robustness, not dogfight-specific
+    points: 3
+    completed: '2026-06-27'

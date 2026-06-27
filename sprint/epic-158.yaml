@@ -501,10 +501,15 @@ stories:
     description: 'GENERAL narrator robustness — NOT dogfight-specific (split out of 158-29). When the Anthropic SDK tool loop hits its turn cap (AnthropicSdkLoopExceeded, anthropic_sdk_client.py ~line 518), the turn currently HARD-CRASHES: session.disconnect_save -> room teardown -> forced reconnect. Per ADR-006 (graceful degradation) it must degrade loudly and observably and KEEP THE SESSION ALIVE — emit an OTEL span, surface a player-facing "the engine could not resolve that, try rephrasing", and continue the room rather than wedge it. Any subsystem that fails to seat can trigger this; the dogfight router-decline (158-29) was one trigger, but the fix is generic and lives in the narrator/SDK loop, not in the dogfight. Repro: coyote_star 2026-06-25 (a ship-combat verb that did not route).'
     points: 3
     priority: p1
-    status: backlog
-    repos: pennyfarthing
+    status: done
+    started: '2026-06-27'
+    repos: sidequest-server
     workflow: tdd
+    completed: '2026-06-27'
     type: bug
+    branch: feat/158-41-narrator-maxturns-graceful-degrade
+    review_findings: "AC-3 watcher-fields assertion is a Rule #6 truthiness check (passes with a placeholder payload) — the story's GM-panel observability AC is effectively unverified; corroborated by test-analyzer + rule-checker. Plus LOW test-hardening (assert severity=warning, degraded TurnRecord filed, no raw-message leak) and overclaiming/stale test docstrings. Production code is correct — test-hardening + docstring rework only (red/TEA)."
+    review_verdict: approved
   - id: 158-42
     title: 'Quest tracker: region quest marks completed before its objective is met; quest mint/complete emits no OTEL'
     description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo). The Quests tab shows ONE quest — 'Below the Tended Rows — exp001.r0' marked status=completed — even though its objective ('find the seed-gallery … and the way down past it') is unmet (Harpo just entered exp001.r0, killed one tender, found no gallery/way-down). Stored ground truth: quest_log['dungeon:exp1'].status=completed with objective unmet. Timeline rounds 1-5 contain NO QUEST_* event kind — quest mint AND completion are silent state writes (observability gap vs the OTEL principle). UI<->store fidelity is fine (Quests tab matches quest_log exactly); the bug is in quest STATE + observability, not rendering. Full repro + evidence on ~/Projects/sq-playtest-pingpong.md. Sibling: 158-43 (authored quest never mints)."
