@@ -1,13 +1,18 @@
 ---
-story_id: "158-49"
+story_id: "158-51"
 jira_key: ""
 epic: "158"
 workflow: "refactor"
 ---
-# Story 158-49: WN attribute canonicalization — drop flavor stat names; space_opera/elemental_harmony/neon_dystopia use the shared canonical STR/DEX/CON/INT/WIS/CHA block
+# Story 158-51: WN attribute canonicalization — drop flavor stat names; space_opera/elemental_harmony/neon_dystopia use the shared canonical STR/DEX/CON/INT/WIS/CHA block
+
+> **ID note:** filed locally as 158-49, but a parallel clone had already claimed
+> 158-49 (dogfight SWN crash) + 158-50 (orbital course) and pushed first.
+> Renumbered to **158-51**. The merged code/PRs still carry the "158-49" label
+> (sidequest-content#510, sidequest-server#1096) — they predate the collision.
 
 ## Story Details
-- **ID:** 158-49
+- **ID:** 158-51
 - **Jira Key:** (none — Jira disabled)
 - **Workflow:** refactor
 - **Repos:** sidequest-content, sidequest-server

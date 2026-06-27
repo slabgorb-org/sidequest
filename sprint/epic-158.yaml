@@ -628,7 +628,6 @@ stories:
       - The cold-seat turn (#1086) and non-resolution beat-commit turns are unchanged.
     type: bug
   - id: 158-49
-<<<<<<< Updated upstream
     title: "Forced-dispatch dogfight (158-29/§7) crashes the SWN resolver: WWN STR/DEX default beats from beat_filter handed to SWN attack_params (KeyError stat 'STR') -> ws disconnect + confrontation soft-lock"
     description: |-
       Found in the 2026-06-27 GM /sq-playtest dogfight verification (solo space_opera/coyote_star, SWN, player "Moe", slug 2026-06-27-coyote_star-5cd27aa6).
@@ -696,7 +695,7 @@ stories:
       - The dispatch_engagement.course.mismatch lie-detector fires when the narrator prose claims a transit but no course dispatch backed it — so the GM panel flags this class of improvisation going forward.
       - 'Regression: non-orbital worlds (no orbital tier) are unaffected — no <courses> block, no course dispatch, no spurious clock advance.'
     type: bug
-=======
+  - id: 158-51
     title: WN attribute canonicalization — drop flavor stat names; space_opera/elemental_harmony/neon_dystopia use the shared canonical STR/DEX/CON/INT/WIS/CHA block
     points: 3
     priority: p2
@@ -706,4 +705,3 @@ stories:
     workflow: tdd
     completed: '2026-06-27'
     type: refactor
->>>>>>> Stashed changes
