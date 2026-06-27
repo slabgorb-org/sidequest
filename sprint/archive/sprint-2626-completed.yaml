@@ -267,3 +267,8 @@ completed_stories:
     title: Dogfight seating — ship/chassis opponent, ship-scale; never a co-located ground creature (ADR-153 Plan 1)
     points: 2
     completed: '2026-06-27'
+  - id: 158-42
+    epic: '158'
+    title: 'Quest tracker: region quest marks completed before its objective is met; quest mint/complete emits no OTEL'
+    points: 2
+    completed: '2026-06-27'

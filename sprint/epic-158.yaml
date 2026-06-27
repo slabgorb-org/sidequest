@@ -518,14 +518,18 @@ stories:
     description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo). The Quests tab shows ONE quest — 'Below the Tended Rows — exp001.r0' marked status=completed — even though its objective ('find the seed-gallery … and the way down past it') is unmet (Harpo just entered exp001.r0, killed one tender, found no gallery/way-down). Stored ground truth: quest_log['dungeon:exp1'].status=completed with objective unmet. Timeline rounds 1-5 contain NO QUEST_* event kind — quest mint AND completion are silent state writes (observability gap vs the OTEL principle). UI<->store fidelity is fine (Quests tab matches quest_log exactly); the bug is in quest STATE + observability, not rendering. Full repro + evidence on ~/Projects/sq-playtest-pingpong.md. Sibling: 158-43 (authored quest never mints)."
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-27'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
       - A region-anchor quest does NOT flip to completed on region ENTRY; it completes only when its objective's real exit condition (e.g. 'the way down past it') is met.
       - Quest mint and completion each emit a watcher event (e.g. quest.minted / quest.completed) so the GM panel sees quest state move — driven through the real path, asserted via OTEL span, not a source-grep.
       - 'Regression: a quest whose objective IS satisfied still transitions to completed.'
+    completed: '2026-06-27'
     type: bug
+    review_findings: ruff format --check fails on test file (merge-gate blocker) + 2 docstring inaccuracies (Two-spans, skip reach_deep-only vs unconditional). No Critical/High logic defects; tests/lint/types green. Green rework.
+    review_verdict: approved
   - id: 158-43
     title: Authored quest offer never mints into quest_log (pending_quest_offers -> record_quest) — needs design call
     description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo). The authored opening-hook quest that frames the adventure — 'The Unspent Hold' (go down the Dropmouth after the unspent hold, come back up the rope) — sits in pending_quest_offers and is NEVER minted into quest_log, so the player never sees it. Known epic-117 gap: the narrator must call record_quest and doesn't. DESIGN CALL (Keith): decide HOW an authored pending offer becomes a visible quest_log entry. Full context on ~/Projects/sq-playtest-pingpong.md. Sibling: 158-42 (premature completion + OTEL)."
