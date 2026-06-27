@@ -378,12 +378,15 @@ stories:
       ━━ Symptom / why (2026-06-25 coyote_star playtest — the machinery described below is DELETED by this rebuild, NOT fixed): ENCOUNTER_BEAT_APPLIED beat_kind=push outcome=Success own_delta=0 opponent_delta=0 (a Success that moved the dial by ZERO), then ENCOUNTER_RESOLVED outcome=resolution_beat:straight at dials 0/0 (no side reached 30). The native dial duel could never build energy to 30 and resolved after one beat — i.e. the native-dial dogfight was mechanically inert. That contradiction (sealed_letter_lookup resolution + a dial_threshold win + beats) is exactly what ADR-153 removes.
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-27'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - 'Implement per ADR-153 Plan 1 (firewall): dogfight def -> win_condition: hp_depletion, drop native energy dial + beats; resolves via existing SWN HP path. Plan: docs/superpowers/plans/2026-06-26-dogfight-rebuild-plan-1-firewall-seating.md'
+    completed: '2026-06-27'
     type: bug
+    review_verdict: approved
   - id: 158-32
     title: Literary NPC name-shuffle corrupts canon — source='world' proper nouns run through ADR-091 shuffle_fallback fracture into multiple registry identities; must be name-locked
     description: "Playtest finding (pingpong 2026-06-25, heavy_metal/barsoom, session 2026-06-25-barsoom-84c17bdf, turn 3-4). OTEL: npc.invented_name_routed original='Salensus Oll' minted='Dentos Foun' culture='Yellow Martian' source='world' strategy='shuffle_fallback' -> npc.auto_registered name='Dentos Foun'. One canonical antagonist fractured into 3 names: narration 'Salensus Oll' (canonical Burroughs), this turn mint 'Dentos Foun', Relationships/disposition 'Neon Sill'; npc_pool=['Kantos Vah','Neon Sill','Dentos Foun'] with canonical Salensus Oll nowhere in the registry. Root: source='world' proper nouns are run through ADR-091 shuffle_fallback instead of being name-LOCKED. barsoom and every canon-proper-noun world (Dejah Thoris, Tars Tarkas, Helium, Zodanga) need source='world' names locked. Player-visible to mechanics-watchers (Relationships shows Neon Sill Neutral with no link to the jeddak just taunted). Latent seating hazard: if WWN combat ever seats against the jeddak it could seat a phantom minted identity (ties to FATE/OTHER-seating). Related: 158-28. See memory three-divergent-slug-rules / npc-reference-recency-scene-guard."

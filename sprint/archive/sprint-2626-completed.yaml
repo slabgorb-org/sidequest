@@ -237,3 +237,8 @@ completed_stories:
     title: Animal companion persona templates — cat/owl/raven/toad/goat CompanionDef YAMLs bound to beneath_sunden, reusing the epic-159 run loop, with a wiring test asserting each parses as a valid role:pet CompanionDef
     points: 2
     completed: '2026-06-27'
+  - id: 158-31
+    epic: '158'
+    title: Dogfight firewall — resolve via SWN hp_depletion; DELETE the native dial + beats (ADR-153 Plan 1)
+    points: 2
+    completed: '2026-06-27'
