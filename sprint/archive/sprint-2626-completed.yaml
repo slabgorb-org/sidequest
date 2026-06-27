@@ -262,3 +262,8 @@ completed_stories:
     title: Narrator max_turns must degrade loudly (ADR-006), not crash+teardown — GENERAL narrator robustness, not dogfight-specific
     points: 3
     completed: '2026-06-27'
+  - id: 158-34
+    epic: '158'
+    title: Dogfight seating — ship/chassis opponent, ship-scale; never a co-located ground creature (ADR-153 Plan 1)
+    points: 2
+    completed: '2026-06-27'

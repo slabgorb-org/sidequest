@@ -426,12 +426,15 @@ stories:
       ━━ Symptom / why (2026-06-25 coyote_star playtest): the cold contact was narratively a hostile SHIP, but the seated opponent was "Gengineered Killer" — a Monster-Manual-injected ground/personal creature co-located into the cockpit (its stat block set the opponent metric). The seater grabbed the nearest co-located hostile via the location fallback instead of sourcing a ship/chassis (ADR-125; the Kestrel is in chassis_registry). Distinct from WWN zone-reconcile (there: no co-located Other; here: there IS one, but wrong scale/kind).
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-06-27'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - 'Implement per ADR-153 Plan 1 (seating): treat sealed_letter_lookup as ship-scale; seat default ship opponent from def frame; never seat a co-located ground creature. Plan: docs/superpowers/plans/2026-06-26-dogfight-rebuild-plan-1-firewall-seating.md'
+    completed: '2026-06-27'
     type: bug
+    review_verdict: approved
   - id: 158-35
     title: Dogfight lifecycle — narrate the resolved beat; no dice-replay stale narration (ADR-153 Plan 2)
     description: |-
