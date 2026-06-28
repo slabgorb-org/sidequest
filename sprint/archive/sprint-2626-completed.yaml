@@ -287,3 +287,8 @@ completed_stories:
     title: WN attribute canonicalization — drop flavor stat names; space_opera/elemental_harmony/neon_dystopia use the shared canonical STR/DEX/CON/INT/WIS/CHA block
     points: 3
     completed: '2026-06-27'
+  - id: 158-49
+    epic: '158'
+    title: "Forced-dispatch dogfight (158-29/§7) crashes the SWN resolver: WWN STR/DEX default beats from beat_filter handed to SWN attack_params (KeyError stat 'STR') -> ws disconnect + confrontation soft-lock"
+    points: 3
+    completed: '2026-06-27'

@@ -651,7 +651,8 @@ stories:
       Scope of THIS story: stop the crash + soft-lock. A seated SWN dogfight must hand the SWN resolver a ruleset-valid beat/maneuver set (or fail loud at SEAT time, not at dice resolution). The wrong-Other and missing-maneuver items can be split to 158-34/158-40 if Keith prefers.
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-06-27'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
@@ -661,7 +662,10 @@ stories:
       - A committed dogfight beat resolves without disconnecting; the confrontation is never left in a permanent 'Committed — waiting for the round to resolve…' soft-lock. Verify via reconnect/replay that the round either resolves or the menu re-enables.
       - 'OTEL: the seat path emits a span recording which beat/maneuver set + ruleset was attached to the seated dogfight, so the GM panel can confirm SWN packs receive SWN/sealed-letter beats (lie-detector for this class of mismatch).'
       - 'Regression guard: the existing SWN ground/personal combat path (already green) still resolves; the fix must not break non-dogfight SWN beats.'
+    completed: '2026-06-27'
     type: bug
+    review_findings: 'HIGH: sealed-letter dogfight maneuver beats get a fabricated d20-vs-AC difficulty stamped in the CONFRONTATION payload + the confrontation.beat_dc_authored OTEL span (no-roll maneuvers shown with a DC they never roll; lie-detector polluted). Fix: skip difficulty for sealed_letter_lookup maneuver beats in confrontation.py:439-448, mirroring the is_item_use_beat skip.'
+    review_verdict: approved
   - id: 158-50
     title: "ADR-130 orbital course/story-clock inert in play: IntentRouter never emits a course dispatch because its state summary has no <courses> block (built only for the narrator), so router-gated course-emission can't fire — plotting/executing a transit writes no plotted_course + never advances clock_t_hours (SWN-ORBITAL-COURSE-INERT re-confirmed)"
     description: |-
