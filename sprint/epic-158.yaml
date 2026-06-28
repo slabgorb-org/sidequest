@@ -627,6 +627,7 @@ stories:
       - An OTEL watcher span (twin of cold_seat_context_refreshed) fires on the resolution turn; a wiring test drives real refresh + build_narrator_prompt and asserts the de-nativized directive is present and the start-a-confrontation menu is absent on the resolution turn.
       - The cold-seat turn (#1086) and non-resolution beat-commit turns are unchanged.
     type: bug
+    review_verdict: approved
   - id: 158-49
     title: "Forced-dispatch dogfight (158-29/§7) crashes the SWN resolver: WWN STR/DEX default beats from beat_filter handed to SWN attack_params (KeyError stat 'STR') -> ws disconnect + confrontation soft-lock"
     description: |-
