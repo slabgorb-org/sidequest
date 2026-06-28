@@ -292,3 +292,8 @@ completed_stories:
     title: "Forced-dispatch dogfight (158-29/§7) crashes the SWN resolver: WWN STR/DEX default beats from beat_filter handed to SWN attack_params (KeyError stat 'STR') -> ws disconnect + confrontation soft-lock"
     points: 3
     completed: '2026-06-27'
+  - id: 158-48
+    epic: '158'
+    title: 'WWN combat resolution (kill) turn crashes the narrator SDK loop (AnthropicSdkLoopExceeded max_turns=8) — victory NARRATION never persists; client falls back to the opening card (resolution-turn twin of #1086)'
+    points: 3
+    completed: '2026-06-28'

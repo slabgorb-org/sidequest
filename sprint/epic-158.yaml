@@ -618,7 +618,8 @@ stories:
       Board: ~/Projects/sq-playtest-pingpong.md. Sibling: #1086 (cold-seat), #1089 (shock-on-miss).
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-06-28'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
@@ -626,6 +627,7 @@ stories:
       - The victory/defeat NARRATION (+ SCRAPBOOK_ENTRY) persists to the events log on the resolution turn, so /timeline replay shows the victory card after reload (regression-guarded against the session-16570 drop).
       - An OTEL watcher span (twin of cold_seat_context_refreshed) fires on the resolution turn; a wiring test drives real refresh + build_narrator_prompt and asserts the de-nativized directive is present and the start-a-confrontation menu is absent on the resolution turn.
       - The cold-seat turn (#1086) and non-resolution beat-commit turns are unchanged.
+    completed: '2026-06-28'
     type: bug
     review_verdict: approved
   - id: 158-49
