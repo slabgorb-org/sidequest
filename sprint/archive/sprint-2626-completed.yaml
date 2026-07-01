@@ -297,3 +297,8 @@ completed_stories:
     title: 'WWN combat resolution (kill) turn crashes the narrator SDK loop (AnthropicSdkLoopExceeded max_turns=8) — victory NARRATION never persists; client falls back to the opening card (resolution-turn twin of #1086)'
     points: 3
     completed: '2026-06-28'
+  - id: 161-1
+    epic: '161'
+    title: 'DESIGN/ADR: ingestion path for companion-seat brain telemetry into the SideQuest Inspector — resolve how the claude -p OTEL at :55801 reaches the dashboard (shared-collector read vs SideQuest OTLP receiver vs understudy->server WatcherHub emit), define the companion.brain.decide span taxonomy (duration/model/tokens/cost/YIELD-vs-act), session-slug + seat attribution, and the new-tab contract; refine the 161 breakdown'
+    points: 3
+    completed: '2026-07-01'
