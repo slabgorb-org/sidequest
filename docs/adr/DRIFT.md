@@ -53,3 +53,4 @@
 | [ADR-147: Honest Layering — Pure Logic and Utilities Belong Below the Server Tier, Not Inside It](147-honest-layering-pure-logic-below-server.md) | ◇ proposed | — |
 | [ADR-150: Sidecar Accounting Leaves the Narrator Hot Path — Pre-Narration Rewrite, Post-Narration Extraction, and the One Field That Stays](150-sidecar-accounting-off-narrator-hot-path.md) | ✓ accepted | — |
 | [ADR-153: The Ace of Aces Dogfight — A Homebrew Relative-Position Positioning Graph Feeding Bound SWN Resolution, the Positioning/Resolution Firewall, and Narrator-Motivated Maneuver Selection](153-ace-of-aces-dogfight-positioning-swn-resolution.md) | ✓ accepted | — |
+| [ADR-154: Companion-Seat Brain Telemetry Ingestion — Understudy Self-Reports via the Watcher Bridge, Not the Native claude -p Collector](154-companion-seat-brain-telemetry-ingestion.md) | ✓ accepted | — |

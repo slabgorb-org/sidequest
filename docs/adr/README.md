@@ -240,6 +240,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-103: Native OTEL via Tool Registry](103-native-otel-via-tool-registry.md) | ✓ accepted | *partial* → ADR-101 |
 | [ADR-124: Save-Forensics Architecture — Read-Only Tiered Save Inspection, Loud-Skip Folds, and Per-Round Mechanical Census](124-save-forensics-architecture.md) | ✓ accepted | live |
 | [ADR-132: WatcherHub Infrastructure — builtins-Pinned Singleton, ContextVar Per-Session Isolation, and Ephemeral-Event Taxonomy](132-watcherhub-infrastructure.md) | ✓ accepted | live |
+| [ADR-154: Companion-Seat Brain Telemetry Ingestion — Understudy Self-Reports via the Watcher Bridge, Not the Native claude -p Collector](154-companion-seat-brain-telemetry-ingestion.md) | ✓ accepted | deferred |
 
 ## Codebase Decomposition
 
@@ -327,6 +328,7 @@ ADRs whose implementation is absent, partial, or deferred. See [DRIFT.md](DRIFT.
 | [ADR-147: Honest Layering — Pure Logic and Utilities Belong Below the Server Tier, Not Inside It](147-honest-layering-pure-logic-below-server.md) | deferred | — |
 | [ADR-150: Sidecar Accounting Leaves the Narrator Hot Path — Pre-Narration Rewrite, Post-Narration Extraction, and the One Field That Stays](150-sidecar-accounting-off-narrator-hot-path.md) | deferred | — |
 | [ADR-153: The Ace of Aces Dogfight — A Homebrew Relative-Position Positioning Graph Feeding Bound SWN Resolution, the Positioning/Resolution Firewall, and Narrator-Motivated Maneuver Selection](153-ace-of-aces-dogfight-positioning-swn-resolution.md) | deferred | — |
+| [ADR-154: Companion-Seat Brain Telemetry Ingestion — Understudy Self-Reports via the Watcher Bridge, Not the Native claude -p Collector](154-companion-seat-brain-telemetry-ingestion.md) | deferred | — |
 | [ADR-013: Lazy JSON Extraction](013-lazy-json-extraction.md) | **drift** | [ADR-102](102-tool-use-protocol-for-structured-output.md) |
 | [ADR-041: Genie Wish / Consequence Engine](041-genie-wish-consequence-engine.md) | **drift** | [ADR-087](087-post-port-subsystem-restoration-plan.md) |
 | [ADR-042: OCEAN Personality Live Evolution](042-ocean-personality-live-evolution.md) | **drift** | [ADR-087](087-post-port-subsystem-restoration-plan.md) |

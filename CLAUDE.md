@@ -312,8 +312,8 @@ Rust code samples in pre-ADR-082 ADRs are historical; translation table in
 **Code Generation / Tooling (059, 092)**
 - **059 Monster Manual — Server-Side Pre-Generation via Game-State Injection** · 092 Scene Harness — Dev-Gated HTTP Endpoint for Scenario Fixtures *(partial)*
 
-**Observability (090, 103, 124, 132)**
-- 090 OTEL Dashboard Restoration after Python Port · 103 Native OTEL via Tool Registry *(partial)* · 124 Save-Forensics Architecture — Read-Only Tiered Save Inspection, Loud-Skip Folds, and Per-Round Mechanical Census · 132 WatcherHub Infrastructure — builtins-Pinned Singleton, ContextVar Per-Session Isolation, and Ephemeral-Event Taxonomy
+**Observability (090, 103, 124, 132, 154)**
+- 090 OTEL Dashboard Restoration after Python Port · 103 Native OTEL via Tool Registry *(partial)* · 124 Save-Forensics Architecture — Read-Only Tiered Save Inspection, Loud-Skip Folds, and Per-Round Mechanical Census · 132 WatcherHub Infrastructure — builtins-Pinned Singleton, ContextVar Per-Session Isolation, and Ephemeral-Event Taxonomy · 154 Companion-Seat Brain Telemetry Ingestion — Understudy Self-Reports via the Watcher Bridge, Not the Native claude -p Collector *(deferred)*
 
 **Codebase Decomposition (060, 061, 062, 063, 064, 065, 068, 088)**
 - 060 Genre Models Decomposition — Split models.rs by Domain · 061 Lore Module Decomposition — Split lore.rs by Responsibility · 062 Server lib.rs Extraction — Route Groups, State, and Watcher Events · 063 Dispatch Handler Splitting — By Pipeline Stage · 064 Game Crate Domain Modules — Organize 69 Flat Files · 065 Protocol Message Decomposition — Split message.rs by Domain *(deferred)* · 068 Magic Literal Extraction — Domain-Scoped Constants · **088 ADR Frontmatter Schema and Auto-Generated Indexes**
