@@ -712,3 +712,94 @@ stories:
     workflow: tdd
     completed: '2026-06-27'
     type: refactor
+  - id: 158-52
+    title: Creature portraits derive from bestiary.yaml — demote per-world creatures.yaml to an optional naming-override
+    description: |-
+      Creature portraits currently render only for 2 of 22 WN-bound worlds (beneath_sunden, flickering_reach) because `scripts/generate_creature_images.py::collect_creatures` hard-rglobs `creatures.yaml` and never reads `bestiary.yaml`. For WN packs the RUNTIME roster is `bestiary.yaml` (encountergen samples it; `creatures.yaml` is NOT a runtime source on the WN path), so a per-world `creatures.yaml` is now almost pure duplication: `compose_prompt` needs only name/description/threat_level/id, and the bestiary already carries name, description, and level (level->threat is a trivial map). The ONE thing `creatures.yaml` adds is a NON-PROPER-NOUN `name` for the CLIP prompt — load-bearing only for worlds with a "nothing is named" conceit (beneath_sunden), where Z-Image would otherwise paint "Constrictor Snake" as a caption. Style already auto-layers from each world's `visual_style.yaml positive_suffix` (which already carries the no-text/no-caption clause).
+
+      DECISION (Keith, 2026-07-01): "Something is missing" — do NOT hand-author per-world image manifests (~900 plates across 22 worlds does not scale). Make the BESTIARY the single source of truth for creature-image production; the render pipeline DERIVES the prompt from it. Demote `creatures.yaml` to an OPTIONAL per-world override, needed only where a world overrides the derived name (naming conceits) or wants a bespoke marquee plate.
+
+      DESIGN (for Architect/ADR then Dev):
+      - `generate_creature_images.py` / `render_common.py`: add `bestiary.yaml` as a creature source. For each bestiary entry derive {id, name, description, threat_level<-level, tags}. Where a world ships a `creatures.yaml` override for an id, the override wins (per-field merge, ADR-121 flavor); otherwise render straight from bestiary.
+      - For "nothing is named" worlds (beneath_sunden), the derived CLIP name must be de-proper-noun'd — either via a per-world `name_is_secret: true` flag that suppresses/rewrites the CLIP name, or by keeping ONLY the naming override in `creatures.yaml` (drop the duplicated descriptions). Do not paint proper nouns.
+      - Update the invariant test `sidequest-server/tests/genre/test_beneath_sunden_creature_images_107_2.py`: `test_every_low_tagged_bestiary_entry_is_renderable` currently asserts the OLD per-world-manifest model (every low-tagged id must be in `creatures.yaml`). Under the new design "renderable" = "resolvable to a render prompt" = "in bestiary with a non-empty description (+ naming handled)". Retune the assertion to the derived-source model; keep the beneath_sunden non-proper-noun guard for the 6 bespoke shaft ids.
+
+      RELATED 107-2 DEBT (currently also red, scope alongside or split): `test_beneath_sunden_room_binding_107_2.py::test_distinct_rooms_bind_distinct_creatures` — only `entrance.yaml` declares `encounter_creatures`; needs >=2 distinct per-room bindings + the server-side resolver/OTEL (`tests/server/dispatch/test_room_creature_binding_107_2.py`). This is beneath_sunden content+wiring, independent of the render-source architecture above.
+
+      PROVENANCE: surfaced 2026-07-01 while scoping the 160-4 full-suite-green push (option C). These two beneath_sunden tests are pre-existing story-107-2 debt, unrelated to 160-4; 160-4 lands without them. Full render-path trace, field-by-field, in the 160-4 session Delivery Findings.
+    points: 5
+    priority: p2
+    status: backlog
+    repos: orchestrator,server,content
+    workflow: tdd
+    acceptance_criteria:
+      - generate_creature_images.py collects creatures from bestiary.yaml (deriving name/description/threat_level<-level/id/tags); a world creatures.yaml entry for the same id acts as a per-field OVERRIDE, not a precondition
+      - A world with a naming conceit (beneath_sunden 'nothing is named') never emits a proper-noun CLIP name — via a per-world secret-name flag or a naming-only override; verified by a render dry-run showing no bestiary proper noun in the CLIP
+      - 'test_beneath_sunden_creature_images_107_2.py invariant retuned to the derived-source model: every low-tagged bestiary entry is renderable because it resolves to a prompt (bestiary description present + naming handled), not because it appears in creatures.yaml'
+      - 'Wiring test: a render dry-run for at least one previously-manifest-less WN world (e.g. space_opera/coyote_star) produces non-empty creature prompts from bestiary alone — proving portraits now scale past the 2 hand-authored worlds'
+      - 'ADR (or amendment to ADR-059/086/127) records: bestiary.yaml is the single source of truth for creature-image production; creatures.yaml is an optional per-world override'
+    type: refactor
+  - id: 158-53
+    title: WWN magic cast does not decrement remaining charges (cinder_lance before=2 after=2)
+    description: |-
+      WWN magic cast does not spend charges. Evidence: `tests/.../test_wwn_scene_harness_fixture_proof` — a cinder_lance cast shows remaining charges before=2, after=2 (should decrement to 1). The bound-WWN magic cast path resolves the spell narratively but never decrements the remaining-uses/charges counter, so a caster has effectively infinite casts.
+
+      WHY IT MATTERS: this is a mechanics-first regression — exactly what Sebastien/Jade (the mechanics-first players) would catch. Magic that never spends breaks resource-management, and the player-facing surface would show an unchanging charge count.
+
+      FIX DIRECTION (for pickup): decrement the charge/use counter on a successful WWN cast, and — per the OTEL Observability Principle — emit a watcher span proving the spend (before/after remaining) so the GM panel can verify the decrement fired rather than the narrator improvising the spend. Add a wiring test through the real cast path.
+
+      PROVENANCE: pre-existing full-suite failure, surfaced 2026-07-01 while scoping the 160-4 option-C green push. Unrelated to 160-4 (companion-solo-seat); 160-4 lands without it. Diagnosis is from the scoping pass — confirm at pickup.
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - A successful WWN cast decrements the spell's remaining charges/uses (cinder_lance before=2 -> after=1)
+      - The cast-spend emits an OTEL watcher span with before/after remaining so the GM panel verifies the decrement fired
+      - test_wwn_scene_harness_fixture_proof passes; a wiring test exercises the decrement through the real cast path
+    type: bug
+  - id: 158-54
+    title: awn.mutation.used OTEL span never fires for mutant_wasteland mutations
+    description: |-
+      The `awn.mutation.used` OTEL span never fires when a mutant_wasteland (Ashes Without Number) mutation is used. Evidence: `tests/.../test_103_10_seaboard_e2e` and `tests/.../test_102_7_mutant_wasteland_mutations_live` both assert the span and fail — it is not emitted.
+
+      WHY IT MATTERS: OTEL is the lie-detector (CLAUDE.md OTEL Observability Principle). A missing subsystem span means we cannot tell whether the mutation effect actually engaged or the narrator is improvising it. Needs investigation into whether (a) only the span is missing (emit it) or (b) the mutation-use path itself is dark (apply the effect AND emit the span).
+
+      FIX DIRECTION (for pickup): trace the AWN mutation-use path; confirm whether the mutation effect applies at all; emit `awn.mutation.used` (component + payload identifying the mutation + actor) on the use decision; wire a test through the real path.
+
+      PROVENANCE: pre-existing full-suite failure, surfaced 2026-07-01 while scoping the 160-4 option-C green push. Unrelated to 160-4; 160-4 lands without it. Diagnosis from the scoping pass — confirm at pickup.
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    acceptance_criteria:
+      - awn.mutation.used fires on a mutant_wasteland mutation use, with a payload identifying the mutation + actor
+      - Confirmed whether the mutation effect actually applies (not just the span); fix whichever is dark
+      - test_103_10_seaboard_e2e and test_102_7_mutant_wasteland_mutations_live pass via the real path
+    type: bug
+  - id: 158-55
+    title: 'Test-suite hygiene: shared DB-pool leak (rotating PoolClosed) + flickering_reach fixture yields no tier-1 WWN encounters'
+    description: |-
+      Two independent test-suite-hygiene defects that make the full server suite non-deterministically red (both surfaced 2026-07-01 scoping the 160-4 option-C green push; neither is a product-feature bug).
+
+      (1) SHARED GLOBAL DB-POOL LEAK (test pollution — rotating PoolClosed). `sidequest/game/db_pool.py` holds a module-global `_POOL`; `close_pool()` nulls it. The many `_pg_isolation` autouse fixtures leak the closed pool between tests, so a later test hits `PoolClosed("the pool 'sidequest-save' is already closed")`. The FAILING SET ROTATES run-to-run and every affected test PASSES in isolation (prove with `-n0 -p no:randomly <test_id>`). Examples: `tests/integration/test_seam_crossing_wiring.py`, `tests/server/dispatch/test_pregen_bestiary_90_1.py`. Fix: make pool lifecycle test-isolated (re-init per test / don't share a nulled global). Safe fix, no production behavior change.
+
+      (2) flickering_reach TEST-FIXTURE PACK yields no tier-1 WWN encounters. The stripped test-fixture pack's flickering_reach world resolves no tier-1 WWN encounter, so a real chargen commit fails loud with `EncounterSeedError` at `sidequest/server/dispatch/pregen.py:587` (correct fail-loud, story 90-1 — do NOT weaken the guard). Breaks ~7 chargen-commit tests: `test_45_2_chargen_to_playing_wire`, `test_106_1_chargen_armor_wire`, `test_resources_wired_on_session_create`, `test_chargen_quest_seed_wiring`, `test_153_19_character_location_cleanup_wiring`, `test_scenario_bind`, `test_entity_sync_world_tier_tropes`. Fix: add a tier-1 WWN encounter to the test-fixture pack (fixture-level; the real sidequest-content pack is fine).
+
+      ALSO NOTED (lower priority, env/related — captured here so they are not lost):
+      - `test_reference_poi_projection` is R2/env-dependent — needs an R2-availability skip-gate, not a code fix.
+      - `test_dogfight_content_loading` — dogfight content loading; may fold into 158-39/158-40 (dogfight stories). Confirm at pickup.
+
+      DO NOT gut assertions or weaken fail-loud guards to force green (naive regression). Fix the real root causes.
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    acceptance_criteria:
+      - 'DB-pool lifecycle is test-isolated: no PoolClosed leakage; full suite green across repeated randomized-order runs (not just in isolation)'
+      - flickering_reach test-fixture pack resolves a tier-1 WWN encounter; the ~7 chargen-commit wiring tests pass without weakening the pregen.py:587 fail-loud guard
+      - test_reference_poi_projection gated on R2 availability; dogfight-content failure triaged (fixed or folded into 158-39/40)
+    type: chore

@@ -302,3 +302,8 @@ completed_stories:
     title: 'DESIGN/ADR: ingestion path for companion-seat brain telemetry into the SideQuest Inspector — resolve how the claude -p OTEL at :55801 reaches the dashboard (shared-collector read vs SideQuest OTLP receiver vs understudy->server WatcherHub emit), define the companion.brain.decide span taxonomy (duration/model/tokens/cost/YIELD-vs-act), session-slug + seat attribution, and the new-tab contract; refine the 161 breakdown'
     points: 3
     completed: '2026-07-01'
+  - id: 160-4
+    epic: '160'
+    title: Animal companion cannot join a SOLO session — SoloSlotConflict rejects the companion_of/pet connect; resolve doc-vs-engine design fork + make the understudy run loop fail loud on a rejected connect (unblocks 160-3 dogfood)
+    points: 3
+    completed: '2026-07-01'

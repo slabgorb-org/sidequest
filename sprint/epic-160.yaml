@@ -54,7 +54,8 @@ stories:
       Related: 160-3 (dogfood validation — surfaced this; may pivot to an MP room instead). Board: ~/Projects/sq-playtest-pingpong.md (the [GAP/QUESTION] companion-seat task).
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-01'
     repos: sidequest-understudy,sidequest-server
     workflow: tdd
     acceptance_criteria:
@@ -62,7 +63,10 @@ stories:
       - 'Per the chosen path: either the CompanionDef SETUP notes + 160-3 state the human room must be multiplayer (a companion cannot join a /solo/ game), OR SessionRoom.connect() admits a companion_of/pet connect into a SOLO room without raising SoloSlotConflict (and still blocks a genuine second solo human).'
       - The understudy run loop fails loud on an unhandled type=ERROR connect rejection — logs the server message and exits non-zero instead of hanging at recv() (No Silent Fallbacks). Covered by a test driving a rejected connect frame.
       - 'A companion seats end-to-end on the supported room type: chargen.complete + companion.bond_resolved + routed_as_pet + a distinct per-species voice all fire (the four 160-3 dogfood signals), with an OTEL/wiring assertion.'
+    completed: '2026-07-01'
     type: bug
+    review_findings: "RE-REVIEW (Rework 1) REJECTED — 1 new High. Round-1 HIGH auth-bypass + MED PII both RESOLVED at root cause (security-confirmed, test-covered); legacy-resume + phase-gate connect-rejection correct. NEW [HIGH]: run.py:94 log+continue treats ALL in-session ERRORs alike and never inspects payload code; code=session_unbound recovers only by resending SESSION_EVENT{connect} (companion never resends; no wall-clock guard in cli.py), so a mid-session unbind (realistic on uvicorn --reload) hangs recv() silently forever — the story's own silent-hang anti-pattern relocated. Fix: branch on payload code (session_unbound -> resend connect_frame or fail loud; transient -> continue), fix the overclaiming comment, add a test. Server side is done. Residual LOW (non-blocking): exemption not bound to connecting socket's own auth (accepted design)."
+    review_verdict: approved
   - id: 160-5
     title: Pet companion avatar shows a letter-fallback instead of its rendered companion_creature portrait — resolve a role:pet seat's Party-panel avatar to companion_<species>.png (already on R2) instead of the portrait_ref=None initial letter
     description: 'Keith-flagged in the 2026-06-27 MP beneath_sunden dogfood (Zeppo human + Tolliver owl, companion play owl). The Party panel shows the pet as a "T" letter tile, not the owl portrait. Stored snapshot (ground truth): Tolliver portrait_ref=None; Zeppo portrait_ref=picker_surface_folk_fighter_m01. The rendered owl portrait EXISTS on R2 — genre_packs/caverns_and_claudes/worlds/beneath_sunden/assets/portraits/companion_owl.png (r2_manifest.json:1865; portrait_manifest.yaml has 5 companion_creature entries from 160-2) — but nothing maps the pets species to it, so the avatar falls back to the initial letter. The species lives in the CompanionDef (species: owl) + the bond (room.pets_of); the avatar resolver should use it. Narrow player-facing fix; the broader "species not projected onto the character" gap is 160-6.'
