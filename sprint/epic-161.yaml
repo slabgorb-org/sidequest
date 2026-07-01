@@ -1,7 +1,14 @@
 id: '161'
 type: epic
 title: Companion-seat brain telemetry surfaces in the SideQuest Inspector
-description: 'The companion seat (understudy claude_p/sonnet brain, role:pet — e.g. owl Tolliver) makes one Sonnet decision per turn, and that work is invisible to SideQuest today. The claude_p backend (seat_core/llm/claude_p_model.py) hardcodes input_tokens=0/output_tokens=0 (no token metering) and companion/run.py wraps each brain.decide() in a timeout but records no duration or span. The only telemetry that exists is the Claude Code native OTEL the claude -p subprocess emits via the inherited CLAUDE_CODE_ENABLE_TELEMETRY -> OTLP :55801 (the SideQuest OTEL collector, process pf.frame.app). Today that telemetry is NOT surfaced in the Inspector dashboard at :5173/#/dashboard (currently fed by the server WatcherHub). Goal: route/surface companion-seat brain telemetry (per-decision duration, model, tokens, cost, YIELD-vs-act outcome) into the same Inspector dashboard as the rest of the SideQuest spans, in a dedicated NEW TAB — giving the dev the same lie-detector visibility into the companion brain that the GM panel gives for the server narrator. Found during epic-160 dogfood (2026-06-27, MP beneath_sunden, owl Tolliver). The design story must resolve the ingestion path (how :55801 telemetry reaches the Inspector — shared-collector read vs a SideQuest OTLP receiver vs understudy->server WatcherHub emit) and how companion spans get attributed to session slug + seat; the implementation breakdown below is provisional and may be reshaped by that design.'
+description: |-
+  Companion-seat brain telemetry surfaces in the SideQuest Inspector.
+
+  Long-running companion NPCs that travel with the party — pets, henchmen (peer), hirelings (the seat_core Role enum: PET/PEER/HIRELING) — are driven by the understudy seat_core brain, one LLM decision per turn (claude_p/anthropic/ollama). That brain work is invisible today: claude_p discards the `claude -p` JSON envelope's usage/total_cost_usd (hardcodes input/output tokens=0, claude_p_model.py:60), and the companion run loop records no duration, outcome, or span. Goal: surface per-decision brain telemetry (duration, model, tokens, cost, YIELD-vs-act outcome) for the WHOLE entourage — keyed by session slug + seat + role — in a dedicated new Inspector tab, giving the dev the same lie-detector visibility the GM panel gives for the server narrator. Found during epic-160 dogfood (2026-06-27, MP beneath_sunden, owl Tolliver).
+
+  DESIGN RESOLVED (161-1) — Approach C: understudy self-reports each decision to the server's EXISTING /internal/watcher/emit bridge (ADR-131, the door the daemon already uses via watcher_bridge.py); it rides WatcherHub -> /ws/watcher -> Inspector and persists to turn_telemetry. Rejected: (A) reading the native claude -p :55801 OTEL — that collector is BikeRack's pf.frame.app, populated only by an ambient CLAUDE_CODE_ENABLE_TELEMETRY the dev harness happens to set (a silent-fallback trap), and native subprocess spans cannot carry session/seat/role/YIELD-vs-act semantics; (B) a new SideQuest OTLP receiver — new infra to catch the same unattributable spans. Because each process reports its own decisions in-band, the "coordinate the two claude -p processes" problem never arises.
+
+  Two corrections to the original breakdown: (1) the native :55801 ingestion path is DROPPED; (2) the render surface is the Inspector/Dashboard tab system (DashboardTabs + DashboardApp index render + useLiveSource reducer), NOT the game-board widgetRegistry + MobileTabView (those are player-facing tabs). Server footprint is small: a session_slug + severity passthrough on /internal/watcher/emit + publish_event. Full design: sprint/context/context-story-161-1.md.
 priority: p2
 status: backlog
 repos: understudy,server,ui
@@ -13,17 +20,40 @@ stories:
     status: backlog
     repos: server,understudy,ui
     workflow: superpowers
+    acceptance_criteria:
+      - 'Ingestion path resolved: Approach C (understudy self-reports each decision to the existing /internal/watcher/emit bridge); Approaches A (native :55801 read) and B (new OTLP receiver) rejected with rationale documented'
+      - 'companion_brain_decide event taxonomy defined: envelope (component/event_type/severity/session_slug) + fields (seat, role, species, owner, outcome, intent_kind, degraded, timed_out, backend, model, duration_ms, tokens, cost_usd)'
+      - 'Attribution mechanism defined: session_slug + seat + role carried via a small session_slug/severity passthrough on /internal/watcher/emit + publish_event (explicit override beats ContextVar, backward-compatible)'
+      - New-tab contract defined and CORRECTED to the Inspector/Dashboard surface (DashboardTabs + DashboardApp + useLiveSource), not the game-board widgetRegistry/MobileTabView
+      - '161 breakdown refined: 161-2 (Produce: server passthrough + understudy emit + seat_core enrichment incl. claude_p envelope parsing), 161-3 (Render: corrected Inspector tab)'
+      - Scope generalized from the owl-pet example to all companion roles (pet/peer/hireling); design captured in sprint/context/context-story-161-1.md
   - id: 161-2
-    title: Understudy/companion run loop emits per-decision brain telemetry — wrap brain.decide() with duration + model + outcome (YIELD vs act) + tokens (claude_p reports zeros; anthropic backend has real tokens) and route it to the SideQuest OTEL system per the 161-1 design, tagged with session slug + seat identity
+    title: 'Produce companion-seat brain telemetry (server + understudy): seat_core DecideResult enrichment (parse the claude -p envelope tokens/cost), companion run-loop timing + outcome emit via the existing /internal/watcher/emit bridge, and a server session_slug+severity passthrough — tagged session slug + seat + role (pet/peer/hireling), per 161-1'
+    description: "PRODUCE companion-seat brain telemetry (server + understudy), per the 161-1 design (Approach C). (a) seat_core: enrich DecideResult with model + real tokens + cost across backends — parse the `claude -p` JSON envelope's usage/total_cost_usd (currently discarded at claude_p_model.py:60 -> hardcoded zeros); anthropic already reports real tokens (incl. cache), ollama likewise. (b) companion run loop (companion/run.py): time the decide() await, derive outcome (intent_kind + yielded) and degraded/timed_out, assemble a `companion_brain_decide` record tagged with session_slug (defn.game_slug) + seat (defn.name) + role (pet/peer/hireling) + species, and emit it via a NEW understudy->server bridge module mirroring the daemon's watcher_bridge.py (stdlib POST, 2s timeout, failures logged WARNING and swallowed for-the-turn-only — never break a companion's move). (c) server: add optional session_slug + severity to WatcherEmitPayload and an explicit session_slug/severity override to publish_event (override beats the ContextVar; default None keeps every existing in-process caller and the daemon unchanged). Component=\"companion_brain\", event_type=\"companion_brain_decide\". Covers all companion roles, not just the owl pet."
     points: 3
     priority: p2
     status: backlog
     repos: understudy
     workflow: tdd
+    acceptance_criteria:
+      - seat_core DecideResult carries model, input/output/cache tokens, and cost_usd; claude_p parses these from the JSON envelope (no more hardcoded zeros); anthropic and ollama fill real values
+      - 'companion run loop emits one companion_brain_decide event per decision with fields: seat, role, species, owner, outcome, intent_kind, degraded, timed_out, backend, model, duration_ms, tokens, cost_usd — tagged with session_slug'
+      - Timed-out or errored decisions still emit, with degraded=true and severity=warning (silence is not acceptable for a lie-detector)
+      - server /internal/watcher/emit accepts optional session_slug + severity and forwards to publish_event; existing callers and the daemon bridge are unaffected (default None preserves ContextVar behavior)
+      - emit failures are logged at WARNING and never break the companion's turn (fail-loud-non-fatal, mirrors watcher_bridge.py)
+      - 'wiring test: a fake-brain companion decision produces a companion_brain_decide watcher event on the hub with correct session_slug + seat + role (behavior/OTEL assertion, not source-text grep)'
   - id: 161-3
-    title: 'New Inspector tab renders companion-seat brain telemetry for the selected session (per-turn: duration, model, tokens/cost, YIELD-vs-act outcome) alongside Timeline/State/Subsystems; dual-registration in widgetRegistry + MobileTabView TABS'
+    title: 'Render companion-seat brain telemetry in a new Inspector tab on the corrected Dashboard surface (DashboardTabs + DashboardApp index + useLiveSource reducer + CompanionsTab) — per-turn duration/model/tokens/cost/YIELD-vs-act for the selected session; NOT game-board widgetRegistry/MobileTabView'
+    description: 'RENDER companion-seat brain telemetry in a new Inspector/Dashboard tab, per the 161-1 design. Add a "Companions" tab to the Inspector: a label in DashboardTabs, an index render in DashboardApp.tsx (next free activeTab index, alongside Timeline/State/Subsystems), and a useLiveSource reducer route for event_type=companion_brain_decide into view.companionDecisions, session-scoped via inActiveSession() exactly like the other tabs. New CompanionsTab.tsx component groups decisions by seat (showing role + species) and shows per turn: duration, model, tokens/cost, YIELD-vs-act outcome, and a degraded flag. claude_p cost is labeled plan-equivalent (notional subscription cost), visually distinct from anthropic metered cost. CORRECTED from the original breakdown: the render surface is the Inspector/Dashboard tab system (DashboardTabs + DashboardApp + useLiveSource) — NOT the game-board widgetRegistry + MobileTabView TABS, which are player-facing game tabs (Character/Inventory/Map) and the wrong subsystem. Consumes the standard WatcherEvent shape already delivered on /ws/watcher; no new plumbing.'
     points: 3
     priority: p2
     status: backlog
     repos: ui
     workflow: tdd
+    acceptance_criteria:
+      - useLiveSource reducer routes companion_brain_decide events into view.companionDecisions, filtered by activeSlug (session-scoped, consistent with other tabs)
+      - new Companions tab registered in DashboardTabs and rendered in DashboardApp at the next activeTab index
+      - CompanionsTab groups decisions by seat and shows role/species plus per-decision duration, model, tokens/cost, outcome (YIELD vs act), and degraded flag
+      - claude_p cost rendered as plan-equivalent (notional), visually distinct from anthropic metered cost
+      - does NOT touch game-board widgetRegistry or MobileTabView (corrected surface); this is a Dashboard/Inspector tab
+      - 'test: feeding a companion_brain_decide event routes it and renders a per-seat row for the active session only'
