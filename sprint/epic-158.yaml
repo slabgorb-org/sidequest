@@ -492,9 +492,13 @@ stories:
     description: 'ADR-153 section 4 (opponent brain). The NPC ace picks its maneuver each turn from the legal menu, motivated by its goal/disposition (revenge / escape / protect the convoy / prove itself) — the same authority the narrator already has for any NPC beat. The engine gates legality (energy + pilot tier) and resolves geometry; SWN resolves the shot; the positioning layer never picks position or computes damage (firewall). A deterministic disposition-derived fallback (ADR-006) keeps the duel moving if the narrator pass is skipped — the floor, not the default. OTEL: dogfight.maneuver_committed carries the chosen maneuver_id + stance source (narrator vs fallback). Depends on Plan 1 (firewall) landing.'
     points: 3
     priority: p2
-    status: backlog
-    repos: pennyfarthing
+    status: done
+    started: '2026-07-01'
+    repos: server
     workflow: tdd
+    completed: '2026-07-01'
+    review_findings: "HIGH: stance directive (dogfight.py:185-186) looks up opponent by pre-seat threat_name (empty in frame_default / npcs_present paths) -> silent 'hostile' default, ignores seated disposition, violates No Silent Fallbacks + half-wires AC-1. Fix: derive opp from seated encounter.actors like narration_apply. Needs a test seating a non-matching-name opponent. (+2 non-blocking: attitude-default disagreement observability; viewer_energy=60 default.)"
+    review_verdict: approved
   - id: 158-40
     title: Dogfight full relative-position state graph — author beam/overhead/scissors/overshoot + extend-and-return (ADR-153 Plan 4)
     description: "ADR-153 section 3 (full relative-position state graph). Build out the graph beyond the prototype's merge + tail_chase: author beam + overhead (stubbed 'future' in dogfight/descriptor_schema.yaml) plus scissors + overshoot, each with its own maneuver-pair transition table (geometry + gun_solution only — firewall, no damage). Add the extend-and-return rule (reset toward merge when the engagement breaks with no gun solution, energy carried over). Pure content authoring in genre_packs/space_opera/dogfight/. Depends on Plan 1 (firewall) landing."

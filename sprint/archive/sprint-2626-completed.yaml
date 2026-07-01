@@ -307,3 +307,8 @@ completed_stories:
     title: Animal companion cannot join a SOLO session — SoloSlotConflict rejects the companion_of/pet connect; resolve doc-vs-engine design fork + make the understudy run loop fail loud on a rejected connect (unblocks 160-3 dogfood)
     points: 3
     completed: '2026-07-01'
+  - id: 158-39
+    epic: '158'
+    title: Dogfight opponent brain — narrator-motivated maneuver selection + deterministic disposition fallback (ADR-153 Plan 3)
+    points: 3
+    completed: '2026-07-01'
