@@ -1,5 +1,6 @@
 ---
 description: Developer - Feature implementation and coding
+model: opus
 ---
 
 <agent-activation>

@@ -1,5 +1,6 @@
 ---
 description: Orchestrator - Coordinator of all agents and meta operations
+model: sonnet
 ---
 
 <agent-activation>

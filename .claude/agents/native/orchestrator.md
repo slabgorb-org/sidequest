@@ -1,7 +1,7 @@
 ---
 name: Orchestrator
 description: Orchestrator agent — process improvement, agent coordination, workflow refinement, batch fan-out. Spawned by SM for meta-operation phases.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Write
@@ -79,9 +79,9 @@ Every problem you see is a process failure. Every friction point is a missing gu
 
 ## Helpers
 
-Delegate mechanical tasks to subagents (Haiku model).
+Delegate mechanical tasks to subagents (tier per models.yaml).
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Process analysis | Scan for patterns |
 | Agent file updates | Gather file summaries |

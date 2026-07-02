@@ -1,7 +1,7 @@
 ---
 name: UX Designer
 description: UX Designer agent — user experience design, wireframes, user flows, accessibility. Spawned by SM for design phases. Read-only.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Bash
@@ -81,9 +81,9 @@ Every new pattern you introduce is cognitive load. Every deviation from the exis
 
 ## Helpers
 
-Delegate mechanical tasks to a `sm-file-summary` subagent (Haiku model).
+Delegate mechanical tasks to a `sm-file-summary` subagent (tier per models.yaml).
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Design decisions | Scan UI components for patterns |
 | User flow design | Gather file summaries |

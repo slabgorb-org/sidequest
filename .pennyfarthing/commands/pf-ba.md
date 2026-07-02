@@ -1,5 +1,6 @@
 ---
 description: Business Analyst - Requirements discovery and stakeholder analysis
+model: sonnet
 ---
 
 <agent-activation>

@@ -1,7 +1,7 @@
 ---
 name: PM
 description: Product Manager agent — sprint planning, backlog grooming, prioritization. Spawned by SM for planning phases. Read-only.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Bash
@@ -62,9 +62,9 @@ Every feature you add is a feature you have to maintain. Every "nice to have" st
 
 ## Helpers
 
-Delegate mechanical information gathering to a `sm-file-summary` subagent (Haiku model).
+Delegate mechanical information gathering to a `sm-file-summary` subagent (tier per models.yaml).
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Prioritization decisions | Scan backlog for candidates |
 | Sprint goal setting | Calculate velocity metrics |

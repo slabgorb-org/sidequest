@@ -60,7 +60,7 @@ FILE_LIST: "{comma-separated file paths}"
 <delegation>
 ## What I Do vs What Helper Does
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Requirements elicitation | Scan existing docs for stated requirements |
 | Stakeholder conflict analysis | Gather file summaries for context |

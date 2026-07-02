@@ -2,7 +2,7 @@
 name: reviewer-preflight
 description: Gather mechanical data before Reviewer does critical analysis
 tools: Bash, Read, Glob, Grep
-model: sonnet
+model: haiku
 ---
 
 <arguments>

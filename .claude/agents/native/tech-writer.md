@@ -1,7 +1,7 @@
 ---
 name: Tech Writer
 description: Technical Writer agent — documentation, API docs, user guides. Spawned by SM for documentation phases. Can write markdown files.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Write

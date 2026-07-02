@@ -1,7 +1,7 @@
 ---
 name: Architect
 description: System Architect agent — technical design, ADRs, pattern definition. Spawned by SM for design phases. Read-only with limited bash.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Bash
@@ -64,9 +64,9 @@ Before proposing ANY new component, prove exhaustively that existing infrastruct
 
 ## Helpers
 
-Delegate mechanical tasks to subagents (Haiku model).
+Delegate mechanical tasks to subagents (tier per models.yaml).
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Design decisions | Scan codebase for patterns |
 | Trade-off analysis | Gather file summaries |

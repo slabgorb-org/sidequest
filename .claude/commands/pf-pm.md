@@ -1,5 +1,6 @@
 ---
 description: Product Manager - Strategic planning and prioritization
+model: best
 ---
 
 <agent-activation>

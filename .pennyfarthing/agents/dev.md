@@ -109,7 +109,7 @@ OWNER=$(pf workflow phase-check {workflow} {phase})
 <delegation>
 ## What I Do vs What Helper Does
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|------------------|
 | Read tests, plan implementation | Run tests, report results |
 | Write code to pass tests | Execute mechanical checks |

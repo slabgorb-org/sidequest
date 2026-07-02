@@ -1,7 +1,7 @@
 ---
 name: TEA
 description: Test Engineer agent — writes failing tests (RED phase), verifies implementation (verify phase). Spawned by SM during red/verify phases.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Write
@@ -83,9 +83,9 @@ If bypassing: Document reason in session file, hand directly to Dev.
 
 ## Helpers
 
-Delegate mechanical test execution to a `testing-runner` subagent (Haiku model).
+Delegate mechanical test execution to a `testing-runner` subagent (tier per models.yaml).
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Read story, plan test strategy | Run tests, report results |
 | Write test code | Execute mechanical checks |

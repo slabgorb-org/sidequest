@@ -5,7 +5,7 @@ Tandem mode pairs a background observer ("backseat") with the primary agent duri
 ## Architecture
 
 ```
-Primary Agent                 Backseat Agent (Haiku, background)
+Primary Agent                 Backseat Agent (Sonnet, background)
      │                              │
      ├── works on story             ├── watches via git diff / file reads
      │                              │
@@ -73,7 +73,7 @@ Via the Task tool:
 
 ```yaml
 subagent_type: "general-purpose"
-model: "haiku"
+model: "sonnet"
 run_in_background: true
 prompt: |
   Read .pennyfarthing/agents/tandem-backseat.md for your instructions.
@@ -136,7 +136,7 @@ For active, synchronous agent-to-agent questions (as opposed to passive observat
 |--------|----------------------|--------------|
 | Mode | Passive observer | Active request/response |
 | Trigger | Phase start (automatic) | Leader-initiated (on demand) |
-| Model | Haiku | Sonnet |
+| Model | Sonnet | Sonnet |
 | Output | Observation file | Structured recommendation |
 | Lifecycle | Background process | Synchronous spawn |
 

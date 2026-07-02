@@ -1,5 +1,6 @@
 ---
 description: Code Reviewer - Critical code review and quality enforcement
+model: best
 ---
 
 <agent-activation>

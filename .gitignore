@@ -123,3 +123,5 @@ image_sheets/
 
 # Playtest OTEL span dumps — regenerable scratch
 .playtest-spans/
+# Statusline runtime state (current model, etc.)
+.pennyfarthing/.runtime/

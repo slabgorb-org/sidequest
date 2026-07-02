@@ -1,5 +1,6 @@
 ---
 description: DevOps Engineer - Infrastructure and deployment automation
+model: sonnet
 ---
 
 <agent-activation>

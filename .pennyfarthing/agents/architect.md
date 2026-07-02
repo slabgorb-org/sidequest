@@ -64,7 +64,7 @@ FILE_LIST: "{comma-separated file paths}"
 <delegation>
 ## What I Do vs What Helper Does
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Design decisions | Scan codebase for patterns |
 | Trade-off analysis | Gather file summaries |

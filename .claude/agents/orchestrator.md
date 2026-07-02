@@ -81,7 +81,7 @@ FILE_LIST: "{comma-separated agent/skill file paths}"
 <delegation>
 ## What I Do vs What Helper Does
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Process analysis | Scan for patterns |
 | Agent file updates | Gather file summaries |

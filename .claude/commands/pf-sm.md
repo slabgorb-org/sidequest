@@ -1,5 +1,6 @@
 ---
 description: Scrum Master - Story coordination and sprint management
+model: sonnet
 ---
 
 <agent-activation>

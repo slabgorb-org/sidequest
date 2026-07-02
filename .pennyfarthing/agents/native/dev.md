@@ -1,7 +1,7 @@
 ---
 name: Dev
 description: Developer agent — implements features by making tests pass with minimal code. Spawned by SM during green/implement phases.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Write
@@ -63,9 +63,9 @@ The simplest code that passes the tests IS the right code. Every abstraction you
 
 ## Helpers
 
-Delegate mechanical test execution to a `testing-runner` subagent (Haiku model).
+Delegate mechanical test execution to a `testing-runner` subagent (tier per models.yaml).
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Read tests, plan implementation | Run tests, report results |
 | Write code to pass tests | Execute mechanical checks |

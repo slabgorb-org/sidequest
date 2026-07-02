@@ -281,7 +281,8 @@ If result has `action: "redirect"`, the agent emits a marker to the correct phas
 
 ## Complete Subagent Inventory
 
-Subagents are lightweight Haiku-based agents for mechanical tasks. Invoked via `Task tool`.
+Subagents are lightweight agents for mechanical and analytical tasks. Invoked via `Task tool`.
+Model assignments come from `models.yaml` (the tier map) — the table below mirrors it.
 
 | Subagent File | Purpose | Model |
 |--------------|---------|-------|
@@ -290,7 +291,7 @@ Subagents are lightweight Haiku-based agents for mechanical tasks. Invoked via `
 | `sm-file-summary.md` | Summarize file changes for commits | haiku |
 | `reviewer-preflight.md` | Pre-flight checks before review | haiku |
 | `testing-runner.md` | Run tests and report results | haiku |
-| `tandem-backseat.md` | Background observer for tandem mode | haiku |
+| `tandem-backseat.md` | Background observer for tandem mode | sonnet |
 
 ## Support Agent Handoffs
 
@@ -442,7 +443,7 @@ Perplexity provides real-time web intelligence for broader knowledge needs. Four
 - **Scoped queries:** Queries must relate to the active story/task. No open-ended browsing.
 - **Trust but verify:** Research output informs decisions but is never ground truth. Always run the code.
 - **Graceful degradation:** If either tool is unavailable, proceed with training data and note the gap.
-- **Subagent exclusion:** Subagents (haiku model) should NOT use Context7 or Perplexity. MCP round-trips on mechanical tasks are waste. Only strategic agents (Opus) use research tools.
+- **Subagent exclusion:** Subagents (mechanical/analytical tiers) should NOT use Context7 or Perplexity. MCP round-trips on delegated tasks are waste. Only judgment-tier agents use research tools.
 
 ## Commands Reference
 

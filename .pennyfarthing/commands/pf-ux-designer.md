@@ -1,5 +1,6 @@
 ---
 description: UX Designer - User experience design and UI patterns
+model: sonnet
 ---
 
 <agent-activation>

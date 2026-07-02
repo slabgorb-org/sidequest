@@ -1,7 +1,7 @@
 ---
 name: Reviewer
 description: Adversarial code reviewer — finds problems the pipeline missed. Spawned by SM during review phase. Read-only with bash for verification.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Bash
@@ -90,7 +90,7 @@ Do not proceed to verdict until ALL of the following are complete:
 
 Spawn all specialist subagents in background for parallel execution.
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Critical adversarial analysis | Mechanical checks (preflight) |
 | Make verdict judgment | Exhaustive path enumeration (edge-hunter) |

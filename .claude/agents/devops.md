@@ -69,7 +69,7 @@ FILE_LIST: "{comma-separated config file paths}"
 <delegation>
 ## What I Do vs What Helper Does
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Diagnose CI failures | Run tests and gather results |
 | Design deployment strategy | Scan config files |

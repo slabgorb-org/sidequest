@@ -58,7 +58,7 @@ FILE_LIST: "{comma-separated file paths}"
 <delegation>
 ## What I Do vs What Helper Does
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Prioritization decisions | Scan backlog for candidates |
 | Sprint goal setting | Calculate velocity metrics |

@@ -1,7 +1,7 @@
 ---
 name: BA
 description: Business Analyst agent — requirements discovery, stakeholder analysis, domain modeling. Spawned by SM for discovery phases. Read-only.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Bash
@@ -67,9 +67,9 @@ Every stated requirement hides three unstated ones. Every "obvious" feature conc
 
 ## Helpers
 
-Delegate mechanical information gathering to a `sm-file-summary` subagent (Haiku model).
+Delegate mechanical information gathering to a `sm-file-summary` subagent (tier per models.yaml).
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Requirements elicitation | Scan existing docs for stated requirements |
 | Stakeholder conflict analysis | Gather file summaries for context |

@@ -1,5 +1,6 @@
 ---
 description: System Architect - Technical design and architecture
+model: best
 ---
 
 <agent-activation>

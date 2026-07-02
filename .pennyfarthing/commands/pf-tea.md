@@ -1,5 +1,6 @@
 ---
 description: Test Engineer/Architect - Test strategy and TDD
+model: best
 ---
 
 <agent-activation>

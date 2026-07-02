@@ -717,7 +717,7 @@ RUN_ID: "{STORY_ID}-dev-green"
 
 ### `<delegation>`
 
-**Purpose:** Documents the Opus vs Haiku responsibility division for an agent.
+**Purpose:** Documents the responsibility division between an agent's tier and its helpers' tiers.
 
 **Usage:** Clarifies what the primary agent does vs what it delegates to helper subagents.
 
@@ -725,7 +725,7 @@ RUN_ID: "{STORY_ID}-dev-green"
 <delegation>
 ## What I Do vs What Helper Does
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|------------------|
 | Read tests, plan implementation | Run tests, report results |
 | Write code to pass tests | Update session for handoff |

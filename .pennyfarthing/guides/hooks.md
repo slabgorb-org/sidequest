@@ -126,6 +126,25 @@ Template for git hook dispatchers. Installs as `.git/hooks/{hook-name}` and runs
 
 Standard git hooks installed into the dispatcher `.d/` directories. Handle linting, validation, and post-merge cleanup.
 
+#### pre-push: Jira-sync reminder (and what it does *not* do)
+
+**Location:** `.pennyfarthing/scripts/hooks/pre-push.sh`
+**Trigger:** git `pre-push`, run via the dispatcher installed by `pf git install-hooks` (entry lives in `.git/hooks/pre-push.d/`).
+
+**What it actually does:** When `sprint/current-sprint.yaml` has uncommitted changes, or when it changed in the commits being pushed, the hook prints a reminder to commit and/or sync story statuses to Jira. That is the full extent of its behavior. It is **advisory only** — it always `exit 0`, never blocks the push, and never opens a pull request.
+
+> **There is no auto-PR-on-push.** Pushing a feature branch does **not** create a pull request anywhere in Pennyfarthing. No git hook, no `gh pr create`, runs on push.
+
+**Where PRs are actually created:** PR creation happens at **story-finish time**, not on push:
+
+- `sm-finish` (the Scrum Master finish subagent)
+- `pf sprint story finish <id>`
+- `pf sprint standalone <title>`
+
+Each of these invokes `gh pr create` as part of completing/archiving a story. Until you finish a story, your pushed branch has no PR unless you open one manually.
+
+**How to disable the reminder:** remove or disable the `pre-push` entry in `.git/hooks/pre-push.d/`, or skip it for a single push with `git push --no-verify`.
+
 ## Configuration Schema
 
 Hooks are configured in `.claude/settings.local.json`:

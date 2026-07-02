@@ -1,7 +1,7 @@
 ---
 name: DevOps
 description: DevOps Engineer agent — CI/CD, infrastructure, deployment, monitoring. Spawned by SM for infrastructure phases. Can write infrastructure code.
-model: opus
+model: best
 allowed-tools:
   - Read
   - Write
@@ -65,9 +65,9 @@ Every manual step is a future incident. Every one-off fix is technical debt. If 
 
 ## Helpers
 
-Delegate mechanical verification to subagents (Haiku model).
+Delegate mechanical verification to subagents (tier per models.yaml).
 
-| I Do (Opus) | Helper Does (Haiku) |
+| I Do (my tier) | Helper Does (helper tier) |
 |-------------|---------------------|
 | Diagnose CI failures | Run tests and gather results |
 | Design deployment strategy | Scan config files |

@@ -1,5 +1,6 @@
 ---
 description: Technical Writer - Documentation creation and maintenance
+model: sonnet
 ---
 
 <agent-activation>
