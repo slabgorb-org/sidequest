@@ -9,7 +9,7 @@ superseded-by: null
 related: [14, 18, 53, 100, 113, 123, 128, 137]
 tags: [game-systems, agent-system, npc-character]
 implementation-status: deferred
-implementation-pointer: "Design only — implemented by epic 117 story 117-3 (QuestSeed model + quest_offer subsystem + minting handler + OTEL span) and 117-4 (retune the redundant keyword lie-detector). Schema target: sidequest-server/sidequest/genre/models/narrative.py (QuestSeed sub-model on Opening.tone.complication + seed_trope). Mint seam: sidequest/agents/subsystems/ (quest_offer handler). Stash seam: sidequest/server/websocket_handlers/opening_helpers.py + chargen_mixin.py:1399."
+implementation-pointer: "Design only — implemented by epic 117 story 117-3 (QuestSeed model + quest_offer subsystem + minting handler + OTEL span) and 117-4 (retune the redundant keyword lie-detector). Schema target: sidequest-server/sidequest/genre/models/narrative.py (QuestSeed sub-model on Opening.tone.complication + seed_trope). Mint seam: sidequest/agents/subsystems/ (quest_offer handler). Stash seam: sidequest/server/websocket_handlers/opening_helpers.py + chargen_mixin.py:1399. Anchor-crossing addendum: story 158-43 (mint_on_anchor_crossing in sidequest/game/quest_offer.py, wired in game/session.py pc_region genuine-change block)."
 ---
 
 # ADR-146: Quest-Seed Authoring Contract
@@ -392,3 +392,80 @@ the [COST-1] forensics attribute it cleanly. Activation is **gated-always-on** (
 every un-seeded objective-eligible turn); a future drama-tier gate could narrow it
 further if the per-session count proves material, but at ~a-few-calls-per-session the
 brittleness it removes is worth the sub-cent cost.
+
+## Addendum (Story 158-43): Anchor-Crossing Acceptance — a Deterministic Second Mint Trigger
+
+**Approved by Keith 2026-07-02.** This addendum closes a gap in the original decision;
+it is not a redesign.
+
+### The gap this ADR left open
+
+**ADR-146 as written covered only giver-hook offers.** The acceptance trigger (§2) is
+the Intent Router's `quest_offer` classification, and that classification reads the
+player's words against a *named offer from a giver* — "yeah, I'll take the job" answered
+to "the Conglomerate floor-boss." The worked exemplar, the router prompt, and the
+`giver` field's own docstring ("so the router's acceptance detection has context for
+*which* offer a 'yes' answers") all assume someone made the offer and the player answers
+them.
+
+**Self-directed / giver-less seeds were never covered.** beneath_sunden's
+`the_unspent_hold` (`giver: ""`, `anchor: the_dropmouth`) is authored with the comment
+"acceptance is the descent, not a yes to anyone." There is no NPC to answer; the player
+accepts by *doing the objective*. The router classifies that turn as `movement`, the
+`quest_offer` subsystem never fires, and the offer sits in `pending_quest_offers`
+forever — the Quests tab stays blank. Live repro: sq-playtest 2026-06-27,
+beneath_sunden, Harpo, descending the Dropmouth.
+
+### The decision
+
+**A second, deterministic mint trigger, independent of the router:** when a seated PC
+makes a *genuine region transition into* a pending seed's `anchor` region, the engine
+mints the offer — no LLM in the loop.
+
+- **Seam:** `mint_on_anchor_crossing(snapshot, *, pc_name, from_region, to_region)` in
+  `sidequest/game/quest_offer.py`, called from the `pc_region` genuine-change block of
+  `GameSnapshot._apply_world_patch_inner` (beside `notify_region_transition`) — the
+  choke point that movement dispatch, seam descent (`game/seams/deep_descent.py`), and
+  both procedural relocation paths all route through.
+- **Trigger scope: ANY anchor-bearing seed** — giver-less AND giver-hook offers that
+  carry an `anchor` mint on crossing. Walking into the job site accepts the job the
+  same as saying yes.
+- **All matching seeds mint, not first-match.** Two seeds anchored on the same region
+  are both accepted by the crossing; leaving the second stranded would re-create the
+  exact stuck-offer bug this trigger exists to fix.
+- **First-placement exclusion:** a falsy `from_region` (spawn / turn-0 placement) never
+  mints — acceptance requires a genuine *transition*. The `current_region`
+  spawn/teleport anchor branch deliberately does not call the seam.
+- **Respect the decline:** a declined/consumed offer stays gone. No tombstone state is
+  needed — the decline path pops the offer from `pending_quest_offers`, and the seam
+  only scans what is still pending.
+- **First-writer-wins, unchanged:** each mint flows through the existing idempotent
+  `mint_quest_offer`; if the router or narrator `record_quest` front-ran it, the
+  crossing no-ops (and still consumes the offer, per the existing leak-prevention
+  doctrine). The cardinality cap stays loud and propagates out of the world-patch apply
+  (No Silent Fallbacks) — a failed mint never silently consumes the offer.
+- **Router extension: deferred.** The `quest_offer` prompt is NOT extended to cover
+  self-directed seeds; the deterministic path fully covers the failing case and keeps
+  per-turn token cost flat.
+
+### OTEL
+
+The `quest.seeded` span's `source` vocabulary gains **`anchor_crossed`** (vs
+`authored_seed` for the router's verbal accept), with `confidence=1.0` — a state watch
+is certainty, not a classifier score — and `pc_name` in the attrs naming whose crossing
+minted. The existing `SPAN_ROUTES` extraction passes `source` through untouched, so the
+GM panel distinguishes "Haiku classified a yes" from "engine watched the crossing" with
+zero new plumbing.
+
+### Known limitation
+
+Region-mode worlds (oz/wonderland/gulliver-style cartography) relocate PCs in the
+`narration_apply` region-mode block and apply **no** `pc_region` patch by design (Story
+59-30's Site A/Site B split). An anchor-bearing seed authored in a region-mode world
+would not mint on crossing. No such seed exists today; if one is authored, the same
+seam must be called from Site B (a follow-up story, not this one).
+
+**Implementation:** Story 158-43 — `mint_on_anchor_crossing` + the session-block call +
+the span-vocabulary extension, with the RED contract in
+`sidequest-server/tests/game/test_anchor_crossing_mint.py` (includes the real
+`the_unspent_hold` descent as a wiring test).
