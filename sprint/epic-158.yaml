@@ -755,14 +755,17 @@ stories:
       PROVENANCE: pre-existing full-suite failure, surfaced 2026-07-01 while scoping the 160-4 option-C green push. Unrelated to 160-4 (companion-solo-seat); 160-4 lands without it. Diagnosis is from the scoping pass — confirm at pickup.
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-02'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - A successful WWN cast decrements the spell's remaining charges/uses (cinder_lance before=2 -> after=1)
       - The cast-spend emits an OTEL watcher span with before/after remaining so the GM panel verifies the decrement fired
       - test_wwn_scene_harness_fixture_proof passes; a wiring test exercises the decrement through the real cast path
+    completed: '2026-07-02'
     type: bug
+    review_verdict: approved
   - id: 158-54
     title: awn.mutation.used OTEL span never fires for mutant_wasteland mutations
     description: |-
