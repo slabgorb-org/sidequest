@@ -718,6 +718,7 @@ stories:
       - The dispatch_engagement.course.mismatch lie-detector fires when the narrator prose claims a transit but no course dispatch backed it — so the GM panel flags this class of improvisation going forward.
       - 'Regression: non-orbital worlds (no orbital tier) are unaffected — no <courses> block, no course dispatch, no spurious clock advance.'
     type: bug
+    review_verdict: approved
   - id: 158-51
     title: WN attribute canonicalization — drop flavor stat names; space_opera/elemental_harmony/neon_dystopia use the shared canonical STR/DEX/CON/INT/WIS/CHA block
     points: 3
