@@ -312,3 +312,8 @@ completed_stories:
     title: Dogfight opponent brain — narrator-motivated maneuver selection + deterministic disposition fallback (ADR-153 Plan 3)
     points: 3
     completed: '2026-07-01'
+  - id: 161-2
+    epic: '161'
+    title: 'Produce companion-seat brain telemetry (server + understudy): seat_core DecideResult enrichment (parse the claude -p envelope tokens/cost), companion run-loop timing + outcome emit via the existing /internal/watcher/emit bridge, and a server session_slug+severity passthrough — tagged session slug + seat + role (pet/peer/hireling), per 161-1'
+    points: 3
+    completed: '2026-07-02'
