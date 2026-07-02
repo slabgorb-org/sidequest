@@ -246,3 +246,40 @@ perseus_cloud) and absent in the 11 single-zone worlds, which are therefore unaf
 The compound-key culture/faction axis and the injection mechanism in the body above are
 unchanged; this amendment adds the region→faction eligibility filter that the entry schema
 anticipated. The decision in this ADR stands.
+
+## Addendum (2026-07-02, Story 158-52): the bestiary is the single source of truth for creature-image production
+
+**Context.** The Monster Manual roster this ADR pre-generates is `bestiary.yaml` — the
+Without-Number-path roster `encountergen` samples (`creatures.yaml` is *not* a runtime
+source on the WN path). But the creature-image renderer
+(`scripts/generate_creature_images.py::collect_creatures`) only ever rglobbed
+`creatures.yaml`, so creature portraits rendered for exactly **2 of 22** WN-bound worlds
+(`beneath_sunden`, `flickering_reach`) — the only two that shipped a hand-authored image
+manifest. Every other world had a full bestiary roster and **zero** renderable creatures.
+Hand-authoring per-world image manifests (~900 plates across 22 worlds) does not scale
+(Keith, 2026-07-01: "something is missing — make the bestiary the source of truth").
+
+**Decision.** `bestiary.yaml` is the **single source of truth for creature-image
+production**. `collect_creatures` derives a render creature from each bestiary entry —
+`{id, name, description, threat_level ← level, tags}` — with a trivial `level → threat`
+clamp into the 1..5 framing band. A per-world `creatures.yaml` is demoted to an
+**OPTIONAL per-field override** (ADR-121 flavor): where it declares a field for a shared
+`id`, that field wins; otherwise the bestiary value stands. This is why portraits now
+scale past the two hand-authored worlds — a world needs only its bestiary to become
+renderable.
+
+**Naming conceits.** A "nothing is named" world (`beneath_sunden`) would otherwise send a
+bestiary proper noun (`"Constrictor Snake"`) to the CLIP, which Z-Image paints as a
+caption. A render-only `name_is_secret: true` flag in that world's `creatures.yaml`
+suppresses the derived name from the CLIP; a `creatures.yaml` **naming override** (a safe
+descriptive phrase) clears the flag per entry, so the bespoke marquee names still reach
+the CLIP. The flag lives in `creatures.yaml` (a render manifest, read only by the render
+script and ignored by `encountergen`) — **not** in `bestiary.yaml`, whose server-side
+`Bestiary` pydantic model is `extra="forbid"`. **No engine-code change**: this is a
+render-pipeline + content change only, consistent with "authoring must handle homebrew
+without touching engine code."
+
+**Scope.** This addendum covers creature-image *production* (deriving the render prompt).
+It does not add the runtime creature-image *resolver* (server/UI portrait lookup), which
+remains ADR-087 P0 debt — rendering more plates does not by itself make them appear
+in-play. The decision in this ADR stands.
