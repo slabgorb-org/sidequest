@@ -327,3 +327,8 @@ completed_stories:
     title: Dogfight full relative-position state graph — author beam/overhead/scissors/overshoot + extend-and-return (ADR-153 Plan 4)
     points: 5
     completed: '2026-07-02'
+  - id: 158-43
+    epic: '158'
+    title: Authored quest offer never mints into quest_log — anchor-crossing acceptance for self-directed seeds
+    points: 3
+    completed: '2026-07-02'

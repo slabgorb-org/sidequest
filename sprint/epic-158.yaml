@@ -551,18 +551,25 @@ stories:
     review_findings: ruff format --check fails on test file (merge-gate blocker) + 2 docstring inaccuracies (Two-spans, skip reach_deep-only vs unconditional). No Critical/High logic defects; tests/lint/types green. Green rework.
     review_verdict: approved
   - id: 158-43
-    title: Authored quest offer never mints into quest_log (pending_quest_offers -> record_quest) — needs design call
-    description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo). The authored opening-hook quest that frames the adventure — 'The Unspent Hold' (go down the Dropmouth after the unspent hold, come back up the rope) — sits in pending_quest_offers and is NEVER minted into quest_log, so the player never sees it. Known epic-117 gap: the narrator must call record_quest and doesn't. DESIGN CALL (Keith): decide HOW an authored pending offer becomes a visible quest_log entry. Full context on ~/Projects/sq-playtest-pingpong.md. Sibling: 158-42 (premature completion + OTEL)."
+    title: Authored quest offer never mints into quest_log — anchor-crossing acceptance for self-directed seeds
+    description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo). The authored opening-hook quest that frames the adventure — 'The Unspent Hold' (go down the Dropmouth after the unspent hold, come back up the rope) — sits in pending_quest_offers and is NEVER minted into quest_log, so the player never sees it. ADR-146 (merged 2026-06-14) built the deterministic authored-offer mint pipeline for giver-hook offers; this story closes the gap for giver-less / self-directed seeds via anchor-crossing deterministic acceptance. Design approved Keith 2026-07-02."
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-02'
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
-      - '[DESIGN] Decide + document how a pending_quest_offers entry becomes a visible quest_log entry (auto-mint on offer / narrator record_quest tool / player-accept). This is the blocked half — resolve before implementation.'
-      - The authored opening-hook quest (e.g. the_unspent_hold) reaches quest_log and renders in the Quests tab as the player's framing objective.
-      - Minting emits the quest.minted watcher event (shared with 158-42) so the GM panel can verify the mint fired.
+      - 'A seated PC transitioning INTO a seed''s `anchor` region mints the authored offer into `quest_log` with no narrator/LLM call, and the player sees the quest.'
+      - 'The `quest.seeded` OTEL span fires with `source="anchor_crossed"`, `confidence=1.0` on the anchor-mint path (GM-panel observable).'
+      - 'Spawning/first-placement into the anchor region (from_region empty) does NOT mint.'
+      - 'A previously declined/consumed offer is NOT resurrected by anchor-crossing.'
+      - 'First-writer-wins: if the router verbal path or narrator `record_quest` already minted, the anchor path does not double-mint.'
+      - 'Regression guard: existing giver-hook verbal-acceptance router path still mints as before (ADR-146 behavior unchanged).'
+    completed: '2026-07-02'
+    branch: feat/158-43-authored-quest-anchor-mint
     type: bug
+    review_verdict: approved
   - id: 158-44
     title: Narrate WWN Shock damage on a missed to-hit (a missed swing that still chips HP must be legible to mechanics-first players)
     description: "sq-playtest 2026-06-27 (beneath_sunden, Harpo) — secondary observation on the GM-NOTE-leak turn (the leak itself is fixed in PR #1087). On Harpo's first Attack the to-hit MISSED but the WWN engine still applied Shock=3 (dice.shock_chip_applied chip=3, opponent 4/4 -> 1/4). The HP bar updated, but the prose called it a clean 'Miss' and never told the player the spear-skid still chipped the tender for 3 — so a mechanics-first player (Sebastien/Jade) sees 'miss' and wouldn't know real damage landed. WWN Shock-on-a-failed-to-hit should be narrated as a graze that drew blood. Narrator-prompt change in the de-nativized WN zone (narrator.py build_encounter_context). Full context on ~/Projects/sq-playtest-pingpong.md."
