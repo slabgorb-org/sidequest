@@ -504,9 +504,21 @@ stories:
     description: "ADR-153 section 3 (full relative-position state graph). Build out the graph beyond the prototype's merge + tail_chase: author beam + overhead (stubbed 'future' in dogfight/descriptor_schema.yaml) plus scissors + overshoot, each with its own maneuver-pair transition table (geometry + gun_solution only — firewall, no damage). Add the extend-and-return rule (reset toward merge when the engagement breaks with no gun solution, energy carried over). Pure content authoring in genre_packs/space_opera/dogfight/. Depends on Plan 1 (firewall) landing."
     points: 5
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-07-02'
     repos: pennyfarthing
     workflow: tdd
+    acceptance_criteria:
+      - 'AC-1 Models: InteractionCell accepts optional next_state (default None, firewall: extra=forbid still rejects damage keys); ConfrontationDef holds an interaction_tables registry (dict keyed by starting_state)'
+      - 'AC-2 Loader: interaction_tables list of _from: pointers resolves into the registry keyed by each table starting_state; fails loud on missing/duplicate starting_state and on path traversal; a single-interaction_table def auto-registers {starting_state: table} (back-compat)'
+      - 'AC-3 Encounter: StructuredEncounter.dogfight_state (str|None) survives a model_dump/model_validate round-trip (resume-safe)'
+      - 'AC-4 Resolver: SealedLetterOutcome.next_state carries the matched cell next_state (None = stay); when extend-and-return fires, next_state is forced to merge over any cell value'
+      - 'AC-5 Apply seam: each sealed-letter turn resolves against the CURRENT dogfight_state table from the registry, then advances dogfight_state to the outcome next_state; unknown target state raises (no silent stay); dogfight.state_transition OTEL span emitted with from/to'
+      - 'AC-6 Content: space_opera dogfight registers six state tables (merge, tail_chase, beam, overhead, scissors, overshoot) each a full 16-cell 4x4 grid with populated narration metadata and geometry+gun_solution(+next_state) views only (no damage keys); the graph is closed and every state reachable from merge; descriptor_schema promotes beam/overhead to mvp and adds scissors+overshoot with initial_descriptor blocks'
+      - 'AC-7 Validator: sidequest.cli.validate rejects a cell next_state with no registered table (dangling transition)'
+      - 'AC-8 Wiring e2e: a multi-turn duel through the production apply path walks the graph per authored transitions with state_transition spans in order'
+    completed: '2026-07-02'
+    review_verdict: approved
   - id: 158-41
     title: Narrator max_turns must degrade loudly (ADR-006), not crash+teardown — GENERAL narrator robustness, not dogfight-specific
     description: 'GENERAL narrator robustness — NOT dogfight-specific (split out of 158-29). When the Anthropic SDK tool loop hits its turn cap (AnthropicSdkLoopExceeded, anthropic_sdk_client.py ~line 518), the turn currently HARD-CRASHES: session.disconnect_save -> room teardown -> forced reconnect. Per ADR-006 (graceful degradation) it must degrade loudly and observably and KEEP THE SESSION ALIVE — emit an OTEL span, surface a player-facing "the engine could not resolve that, try rephrasing", and continue the room rather than wedge it. Any subsystem that fails to seat can trigger this; the dogfight router-decline (158-29) was one trigger, but the fix is generic and lives in the narrator/SDK loop, not in the dogfight. Repro: coyote_star 2026-06-25 (a ship-combat verb that did not route).'

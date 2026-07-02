@@ -322,3 +322,8 @@ completed_stories:
     title: WWN magic cast does not decrement remaining charges (cinder_lance before=2 after=2)
     points: 3
     completed: '2026-07-02'
+  - id: 158-40
+    epic: '158'
+    title: Dogfight full relative-position state graph — author beam/overhead/scissors/overshoot + extend-and-return (ADR-153 Plan 4)
+    points: 5
+    completed: '2026-07-02'
