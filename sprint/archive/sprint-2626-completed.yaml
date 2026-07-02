@@ -332,3 +332,8 @@ completed_stories:
     title: Authored quest offer never mints into quest_log — anchor-crossing acceptance for self-directed seeds
     points: 3
     completed: '2026-07-02'
+  - id: 158-50
+    epic: '158'
+    title: "ADR-130 orbital course/story-clock inert in play: IntentRouter never emits a course dispatch because its state summary has no <courses> block (built only for the narrator), so router-gated course-emission can't fire — plotting/executing a transit writes no plotted_course + never advances clock_t_hours (SWN-ORBITAL-COURSE-INERT re-confirmed)"
+    points: 3
+    completed: '2026-07-02'

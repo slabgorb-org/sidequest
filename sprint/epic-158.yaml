@@ -714,7 +714,7 @@ stories:
       Evidence screenshots (oq-3): playtest-shots/course-001-orrery-baseline-stardate0.png, playtest-shots/course-002-intransit-but-stardate-still-0.png.
     points: 3
     priority: p2
-    status: backlog
+    status: done
     repos: sidequest-server
     workflow: tdd
     acceptance_criteria:
@@ -724,6 +724,7 @@ stories:
       - 'No silent fallback: an orbital world that cannot resolve the destination/party-anchor fails loud via course.plot.rejected (no_orbital_tier / no_party_anchor), never a phantom course or a narrator-improvised transit with frozen clock.'
       - The dispatch_engagement.course.mismatch lie-detector fires when the narrator prose claims a transit but no course dispatch backed it — so the GM panel flags this class of improvisation going forward.
       - 'Regression: non-orbital worlds (no orbital tier) are unaffected — no <courses> block, no course dispatch, no spurious clock advance.'
+    completed: '2026-07-02'
     type: bug
     review_verdict: approved
   - id: 158-51
