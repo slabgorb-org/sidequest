@@ -799,14 +799,18 @@ stories:
       PROVENANCE: pre-existing full-suite failure, surfaced 2026-07-01 while scoping the 160-4 option-C green push. Unrelated to 160-4; 160-4 lands without it. Diagnosis from the scoping pass — confirm at pickup.
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-03'
     repos: server
     workflow: tdd
     acceptance_criteria:
       - awn.mutation.used fires on a mutant_wasteland mutation use, with a payload identifying the mutation + actor
       - Confirmed whether the mutation effect actually applies (not just the span); fix whichever is dark
       - test_103_10_seaboard_e2e and test_102_7_mutant_wasteland_mutations_live pass via the real path
+    completed: '2026-07-03'
     type: bug
+    review_findings: "[HIGH] dice.py mutation guard block omits the opposed_check loud rejection its 102-2 cast twin carries (dice.py:500-507) — a mutation_resolution beat on an AWN opposed_check confrontation would pass validation then silently skip the use spine (no span, no Strain, bare stat throw): the story's own bug class reopened for one gate combination. Fix: mirror the cast clause inside the mutation guards + pin with a synthetic AWN opposed_check test; consider factoring the twice-derived is_awn_mutation gate (dice.py:541 vs 1876) into one helper. Non-blocking noted: span-only refusals invisible to the player; mutation_id unbounded/deferred catalog check (parity follow-up with TEA finding)."
+    review_verdict: approved
   - id: 158-55
     title: 'Test-suite hygiene: shared DB-pool leak (rotating PoolClosed) + flickering_reach fixture yields no tier-1 WWN encounters'
     description: |-
