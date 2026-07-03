@@ -835,3 +835,45 @@ stories:
       - flickering_reach test-fixture pack resolves a tier-1 WWN encounter; the ~7 chargen-commit wiring tests pass without weakening the pregen.py:587 fail-loud guard
       - test_reference_poi_projection gated on R2 availability; dogfight-content failure triaged (fixed or folded into 158-39/40)
     type: chore
+  - id: 158-56
+    title: Mutation picker in the confrontation overlay — client sends mutation_id on the mutation beat commit (158-54 UI half)
+    description: "The server half of the AWN mutation dice route landed in 158-54 (server #1108): DiceThrowPayload.mutation_id names WHICH owned mutation manifests on a mutation_resolution beat commit, mirroring the 102-2 spell picker contract. But no UI sends it — the confrontation overlay has no mutation picker, so a mutation-beat commit from the real client raises the loud missing-mutation_id DiceDispatchError (or the player simply cannot use the marquee mechanic). Build the spell-picker twin: on a mutation_resolution beat, list the PC's owned positives (mutation_state.positive_ids joined to the catalog names) and ride the chosen id on the DICE_THROW payload. PROVENANCE: TEA Delivery Finding, 158-54 session (archived). The server contract is fully tested (tests/integration/test_dice_path_mutation_use_158_54.py); this story is UI + one client-payload wiring test."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: ui
+    workflow: tdd
+  - id: 158-57
+    title: Surface awn.mutation.refused reasons in player-facing WN round messages (span-only today)
+    description: "awn.mutation.refused (not_owned / limit_exhausted / strain_over_max / unknown_mutation) fires span-only on the dice path — the GM panel sees the refusal but the refused PLAYER gets silence: the round resolves, no mutation happens, nothing explains why. Thread the spine's refusal reason into the player-facing WN round messages (dispatch/wn_round.py has zero refusal surface today — grep confirmed 2026-07-03). Sebastien-legibility: expose the math in player-facing surfaces. PROVENANCE: Reviewer Delivery Finding, 158-54 session (archived). Keep the narrator-route parity in mind — refusals there are also span-only; this story may fix both or scope to the dice path."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 158-58
+    title: Dispatch-time mutation catalog validation + length bounds on mutation_id/spell_id (validate before seal)
+    description: 'Two boundary-hardening parity gaps from 158-54 review (security specialist + TEA finding, corroborated): (1) mutation_id and spell_id carry no length/format bound at the pydantic boundary (DiceThrowPayload); (2) the cast path validates spell_id against the catalog BEFORE seal_wn_commit, but the mutation path defers catalog membership to the use spine — so an arbitrary-length client string is persisted into encounter.wn_commits (and the PG save) before any catalog check. Add Field(max_length) to both id fields and a dispatch-time catalog-membership check for mutation_id in the guard block (mirror the cast ordering: validate before seal). Low exploitability, defense-in-depth. PROVENANCE: 158-54 session Delivery Findings (archived).'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
+  - id: 158-59
+    title: Opposed-save dice wiring for AWN mutation use — the target actually saves (v1 resolver always returns fail)
+    description: "The mutation use spine passes save_resolver=lambda stat, target: 'fail' — the target NEVER saves; every save-vs mutation lands at full effect. This was documented v1 on the narrator route ('opposed-save dice wiring rides a later plan', narration_apply._resolve_mutation_for_beat), but 158-54 put the spine on the primary combat path, so the player-favorable bias is now live crunch. Wire the real opposed save: the defender's save roll (server-side NPC roll per ADR-074 — NPCs have no client to throw) resolved through the SaveVs stat on the mutation def, honest save_result on the awn.mutation.used span. Jade/Sebastien will feel this one — crunch that quietly always favors the player reads as broken math once noticed. PROVENANCE: Reviewer Question, 158-54 session (archived); use_ops already threads save_resolver + save.stat, so the seam exists."
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 158-60
+    title: 'beneath_sunden 107-2 content gates red: low-band bestiary image specs + room-creature binding diversity'
+    description: 'Two content-gate tests fail on develop (verified pre-existing via git-stash baseline, 2026-07-03, during 158-54): tests/genre/test_beneath_sunden_creature_images_107_2.py::test_every_low_tagged_bestiary_entry_is_renderable (41 low-band bestiary entries with no image spec — constrictor_snake, giant_bat, drow, gnoll, ... full list in the test failure) and tests/genre/test_beneath_sunden_room_binding_107_2.py::test_distinct_rooms_bind_distinct_creatures (only one room-creature binding: entrance->gnaw_swarm — a flat pool by another name). Author the missing bestiary image specs + diversify room bindings in caverns_and_claudes/beneath_sunden, or explicitly re-tier entries out of the low band if they are unreachable early. These fail every full-suite run and mask real regressions. PROVENANCE: Dev Delivery Finding, 158-54 session (archived); 107-2 is the originating story.'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: content
+    workflow: tdd
+    type: bug
