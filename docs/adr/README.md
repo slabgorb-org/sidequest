@@ -212,6 +212,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | [ADR-086: Image-Composition Taxonomy — Portraits, POIs, Illustrations](086-image-composition-taxonomy.md) | ✓ accepted | live |
 | [ADR-095: Daemon Music Tier via ACE-Step](095-daemon-music-tier-via-ace-step.md) | ✓ accepted | live |
 | [ADR-127: Image Prompt-Composition Pipeline — Catalog Recipes, Token-Budget Eviction Ladder, and SceneInterpreter Rule Cascade](127-image-composition-pipeline.md) | ✓ accepted | live |
+| [ADR-155: Bestiary-Derived Creature Images — bestiary.yaml Is the Single Source of Truth for Creature-Image Production; creatures.yaml Demotes to an Optional Per-World Override](155-bestiary-derived-creature-images.md) | ✓ accepted | live → scripts/generate_creature_images.py::collect_creatures |
 
 ## Turn Management
 
