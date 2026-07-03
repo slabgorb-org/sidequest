@@ -754,7 +754,7 @@ stories:
       PROVENANCE: surfaced 2026-07-01 while scoping the 160-4 full-suite-green push (option C). These two beneath_sunden tests are pre-existing story-107-2 debt, unrelated to 160-4; 160-4 lands without them. Full render-path trace, field-by-field, in the 160-4 session Delivery Findings.
     points: 5
     priority: p2
-    status: in_progress
+    status: done
     started: '2026-07-02T20:41:41Z'
     repos: orchestrator,server,content
     workflow: tdd
@@ -764,6 +764,7 @@ stories:
       - 'test_beneath_sunden_creature_images_107_2.py invariant retuned to the derived-source model: every low-tagged bestiary entry is renderable because it resolves to a prompt (bestiary description present + naming handled), not because it appears in creatures.yaml'
       - 'Wiring test: a render dry-run for at least one previously-manifest-less WN world (e.g. space_opera/coyote_star) produces non-empty creature prompts from bestiary alone — proving portraits now scale past the 2 hand-authored worlds'
       - 'ADR (or amendment to ADR-059/086/127) records: bestiary.yaml is the single source of truth for creature-image production; creatures.yaml is an optional per-world override'
+    completed: '2026-07-03'
     type: refactor
   - id: 158-53
     title: WWN magic cast does not decrement remaining charges (cinder_lance before=2 after=2)
