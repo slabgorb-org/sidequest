@@ -754,7 +754,8 @@ stories:
       PROVENANCE: surfaced 2026-07-01 while scoping the 160-4 full-suite-green push (option C). These two beneath_sunden tests are pre-existing story-107-2 debt, unrelated to 160-4; 160-4 lands without them. Full render-path trace, field-by-field, in the 160-4 session Delivery Findings.
     points: 5
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-07-02T20:41:41Z'
     repos: orchestrator,server,content
     workflow: tdd
     acceptance_criteria:
