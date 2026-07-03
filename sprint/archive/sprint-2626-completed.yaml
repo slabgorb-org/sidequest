@@ -342,3 +342,8 @@ completed_stories:
     title: awn.mutation.used OTEL span never fires for mutant_wasteland mutations
     points: 3
     completed: '2026-07-03'
+  - id: 158-60
+    epic: '158'
+    title: 'beneath_sunden 107-2 content gates red: low-band bestiary image specs + room-creature binding diversity'
+    points: 3
+    completed: '2026-07-03'

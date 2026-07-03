@@ -874,7 +874,19 @@ stories:
     description: 'Two content-gate tests fail on develop (verified pre-existing via git-stash baseline, 2026-07-03, during 158-54): tests/genre/test_beneath_sunden_creature_images_107_2.py::test_every_low_tagged_bestiary_entry_is_renderable (41 low-band bestiary entries with no image spec — constrictor_snake, giant_bat, drow, gnoll, ... full list in the test failure) and tests/genre/test_beneath_sunden_room_binding_107_2.py::test_distinct_rooms_bind_distinct_creatures (only one room-creature binding: entrance->gnaw_swarm — a flat pool by another name). Author the missing bestiary image specs + diversify room bindings in caverns_and_claudes/beneath_sunden, or explicitly re-tier entries out of the low band if they are unreachable early. These fail every full-suite run and mask real regressions. PROVENANCE: Dev Delivery Finding, 158-54 session (archived); 107-2 is the originating story.'
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-03'
     repos: content
     workflow: tdd
+    completed: '2026-07-03'
     type: bug
+    review_verdict: approved
+  - id: 158-61
+    title: 'beneath_sunden 107-2 gate hardening: extend template-compliance checks to all low-band creature specs + add converse spec->bestiary integrity test'
+    description: "Two non-blocking test-coverage gaps in the 107-2 creature-image gate, surfaced by the 158-60 review (Reviewer + TEA delivery findings; content shipped correct, so these are latent regression-prevention, not live defects). Both live in the SERVER repo: sidequest-server/tests/genre/test_beneath_sunden_creature_images_107_2.py. (1) The four template-compliance tests (required-fields, style-free, no-text clause, non-proper-noun name) iterate a hardcoded LOW_BAND_IDS 6-tuple, so the 5 specs 158-60 added (darkmantle/piercer/shadow/stirge/grimlock) get ZERO quality-gating — a style-leak + a proper-noun spec name were both empirically shown to pass. Fix: derive the id list from the bestiary 'low' tags (as the dynamic presence-test already does) so all four shape checks extend to every low-band spec. (2) No converse referential-integrity test: nothing asserts every creatures.yaml spec id resolves to a real bestiary entry (a phantom orphan spec passed all 14 tests). Fix: add a converse test mirroring test_all_room_bindings_reference_real_bestiary_ids. PROVENANCE: 158-60 review delivery findings (archived session sprint/archive/158-60-session.md)."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: chore
