@@ -261,19 +261,20 @@ Hand-authoring per-world image manifests (~900 plates across 22 worlds) does not
 
 **Decision.** `bestiary.yaml` is the **single source of truth for creature-image
 production**. `collect_creatures` derives a render creature from each bestiary entry —
-`{id, name, description, threat_level ← level, tags}` — with a trivial `level → threat`
-clamp into the 1..5 framing band. A per-world `creatures.yaml` is demoted to an
+`{id, name, description, threat_level ← level, tags}` — with the shipped map
+`threat_level = max(1, ceil(level / 2))` (ADR-155). A per-world `creatures.yaml` is demoted to an
 **OPTIONAL per-field override** (ADR-121 flavor): where it declares a field for a shared
 `id`, that field wins; otherwise the bestiary value stands. This is why portraits now
 scale past the two hand-authored worlds — a world needs only its bestiary to become
 renderable.
 
 **Naming conceits.** A "nothing is named" world (`beneath_sunden`) would otherwise send a
-bestiary proper noun (`"Constrictor Snake"`) to the CLIP, which Z-Image paints as a
-caption. A render-only `name_is_secret: true` flag in that world's `creatures.yaml`
-suppresses the derived name from the CLIP; a `creatures.yaml` **naming override** (a safe
-descriptive phrase) clears the flag per entry, so the bespoke marquee names still reach
-the CLIP. The flag lives in `creatures.yaml` (a render manifest, read only by the render
+bestiary proper noun (`"Constrictor Snake"`) into the rendered prompt, which Z-Image
+paints as a caption. The decision: a render-only `name_is_secret: true` flag in that
+world's `creatures.yaml` declares the conceit and keeps roster proper nouns out of the
+rendered prompt; see ADR-155 for the shipped mechanism (the derived name is replaced with
+the bestiary entry's `role` line, with per-id override names still winning). The flag
+lives in `creatures.yaml` (a render manifest, read only by the render
 script and ignored by `encountergen`) — **not** in `bestiary.yaml`, whose server-side
 `Bestiary` pydantic model is `extra="forbid"`. **No engine-code change**: this is a
 render-pipeline + content change only, consistent with "authoring must handle homebrew
@@ -283,3 +284,6 @@ without touching engine code."
 It does not add the runtime creature-image *resolver* (server/UI portrait lookup), which
 remains ADR-087 P0 debt — rendering more plates does not by itself make them appear
 in-play. The decision in this ADR stands.
+
+The authoritative record for creature-image derivation is ADR-155
+(`docs/adr/155-bestiary-derived-creature-images.md`).

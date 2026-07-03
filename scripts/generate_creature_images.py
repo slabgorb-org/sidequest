@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Batch-generate creature/monster images from creatures.yaml files.
+"""Batch-generate creature/monster images from the bestiary.
+
+Story 158-52 (ADR-155): ``bestiary.yaml`` is the single source of truth for
+creature-image production — the runtime roster the encountergen samples is
+what gets plates. Each entry derives a render item (threat_level <- level);
+a world's ``creatures.yaml`` is an OPTIONAL per-field override manifest
+(naming conceits via top-level ``name_is_secret: true``, bespoke marquee
+plates), not a precondition.
 
 Usage:
     python scripts/generate_creature_images.py                           # all genres
@@ -13,6 +20,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import math
 from pathlib import Path
 
 from render_common import (
@@ -28,171 +36,157 @@ from render_common import (
 DEFAULT_STEPS = 20
 log = logging.getLogger(__name__)
 
+# The render fields a creatures.yaml override may replace per-field
+# (ADR-121 flavor): fields the override declares win; omitted fields fall
+# through to the bestiary-derived value.
+_RENDER_FIELDS = ("name", "description", "threat_level", "tags")
 
-THREAT_LEVEL_CAP = 5
+
+def derive_threat_level(level: int) -> int:
+    """Map a bestiary ``level`` (== HD on the SRD convention) onto the
+    framing-band threat ladder compose_prompt keys off (>=4 full page,
+    >=3 half, >=2 quarter, else spot): levels 1-2 spot, 3-4 quarter,
+    5-6 half, 7+ full page — trivial, monotone, matches the low/mid/deep
+    band tagging."""
+    return max(1, math.ceil(level / 2))
 
 
-def _threat_from_level(level) -> int:
-    """Trivial ``level -> threat_level`` map (Story 158-52).
+def _world_key(path: Path, genre_dir: Path) -> str:
+    rel = path.relative_to(genre_dir)
+    return (
+        rel.parts[1]
+        if len(rel.parts) > 2 and rel.parts[0] == "worlds"
+        else "default"
+    )
 
-    The bestiary carries an SRD ``level`` (HD); compose_prompt frames on a 1..5
-    threat band (>=4 full-page … 1 spot vignette). Clamp the level into that
-    band: a level-1 mook floors to threat 1, a high-HD capstone caps at 5. This
-    is the only transform the bestiary roster needs to become a render roster.
+
+def _derive_render_item(
+    entry: dict, genre_name: str, world: str, name_is_secret: bool
+) -> dict | None:
+    """Derive one render item from a bestiary entry, or loud-skip to None.
+
+    A skip is always logged with the id and reason (ADR-124 loud-skip fold)
+    — never a silent drop, never a batch-killing crash.
     """
-    try:
-        lvl = int(level)
-    except (TypeError, ValueError):
-        lvl = 1
-    return max(1, min(THREAT_LEVEL_CAP, lvl))
+    eid = entry["id"]
+    description = (entry.get("description") or "").strip()
+    if not description:
+        log.warning(
+            "SKIP %s/%s/%s: bestiary entry has no description — no render subject",
+            genre_name,
+            world,
+            eid,
+        )
+        return None
+    level = entry.get("level")
+    if not isinstance(level, int):
+        log.warning(
+            "SKIP %s/%s/%s: bestiary entry has no integer level — cannot derive threat_level",
+            genre_name,
+            world,
+            eid,
+        )
+        return None
 
+    name = entry.get("name", "unknown")
+    if name_is_secret:
+        # "Nothing is named" conceit: Z-Image paints proper nouns from
+        # subject AND clip, so the roster name never reaches the prompt.
+        # The SRD `role` line is already non-proper descriptive prose.
+        role = (entry.get("role") or "").strip()
+        if not role:
+            log.warning(
+                "SKIP %s/%s/%s: name_is_secret world but entry has no `role` "
+                "to de-proper-noun the render name",
+                genre_name,
+                world,
+                eid,
+            )
+            return None
+        name = role
 
-def _world_from_rel(rel: Path) -> str:
-    """Derive the world slug from a genre-relative pack path.
-
-    ``worlds/<slug>/<file>`` → ``<slug>``; a genre-root file → ``default``.
-    """
-    parts = rel.parts
-    return parts[1] if len(parts) > 2 and parts[0] == "worlds" else "default"
-
-
-def _derive_from_bestiary(
-    genre_name: str, world: str, entry: dict, name_is_secret: bool
-) -> dict:
-    """Build a render creature from one bestiary entry (Story 158-52).
-
-    The bestiary is the single source of truth: ``id``/``name``/``description``/
-    ``tags`` come straight across and ``threat_level`` derives from ``level``.
-    ``name_is_secret`` propagates the world's "nothing is named" conceit so the
-    raw bestiary proper noun is suppressed from the CLIP unless a creatures.yaml
-    naming override replaces it (see ``compose_prompt``).
-    """
     return {
         "genre": genre_name,
         "world": world,
-        "id": entry["id"],
-        "name": entry.get("name", "unknown"),
-        "description": entry.get("description", ""),
-        "threat_level": _threat_from_level(entry.get("level", 1)),
+        "name": name,
+        "id": eid,
+        "description": description,
+        "threat_level": derive_threat_level(level),
         "tags": entry.get("tags", []),
-        "name_is_secret": name_is_secret,
     }
-
-
-def _creature_from_manifest(genre_name: str, world: str, entry: dict) -> dict:
-    """Build a render creature from a creatures.yaml entry with NO bestiary row.
-
-    Legacy path: worlds whose creatures.yaml carries entries the bestiary does
-    not. The manifest supplies its own (already-safe) name, so it never needs
-    proper-noun suppression.
-    """
-    return {
-        "genre": genre_name,
-        "world": world,
-        "id": entry.get("id", "unknown"),
-        "name": entry.get("name", "unknown"),
-        "description": entry.get("description", ""),
-        "threat_level": entry.get("threat_level", 1),
-        "tags": entry.get("tags", []),
-        "name_is_secret": False,
-    }
-
-
-def _apply_override(base: dict, entry: dict) -> None:
-    """Overlay a creatures.yaml entry onto a bestiary-derived creature.
-
-    Per-field override (ADR-121 flavor): creatures.yaml wins for any field it
-    declares. A ``name`` override supplies a safe descriptive phrase, so it also
-    clears ``name_is_secret`` — the bespoke name is meant to reach the CLIP.
-    """
-    if "name" in entry:
-        base["name"] = entry["name"]
-        base["name_is_secret"] = False
-    if "description" in entry:
-        base["description"] = entry["description"]
-    if "threat_level" in entry:
-        base["threat_level"] = entry["threat_level"]
-    if "tags" in entry:
-        base["tags"] = entry["tags"]
-
-
-def _collect_world_creatures(
-    genre_name: str,
-    world: str,
-    bestiary_path: Path | None,
-    creatures_path: Path | None,
-) -> list[dict]:
-    """Merge one world's bestiary (source of truth) with its creatures.yaml override."""
-    overrides: dict[str, dict] = {}
-    name_is_secret = False
-    if creatures_path is not None:
-        cdata = load_yaml(creatures_path)
-        if isinstance(cdata, dict):
-            # Render-only conceit flag: this world's names are secret, so a
-            # bestiary-derived proper noun must not reach the CLIP. Lives in
-            # creatures.yaml (a render manifest) because the server's Bestiary
-            # model is extra="forbid" — no engine-code change (Story 158-52).
-            name_is_secret = bool(cdata.get("name_is_secret", False))
-            clist = cdata.get("creatures", []) or []
-        else:
-            clist = cdata or []
-        for c in clist:
-            if isinstance(c, dict) and c.get("id"):
-                overrides[c["id"]] = c
-
-    merged: dict[str, dict] = {}
-    order: list[str] = []
-
-    if bestiary_path is not None:
-        bdata = load_yaml(bestiary_path)
-        entries = bdata if isinstance(bdata, list) else (bdata.get("entries", []) or [])
-        for e in entries:
-            if not isinstance(e, dict) or not e.get("id"):
-                continue
-            merged[e["id"]] = _derive_from_bestiary(genre_name, world, e, name_is_secret)
-            order.append(e["id"])
-
-    for cid, c in overrides.items():
-        base = merged.get(cid)
-        if base is None:
-            merged[cid] = _creature_from_manifest(genre_name, world, c)
-            order.append(cid)
-        else:
-            _apply_override(base, c)
-
-    return [merged[cid] for cid in order]
 
 
 def collect_creatures(genre_dir: Path) -> list[dict]:
-    """Collect render creatures for a genre, DERIVED from bestiary.yaml.
+    """Collect render items: bestiary.yaml derives, creatures.yaml overrides.
 
-    Story 158-52: the ``bestiary.yaml`` roster (what encountergen samples on the
-    Without-Number path) is the single source of truth for creature-image
-    production. Each entry derives a render creature; a per-world
-    ``creatures.yaml`` is an OPTIONAL per-field override (naming conceits +
-    bespoke marquee plates), not a precondition. This is why portraits now scale
-    past the two hand-authored worlds that shipped a creatures.yaml.
+    Walks every ``bestiary.yaml`` (top-level ``entries:``) and
+    ``creatures.yaml`` (top-level ``creatures:``) under the genre dir, keyed
+    per world (genre-root files map to world ``"default"``). Bestiary entries
+    derive render items; a creatures.yaml entry with the same id overrides
+    per-field; creatures.yaml-only entries pass through verbatim (bespoke
+    plates). One item per (world, id).
     """
     genre_name = genre_dir.name
 
-    worlds: dict[str, dict[str, Path]] = {}
+    bestiary_order: dict[str, list[dict]] = {}
     for path in sorted(genre_dir.rglob("bestiary.yaml")):
-        worlds.setdefault(_world_from_rel(path.relative_to(genre_dir)), {})[
-            "bestiary"
-        ] = path
+        data = load_yaml(path)
+        entries = data.get("entries") or [] if isinstance(data, dict) else []
+        world_entries = bestiary_order.setdefault(_world_key(path, genre_dir), [])
+        world_entries.extend(
+            e for e in entries if isinstance(e, dict) and e.get("id")
+        )
+
+    manifests: dict[str, tuple[list[dict], bool]] = {}
     for path in sorted(genre_dir.rglob("creatures.yaml")):
-        worlds.setdefault(_world_from_rel(path.relative_to(genre_dir)), {})[
-            "creatures"
-        ] = path
+        data = load_yaml(path)
+        if isinstance(data, list):
+            manifests[_world_key(path, genre_dir)] = (data, False)
+        else:
+            manifests[_world_key(path, genre_dir)] = (
+                data.get("creatures") or [],
+                data.get("name_is_secret") is True,
+            )
 
     creatures: list[dict] = []
-    for world in sorted(worlds):
-        paths = worlds[world]
-        creatures.extend(
-            _collect_world_creatures(
-                genre_name, world, paths.get("bestiary"), paths.get("creatures")
+    for world in sorted(set(bestiary_order) | set(manifests)):
+        override_list, name_is_secret = manifests.get(world, ([], False))
+        overrides = {
+            c["id"]: c for c in override_list if isinstance(c, dict) and c.get("id")
+        }
+        derived_ids: set[str] = set()
+
+        for entry in bestiary_order.get(world, []):
+            item = _derive_render_item(entry, genre_name, world, name_is_secret)
+            if item is None:
+                continue
+            override = overrides.get(entry["id"])
+            if override is not None:
+                for field in _RENDER_FIELDS:
+                    if field in override:
+                        item[field] = override[field]
+            derived_ids.add(entry["id"])
+            creatures.append(item)
+
+        # Bespoke plates: override entries with no bestiary id (or whose
+        # bestiary entry was loud-skipped) keep the legacy pass-through shape.
+        for creature in override_list:
+            if not isinstance(creature, dict):
+                continue
+            if creature.get("id") in derived_ids:
+                continue
+            creatures.append(
+                {
+                    "genre": genre_name,
+                    "world": world,
+                    "name": creature.get("name", "unknown"),
+                    "id": creature.get("id", "unknown"),
+                    "description": creature.get("description", ""),
+                    "threat_level": creature.get("threat_level", 1),
+                    "tags": creature.get("tags", []),
+                }
             )
-        )
+
     return creatures
 
 
@@ -221,15 +215,7 @@ def compose_prompt(creature: dict, visual_style: dict) -> tuple[str, str, int]:
     subject = truncate_to_tokens(description, TOKEN_LIMIT - 100)
     subject = f"{subject}, {framing}"
 
-    # Z-Image paints proper nouns from the CLIP. In a "nothing is named" world
-    # (Story 158-52), a bestiary-derived name is a proper noun the plate must
-    # not caption, so it is dropped from the CLIP. A creatures.yaml naming
-    # override clears the flag (its name is a safe descriptive phrase), so
-    # bespoke names still reach the CLIP.
-    if creature.get("name_is_secret"):
-        clip = "creature illustration"
-    else:
-        clip = f"{name}, creature illustration"
+    clip = f"{name}, creature illustration"
 
     seed = deterministic_seed(
         f"creature-{creature['genre']}-{creature['id']}", base_seed
@@ -277,12 +263,23 @@ def main():
 
     all_creatures = []
     for genre_dir in genre_dirs:
-        visual_style = load_visual_style(genre_dir, tier="portrait")
         creatures = collect_creatures(genre_dir)
         if args.world:
             creatures = [c for c in creatures if c.get("world") == args.world]
+        # World-merged style per item: a world-level positive_suffix REPLACES
+        # the genre suffix (beneath_sunden's carries the no-text/no-caption
+        # clause), so genre-level-only loading would strip a conceit world's
+        # caption protection. One load per world, cached.
+        styles: dict[str, dict] = {}
         for c in creatures:
-            c["_visual_style"] = visual_style
+            world = c.get("world", "default")
+            if world not in styles:
+                styles[world] = load_visual_style(
+                    genre_dir,
+                    "" if world == "default" else world,
+                    tier="portrait",
+                )
+            c["_visual_style"] = styles[world]
         all_creatures.extend(creatures)
 
     asyncio.run(
