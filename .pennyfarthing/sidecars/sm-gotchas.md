@@ -422,3 +422,9 @@ Reviewer approved 162-1 and handed off "for finish (PR + merge)" with zero PRs o
 
 ### The thin-stub context regression hits EPIC contexts too — diff context-epic-<n>.md at finish (162-1, 2026-07-05)
 The 153-16 gotcha (sm-setup overwrites rich story context with a thin stub) has an epic-level twin: at 162-1 finish, `sprint/context/context-epic-162.md` in the working tree was a regenerated 18-line schema stub while HEAD (committed at epic planning, 7dae8ccb) held the rich 97-line version (planning-docs table, three-layer root-cause background, sequencing rationale). `git restore` it before committing finish artifacts. Extend the finish-time diff check to BOTH `context-story-<id>.md` and `context-epic-<n>.md`.
+
+### 162-2 finish-flow notes (2026-07-05)
+- **`pf handoff resolve-gate` cannot infer story/workflow/phase from an sm-setup-generated session file** (its field layout differs from what the parser wants) — pass the three args explicitly on EVERY handoff command for the whole story (`resolve-gate 162-2 tdd red` etc.); inference kept failing all session.
+- **The SM agent-def finish snippet says `git push origin develop` — for the ORCHESTRATOR repo that's wrong; repos.yaml targets `main`.** Follow repos.yaml, always.
+- **Stray `cfg/` (MAME autogen XML) can appear untracked in the orchestrator root** — someone ran an emulator from the repo dir. Never sweep it into a sprint commit with `git add -A`; stage story artifacts by name.
+- **Reviewer-directed format-only chores are safe to run in the SM finish ceremony** (explicitly authorized in the verdict, verify tests after) — cheaper than a third rework round for `ruff format` on one file.
