@@ -74,3 +74,11 @@ stories:
     repos: server
     workflow: tdd
     type: chore
+  - id: 162-9
+    title: '162-1 follow-up: un-gate trim_to_caps from content evidence (bestiary-less over-cap pools never trimmed) + zero-trim WARNING guard; close coverage gaps (npc_dropped_all_authored, encounter-side trim, encounter_dropped via seed_manual); 5 doc corrections (stale session-discard claims, class-docstring wording, conftest session_fixture comment)'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
+    type: chore
