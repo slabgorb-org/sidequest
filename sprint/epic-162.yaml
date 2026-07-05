@@ -10,10 +10,14 @@ stories:
     title: "Derive-don't-cache Monster Manual: content-sha + session-seed keyed pool, discard-on-mismatch replaces purge-repair, accumulation cap, fail-loud empty-world-slug keys; includes V1-V3 forensics (per-world seed attribution, multi-clone writers, authored-NPC deletion) and a seed/purge idempotence test"
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-05'
     repos: server
     workflow: tdd
+    completed: '2026-07-05'
     type: bug
+    review_findings: "3 blocking: (1) cap-blind needs_seeding reseed-storm at MAX_MANUAL_NPCS (repro'd); (2) zero real-execution coverage of _content_sha_for / real reconcile_content through the seam (wiring tests fake the method); (3) cap drop/evict decisions log-only, no OTEL span (rule violation). Plus 6 non-blocking: no-evidence bestiary discard, blank-sha absorption, legacy over-cap adoption untrimmed, session-seed docstring contradiction x3 + forever-cache class docstring, inert home-mocks, slug-shape guard. Routing: red rework to TEA."
+    review_verdict: approved
   - id: 162-2
     title: 'Identity by id, not name: unify invented_from/pool_origin/manual_origin/creature_id into one typed Origin; dedup/purge/seating key on creature_id/authored id; narrator prose names recorded as aliases (alias ledger) — kills two-names-one-enemy identity forks'
     points: 3

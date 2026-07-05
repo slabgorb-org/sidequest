@@ -352,3 +352,8 @@ completed_stories:
     title: Creature portraits derive from bestiary.yaml — demote per-world creatures.yaml to an optional naming-override
     points: 5
     completed: '2026-07-03'
+  - id: 162-1
+    epic: '162'
+    title: "Derive-don't-cache Monster Manual: content-sha + session-seed keyed pool, discard-on-mismatch replaces purge-repair, accumulation cap, fail-loud empty-world-slug keys; includes V1-V3 forensics (per-world seed attribution, multi-clone writers, authored-NPC deletion) and a seed/purge idempotence test"
+    points: 3
+    completed: '2026-07-05'
