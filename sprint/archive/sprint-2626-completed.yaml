@@ -357,3 +357,8 @@ completed_stories:
     title: "Derive-don't-cache Monster Manual: content-sha + session-seed keyed pool, discard-on-mismatch replaces purge-repair, accumulation cap, fail-loud empty-world-slug keys; includes V1-V3 forensics (per-world seed attribution, multi-clone writers, authored-NPC deletion) and a seed/purge idempotence test"
     points: 3
     completed: '2026-07-05'
+  - id: 162-2
+    epic: '162'
+    title: 'Identity by id, not name: unify invented_from/pool_origin/manual_origin/creature_id into one typed Origin; dedup/purge/seating key on creature_id/authored id; narrator prose names recorded as aliases (alias ledger) — kills two-names-one-enemy identity forks'
+    points: 3
+    completed: '2026-07-05'
