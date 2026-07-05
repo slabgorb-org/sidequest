@@ -86,3 +86,11 @@ stories:
     repos: server
     workflow: trivial
     type: chore
+  - id: 162-10
+    title: '162-2 non-blocking follow-ups: unified-resolver adoption at remaining seams (mention-path, pool-member lookup, Fate seeder, edge-publish by_name); decoy-roster hardening for canonicalization tests; participant.joined pre-rename telemetry; NpcMention rebind via dataclasses.replace; two comment corrections; diacritic-leg seat integration test'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: chore
