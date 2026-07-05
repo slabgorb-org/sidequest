@@ -1,0 +1,72 @@
+id: '162'
+type: epic
+title: NPC origin consolidation — one identity, one arbiter, derived Monster Manual
+description: "Consolidate the seven NPC/creature spawn paths per the 2026-07-05 NPC-generation inventory (docs/superpowers/specs/2026-07-05-npc-generation-inventory.md). Root causes: no origin-precedence arbiter, name-string identity with per-seam dedup divergence, and a shared mutable Monster Manual cache fought over by 4 clones (beneath_sunden purge/reseed livelock, 0/0 pool vs 1153-NPC runaway pools). Sequence per party-mode 2026-07-05: derive-don't-cache manual first, id-keyed identity + alias ledger second, Green Room precedence ADR third. Open question for Keith: faction leaders in lore.yaml prose stay prose-only or get structured npcs.yaml entries."
+priority: p1
+status: backlog
+repos: server,content,understudy
+stories:
+  - id: 162-1
+    title: "Derive-don't-cache Monster Manual: content-sha + session-seed keyed pool, discard-on-mismatch replaces purge-repair, accumulation cap, fail-loud empty-world-slug keys; includes V1-V3 forensics (per-world seed attribution, multi-clone writers, authored-NPC deletion) and a seed/purge idempotence test"
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 162-2
+    title: 'Identity by id, not name: unify invented_from/pool_origin/manual_origin/creature_id into one typed Origin; dedup/purge/seating key on creature_id/authored id; narrator prose names recorded as aliases (alias ledger) — kills two-names-one-enemy identity forks'
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: refactor
+  - id: 162-3
+    title: 'Bestiary generics section replaces ephemeral stub minting: authored generic rows per world become the sanctioned last-resort Other; stub fabrication becomes a loud failure on non-degenerate paths (No Silent Fallbacks)'
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server,content
+    workflow: tdd
+  - id: 162-4
+    title: 'Origin-precedence ADR (Green Room): single-gate materializer design; precedence authored > room-bound > region-population > MM pool > narrator mint; all seven spawn paths become typed-provenance feeders'
+    points: 2
+    priority: p1
+    status: done
+    repos: .
+    workflow: trivial
+    completed: '2026-07-05'
+    type: chore
+  - id: 162-5
+    title: 'flickering_reach content reconciliation: 18 phantom encounter-table creature refs remapped to real bestiary ids; creatures.yaml divergent stat block demoted to ADR-155 render-only (V4 gate: confirm whether native path still reads its stats)'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: content
+    workflow: tdd
+    type: bug
+  - id: 162-6
+    title: 'space_opera bestiary de-triplication: byte-identical 12-entry world bestiaries collapse to a genre-root file per effective_bestiary world-over-genre resolution; same pattern check for long_foundry'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: content,server
+    workflow: tdd
+    type: chore
+  - id: 162-7
+    title: 'All-sources-one-scene wiring test + understudy identity-split hunt: integration test spawning from every source asserting one identity per creature; understudy scenario flags two-names-one-enemy as a finding'
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server,understudy
+    workflow: tdd
+    type: chore
+  - id: 162-8
+    title: 'Dead spawn-path cleanup: resolve_encounter_from_trope (no callers) deleted or wired; generate_name tool ctx.name_generators Phase-E wiring resolved or the stub removed (No Stubbing)'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: chore

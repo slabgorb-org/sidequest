@@ -511,9 +511,9 @@ These rows exist for grep-ability when a downstream user-facing feature breaks. 
 | CLI | Module | Status |
 |-----|--------|--------|
 | `sidequest-server` | `sidequest.server.app:main` | **Live** — the only registered entry point |
-| `python -m sidequest.cli.namegen` | `cli/namegen/` + `__main__.py` | **Code present, runnable as module; not wired into server** (ADR-087 REWIRE P0) |
-| `sidequest-encountergen` | `cli/encountergen/__init__.py` stub | **Empty** (ADR-087 RESTORE P0) |
-| `sidequest-loadoutgen` | `cli/loadoutgen/__init__.py` stub | **Empty** (ADR-087 RESTORE P0) |
+| `python -m sidequest.cli.namegen` | `cli/namegen/namegen.py` (764 LOC) + `__main__.py` | **Live as an in-process import** — `server/dispatch/pregen.py:seed_manual` calls `namegen.main()` directly on every Manual seed pass. Still absent from `[project.scripts]` (only `sidequest-server` is registered), so the standalone-CLI entry point is the one remaining ADR-087 REWIRE item; "not wired into server" (the prior verdict) is stale — confirmed wired 2026-07-05, NPC-generation architecture survey |
+| `sidequest-encountergen` | `cli/encountergen/encountergen.py` (836 LOC; `cli/encountergen/__init__.py` is still a 1-line docstring) | **Live** — `generate_enemy_from_bestiary()`/`main()` are a real implementation, called in-process by `pregen.seed_manual`. The old "Empty" verdict described only the trivial `__init__.py`, never the module that actually holds the logic. Confirmed 2026-07-05 via direct code read + 1158 `monster_manual.injected` log events |
+| `sidequest-loadoutgen` | `cli/loadoutgen/__init__.py` stub | **Empty** (ADR-087 RESTORE P0) — reconfirmed still accurate 2026-07-05: zero non-test callers anywhere in `sidequest/`; `agents/tools/generate_loadout.py` explicitly returns a fatal, non-recoverable error rather than confabulate a loadout |
 | `sidequest-validate` | `cli/validate/projection_check.py` | **Partial** — projection check shipped; broader validation owed (ADR-087 RESTORE P2) |
 | `sidequest-promptpreview` (daemon-side) | `sidequest-daemon` entry point | **Live** — visual-style diagnostics (daemon `a74dfec`) |
 | `sidequest-promptpreview` (server-side) | `cli/promptpreview/__init__.py` stub | **Empty** (ADR-087 RESTORE P1) — separate from daemon's preview |
@@ -531,10 +531,10 @@ Verdicts and tiers per ADR-087 (last sweep 2026-05-02).
 
 | Subsystem | ADR-087 verdict |
 |-----------|------------------|
-| ADR-059 pregen dispatch (server invokes namegen/encountergen/loadoutgen at turn-time) | RESTORE |
-| `sidequest-namegen` rewire (entry point + dispatch integration) | REWIRE |
-| `sidequest-encountergen` (currently empty stub) | RESTORE |
-| `sidequest-loadoutgen` (currently empty stub) | RESTORE |
+| ADR-059 pregen dispatch (server invokes namegen/encountergen at turn-time; loadoutgen is not part of this pipeline) | **RESTORED 2026-07-05** (was RESTORE) — `server/dispatch/pregen.py:seed_manual` invokes namegen + encountergen in-process whenever the Monster Manual needs seeding; confirmed via 1158 `monster_manual.injected` log events (NPC-generation architecture survey). See ADR-059's 2026-07-05 correction section |
+| `sidequest-namegen` rewire (entry point + dispatch integration) | **Dispatch integration done 2026-07-05** (in-process call from `pregen.py`) — entry-point registration in `[project.scripts]` is the only piece still REWIRE |
+| `sidequest-encountergen` (currently empty stub) | **RESTORED 2026-07-05** (was RESTORE) — `encountergen.py` is a real 836-line implementation wired via `pregen.seed_manual`; the stub is only `__init__.py`, which was never where the logic lived |
+| `sidequest-loadoutgen` (currently empty stub) | RESTORE — reconfirmed still accurate 2026-07-05, zero callers found |
 | ADR-092 scene fixture hydrator + `POST /dev/scene/{name}` (supersedes ADR-069) | RESTORE |
 
 > Confrontation Engine port-drift VERIFY demoted from P0 to P3 polish on 2026-05-02 — Pillars 1+2 verified live; only `mood_aliases` consumer remains.
@@ -631,7 +631,7 @@ The full game loop is wired end-to-end in Python: connect → create character (
 - **Decomposed projection** — eleven-module `game/projection/` package with predicate validators and invariants
 - **Decomposed telemetry** — 50+ span modules in `telemetry/spans/`
 
-OTEL coverage is the strongest it has ever been. The biggest known gaps for Keith-as-player and Sebastien (mechanics-first) remain on the ADR-087 restoration roster: trope engine beat firing, disposition Attitude transitions, continuity validator, and pregen dispatch. Each is what makes the difference between a narrator that improvises convincingly and a narrator the GM panel can actually keep honest. CLAUDE.md says it plain: _"The GM panel is the lie detector."_ Sprint 3 closes the playtest debt; the next sprint inherits ADR-087's P0 tier.
+OTEL coverage is the strongest it has ever been. The biggest known gaps for Keith-as-player and Sebastien (mechanics-first) remain on the ADR-087 restoration roster: trope engine beat firing, disposition Attitude transitions, continuity validator, and ~~pregen dispatch~~ *(pregen dispatch RESTORED 2026-07-05 — namegen/encountergen now invoke in-process from `pregen.seed_manual` every time the Monster Manual needs seeding, confirmed via 1158 `monster_manual.injected` log events; see the CLI table above and ADR-059's 2026-07-05 correction section. `loadoutgen` remains genuinely unwired — that part of the gap stands.)*. Each is what makes the difference between a narrator that improvises convincingly and a narrator the GM panel can actually keep honest. CLAUDE.md says it plain: _"The GM panel is the lie detector."_ Sprint 3 closes the playtest debt; the next sprint inherits ADR-087's P0 tier.
 
 **Best playtest experience today:** Four lobby-selectable worlds —
 - `caverns_and_claudes/beneath_sunden` (single-shaft procedural megadungeon — ADR-106; reference pack carrying the four B/X classic classes, B26 saving throws, learned_v1 memorization, morale, and class signature abilities)

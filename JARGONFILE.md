@@ -94,6 +94,20 @@ These are the named rules every narrator-facing decision is weighed against.
   state deltas. The mechanical spine. **A confrontation requires an Other** —
   it must have an opponent seated at instantiation, or it ends. (**ADR-033**,
   **ADR-116**)
+- **The Other / opponent-seater** — The confrontation's required opposing-side
+  actor (`side="opponent"`, not `withdrawn`). All opponent entry funnels through
+  **one seating chokepoint**, `instantiate_encounter_from_trigger`, which is
+  room-sourced (scans `snapshot.npcs` at the acting PC's location) when the
+  router/narrator names no opponent. No sourceable Other → `NoOpponentAvailableError`
+  and the dispatch handler lets the narrator render prose instead of a
+  confrontation. "Solo" means one *player*, never "no opponent." (**ADR-116**)
+- **Toothless Other** — A seated Other with no resolvable reprisal damage source
+  (checked in order: confrontation-def `opponent_damage` → beat `damage_override`
+  → the actor's inventory weapon) is as invalid as no Other — surfaced loudly at
+  instantiation via `encounter.opponent_toothless`, never silently auto-armed. A
+  seeded Monster-Manual mook carries no inventory, so a "statted" opponent doesn't
+  automatically have teeth; the fix is authoring `opponent_damage` on the
+  confrontation def, not an engine default. (**ADR-139**, extends **ADR-116**)
 - **Beat** — A selectable mechanical+narrative outcome within a confrontation,
   keyed to a threshold and producing deltas. `beat_selections` firing is the
   signal that the mechanical engine engaged (and is the wrong success metric for
@@ -166,6 +180,39 @@ These are the named rules every narrator-facing decision is weighed against.
   relevant world knowledge into narrator prompts. (**ADR-048**)
 - **KnownFact** — Play-derived knowledge extracted from narration and persisted
   with provenance, then re-injected by relevance. (**ADR-100**)
+- **EntityCard** — The uniform, embeddable projection for a retrievable game
+  entity (NPC / location / faction): a stable id (`"npc:borin"`), an
+  `entity_type`, a back-pointer to the system-of-record struct it does **not**
+  own, embeddable `content`, and sync metadata. A structural sibling of
+  `LoreFragment` — reuses the Lore RAG's embedding worker and cosine-similarity
+  query wholesale rather than standing up a second pipeline. (**ADR-118**)
+- **Floor-and-fill** — The per-turn retrieval shape for `EntityCard`s: a
+  guaranteed **floor** (scene-present entities — current location's NPCs/POIs,
+  `last_seen ≤ N` turns — always included, full detail, counted against the
+  token budget first) plus a semantic **fill** (embed the action text once, rank
+  the non-floor cards, spend the remaining budget). Nothing physically present
+  is ever dropped. A 2026-06-04 amendment proposes folding floor+fill into one
+  scored pertinence function (mention ≫ location > recency > similarity,
+  embedding as the fallback signal) while keeping the floor as a hard invariant
+  — design-only as of this writing; floor+fill is still the live mechanism.
+  (**ADR-118**)
+- **Ratification gate** — `NpcPoolMember.observation_pending` (Story 49-6):
+  `True` means the member was auto-minted from prose this turn and hasn't been
+  re-cited. Each turn it either flips to `False` (re-cited → promote, treat as
+  canonical) or the entry is purged (dropped → the world never committed to
+  it). Governs projection eligibility for the retrieval index (**ADR-118**) and
+  the public reference page (**ADR-135**): an unratified member is withheld from
+  both, but stays fully present in the floor if the player is engaging it this
+  turn — ratification gates the *fill*, never the *floor*. (**ADR-138**,
+  proposed/design-only)
+- **`NpcPoolMember` vs `Npc`** — Two different NPC representations, not a
+  duplication bug. `NpcPoolMember` (`game/npc_pool.py`) is identity-only
+  scaffolding (name/role/pronouns/appearance/disposition/`drawn_from`) the
+  narrator cites for name-continuity. `Npc` (`game/session.py`) is the
+  mechanical entity (CreatureCore, EdgePool, beliefs, last-seen). A pool member
+  is *promoted* to an `Npc` (stamped `pool_origin = member.name`) when it
+  engages mechanically — the pool member is **not consumed**, it stays
+  re-citable. (**ADR-138**)
 - **Intent Router** — The mechanical-engagement spine that classifies player
   input toward the right subsystem. (**ADR-113**, partial)
 
@@ -201,6 +248,15 @@ These are the named rules every narrator-facing decision is weighed against.
   intended, not a bug. (**ADR-106**; memory: `project_beneath_sunden_unmapped_deep`)
 - **Complication Ledger** — The record of complications/constraints the
   megadungeon generator curates as it expands. (**ADR-106**)
+- **RegionCreature / `region_population`** — The frozen procedural creature
+  roster for one generated dungeon region. The materializer's commit stage
+  persists each region's curated roster (`region_creatures`/`region_big_bad`)
+  as a `region_population` dungeon mutation on the same save transaction;
+  `region_population.py:load_region_population` reads it back as
+  `RegionCreature` records for the Monster-Manual inject seam, which places
+  them in `snapshot.npcs` under their real names — so procedurally-generated
+  rooms field real, named creatures instead of narrator improvisation.
+  (**ADR-106** Amendment C, **ADR-059**)
 
 ## Worldbuilding & naming
 
@@ -209,6 +265,16 @@ These are the named rules every narrator-facing decision is weighed against.
   (**ADR-091**)
 - **Markov naming** — Procedural names built from culture-specific Markov chains
   over the corpus, so names feel phonetically right per culture. (**ADR-091**)
+- **`named_individual` exclusion** — An `NpcArchetype.named_individual: bool`
+  opt-in flag marking an archetype as a specific named real/historical or
+  unique authored person (e.g. Charles Taze Russell) — present for flavor and
+  authoring reference, but never drawn into a *random* spawn.
+  `spawnable_archetypes()` filters these out of every random `rng.choice` site
+  (encountergen, namegen), failing loud if the filtered pool empties; an
+  explicit `--archetype "<name>"` request still resolves them deliberately.
+  Added 2026-06-01 after a real-Earth-history playtest (`the_real_mccoy`)
+  randomly spawned a historical figure as a combat enemy. (**ADR-091**,
+  2026-06-01 amendment)
 
 ## Workflow, tooling & infra
 

@@ -17,7 +17,7 @@ implementation-pointer: null
 - **Input:** `docs/port-drift-feature-audit-2026-04-24.md` (audit that fed this ADR)
 - **Governing:** ADR-082 (1:1 port mandate), ADR-085 (port-drift tracker hygiene)
 - **Consolidation context:** ADR-067 (Unified Narrator Agent — explains why several agent helpers are intentionally gone)
-- **Amended/acknowledged:** ADR-017, 018, 020, 041, 042, 044, 053, 059, 069 (their implementations are missing or partial in Python; this ADR schedules their restoration without reopening the original decisions). _ADR-043 was originally in this list; it has since been superseded by ADR-091 and dropped from the restoration scope._ _ADR-069 has since been superseded by ADR-092 (design pivot ratified 2026-05-02); the restoration work item remains scheduled here but is now scoped against ADR-092's HTTP-endpoint design rather than ADR-069's retired CLI design._
+- **Amended/acknowledged:** ADR-017, 018, 020, 041, 042, 044, 053, 059, 069 (their implementations are missing or partial in Python; this ADR schedules their restoration without reopening the original decisions). _ADR-043 was originally in this list; it has since been superseded by ADR-091 and dropped from the restoration scope._ _ADR-069 has since been superseded by ADR-092 (design pivot ratified 2026-05-02); the restoration work item remains scheduled here but is now scoped against ADR-092's HTTP-endpoint design rather than ADR-069's retired CLI design._ _ADR-059's restoration has since substantially landed (NPC-generation architecture survey, 2026-07-05): the pregen-dispatch mechanism and the `encountergen` binary are both VERIFIED live; only the `sidequest-namegen` `[project.scripts]` entry-point registration (cosmetic) and the `sidequest-loadoutgen` binary (genuinely still dark) remain open — see Section B, Section E, and the 2026-07-05 sweep note below._
 - **Explicit restraint:** ADR-071 (Proposed — not executed in Rust either; stay deferred). _ADR-074 (Dice Resolution Protocol) was originally on this list; it has since been promoted to accepted/live (audit 2026-05-02) — protocol payloads, server dispatch, and UI subsystem are all wired._ _ADR-075 (3D Dice Rendering) was also on this list; it has since been promoted to accepted/partial (audit 2026-05-02) — Three.js + R3F + Rapier stack is live, but the design pivoted from overlay to inline tray and from gesture-throw to click-and-auto-roll; per-genre `dice.yaml` theming remains unshipped._ _ADR-077 (Dogfight Subsystem) was also on this list; it has since been promoted to accepted/live (audit 2026-05-02) — content shipping in space_opera, `ResolutionMode.sealed_letter_lookup` dispatch branch live in `narration_apply.py`._ _ADR-078 (Edge / Composure / Push-Currency) was also on this list; it has since been promoted to accepted/partial (audit 2026-05-02) — Edge primitive on CreatureCore is live with apply_edge_delta wired, BeatDef.edge_delta field exists, advancement-effect data shapes loaded; gaps remain at Epic 39 (per-class edge config wiring), missing `composure_break` OTEL span, and push-currency content stuck in workshopping rather than production._ _ADR-081 (Advancement Effect Variant Expansion v1) was also on this list; it has since been promoted to accepted/deferred (audit 2026-05-02) — upstream-blocked on ADR-078's Epic 39 wiring; bundles into the same P2 restoration item._
 
 > This ADR is not a redesign. It is a **scheduling verdict** on every subsystem
@@ -83,7 +83,7 @@ The user (Bossmang) has asked for a single plan covering **all** non-parity item
 
 | Subsystem | Prior ADR | Verdict | Tier | Notes |
 |-----------|-----------|---------|------|-------|
-| Pregen dispatch (server invokes namegen/encountergen/loadoutgen at turn-time) | ADR-059 Accepted | **RESTORE** | **P0** | Single biggest hot item. Accepted ADR is currently dark. Without this, NPC names/encounters/loadouts drift into Claude's improvisation — which is exactly what ADR-059 was written to prevent. |
+| Pregen dispatch (server invokes namegen/encountergen at turn-time) | ADR-059 Accepted | **VERIFIED partial** (2026-07-05, NPC-generation architecture survey) | P3 (downgraded from P0) | `server/dispatch/pregen.py:seed_manual` invokes `namegen.main()` and `encountergen.main()` **in-process** (not subprocess, as this row originally assumed) whenever `MonsterManual.needs_seeding()`, called every turn from `websocket_session_handler.py` via `monster_manual_inject.ensure_loaded`. Confirmed via 1158 `monster_manual.injected` log events. The "NPC names/encounters drift into Claude's improvisation" risk this row exists to prevent is resolved. **Bundling `loadoutgen` into this row was itself imprecise**: loadoutgen was never part of the `pregen`/`seed_manual` turn-time pipeline — it is a separate, narrator-invoked agent tool (`agents/tools/generate_loadout.py`) gated on a different subsystem entirely, and it remains a dead 1-line stub (see Section E, unchanged P0). Only remaining action on *this* row is the `sidequest-namegen` `[project.scripts]` entry-point registration — a one-line `pyproject.toml` addition with no functional effect, since the in-process call already fires (see P3 rollup). |
 | Confrontation engine / Combat Epic 28 port verification | ADR-033 Accepted | **VERIFIED** (Pillars 1 + 2 live; Pillar 3 partial) | P3 | Audit completed 2026-05-02. Pillars 1 (StructuredEncounter / ConfrontationDef / `apply_beat`) and 2 (ResourcePool + threshold→KnownFact via `mint_threshold_lore`) shipped intact through the port and are heavily wired across narrator, dispatch, and session paths. Remaining gap is Pillar 3's `mood_aliases` lookup table: declared on the Pydantic model (`genre/models/audio.py`) and in one content pack (`heavy_metal/audio.yaml`), but no consumer fires the alias chain. `mood_override` (the Pillar 3 step that actually moves narration) is live. Polish item, not port-casualty — drop from P0. |
 | Speculative prerendering | ADR-044 Historical (re-labeled 2026-05-02) | **DO NOT RESTORE** | — | TTS is deprecated; this ADR's premise (use TTS playback window as free GPU render time) is moot. Image latency is now addressed by direct render-pipeline tuning, not speculation. If post-TTS speculative prerendering ever becomes interesting (predicting renders during narration-read gaps), write a fresh ADR — do not revive ADR-044. |
 | Room graph navigation — per-transition mechanics + map wire message | ADR-055 Accepted (promoted from Proposed 2026-05-02) | **RESTORE** | P2 | Data layer + init runtime + 4 worlds' content shipping (`caverns_and_claudes/worlds/{dungeon_survivor,grimvault,horden,mawdeep}/rooms.yaml`). Three gaps: (1) `tick_on_room_transition` to fire trope `rate_per_turn` per transition in room_graph mode (Keeper-awareness escalation is currently dark); (2) `uses_remaining` decrement on transition for active light sources (torch-burn / extraction-pressure loop dark); (3) new wire message replacing the deleted MAP_UPDATE pipeline (UI carries dead consumer code at `App.tsx` — clean up in same pass). Spec drift in ADR-055's body (`size`, `RoomExit`, mode count) is documented; no action owed beyond the running models being source of truth. |
@@ -116,9 +116,9 @@ The user (Bossmang) has asked for a single plan covering **all** non-parity item
 
 | Binary | Python state | Verdict | Tier | Notes |
 |--------|--------------|---------|------|-------|
-| `sidequest-namegen` | `cli/namegen/namegen.py` (22K LOC) exists; no `[project.scripts]` entry; server does not invoke | **REWIRE** | **P0** | Code is ported. Work is: register in `pyproject.toml`, add server-side dispatch to invoke as subprocess per ADR-059. |
-| `sidequest-encountergen` | `__init__.py` stub only | **RESTORE** | **P0** | Port the Rust binary's logic; register entry point; wire into pregen dispatch. |
-| `sidequest-loadoutgen` | `__init__.py` stub only | **RESTORE** | **P0** | Same shape as encountergen. |
+| `sidequest-namegen` | `cli/namegen/namegen.py` (764 lines / ~26K characters — this row's original "22K LOC" figure appears to have counted characters, not lines) exists; no `[project.scripts]` entry; **server-side dispatch invokes it in-process** | **REWIRE, entry-point registration only** (2026-07-05) | P3 (downgraded from P0) | Dispatch integration is DONE: `server/dispatch/pregen.py:seed_manual` imports `sidequest.cli.namegen.namegen.main` and calls it directly (in-process, not subprocess-per-ADR-059's original assumption) on every Manual seed pass — confirmed via 1158 `monster_manual.injected` log events. The only remaining work is registering `sidequest-namegen` in `pyproject.toml [project.scripts]` for standalone-CLI use; this has no effect on the live in-process path. |
+| `sidequest-encountergen` | `cli/encountergen/encountergen.py` (836 lines) is a real implementation; `__init__.py` is still a 1-line docstring | **RESTORED** (2026-07-05) | — | `generate_enemy_from_bestiary()` (line 356) and `main()` (line 775) are real, non-stub code, called in-process by `pregen.seed_manual`. The prior "`__init__.py` stub only" description was accurate for `__init__.py` but never described where the actual logic lives — the Rust binary's logic was already ported to `encountergen.py`, just not to the file this row was reading. Confirmed via direct code read + log evidence, NPC-generation architecture survey. |
+| `sidequest-loadoutgen` | `__init__.py` stub only | **RESTORE** | **P0** | Same shape as encountergen — *reconfirmed 2026-07-05, still accurate*: zero non-test callers anywhere in `sidequest/`; `agents/tools/generate_loadout.py` explicitly returns a fatal, non-recoverable `ToolResult` (`tool.loadout.loadoutgen_wired=False`) rather than confabulate a loadout. Not touched by the ADR-059 pregen-dispatch restoration above — loadoutgen was never part of that pipeline. |
 | `sidequest-promptpreview` | `__init__.py` stub only | **RESTORE** | P1 | Dev iteration tool. Per ADR-082 §Context point 2 ("iteration speed is the product"), this is more load-bearing than its dev-tool label implies. |
 | `sidequest-validate` | Only `projection_check.py` | **RESTORE** | P2 | Genre pack schema validation with batch error collection. Keeps content authors productive. |
 
@@ -132,14 +132,13 @@ The user (Bossmang) has asked for a single plan covering **all** non-parity item
 
 ## Priority-Tier Rollup
 
-### P0 — this sprint / next sprint (5 items)
-1. ADR-059 pregen dispatch — server invokes pregen binaries at turn-time
-2. `sidequest-namegen` rewire (entry point + dispatch integration)
-3. `sidequest-encountergen` restore
-4. `sidequest-loadoutgen` restore
-5. ADR-092 scene fixture hydrator + `POST /dev/scene/{name}` endpoint (supersedes ADR-069)
+### P0 — this sprint / next sprint (2 items)
+1. `sidequest-loadoutgen` restore
+2. ADR-092 scene fixture hydrator + `POST /dev/scene/{name}` endpoint (supersedes ADR-069)
 
 > _Item 6 (Epic 28 / Confrontation Engine port-drift audit + restore) was originally P0 pending a VERIFY pass. Audit completed 2026-05-02: Pillars 1 + 2 of ADR-033 are live; only the `mood_aliases` alias-chain consumer remains as a polish gap. Moved to P3._
+>
+> _Items 1-3 (ADR-059 pregen dispatch, `sidequest-namegen` rewire, `sidequest-encountergen` restore) were originally P0 here. NPC-generation architecture survey (2026-07-05) confirmed `server/dispatch/pregen.py:seed_manual` invokes namegen + encountergen in-process every time the Monster Manual needs seeding (1158 `monster_manual.injected` log events) — the risk this trio existed to close (narrator improvising NPC names/encounters) is resolved. `sidequest-encountergen` moved to **RESTORED** (Section E). The merged "pregen dispatch" row (Section B) moved to **VERIFIED partial** / P3 — only the cosmetic `sidequest-namegen` `[project.scripts]` registration remains, also moved to P3 (rollup item 30 below). `sidequest-loadoutgen` (item 4, unchanged, renumbered to 1 above) was never part of this pipeline and is untouched by this finding — still genuinely dark._
 
 ### P1 — within current epic window (7 items)
 7. ~~Trope engine (ADR-018)~~ — **RESTORED (story 50-4)**; all four pillars wired including `rate_per_day` between-session advancement.
@@ -166,11 +165,12 @@ The user (Bossmang) has asked for a single plan covering **all** non-parity item
 
 > _Speculative prerendering (ADR-044) was originally listed here at P2 RESTORE. Removed: ADR-044 has been re-labeled `historical` (2026-05-02) — TTS is deprecated and the ADR's "use TTS playback window as free GPU render time" premise no longer applies. No restoration owed._
 
-### P3 — flavor / low urgency (4 items)
+### P3 — flavor / low urgency (5 items, 2026-07-05)
 26. Beat filter
 27. Test-support helpers (**VERIFY** first)
 28. `mood_aliases` alias-chain consumer in MusicDirector track selection (ADR-033 Pillar 3 step 3) — Pydantic field + heavy_metal pack declaration exist; no consumer fires the chain. Polish, not port-casualty.
 29. Per-genre `dice.yaml` theming (ADR-075 §Genre-pack theming) — `material`/`surface`/`glow`/`color_*`/`font` config feeding PBR textures. Zero packs declare it; default white-with-black dice ship for all genres. Polish, not load-bearing.
+30. `sidequest-namegen` `[project.scripts]` entry-point registration (moved from P0, 2026-07-05) — the only remaining piece of the ADR-059 pregen-dispatch restoration. `namegen.main()` already fires in-process from `pregen.seed_manual` on every turn-time seed pass; this item is purely registering `sidequest-namegen` as a standalone console script in `pyproject.toml` for CLI-direct use. No functional gap in production.
 
 > _Conlang morpheme glossary (ADR-043) was originally listed here at P3 RESTORE. Removed: ADR-043 has been superseded by ADR-091 (culture-corpus + Markov naming, already live). No restoration owed._
 
@@ -268,6 +268,52 @@ state changes induced in this plan during that sweep:
   (Client Audio Engine), ADR-058 (Claude OTEL passthrough), ADR-076
   (narration protocol collapse), ADR-086 (image-composition taxonomy),
   ADR-013, ADR-039.
+
+### Sweep changes through 2026-07-05 (NPC-generation architecture survey)
+
+A targeted verification pass on the ADR-059 pregen-dispatch trio (triggered by
+an NPC-generation architecture survey, unrelated to a full re-sweep of this
+ADR) found the P0 framing stale for two of the three CLI binaries. Only the
+`Section B` (Mechanical engine subsystems) and `Section E` (CLI binaries) rows
+touching ADR-059/namegen/encountergen/loadoutgen were re-verified; no other
+subsystem in this ADR (scene fixture hydrator, P1-P3 tiers, Deferred,
+Superseded/collapsed, Do-not-restore) was re-adjudicated in this pass.
+
+- **P0 went from 5 → 2 items.** `sidequest-namegen` rewire and
+  `sidequest-encountergen` restore both closed; the merged "ADR-059 pregen
+  dispatch" row demoted to P3 (VERIFIED partial). `sidequest-loadoutgen`
+  restore and the ADR-092 scene fixture hydrator remain the only P0 items.
+- **`server/dispatch/pregen.py:seed_manual` is live**, invoking
+  `namegen.main()` and `encountergen.main()` **in-process** (not
+  subprocess-per-binary, as ADR-059's original REWIRE/RESTORE verdicts
+  assumed) every time `MonsterManual.needs_seeding()` is true, called every
+  turn from `websocket_session_handler.py`. Confirmed via 1158
+  `monster_manual.injected` log events across `~/.sidequest/logs/`.
+- **`sidequest-encountergen` was never actually an empty stub** — only its
+  `__init__.py` was. The real logic (`generate_enemy_from_bestiary()`,
+  `main()`) has lived in `encountergen.py` (836 lines), and this ADR's Section
+  E row was reading the wrong file.
+- **`sidequest-namegen`'s remaining gap is registration-only.** The
+  "22K LOC... server does not invoke" framing is now wrong on both counts:
+  `namegen.py` is 764 lines (~26K characters — likely where "22K LOC"
+  actually came from, a units mix-up rather than a LOC count), and the server
+  does invoke it, just in-process rather than via a registered
+  `[project.scripts]` console entry. That registration is the only open item,
+  demoted P0 → P3.
+- **`sidequest-loadoutgen` is unaffected and reconfirmed dark.** It was never
+  wired into the `pregen`/`seed_manual` turn-time pipeline at all — it is a
+  separate, narrator-invoked agent tool (`agents/tools/generate_loadout.py`)
+  that explicitly documents itself as unwired and fails loud rather than
+  confabulate. Grouping it with namegen/encountergen under one "pregen
+  dispatch (...loadoutgen at turn-time)" row was itself an imprecision this
+  sweep corrects — loadoutgen's own Section E row and P0 rollup slot are
+  untouched.
+- **No frontmatter changed.** `status`, `implementation-status`, `tags`,
+  `supersedes`, `superseded-by`, and `related` are all unchanged (this ADR's
+  `implementation-status: live` reflects the tracker document itself per
+  "Implementation status (2026-05-02)" above, not any one subsystem's state).
+  `scripts/regenerate_adr_indexes.py` was therefore **not** run — it reads
+  only frontmatter, and there is no frontmatter delta for it to pick up.
 
 ### Sibling restoration ADR
 

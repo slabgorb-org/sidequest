@@ -207,6 +207,59 @@ What `<game_state>` carries today is the running session snapshot only (`orchest
 
 Restoration is **P0 RESTORE** in [ADR-087](087-post-port-subsystem-restoration-plan.md) — the highest-priority single item across the entire restoration plan: _"Single biggest hot item. Accepted ADR is currently dark. Without this, NPC names/encounters/loadouts drift into Claude's improvisation."_ ADR-087 also schedules the encountergen/loadoutgen binary RESTORE and the namegen REWIRE as P0 prerequisites in §E. The decision in this ADR stands.
 
+## Correction (2026-07-05, NPC-generation architecture survey) — the 2026-05-02 status section above is STALE
+
+The "What is dark" list above described the state before restoration. It has since
+landed (the P0 RESTORE this ADR called for is done) and the section above is now
+**wrong on every point except one**. Verified against the current tree line-by-line:
+
+- **`MonsterManual` class — no longer "zero references."** `server/dispatch/monster_manual_inject.py`'s
+  `ensure_loaded()`/`inject()` run from `server/websocket_session_handler.py`
+  unconditionally in the per-turn flow (~L835-865), with the post-narration gate
+  (`mark_all_dormant`/`mark_active_from_narration`) called at ~L1369-1370. The
+  `~/.sidequest/manuals/{genre}_{world}.json` file **is** created and grows — 34
+  manual files exist on disk as of 2026-07-05, several exceeding 1000 NPCs. Runtime
+  evidence: `monster_manual.injected` appears **1158 times** across
+  `~/.sidequest/logs/sidequest-server.log*`.
+- **First-session seeding code exists.** `server/dispatch/pregen.py:seed_manual`
+  (~L326) invokes `namegen`/`encountergen` in-process (imported as
+  `namegen_main`/`encountergen_main`) to populate NPCs (3 per culture) and
+  encounter blocks whenever `manual.needs_seeding()`.
+- **`sidequest/cli/encountergen/__init__.py` is still a 1-line docstring, but that's
+  not where the implementation lives.** `sidequest/cli/encountergen/encountergen.py`
+  is a real, 836-line implementation (`generate_enemy_from_bestiary` at line 356,
+  `main` at line 775) and is exactly what `pregen.seed_manual` calls. The "1-line
+  empty stub" framing was misleading for encountergen even read charitably — the
+  logic was never in `__init__.py`.
+- **`namegen` is wired, just not as a registered console script.** `namegen.py`
+  (764 LOC) is still absent from `pyproject.toml`'s `[project.scripts]` (only
+  `sidequest-server` is registered) — that half of the old claim holds — but
+  "the server does not invoke it" no longer holds: `pregen.py` imports and calls
+  `namegen.main()` in-process on every seed pass.
+- **`sidequest/cli/loadoutgen/__init__.py` is still genuinely a 1-line placeholder
+  stub** ("Placeholder — populated in later phases per ADR-082 port plan.") **and
+  is still unwired** — confirmed zero non-test callers anywhere in `sidequest/`.
+  `agents/tools/generate_loadout.py` explicitly documents this and returns a fatal,
+  non-recoverable `ToolResult` with `tool.loadout.loadoutgen_wired=False` rather
+  than confabulate. This is the one part of the original "what is dark" list that
+  is still accurate today.
+- **Compound-key lookup and the post-narration NPC gate both exist.**
+  `MonsterManual.find_npc_by_name`/`find_npc_by_exact_name`/`find_enemy_by_name`
+  (`game/monster_manual.py`) provide the lookup; `mark_active_from_narration`
+  (`monster_manual_inject.py:816`) is the post-narration gate that scans narration
+  text for Available Manual NPC names and flips them Active.
+
+**What remains true:** loadoutgen only. Everything else in the "what is dark"
+section has been restored. `<game_state>` today carries a real pre-generated NPC
+pool, encounter pool, and (per the 2026-07-02 addendum below) bestiary-derived
+creature pool — not just the running session snapshot. Do not cite the 2026-05-02
+section's "MonsterManual — zero references" / "namegen … the server does not
+invoke it" / "absent" claims (NPCs, encounters, compound-key lookup, post-narration
+gate) as current; cite this correction instead. Verified by direct code read
+(`websocket_session_handler.py`, `pregen.py`, `encountergen.py`, `namegen.py`,
+`monster_manual.py`, `monster_manual_inject.py`, `generate_loadout.py`,
+`pyproject.toml`) plus a log grep for `monster_manual.injected` count.
+
 ## Amendment (2026-06-20) — Faction/zone-scoped content eligibility (epic-157)
 
 The entry schema above carried `location_tags` *"for future filtering even if filtering
