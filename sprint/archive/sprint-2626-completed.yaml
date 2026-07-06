@@ -372,3 +372,8 @@ completed_stories:
     title: 'flickering_reach content reconciliation: 18 phantom encounter-table creature refs remapped to real bestiary ids; creatures.yaml divergent stat block demoted to ADR-155 render-only (V4 gate: confirm whether native path still reads its stats)'
     points: 2
     completed: '2026-07-05'
+  - id: 162-6
+    epic: '162'
+    title: 'space_opera bestiary de-triplication: byte-identical 12-entry world bestiaries collapse to a genre-root file per effective_bestiary world-over-genre resolution; same pattern check for long_foundry'
+    points: 2
+    completed: '2026-07-06'
