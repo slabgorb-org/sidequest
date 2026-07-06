@@ -382,3 +382,8 @@ completed_stories:
     title: 'All-sources-one-scene wiring test + understudy identity-split hunt: integration test spawning from every source asserting one identity per creature; understudy scenario flags two-names-one-enemy as a finding'
     points: 2
     completed: '2026-07-06'
+  - id: 162-8
+    epic: '162'
+    title: 'Dead spawn-path cleanup: resolve_encounter_from_trope (no callers) deleted or wired; generate_name tool ctx.name_generators Phase-E wiring resolved or the stub removed (No Stubbing)'
+    points: 1
+    completed: '2026-07-06'
