@@ -367,3 +367,8 @@ completed_stories:
     title: 'Bestiary generics section replaces ephemeral stub minting: authored generic rows per world become the sanctioned last-resort Other; stub fabrication becomes a loud failure on non-degenerate paths (No Silent Fallbacks)'
     points: 3
     completed: '2026-07-05'
+  - id: 162-5
+    epic: '162'
+    title: 'flickering_reach content reconciliation: 18 phantom encounter-table creature refs remapped to real bestiary ids; creatures.yaml divergent stat block demoted to ADR-155 render-only (V4 gate: confirm whether native path still reads its stats)'
+    points: 2
+    completed: '2026-07-05'

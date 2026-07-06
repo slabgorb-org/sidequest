@@ -53,10 +53,14 @@ stories:
     title: 'flickering_reach content reconciliation: 18 phantom encounter-table creature refs remapped to real bestiary ids; creatures.yaml divergent stat block demoted to ADR-155 render-only (V4 gate: confirm whether native path still reads its stats)'
     points: 2
     priority: p2
-    status: backlog
-    repos: content
+    status: done
+    started: '2026-07-06'
+    repos: server,content
     workflow: tdd
+    completed: '2026-07-05'
     type: bug
+    review_findings: "APPROVED on re-review (round-trip 1). Original HIGH (encounter narration described the wrong creature) RESOLVED and verified 3 ways (grep sweep, mutation testing, live tests). ACs 1-4 met + test-verified GREEN; rule-checker clean (ADR-155 12/12 exact, 0 phantom, 16 entries/0 dup, ruff+pyright clean). Non-blocking deferred follow-ups: (1) fix bestiary.yaml ADR-155 comment to reflect V4 (creatures.yaml is a live spawn source, not render-only); (2) reconcile pre-existing bestiary-role vs creatures.yaml-ecology contradictions (tangle_mouth sessile/mobile, dust_drinker bladder/ambusher, echo_frog harmless/1d4) — a separate content pass. Blocking-for-finish: SM set repos=server,content."
+    review_verdict: approved
   - id: 162-6
     title: 'space_opera bestiary de-triplication: byte-identical 12-entry world bestiaries collapse to a genre-root file per effective_bestiary world-over-genre resolution; same pattern check for long_foundry'
     points: 2
