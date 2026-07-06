@@ -377,3 +377,8 @@ completed_stories:
     title: 'space_opera bestiary de-triplication: byte-identical 12-entry world bestiaries collapse to a genre-root file per effective_bestiary world-over-genre resolution; same pattern check for long_foundry'
     points: 2
     completed: '2026-07-06'
+  - id: 162-7
+    epic: '162'
+    title: 'All-sources-one-scene wiring test + understudy identity-split hunt: integration test spawning from every source asserting one identity per creature; understudy scenario flags two-names-one-enemy as a finding'
+    points: 2
+    completed: '2026-07-06'

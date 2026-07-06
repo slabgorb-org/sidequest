@@ -76,10 +76,13 @@ stories:
     title: 'All-sources-one-scene wiring test + understudy identity-split hunt: integration test spawning from every source asserting one identity per creature; understudy scenario flags two-names-one-enemy as a finding'
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-06'
     repos: server,understudy
     workflow: tdd
+    completed: '2026-07-06'
     type: chore
+    review_verdict: approved
   - id: 162-8
     title: 'Dead spawn-path cleanup: resolve_encounter_from_trope (no callers) deleted or wired; generate_name tool ctx.name_generators Phase-E wiring resolved or the stub removed (No Stubbing)'
     points: 1
@@ -104,3 +107,11 @@ stories:
     repos: server
     workflow: tdd
     type: chore
+  - id: 162-11
+    title: 'Understudy perception real-UI aria fidelity: two_names_one_enemy (162-7) and the tool-wide log:/panel assumptions parse aria tokens (region "Enemies", listitem, log:) absent from sidequest-ui — the detector returns None on every real session (inert in production). Capture the real ConfrontationOverlay/narration aria via perceive(), add perceivable ARIA roles to the opponent-name + narration surfaces if needed (ui), and reconcile understudy detector regexes + wiring fixtures so identity-fork detection fires in a live confrontation. Benefits all understudy detectors, not just this one.'
+    points: 3
+    priority: p1
+    status: backlog
+    repos: understudy,ui
+    workflow: tdd
+    type: bug
