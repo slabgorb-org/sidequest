@@ -362,3 +362,8 @@ completed_stories:
     title: 'Identity by id, not name: unify invented_from/pool_origin/manual_origin/creature_id into one typed Origin; dedup/purge/seating key on creature_id/authored id; narrator prose names recorded as aliases (alias ledger) — kills two-names-one-enemy identity forks'
     points: 3
     completed: '2026-07-05'
+  - id: 162-3
+    epic: '162'
+    title: 'Bestiary generics section replaces ephemeral stub minting: authored generic rows per world become the sanctioned last-resort Other; stub fabrication becomes a loud failure on non-degenerate paths (No Silent Fallbacks)'
+    points: 3
+    completed: '2026-07-05'

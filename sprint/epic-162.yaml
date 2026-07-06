@@ -34,9 +34,12 @@ stories:
     title: 'Bestiary generics section replaces ephemeral stub minting: authored generic rows per world become the sanctioned last-resort Other; stub fabrication becomes a loud failure on non-degenerate paths (No Silent Fallbacks)'
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-05'
     repos: server,content
     workflow: tdd
+    completed: '2026-07-05'
+    review_verdict: approved
   - id: 162-4
     title: 'Origin-precedence ADR (Green Room): single-gate materializer design; precedence authored > room-bound > region-population > MM pool > narrator mint; all seven spawn paths become typed-provenance feeders'
     points: 2
