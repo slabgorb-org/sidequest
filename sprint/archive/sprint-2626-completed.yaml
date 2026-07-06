@@ -387,3 +387,8 @@ completed_stories:
     title: 'Dead spawn-path cleanup: resolve_encounter_from_trope (no callers) deleted or wired; generate_name tool ctx.name_generators Phase-E wiring resolved or the stub removed (No Stubbing)'
     points: 1
     completed: '2026-07-06'
+  - id: 162-9
+    epic: '162'
+    title: '162-1 follow-up: un-gate trim_to_caps from content evidence (bestiary-less over-cap pools never trimmed) + zero-trim WARNING guard; close coverage gaps (npc_dropped_all_authored, encounter-side trim, encounter_dropped via seed_manual); 5 doc corrections (stale session-discard claims, class-docstring wording, conftest session_fixture comment)'
+    points: 2
+    completed: '2026-07-06'

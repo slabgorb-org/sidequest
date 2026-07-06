@@ -98,10 +98,14 @@ stories:
     title: '162-1 follow-up: un-gate trim_to_caps from content evidence (bestiary-less over-cap pools never trimmed) + zero-trim WARNING guard; close coverage gaps (npc_dropped_all_authored, encounter-side trim, encounter_dropped via seed_manual); 5 doc corrections (stale session-discard claims, class-docstring wording, conftest session_fixture comment)'
     points: 2
     priority: p3
-    status: backlog
+    status: done
+    started: '2026-07-06'
     repos: server
     workflow: trivial
+    completed: '2026-07-06'
     type: chore
+    review_findings: "REJECTED (narrow): behavioral change + 5 doc corrections correct and verified (rule-checker clean, revert-experiment confirms regression tests bite). One blocking Medium DOC miss: CAP_ENFORCED span comment (telemetry/spans/monster_manual.py:49-54) still says trim is 'bounded on reconcile' via 'ensure_loaded reconcile' — contradicts this story's own corrected docstrings; a stale claim of the exact type bucket 4 was chartered to fix, in a file the diff edited. Green/rework -> Dev for the comment fix."
+    review_verdict: approved
   - id: 162-10
     title: '162-2 non-blocking follow-ups: unified-resolver adoption at remaining seams (mention-path, pool-member lookup, Fate seeder, edge-publish by_name); decoy-roster hardening for canonicalization tests; participant.joined pre-rename telemetry; NpcMention rebind via dataclasses.replace; two comment corrections; diacritic-leg seat integration test'
     points: 2
