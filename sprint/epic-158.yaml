@@ -842,9 +842,13 @@ stories:
     description: "The server half of the AWN mutation dice route landed in 158-54 (server #1108): DiceThrowPayload.mutation_id names WHICH owned mutation manifests on a mutation_resolution beat commit, mirroring the 102-2 spell picker contract. But no UI sends it — the confrontation overlay has no mutation picker, so a mutation-beat commit from the real client raises the loud missing-mutation_id DiceDispatchError (or the player simply cannot use the marquee mechanic). Build the spell-picker twin: on a mutation_resolution beat, list the PC's owned positives (mutation_state.positive_ids joined to the catalog names) and ride the chosen id on the DICE_THROW payload. PROVENANCE: TEA Delivery Finding, 158-54 session (archived). The server contract is fully tested (tests/integration/test_dice_path_mutation_use_158_54.py); this story is UI + one client-payload wiring test."
     points: 3
     priority: p2
-    status: backlog
-    repos: ui
+    status: done
+    started: '2026-07-07'
+    repos: server,ui
     workflow: tdd
+    completed: '2026-07-07'
+    review_findings: "[HIGH] _project_mutation_economy crashes the table-wide CONFRONTATION broadcast on a content-drift stale positive_id (KeyError via positive_by_id, no isolation in emitters.py:165 delivery loop; graceful precedent at context_builder._positive_line). [MED] getattr(genre_pack,'mutations',None) silent fallback on a declared field; [MED][TEST] widened confrontation-wiring regexes non-discriminating + no behavioral GameBoard mutation_id-forwarding test; click-fidelity/decoy-order/loud-refusal test gaps."
+    review_verdict: approved
   - id: 158-57
     title: Surface awn.mutation.refused reasons in player-facing WN round messages (span-only today)
     description: "awn.mutation.refused (not_owned / limit_exhausted / strain_over_max / unknown_mutation) fires span-only on the dice path — the GM panel sees the refusal but the refused PLAYER gets silence: the round resolves, no mutation happens, nothing explains why. Thread the spine's refusal reason into the player-facing WN round messages (dispatch/wn_round.py has zero refusal surface today — grep confirmed 2026-07-03). Sebastien-legibility: expose the math in player-facing surfaces. PROVENANCE: Reviewer Delivery Finding, 158-54 session (archived). Keep the narrator-route parity in mind — refusals there are also span-only; this story may fix both or scope to the dice path."
