@@ -51,7 +51,7 @@ harmless no-op (no new faces exist), but there's nothing to render.
 |------|--------|--------|
 | wry_whimsy | oz, wonderland, gulliver | ✅ ready |
 | space_opera | coyote_star, perseus_cloud, aureate_span | ✅ ready |
-| spaghetti_western | dust_and_lead, five_points, the_real_mccoy | ⏳ in review |
+| spaghetti_western | dust_and_lead, five_points, the_real_mccoy | ✅ ready |
 | heavy_metal | barsoom, long_foundry, evropi | ⬜ pending |
 | elemental_harmony | burning_peace, shattered_accord | ⬜ pending |
 | tea_and_murder | glenross, blackthorn_moor | ⬜ pending |
