@@ -16,6 +16,32 @@ PORTRAITS_DIR="$ROOT/sidequest-content/genre_packs/$GENRE/worlds/$WORLD/assets/p
 cd "$ROOT"
 mkdir -p "$PORTRAITS_DIR"
 
+# Preflight: the running daemon must serve the SAME content root this script
+# renders from. If it serves a different checkout (e.g. oq-1 vs oq-2), its
+# CharacterCatalog loads a manifest WITHOUT the newly-authored pickers and every
+# new face dies with a per-entry `CatalogMissError`. Fail loud on mismatch rather
+# than let that scroll by (No Silent Fallbacks).
+EXPECTED_PACKS="$ROOT/sidequest-content/genre_packs"
+SOCK="/tmp/sidequest-renderer.sock"
+DPID="$(lsof "$SOCK" 2>/dev/null | awk 'NR==2{print $2}')"
+if [ -z "${DPID:-}" ]; then
+  echo "[render_pickers] WARNING: no daemon on $SOCK — start it with 'just daemon' (from the oq workspace whose content you're rendering)." >&2
+else
+  DPACKS="$(ps eww "$DPID" 2>/dev/null | tr ' ' '\n' | sed -n 's/^SIDEQUEST_GENRE_PACKS=//p' | head -1)"
+  if [ -z "${DPACKS:-}" ]; then
+    echo "[render_pickers] WARNING: could not read the daemon's SIDEQUEST_GENRE_PACKS (pid $DPID) — cannot confirm it serves $EXPECTED_PACKS. If you see CatalogMissError, that mismatch is why." >&2
+  elif [ "$DPACKS" != "$EXPECTED_PACKS" ]; then
+    echo "[render_pickers] FATAL: daemon (pid $DPID) serves content from:" >&2
+    echo "                     $DPACKS" >&2
+    echo "                   but this script renders pickers from:" >&2
+    echo "                     $EXPECTED_PACKS" >&2
+    echo "                   The daemon's CharacterCatalog will MISS the new pickers." >&2
+    echo "                   Fix: restart the daemon with SIDEQUEST_GENRE_PACKS=$EXPECTED_PACKS," >&2
+    echo "                   or run this script from the workspace the daemon already serves." >&2
+    exit 2
+  fi
+fi
+
 # Snapshot the local portraits dir before rendering so we can isolate the new PNGs.
 before="$(cd "$PORTRAITS_DIR" && ls -1 2>/dev/null | sort || true)"
 

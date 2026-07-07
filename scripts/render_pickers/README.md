@@ -36,6 +36,14 @@ scripts/render_pickers/all.sh
 
 ## Standing rules (baked into the scripts)
 
+- **Daemon must serve THIS workspace's content** — the daemon loads its
+  `CharacterCatalog` fresh per render from its own `SIDEQUEST_GENRE_PACKS`. If it
+  serves a different checkout than where the new pickers were authored (e.g. the
+  daemon is on `oq-1` but the pickers are in `oq-2`), every new face dies with
+  `CatalogMissError`. `render_one.sh` now preflights this and **fails loud** on a
+  mismatch. Start the daemon from the same workspace you're rendering from
+  (`cd <workspace> && just daemon`), or point its `SIDEQUEST_GENRE_PACKS` at the
+  content checkout that has the new pickers.
 - **Daemon must be warm** — these call the render daemon; start it with `just daemon`.
 - **Always `uv run python`** (the scripts do this) — never bare `python3`; the
   render/R2 scripts import `boto3` from the orchestrator `uv` env.
