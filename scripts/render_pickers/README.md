@@ -61,7 +61,7 @@ harmless no-op (no new faces exist), but there's nothing to render.
 | space_opera | coyote_star, perseus_cloud, aureate_span | ✅ ready |
 | spaghetti_western | dust_and_lead, five_points, the_real_mccoy | ✅ ready |
 | heavy_metal | barsoom, long_foundry, evropi | ✅ ready |
-| elemental_harmony | burning_peace, shattered_accord | ⬜ pending |
+| elemental_harmony | burning_peace, shattered_accord | ✅ ready |
 | tea_and_murder | glenross, blackthorn_moor | ⬜ pending |
 | mutant_wasteland | seaboard_of_saints, flickering_reach | ⬜ pending |
 | caverns_and_claudes | beneath_sunden | ⬜ pending |
