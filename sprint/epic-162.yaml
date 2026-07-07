@@ -110,10 +110,14 @@ stories:
     title: '162-2 non-blocking follow-ups: unified-resolver adoption at remaining seams (mention-path, pool-member lookup, Fate seeder, edge-publish by_name); decoy-roster hardening for canonicalization tests; participant.joined pre-rename telemetry; NpcMention rebind via dataclasses.replace; two comment corrections; diacritic-leg seat integration test'
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-07'
     repos: server
     workflow: tdd
+    completed: '2026-07-07'
     type: chore
+    review_findings: '[HIGH] pool-promotion reachability brick: variant-named pool antagonist promotes to canonical core.name but actor.name stays the variant -> find_creature_core(actor.name) exact-match misses -> resolver brick (both seeders, reproduced Fate). Plus [MEDIUM] test gaps: hp_depletion pool leg untested, all 9 new tests size-1-roster (mutation-blind), diacritic/alias match_form labels unasserted.'
+    review_verdict: approved
   - id: 162-11
     title: 'Understudy perception real-UI aria fidelity: two_names_one_enemy (162-7) and the tool-wide log:/panel assumptions parse aria tokens (region "Enemies", listitem, log:) absent from sidequest-ui — the detector returns None on every real session (inert in production). Capture the real ConfrontationOverlay/narration aria via perceive(), add perceivable ARIA roles to the opponent-name + narration surfaces if needed (ui), and reconcile understudy detector regexes + wiring fixtures so identity-fork detection fires in a live confrontation. Benefits all understudy detectors, not just this one.'
     points: 3

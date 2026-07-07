@@ -392,3 +392,8 @@ completed_stories:
     title: '162-1 follow-up: un-gate trim_to_caps from content evidence (bestiary-less over-cap pools never trimmed) + zero-trim WARNING guard; close coverage gaps (npc_dropped_all_authored, encounter-side trim, encounter_dropped via seed_manual); 5 doc corrections (stale session-discard claims, class-docstring wording, conftest session_fixture comment)'
     points: 2
     completed: '2026-07-06'
+  - id: 162-10
+    epic: '162'
+    title: '162-2 non-blocking follow-ups: unified-resolver adoption at remaining seams (mention-path, pool-member lookup, Fate seeder, edge-publish by_name); decoy-roster hardening for canonicalization tests; participant.joined pre-rename telemetry; NpcMention rebind via dataclasses.replace; two comment corrections; diacritic-leg seat integration test'
+    points: 2
+    completed: '2026-07-07'
