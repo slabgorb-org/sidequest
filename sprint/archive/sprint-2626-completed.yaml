@@ -423,3 +423,8 @@ completed_stories:
     title: SiteRegistry + CartographyConfig.sites + per-site storage keying (plan tasks 1–2)
     points: 5
     completed: '2026-07-08'
+  - id: 163-2
+    epic: '163'
+    title: Weed-whack dead WorldGraph/SubGraph/GraphEdge/Terrain models (plan task 2)
+    points: 1
+    completed: '2026-07-08'

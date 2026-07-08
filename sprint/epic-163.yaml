@@ -17,10 +17,13 @@ stories:
     title: Weed-whack dead WorldGraph/SubGraph/GraphEdge/Terrain models (plan task 2)
     points: 1
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-08'
     repos: server
     workflow: superpowers
+    completed: '2026-07-08'
     type: chore
+    review_verdict: approved
   - id: 163-3
     title: 'Server: pack validator — raster anchor coverage + provenance (plan tasks 8,18)'
     points: 2
