@@ -11,6 +11,7 @@ sprint:
 completed_epics:
   - '153'
   - '159'
+  - '162'
 completed_stories:
   - id: 153-1
     epic: '153'
@@ -402,3 +403,13 @@ completed_stories:
     title: Mutation picker in the confrontation overlay — client sends mutation_id on the mutation beat commit (158-54 UI half)
     points: 3
     completed: '2026-07-07'
+  - id: 162-11
+    epic: '162'
+    title: 'Understudy perception real-UI aria fidelity: two_names_one_enemy (162-7) and the tool-wide log:/panel assumptions parse aria tokens (region "Enemies", listitem, log:) absent from sidequest-ui — the detector returns None on every real session (inert in production). Capture the real ConfrontationOverlay/narration aria via perceive(), add perceivable ARIA roles to the opponent-name + narration surfaces if needed (ui), and reconcile understudy detector regexes + wiring fixtures so identity-fork detection fires in a live confrontation. Benefits all understudy detectors, not just this one.'
+    points: 3
+    completed: '2026-07-07'
+  - id: 162-4
+    epic: '162'
+    title: 'Origin-precedence ADR (Green Room): single-gate materializer design; precedence authored > room-bound > region-population > MM pool > narrator mint; all seven spawn paths become typed-provenance feeders'
+    points: 2
+    completed: '2026-07-05'

@@ -3,7 +3,7 @@ type: epic
 title: NPC origin consolidation — one identity, one arbiter, derived Monster Manual
 description: "Consolidate the seven NPC/creature spawn paths per the 2026-07-05 NPC-generation inventory (docs/superpowers/specs/2026-07-05-npc-generation-inventory.md). Root causes: no origin-precedence arbiter, name-string identity with per-seam dedup divergence, and a shared mutable Monster Manual cache fought over by 4 clones (beneath_sunden purge/reseed livelock, 0/0 pool vs 1153-NPC runaway pools). Sequence per party-mode 2026-07-05: derive-don't-cache manual first, id-keyed identity + alias ledger second, Green Room precedence ADR third. Open question for Keith: faction leaders in lore.yaml prose stay prose-only or get structured npcs.yaml entries."
 priority: p1
-status: backlog
+status: done
 repos: server,content,understudy
 stories:
   - id: 162-1
@@ -122,7 +122,13 @@ stories:
     title: 'Understudy perception real-UI aria fidelity: two_names_one_enemy (162-7) and the tool-wide log:/panel assumptions parse aria tokens (region "Enemies", listitem, log:) absent from sidequest-ui — the detector returns None on every real session (inert in production). Capture the real ConfrontationOverlay/narration aria via perceive(), add perceivable ARIA roles to the opponent-name + narration surfaces if needed (ui), and reconcile understudy detector regexes + wiring fixtures so identity-fork detection fires in a live confrontation. Benefits all understudy detectors, not just this one.'
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-07'
     repos: understudy,ui
     workflow: tdd
+    completed: '2026-07-07'
     type: bug
+    branch: feat/162-11-understudy-perception-aria-fidelity
+    review_findings: 'REJECTED: (1) [HIGH] _LOG whitespace-capture silent-fallback — trailing-space log: opener drops nested narration, detector returns None on valid fork (SOUL No Silent Fallbacks); (2) [HIGH] clean perceived-foe-name guard untested — removing aria-hidden keeps suite green, fixture omits aria-hidden and passes for wrong reason; (3) [MED] _narration/_node_text no direct unit tests; (4) [MED] NarrationScroll only tested empty; (5) [LOW] listitem without list parent. Route to TEA red rework.'
+    review_verdict: approved
+completed: '2026-07-07'
