@@ -1,0 +1,43 @@
+id: '165'
+type: epic
+title: Mapping Track C — tactical mechanics (ADR-096 v2)
+description: "Spec §3: docs/superpowers/specs/2026-07-08-three-tier-mapping-design.md. Plan: docs/superpowers/plans/2026-07-08-mapping-track-c-tactical-mechanics.md. Pure cell-math library over masks, WN binding enforcement at dispatch_dice_throw, positions in per_actor_state['cell'], turn_telemetry spans, TACTICAL_GRID adjudication echoes + player-visible math, Fate zone projection. Dogfight (ADR-153) untouched. No dependency on Track B."
+priority: p1
+status: backlog
+repos: server,ui
+stories:
+  - id: 165-1
+    title: 'Pure tactical library: mask parse, Chebyshev, movement flood, reach/range/LOS/AoE (plan tasks 0–3)'
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: superpowers
+  - id: 165-2
+    title: Positions as combat state + WN SRD movement/reach/range facts on the binding (plan tasks 4–5)
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: superpowers
+  - id: 165-3
+    title: 'Enforcement wiring: turn_telemetry spans, dispatch_dice_throw reach/range gate, seat positions (plan tasks 6–8)'
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: superpowers
+  - id: 165-4
+    title: Protocol adjudication echoes + UI grid/resolution-card math display (plan tasks 9–10)
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server,ui
+    workflow: superpowers
+  - id: 165-5
+    title: Fate zone projection + binding zone state/legality + conflict-seating wiring (plan tasks 11–13)
+    points: 5
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: superpowers
