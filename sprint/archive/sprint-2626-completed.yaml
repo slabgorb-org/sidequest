@@ -413,3 +413,8 @@ completed_stories:
     title: 'Origin-precedence ADR (Green Room): single-gate materializer design; precedence authored > room-bound > region-population > MM pool > narrator mint; all seven spawn paths become typed-provenance feeders'
     points: 2
     completed: '2026-07-05'
+  - id: 158-55
+    epic: '158'
+    title: 'Test-suite hygiene: shared DB-pool leak (rotating PoolClosed) + flickering_reach fixture yields no tier-1 WWN encounters'
+    points: 3
+    completed: '2026-07-08'

@@ -829,14 +829,18 @@ stories:
       DO NOT gut assertions or weaken fail-loud guards to force green (naive regression). Fix the real root causes.
     points: 3
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-08'
     repos: server,content
     workflow: tdd
     acceptance_criteria:
       - 'DB-pool lifecycle is test-isolated: no PoolClosed leakage; full suite green across repeated randomized-order runs (not just in isolation)'
       - flickering_reach test-fixture pack resolves a tier-1 WWN encounter; the ~7 chargen-commit wiring tests pass without weakening the pregen.py:587 fail-loud guard
       - test_reference_poi_projection gated on R2 availability; dogfight-content failure triaged (fixed or folded into 158-39/40)
+    completed: '2026-07-08'
     type: chore
+    review_findings: "REJECTED: OTEL isolation fix is correct (verified) but its regression test passes vacuously under default -n auto (test_a/test_b split across xdist workers; reproduced test_b passing with fixture no-op'd). Plus: new No-Silent-Fallbacks no-op in isolation teardown, assert tier1 insensitive to tier-filter (full-pool fallback), cosmetic RNG seed, dead hasattr branch, unmodified Barsoom char_creation.yaml copy. Blocking = vacuous determinism regression test. Swallow-retirement (AC-2 broader intent) deferral accepted as tracked follow-up."
+    review_verdict: approved
   - id: 158-56
     title: Mutation picker in the confrontation overlay — client sends mutation_id on the mutation beat commit (158-54 UI half)
     description: "The server half of the AWN mutation dice route landed in 158-54 (server #1108): DiceThrowPayload.mutation_id names WHICH owned mutation manifests on a mutation_resolution beat commit, mirroring the 102-2 spell picker contract. But no UI sends it — the confrontation overlay has no mutation picker, so a mutation-beat commit from the real client raises the loud missing-mutation_id DiceDispatchError (or the player simply cannot use the marquee mechanic). Build the spell-picker twin: on a mutation_resolution beat, list the PC's owned positives (mutation_state.positive_ids joined to the catalog names) and ride the chosen id on the DICE_THROW payload. PROVENANCE: TEA Delivery Finding, 158-54 session (archived). The server contract is fully tested (tests/integration/test_dice_path_mutation_use_158_54.py); this story is UI + one client-payload wiring test."
