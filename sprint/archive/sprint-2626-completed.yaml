@@ -433,3 +433,8 @@ completed_stories:
     title: Sünden characterization guard + symmetric enter/exit_site resolvers + site.* spans (plan tasks 3–4)
     points: 5
     completed: '2026-07-08'
+  - id: 165-1
+    epic: '165'
+    title: 'Pure tactical library: mask parse, Chebyshev, movement flood, reach/range/LOS/AoE (plan tasks 0–3)'
+    points: 5
+    completed: '2026-07-08'
