@@ -428,3 +428,8 @@ completed_stories:
     title: Weed-whack dead WorldGraph/SubGraph/GraphEdge/Terrain models (plan task 2)
     points: 1
     completed: '2026-07-08'
+  - id: 164-2
+    epic: '164'
+    title: Sünden characterization guard + symmetric enter/exit_site resolvers + site.* spans (plan tasks 3–4)
+    points: 5
+    completed: '2026-07-08'
