@@ -28,7 +28,11 @@ Usage:
     uv run python scripts/generate_r2_preview.py --world evropi --kind poi
     uv run python scripts/generate_r2_preview.py --open                # macOS open
 
-Output defaults to image_sheets/r2_preview.html at the repo root (gitignored).
+Output is a per-world gallery tree under image_sheets/ (gitignored): a single
+``index.html`` landing page that lists every genre/world with its expected asset
+count and links to one ``<genre>/<world>.html`` page per world. Opening a world
+loads only that world's images — the whole point, since one combined page for all
+worlds pulls far too many tiles at once. ``--open`` opens the index.
 """
 
 from __future__ import annotations
@@ -184,6 +188,8 @@ _PAGE_CSS = """
            background: #1d1d1d; border-bottom: 1px solid #333;
            display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
   header h1 { font-size: 18px; margin: 0; }
+  .backlink { color: #8ab4f8; text-decoration: none; font-size: 13px; }
+  .backlink:hover { text-decoration: underline; }
   .counter { font-variant-numeric: tabular-nums; font-size: 15px; }
   .counter b { color: #7fd17f; }
   .counter .pending { color: #d1a86a; }
@@ -231,6 +237,32 @@ _PAGE_CSS = """
   #lightbox #lb-next { right: 16px; }
   #lightbox #lb-close { position: fixed; top: 14px; right: 18px; width: 44px; height: 44px;
                         font-size: 30px; border-radius: 6px; }
+"""
+
+_INDEX_CSS = """
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #141414; color: #e8e8e8;
+         font: 14px/1.5 -apple-system, system-ui, Helvetica, Arial, sans-serif; }
+  header { position: sticky; top: 0; z-index: 10; padding: 14px 20px;
+           background: #1d1d1d; border-bottom: 1px solid #333;
+           display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; }
+  .meta { color: #888; font-size: 12px; }
+  main { padding: 8px 20px 40px; }
+  h2.genre { margin: 26px 0 6px; font-size: 20px; color: #fafafa;
+             border-bottom: 2px solid #3a3a3a; padding-bottom: 4px; }
+  ul.worlds { list-style: none; margin: 0; padding: 0;
+              display: grid; gap: 8px;
+              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  ul.worlds li { background: #1d1d1d; border: 1px solid #2c2c2c; border-radius: 6px;
+                 padding: 10px 12px; display: flex; align-items: baseline;
+                 justify-content: space-between; gap: 12px; }
+  ul.worlds a { color: #8ab4f8; text-decoration: none; font-size: 15px; font-weight: 600; }
+  ul.worlds a:hover { text-decoration: underline; }
+  .count { color: #9a9a9a; font-size: 12px; font-variant-numeric: tabular-nums;
+           white-space: nowrap; }
+  .count b { color: #cfcfcf; }
 """
 
 _PAGE_JS = """
@@ -357,41 +389,63 @@ def _img_tag(asset: Asset, base: str, cache_bust: str) -> str:
     )
 
 
-def build_html(assets: list[Asset], base: str) -> tuple[str, int]:
-    """Render the full self-contained page. Returns (html, group_count)."""
-    cache_bust = str(int(time.time()))
+def world_page_href(genre: str, world: str) -> str:
+    """Relative path (from the index) of a world's own gallery page.
 
-    # genre -> world -> kind -> [assets]
+    One directory deep so the index sits at the tree root and each world's images
+    live under its genre: image_sheets/<genre>/<world>.html. Absolute CDN <img>
+    URLs mean this nesting never affects image loading — only the index links.
+    """
+    return f"{genre}/{world}.html"
+
+
+def asset_tree(assets: list[Asset]) -> dict[str, dict[str, dict[str, list[Asset]]]]:
+    """Bucket assets into genre -> world -> kind -> [assets]."""
     tree: dict[str, dict[str, dict[str, list[Asset]]]] = {}
     for a in assets:
         tree.setdefault(a.genre, {}).setdefault(a.world, {}).setdefault(a.kind, []).append(a)
+    return tree
 
-    body: list[str] = []
-    group_count = 0
-    for genre in sorted(tree):
-        body.append(f'<h2 class="genre">{html.escape(genre)}</h2>')
-        for world in sorted(tree[genre]):
-            body.append(f'<h3 class="world">{html.escape(world)}</h3>')
-            for kind in sorted(tree[genre][world]):
-                group_count += 1
-                kind_assets = sorted(tree[genre][world][kind], key=lambda a: a.filename)
-                body.append(f'<h4 class="kind">{html.escape(kind)} ({len(kind_assets)})</h4>')
-                body.append('<div class="grid">')
-                body.extend(_img_tag(a, base, cache_bust) for a in kind_assets)
-                body.append('</div>')
 
-    generated = time.strftime("%Y-%m-%d %H:%M:%S")
+def build_world_page(
+    genre: str,
+    world: str,
+    kinds: dict[str, list[Asset]],
+    base: str,
+    generated: str,
+) -> tuple[str, int]:
+    """Render one world's self-contained gallery page. Returns (html, asset_count).
+
+    Same live counter / 30s cache-bust refresh / lightbox as before — only this
+    world's tiles, so it loads a bounded slice instead of every world at once.
+    """
+    cache_bust = str(int(time.time()))
+    body: list[str] = [
+        f'<h2 class="genre">{html.escape(genre)}</h2>',
+        f'<h3 class="world">{html.escape(world)}</h3>',
+    ]
+    asset_count = 0
+    for kind in sorted(kinds):
+        kind_assets = sorted(kinds[kind], key=lambda a: a.filename)
+        asset_count += len(kind_assets)
+        body.append(f'<h4 class="kind">{html.escape(kind)} ({len(kind_assets)})</h4>')
+        body.append('<div class="grid">')
+        body.extend(_img_tag(a, base, cache_bust) for a in kind_assets)
+        body.append('</div>')
+
+    title = f"{html.escape(genre)} / {html.escape(world)}"
     page = f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SideQuest R2 Preview</title>
+<title>R2 Preview — {genre} / {world}</title>
 <style>{_PAGE_CSS}</style>
 </head>
 <body>
 <header>
-  <h1>SideQuest R2 Preview</h1>
+  <a class="backlink" href="../index.html">&larr; all worlds</a>
+  <h1>{title}</h1>
   <span class="counter">
     <b id="rendered">0</b> rendered /
     <span class="pending" id="pending">0</span> pending /
@@ -417,7 +471,58 @@ def build_html(assets: list[Asset], base: str) -> tuple[str, int]:
 </body>
 </html>
 """
-    return page, group_count
+    return page, asset_count
+
+
+def build_index(
+    tree: dict[str, dict[str, dict[str, list[Asset]]]],
+    base: str,
+    generated: str,
+) -> str:
+    """Render the landing page: every genre/world with expected counts + a link.
+
+    Counts are the manifest-expected totals (static), so you can see how heavy a
+    world is before opening it. Only worlds present in ``tree`` (i.e. that got a
+    page written this run) are linked — no links to pages that don't exist.
+    """
+    world_total = sum(len(worlds) for worlds in tree.values())
+    body: list[str] = []
+    for genre in sorted(tree):
+        body.append(f'<h2 class="genre">{html.escape(genre)}</h2>')
+        body.append('<ul class="worlds">')
+        for world in sorted(tree[genre]):
+            kinds = tree[genre][world]
+            total = sum(len(v) for v in kinds.values())
+            breakdown = " &middot; ".join(
+                f"{html.escape(kind)} {len(kinds[kind])}" for kind in sorted(kinds)
+            )
+            href = html.escape(world_page_href(genre, world), quote=True)
+            body.append(
+                f'<li><a href="{href}">{html.escape(world)}</a>'
+                f'<span class="count"><b>{total}</b> expected ({breakdown})</span></li>'
+            )
+        body.append('</ul>')
+
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SideQuest R2 Preview</title>
+<style>{_INDEX_CSS}</style>
+</head>
+<body>
+<header>
+  <h1>SideQuest R2 Preview</h1>
+  <span class="meta">base: {html.escape(base)} &middot; generated {generated} &middot;
+    {world_total} world(s) &middot; click a world to load its images</span>
+</header>
+<main>
+{chr(10).join(body)}
+</main>
+</body>
+</html>
+"""
 
 
 def main() -> int:
@@ -449,11 +554,23 @@ def main() -> int:
         print("No expected assets matched the given filters.", file=sys.stderr)
         return 1
 
-    page, group_count = build_html(assets, base)
+    generated = time.strftime("%Y-%m-%d %H:%M:%S")
+    tree = asset_tree(assets)
 
     args.out.mkdir(parents=True, exist_ok=True)
-    out_path = args.out / "r2_preview.html"
-    out_path.write_text(page, encoding="utf-8")
+
+    # One gallery page per world, under <out>/<genre>/<world>.html.
+    world_files = 0
+    for genre in sorted(tree):
+        (args.out / genre).mkdir(parents=True, exist_ok=True)
+        for world in sorted(tree[genre]):
+            page, _ = build_world_page(genre, world, tree[genre][world], base, generated)
+            (args.out / genre / f"{world}.html").write_text(page, encoding="utf-8")
+            world_files += 1
+
+    # Landing page linking to every world written above.
+    index_path = args.out / "index.html"
+    index_path.write_text(build_index(tree, base, generated), encoding="utf-8")
 
     # Per-kind breakdown for the assets that survived filtering.
     kinds_written: dict[str, int] = {}
@@ -461,14 +578,14 @@ def main() -> int:
         kinds_written[a.kind] = kinds_written.get(a.kind, 0) + 1
     breakdown = ", ".join(f"{k}={v}" for k, v in sorted(kinds_written.items()))
 
-    print(f"[OK] {out_path}")
+    print(f"[OK] {index_path}")
     print(
-        f"Wrote {len(assets)} expected asset(s) across {group_count} group(s) "
+        f"Wrote {len(assets)} expected asset(s) across {world_files} world page(s) "
         f"({breakdown}). CDN base: {base}"
     )
 
     if args.open and sys.platform == "darwin":
-        subprocess.run(["open", str(out_path)], check=False)
+        subprocess.run(["open", str(index_path)], check=False)
     return 0
 
 
