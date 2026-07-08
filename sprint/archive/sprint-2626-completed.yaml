@@ -418,3 +418,8 @@ completed_stories:
     title: 'Test-suite hygiene: shared DB-pool leak (rotating PoolClosed) + flickering_reach fixture yields no tier-1 WWN encounters'
     points: 3
     completed: '2026-07-08'
+  - id: 164-1
+    epic: '164'
+    title: SiteRegistry + CartographyConfig.sites + per-site storage keying (plan tasks 1–2)
+    points: 5
+    completed: '2026-07-08'

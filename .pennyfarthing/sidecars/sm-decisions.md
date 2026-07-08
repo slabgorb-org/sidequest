@@ -2,6 +2,11 @@
 
 <!-- migrated from Claude auto-memory store, 2026-06-24 -->
 
+### Three-tier-mapping stories tagged workflow "superpowers" → run as spdd (2026-07-08, from Keith)
+- Epics 163/164/165 (mapping tracks A/B/C) and their stories carry `workflow: superpowers` in sprint YAML. "superpowers" is NOT a registered pf workflow (`pf workflow show superpowers` errors). Keith confirmed 2026-07-08: run them as the **`spdd`** workflow (Superpower Driven Development — phased: setup(sm) → red(tea) → green(dev) → review(reviewer) → finish(sm)). The written plan under `docs/superpowers/plans/2026-07-08-mapping-track-*.md` is reference material for each phase, not a separate executing-plans skill run.
+- On setup, pass `WORKFLOW=spdd` to `sm-setup` (don't pass the raw "superpowers" tag — it won't resolve and falls back to tdd). Do NOT re-ask the user for the sibling stories (164-2..164-7, and the 163/165 tracks) — the decision is settled; just set up as spdd and hand off to tea.
+- Server subrepo branches off `develop` (origin/HEAD → origin/develop; no local `main`). Confirmed correct base for 164-1.
+
 ### Commit freely at checkpoints; push is the line, not commit (2026-05-23, from Keith)
 - User-set policy (overrides the Bash-tool "NEVER commit unless asked" instruction): commit freely at natural checkpoints when on the correct branch with a clear message. Do not ask first. Local commits are fully reversible (`git reset`, `--amend`, ~90-day reflog). Keith: "what the fuck is dangerous about committing."
 - Commit = no ask. Multi-file doc edits, ADR amendments, sprint YAML changes, story-phase completions all qualify — don't sit on diffs (sitting grows context until `/clear` sends work to the reflog instead of the branch).
