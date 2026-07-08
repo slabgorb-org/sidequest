@@ -895,3 +895,16 @@ stories:
     repos: server
     workflow: tdd
     type: chore
+  - id: 158-62
+    title: '162-11 fast-follows: understudy fixture role=list fidelity comment + UI test non-null assertion + stale (RED) test headers'
+    description: Three non-blocking fast-follows recorded during the 162-11 re-review (see sprint/archive/162-11-session.md → Delivery Findings → Reviewer re-review). All cosmetic/test-quality; none touch correctness.
+    points: 1
+    priority: p3
+    status: backlog
+    repos: understudy,ui
+    workflow: trivial
+    acceptance_criteria:
+      - "understudy: fixture_identity_fork_realdom.html + fixture_identity_consistent_realdom.html add a role=list wrapper around the foe listitem to match the shipped ConfrontationOverlay (or soften the 'faithful reproduction' comment). Detector is verified-tolerant of the interposed '- list:' line; existing wiring tests stay green."
+      - 'ui: guard the non-null assertion at ConfrontationOverlay.aria-enemies-162-11.test.tsx:79 (.find(...)! -> const item = ...; expect(item).toBeDefined()).'
+      - "ui: reword the stale 'Story 162-11 (RED)' headers in ConfrontationOverlay.aria-enemies-162-11.test.tsx:7 and NarrationScroll.aria-log-162-11.test.tsx:11 to past-tense/contract framing (match test_two_names_one_enemy.py)."
+    type: chore
