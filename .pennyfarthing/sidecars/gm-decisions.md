@@ -4,6 +4,41 @@ Standing rulings and doctrine from the operator (Keith) that govern GM/content
 work. Append new decisions; don't rewrite history. Convert relative dates to
 absolute.
 
+## 2026-07-06 — wry_whimsy portal-fairytale worlds: player pickers are OUTSIDERS only, never natives (Keith)
+
+**Doctrine.** In the `wry_whimsy` pack (oz, wonderland, gulliver — golden-age
+literary *portal* fairytales), the player-character is a portal **outsider**,
+not a native of the fantasy land. Every `player_picker` portrait must use the
+world's single outsider culture: **oz → `kansas_1900`**, **wonderland →
+`victorian_english`**, **gulliver → `georgian_british`**. Native-land pickers
+(munchkin/winkie/quadling/gillikin/emerald; card_folk/chesspieces/creature_folk;
+lilliputians/brobdingnagians/laputans/houyhnhnms_and_yahoos) are a **bug, not a
+coverage gap** — gulliver's manifest already documented an explicit 2026-06-12
+"PORTAL-FAIRYTALE FIX" that reverted native pickers for this reason. The
+strongest structural case is gulliver: the satire requires the player to remain
+the *judged human outsider* (each voyage-people judges the traveler), so letting
+a player *be* a Houyhnhnm/giant collapses the thesis.
+
+**How this was decided.** During the 2026-07 picker-portrait expansion, the Oz
+"all-Kansas" set looked like a culture gap (18/18 kansas_1900, five Ozian
+cultures at zero). Keith's own motivating complaint was a playgroup member
+"wanting to be from somewhere other than Kansas." Presented with the conflict —
+his request vs. the documented portal doctrine + the gulliver revert — **Keith
+chose to respect the doctrine (outsiders only).**
+
+**How to satisfy "more portraits / more choice" under this doctrine.** Do NOT
+add native cultures. Instead **enrich the single outsider pool** with real
+demographic/class/regional/ethnic variety (varied Kansans, varied Victorian
+Britons, varied Georgians — age, class, region, ethnicity, build) across the
+five real pack archetypes (The Dreamer/Innocent/Scrapper/Surveyor/Wit). Never
+cast a named canon individual (no Dorothy, Alice, Gulliver, etc.) as a pickable
+face. See [[specificity-shrinks-cliche]].
+
+**Scope.** This is a `wry_whimsy`-specific doctrine — it does NOT generalize.
+The other ten packs have genuinely playable native cultures (space_opera
+voidborn, mutant_wasteland scrapborn, etc.); their picker sets SHOULD cover
+every culture per the normal allocation rule.
+
 ## 2026-06-21 — `factions: ["*"]` is the behavior-preserving unblock for zoned worlds
 
 **Context:** Epic-157 (faction/zone-scoped content eligibility) tagged only 4 of
