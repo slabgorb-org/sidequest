@@ -10,6 +10,22 @@ For the cross-repo, product-level feature history, see [`docs/FEATURES.md`](docs
 
 ## [Unreleased]
 
+### Added
+- **Raster map anchor calibrator** (`sidequest-content/tools/map-anchor-calibrator.html`
+  + `build_map_calibrator.py`, docs `tools/MAP_CALIBRATOR.md`) — a standalone,
+  offline browser tool to calibrate per-world raster `map.yaml` `node_anchors`
+  against a public-domain scan and export a paste-ready `map.yaml`. Covers all
+  22 worlds with a `cartography.yaml`; snap/guides/measure, live rename +
+  adjacency editing. Follow-on to the Track A mapping work (epic 163).
+
+### Changed
+- **Main-map treatments calibrated/sourced** for the Track A worlds:
+  `the_real_mccoy` gains a new raster map calibrated on the Woods 1867 Pittsburgh
+  plan (real PD provenance); `glenross` provenance repointed to the real NLS
+  Ordnance Survey scan; `annees_folles` anchors calibrated against a period Paris
+  plan (provenance decision pending). See
+  `docs/superpowers/plans/2026-07-08-mapping-track-a-main-map-treatments.md`.
+
 ## [1.4.0] - 2026-06-14
 
 > Window 2026-05-26→06-14 — the orchestrator-side arc of Sprint 2624:

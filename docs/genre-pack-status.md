@@ -82,3 +82,15 @@ is rendered.
 - `genre_packs/caverns_and_claudes/worlds/{caverns_sunden,dungeon_survivor,grimvault,horden,mawdeep}/`
   — 1 stray POI each from retired world experiments; only `beneath_sunden`
   exists in git.
+
+## Main-map raster treatments (Track A, epic 163)
+
+A separate per-world asset dimension from portraits/POI/music above: the
+`worlds/<world>/map.yaml` raster main-map treatment (a PD scan + region
+`node_anchors`). As of **2026-07-09**, 4 worlds carry a raster `map.yaml`
+(`glenross`, `annees_folles`, `the_circuit`, `the_real_mccoy`); the rest have
+none yet. Calibrate anchors with `sidequest-content/tools/map-anchor-calibrator.html`
+(docs: `tools/MAP_CALIBRATOR.md`). The scan image bytes live on R2 like all other
+assets; `map.yaml` (the spec) lives in git. Full status table:
+`docs/superpowers/plans/2026-07-08-mapping-track-a-main-map-treatments.md`
+(§ "Anchor calibration tooling & per-world status").
