@@ -31,9 +31,13 @@ stories:
     title: 'Server: pack validator — raster anchor coverage + provenance (plan tasks 8,18)'
     points: 2
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-09'
     repos: server
     workflow: superpowers
+    completed: '2026-07-09'
+    review_findings: "4 reproduced HIGH crash paths: non-hashable treatment (L1055), non-hashable weather_zone (L1146), malformed climate_zones scalar/list-of-dicts (L1137) — each aborts the whole 'pf validate pack' run via uncaught TypeError. Same defect class the story exists to fix (2 already fixed by TEA/pre-handoff review). Plus MEDIUM: truthiness-only presence checks let whitespace/non-string image+provenance pass, weakening the PD-provenance invariant. Route to TEA for RED tests on the malformed-content shapes."
+    review_verdict: approved
   - id: 163-4
     title: 'Content: Glenross OS-sheet, Années Folles Baedeker, the_circuit highway map.yaml + authoring checklists (plan tasks 9–11)'
     points: 2

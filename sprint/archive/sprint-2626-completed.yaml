@@ -448,3 +448,8 @@ completed_stories:
     title: Positions as combat state + WN SRD movement/reach/range facts on the binding (plan tasks 4–5)
     points: 3
     completed: '2026-07-09'
+  - id: 163-3
+    epic: '163'
+    title: 'Server: pack validator — raster anchor coverage + provenance (plan tasks 8,18)'
+    points: 2
+    completed: '2026-07-09'
