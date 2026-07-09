@@ -51,3 +51,38 @@ tea/dev/reviewer `*-gotchas.md` (tagged 165-1).
 - **`ReachResult.cost` is a superset of `.reachable`** — gate on `.reachable`/the adjudication
   verdict, not `cost.keys()`.
 - **Plan doc has bugs** in its embedded code — hand-verify before transcribing tasks 6–8.
+
+## Carryover from 165-2 (BLOCKING findings — the facts you're about to wire are inert landmines)
+Full detail: `sprint/archive/165-2-session.md` §Delivery Findings (`### Reviewer (code review)`) + the
+reviewer/tea/dev `*-gotchas.md` (tagged 165-2). 165-2 shipped the WN tactical facts + adjudicators
+**inert** (zero production callers). This story wires them — and three of them are broken the moment
+you do. Resolve each BEFORE the dispatch gate calls the method, or ranged combat ships silently wrong.
+
+- **BLOCKER 1 — `RANGE_BAND_CELLS` keys match NOTHING in real content.** The table is keyed on
+  categorical bands (`rifle`/`pistol`/`thrown`/…), but `range_band` exists ONLY on `CatalogItem`
+  (`sidequest/genre/models/inventory.py:214`) and every pack authors it as an `"N/N"` numeric string
+  (`"10/100"`, `"100/600"` — 16 distinct values). There is **no `DamageSpec.range_band`** at all.
+  So `weapon_range_cells(real_spec)` either returns melee (spec lacks the attr → `getattr`→None) or
+  the rifle 40-cell cap (`.get("10/100", rifle)`) for EVERY ranged weapon. **Do NOT wire the
+  reach/range gate to real weapon specs until an `"N/N"`→band translation exists** (it doesn't yet).
+  The plan (~line 1704) understates this as "which field holds range_band" — it's a *format*
+  mismatch, not field-selection. Decide: derive the band from the `"N/N"` numbers, or add a
+  categorical band to `DamageSpec`, or map at the call site.
+- **BLOCKER 2 — two silent fallbacks in `without_number.py` violate No-Silent-Fallbacks + the file's
+  own fail-loud convention** (`_stat` raises KeyError, `save_params`/`apply_system_strain` raise
+  ValueError). Fix both as you wire them: (a) `weapon_range_cells` (`:178`) does
+  `.get(band, RANGE_BAND_CELLS["rifle"])` — an unknown band should fail loud (ValueError listing
+  known bands), not cap at rifle. Note this is the SAME fix family as the 165-1 carryover's
+  `adjudicate_reach(mode)` → `Literal` tightening. (b) `combat_move_cells` (`:168`) does
+  `getattr(core,"move",None) or DEFAULT_MOVE_METERS` — an explicit `move=0` (immobilized stock;
+  `mutation/stocks.py:218` would propagate it) silently becomes full default; use an `is None` check.
+- **BLOCKER 3 — `seat_actor_cells` collides player-overflow with opponents (and mis-routes neutrals).**
+  Reproduced: 2 players + 1 opponent → PlayerB and Opp1 both on `(3,1)`; neutral-side actors draw
+  from the opponent/creature pool and can steal a monster's anchor. Single-player is clean, but
+  Keith's playgroup is multiplayer. Task 8 (seat positions at encounter instantiation) MUST define
+  multi-player/neutral seating semantics — a single shared anchor index across sides, or reserved
+  pools — before this seeds real MP encounters (`sidequest/game/tactical/seating.py:36-51`).
+- **Test-strengthening (non-blocking, do while you're here):** the 165-2 delegation test only checks
+  return *type* (add a `mock.patch` on `adjudicate_move`/`adjudicate_reach` asserting the call), and
+  the "authored once" test checks value-equality not provenance (add `"METERS_PER_CELL" not in
+  Sibling.__dict__`). These pair naturally with C1's wiring test that THIS story owns.
