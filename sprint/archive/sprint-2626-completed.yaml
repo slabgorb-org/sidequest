@@ -438,3 +438,8 @@ completed_stories:
     title: 'Pure tactical library: mask parse, Chebyshev, movement flood, reach/range/LOS/AoE (plan tasks 0–3)'
     points: 5
     completed: '2026-07-08'
+  - id: 163-1
+    epic: '163'
+    title: 'Server: map.yaml treatment layer — models, loader, protocol block, emission + OTEL (plan tasks 1,3–7)'
+    points: 5
+    completed: '2026-07-09'
