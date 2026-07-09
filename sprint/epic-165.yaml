@@ -41,9 +41,13 @@ stories:
     title: Protocol adjudication echoes + UI grid/resolution-card math display (plan tasks 9–10)
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-09'
     repos: server,ui
     workflow: superpowers
+    completed: '2026-07-09'
+    review_findings: 'HIGH: dice-result range echo half-wired (range_band/distance_cells declared+rendered, no server producer; verdict discarded at dispatch/dice.py:859-867; Task 9 scope, undisclosed). HIGH: OTEL violation — move-summary block (map_emit.py:281-312) emits no watcher span. HIGH: No-Silent-Fallbacks — getattr on required genre_pack/rules (map_emit.py:287-288). MEDIUM: liveness-overstating docstrings; fixture-theater wiring test + coverage gaps (Fate branch, partial echo, multi-PC); index React keys. Route: RED rework (TEA). Non-blocking: map_emit dead-dungeon_store gate (pre-existing Plan-7 follow-up).'
+    review_verdict: approved
   - id: 165-5
     title: Fate zone projection + binding zone state/legality + conflict-seating wiring (plan tasks 11–13)
     points: 5
