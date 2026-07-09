@@ -34,6 +34,8 @@ stories:
     repos: server,content
     workflow: superpowers
     type: refactor
+    review_findings: 'HIGH: frontier-legacy shim by_id(DEFAULT_SITE_ID)=None silently degrades (No Silent Fallbacks) — movement.py:400-403, needs loud diagnostic + test. MEDIUM: exit_site failure emits no site-channel OTEL span (needs site_exit_unresolved_span + test). Security clean, 122 tests green, cutover otherwise excellent.'
+    review_verdict: approved
   - id: 164-4
     title: 'RISKY: scene context replaces surface|deep + DUNGEON_MAP→SITE_MAP cutover (plan tasks 7–8)'
     points: 5
@@ -63,3 +65,21 @@ stories:
     status: backlog
     repos: server,content,orchestrator
     workflow: superpowers
+  - id: 164-8
+    title: "Playtest sunden_descend_trace: validate the Track B site cutover e2e before merging 164-3 — confirm real router emits enter_site onto 'The Deep', crossing+expansion spans fire (movement.resolved onward_ring_drained, site.enter), no movement.unresolved/dispatch_engagement.movement.mismatch, and descriptor-matching holds ('down the rope' vs site name)"
+    points: 2
+    priority: p1
+    status: done
+    started: '2026-07-09'
+    repos: server,content,orchestrator
+    workflow: trivial
+    completed: '2026-07-09'
+    type: chore
+    review_verdict: approved
+  - id: 164-9
+    title: "Ambiguous-descriptor navigation disambiguation in branched dungeons: when a vague direction (e.g. 'back'/'deeper') matches multiple real exits, resolve or re-prompt instead of emitting movement.unresolved reason=ambiguous_descriptor / dispatch_engagement.movement.mismatch (AC-3 residual from 164-8 sunden_descend_trace; the site cutover itself works)"
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
