@@ -458,3 +458,8 @@ completed_stories:
     title: 'Content: Glenross OS-sheet, Années Folles Baedeker, the_circuit highway map.yaml + authoring checklists (plan tasks 9–11)'
     points: 2
     completed: '2026-07-09'
+  - id: 165-3
+    epic: '165'
+    title: 'Enforcement wiring: turn_telemetry spans, dispatch_dice_throw reach/range gate, seat positions (plan tasks 6–8)'
+    points: 5
+    completed: '2026-07-09'
