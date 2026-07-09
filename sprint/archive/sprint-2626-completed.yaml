@@ -443,3 +443,8 @@ completed_stories:
     title: 'Server: map.yaml treatment layer — models, loader, protocol block, emission + OTEL (plan tasks 1,3–7)'
     points: 5
     completed: '2026-07-09'
+  - id: 165-2
+    epic: '165'
+    title: Positions as combat state + WN SRD movement/reach/range facts on the binding (plan tasks 4–5)
+    points: 3
+    completed: '2026-07-09'

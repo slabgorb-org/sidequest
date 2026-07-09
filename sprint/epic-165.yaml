@@ -20,9 +20,12 @@ stories:
     title: Positions as combat state + WN SRD movement/reach/range facts on the binding (plan tasks 4–5)
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-09'
     repos: server
     workflow: superpowers
+    completed: '2026-07-09'
+    review_verdict: approved
   - id: 165-3
     title: 'Enforcement wiring: turn_telemetry spans, dispatch_dice_throw reach/range gate, seat positions (plan tasks 6–8)'
     points: 5
