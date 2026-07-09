@@ -62,3 +62,14 @@ stories:
     status: backlog
     repos: server,content
     workflow: superpowers
+  - id: 163-7
+    title: Fix map_treatment MagicMock fixture regression — 47 server tests fail on CartographyTreatmentWire validation
+    points: 1
+    priority: p1
+    status: done
+    started: '2026-07-09'
+    repos: server
+    workflow: trivial
+    completed: '2026-07-09'
+    type: bug
+    review_verdict: approved

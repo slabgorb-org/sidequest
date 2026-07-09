@@ -912,3 +912,11 @@ stories:
       - 'ui: guard the non-null assertion at ConfrontationOverlay.aria-enemies-162-11.test.tsx:79 (.find(...)! -> const item = ...; expect(item).toBeDefined()).'
       - "ui: reword the stale 'Story 162-11 (RED)' headers in ConfrontationOverlay.aria-enemies-162-11.test.tsx:7 and NarrationScroll.aria-log-162-11.test.tsx:11 to past-tense/contract framing (match test_two_names_one_enemy.py)."
     type: chore
+  - id: 158-63
+    title: 'beneath_sunden per-room creature bindings: 33 rooms lack encounter_creatures — test_distinct_rooms_bind_distinct_creatures RED (only entrance binds gnaw_swarm)'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: content
+    workflow: tdd
+    type: bug
