@@ -453,3 +453,8 @@ completed_stories:
     title: 'Server: pack validator — raster anchor coverage + provenance (plan tasks 8,18)'
     points: 2
     completed: '2026-07-09'
+  - id: 163-4
+    epic: '163'
+    title: 'Content: Glenross OS-sheet, Années Folles Baedeker, the_circuit highway map.yaml + authoring checklists (plan tasks 9–11)'
+    points: 2
+    completed: '2026-07-09'
