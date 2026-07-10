@@ -3,7 +3,7 @@ type: epic
 title: Mapping Track C — tactical mechanics (ADR-096 v2)
 description: "Spec §3: docs/superpowers/specs/2026-07-08-three-tier-mapping-design.md. Plan: docs/superpowers/plans/2026-07-08-mapping-track-c-tactical-mechanics.md. Pure cell-math library over masks, WN binding enforcement at dispatch_dice_throw, positions in per_actor_state['cell'], turn_telemetry spans, TACTICAL_GRID adjudication echoes + player-visible math, Fate zone projection. Dogfight (ADR-153) untouched. No dependency on Track B."
 priority: p1
-status: backlog
+status: done
 repos: server,ui
 stories:
   - id: 165-1
@@ -52,6 +52,11 @@ stories:
     title: Fate zone projection + binding zone state/legality + conflict-seating wiring (plan tasks 11–13)
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-10'
     repos: server
     workflow: superpowers
+    completed: '2026-07-10'
+    review_findings: 'REJECTED (0 critical/high, 6 medium, 4 low): silent-return guards vs No Silent Fallbacks (encounter_lifecycle 1743-47); adjudicate_zone_move z99->z99 free-teleport contradicts docstring (repro-verified); zones.py totality contract false on disconnected all-choke components (repro-verified); placed_count span field unasserted; zid-None skip path untested; multi-PC untested at zone layer; 2 new test files fail repo ruff I001 (RED->GREEN isort flip). Red rework -> TEA.'
+    review_verdict: approved
+completed: '2026-07-10'
