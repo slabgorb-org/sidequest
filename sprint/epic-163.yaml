@@ -55,6 +55,7 @@ stories:
     status: backlog
     repos: ui
     workflow: superpowers
+    review_verdict: approved
   - id: 163-6
     title: 'Weather zones: Region.weather_zone, region-aware selection, re-gen on region change + Glenross content (plan tasks 16–17,19–20)'
     points: 5
