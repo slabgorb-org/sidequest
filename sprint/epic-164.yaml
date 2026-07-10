@@ -42,9 +42,10 @@ stories:
     title: 'RISKY: scene context replaces surface|deep + DUNGEON_MAP→SITE_MAP cutover (plan tasks 7–8)'
     points: 5
     priority: p1
-    status: in_review
+    status: done
     repos: server
     workflow: superpowers
+    completed: '2026-07-10'
     type: refactor
     review_findings: "HIGH [SILENT][RULE]: ThemePaletteMissingError->_EmptyPalette catch in _load_site_map_context is a silent fallback (no log/span, untested) violating No Silent Fallbacks + the exception's fail-loud contract. Fix: TEA RED span test (dungeon.theme_palette_missing) then Dev emits watcher event + log in the catch; keep the null-palette degrade, make it LOUD. All else verified good (14879 tests green, no injection, wiring intact)."
     review_verdict: approved
