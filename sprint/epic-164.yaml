@@ -62,9 +62,13 @@ stories:
     title: Archetype catalog schema + bounded one-txn materialization + site single-writer (plan tasks 10–12)
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-10'
     repos: server,content
     workflow: superpowers
+    completed: '2026-07-10'
+    review_findings: 1 HIGH (bounded_site.py:86 'get_campaign_seed() or 0' silent-default seed — No Silent Fallbacks) + 4 MEDIUM (narration_apply single-writer third path; movement.py CWE-22 path-traversal sink; movement.py uncaught GenreLoadError; put_frontier unenforced site_id invariant) + 2 LOW (test-file format; duplicate archetype_id last-wins). RED rework.
+    review_verdict: approved
   - id: 164-7
     title: Tavern+vault archetypes, e2e enter/map/grid/exit + tavern_enter_trace scenario (plan tasks 13–14)
     points: 3

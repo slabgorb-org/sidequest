@@ -497,5 +497,8 @@ completed_stories:
   - id: 165-5
     epic: '165'
     title: Fate zone projection + binding zone state/legality + conflict-seating wiring (plan tasks 11–13)
+  - id: 164-6
+    epic: '164'
+    title: Archetype catalog schema + bounded one-txn materialization + site single-writer (plan tasks 10–12)
     points: 5
     completed: '2026-07-10'
