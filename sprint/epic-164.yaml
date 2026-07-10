@@ -73,9 +73,10 @@ stories:
     title: Tavern+vault archetypes, e2e enter/map/grid/exit + tavern_enter_trace scenario (plan tasks 13–14)
     points: 3
     priority: p1
-    status: backlog
+    status: in_progress
+    started: '2026-07-10'
     repos: server,content,orchestrator
-    workflow: superpowers
+    workflow: spdd
   - id: 164-8
     title: "Playtest sunden_descend_trace: validate the Track B site cutover e2e before merging 164-3 — confirm real router emits enter_site onto 'The Deep', crossing+expansion spans fire (movement.resolved onward_ring_drained, site.enter), no movement.unresolved/dispatch_engagement.movement.mismatch, and descriptor-matching holds ('down the rope' vs site name)"
     points: 2
