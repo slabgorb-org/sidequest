@@ -62,9 +62,13 @@ stories:
     title: 'Weather zones: Region.weather_zone, region-aware selection, re-gen on region change + Glenross content (plan tasks 16–17,19–20)'
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-10'
     repos: server,content
     workflow: superpowers
+    completed: '2026-07-10'
+    review_findings: "Keith-override approval (re-review r2): all round-0 + r1 findings resolved & verified (30 tests green, ruff clean, no cycle); HIGH #2 cache-wire guarded; MED game_slug contained; LOW comments fixed. HIGH #1 (on-move call-site full-turn harness) split to follow-up 163-8 per Keith — no region-change-block helper has such a harness; building it is shared infra."
+    review_verdict: approved
   - id: 163-7
     title: Fix map_treatment MagicMock fixture regression — 47 server tests fail on CartographyTreatmentWire validation
     points: 1
@@ -76,3 +80,11 @@ stories:
     completed: '2026-07-09'
     type: bug
     review_verdict: approved
+  - id: 163-8
+    title: Region-change-block integration test harness — drive _execute_narration_turn end-to-end so weather.zone_changed / location_description / dungeon_map / relationships emit call sites (websocket_session_handler.py ~2568-2610) are wiring-guarded (163-6 re-review follow-up)
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: superpowers
+    type: chore
