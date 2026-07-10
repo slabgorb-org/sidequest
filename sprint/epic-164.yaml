@@ -71,9 +71,10 @@ stories:
     review_verdict: approved
   - id: 164-7
     title: Tavern+vault archetypes, e2e enter/map/grid/exit + tavern_enter_trace scenario (plan tasks 13–14)
+    description: "BLOCKED on 164-10 (design: lightweight bounded-site interior path). 164-7 RED surfaced that authoring tavern+vault as content is not viable until the bounded-site materializer stops requiring the full megadungeon interior stack (blackthorn_moor/aureate_span lack cookbook/corpus/themes/world_register). Substrate note: 164-6 was merged this session (content #528, server #1135) and both feat/164-7 branches rebased onto develop. The discovery trace + two blocking Delivery Findings + TEA Assessment live in .session/164-7-session.md. Resume/re-plan 164-7's tasks 13–14 once 164-10's design lands."
     points: 3
     priority: p1
-    status: in_progress
+    status: backlog
     started: '2026-07-10'
     repos: server,content,orchestrator
     workflow: spdd
@@ -95,3 +96,17 @@ stories:
     status: backlog
     repos: server
     workflow: tdd
+  - id: 164-10
+    title: Design a lightweight bounded-site interior path — a genre-default/minimal cookbook (or light generator) so tavern/vault archetypes materialize from YAML without the megadungeon cookbook/corpus/themes/world_register stack; fix movement.py uncaught FileNotFoundError on missing interior content. Unblocks 164-7 (Track B B2 e2e).
+    description: "DESIGN STORY (Architect-led). Surfaced by 164-7 RED: the 164-6 bounded-site materializer (bounded_site.ensure_bounded_site_materialized -> materialize()) reuses the FULL megadungeon interior-content stack via load_cookbook(world_dir) (game/cookbook/loader.py:55 hard-requires world-local corpus/monsters.yaml, corpus/items.yaml, world_register.yaml, cookbook/races/, cookbook/looks.yaml, cookbook/affinities.yaml, cookbook/special_rooms.yaml) + load_theme_palette (themes/ tree). Only caverns_and_claudes/beneath_sunden has this stack; tea_and_murder/blackthorn_moor and space_opera/aureate_span have none. So authoring a tavern/vault is NOT 'YAML-only content' (violates the 'archetype = YAML, never engine coupling / tavern = lightweight content' doctrine quoted in site_archetype.py) and would generate genre-wrong monster/race interiors in a cozy pub. Deliverable: an ADR + spec amendment (docs/superpowers/specs/2026-07-08-three-tier-mapping-design.md) designing a lightweight bounded-site interior path — e.g. a genre-default/minimal cookbook+themes, or a light interior generator that needs no cookbook — so a bounded site materializes from archetype YAML alone. MUST also fix the latent bug: movement.py:562-613 catches only (GenreLoadError, SeamCrossingError), so load_cookbook's FileNotFoundError on a missing interior stack crashes run_movement_dispatch (no-re-raise contract violation). Unblocks 164-7. See .session/164-7-session.md Delivery Findings + TEA Assessment for the full trace."
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server,content
+    workflow: architecture
+    acceptance_criteria:
+      - ADR authored (or spec amendment to 2026-07-08-three-tier-mapping-design.md) specifying a lightweight bounded-site interior path that materializes a bounded site from archetype YAML WITHOUT requiring a world-local megadungeon cookbook/corpus/themes/world_register stack.
+      - "The design keeps a new archetype authorable as pure content (Jade/SOUL doctrine: 'archetype = YAML, never engine coupling') and does NOT generate genre-mismatched dungeon interiors (monster spawns / cookbook 'races') in non-dungeon worlds like a tea_and_murder pub."
+      - The design specifies how movement.py enter_site (bounded) fails LOUD-but-recoverable when interior content/config is absent — fixing the current uncaught load_cookbook FileNotFoundError that crashes run_movement_dispatch (movement.py:562-613 catches only GenreLoadError/SeamCrossingError).
+      - 164-7 (tavern+vault e2e) is re-planned against the designed path — its tasks 13–14 become authorable and its handler/scenario tests reach GREEN under the new approach.
+    type: refactor
