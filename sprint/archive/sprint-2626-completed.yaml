@@ -478,3 +478,8 @@ completed_stories:
     title: Protocol adjudication echoes + UI grid/resolution-card math display (plan tasks 9–10)
     points: 3
     completed: '2026-07-09'
+  - id: 163-5
+    epic: '163'
+    title: 'UI: RasterMap component + MapWidget raster branch + mobile tab wiring (plan tasks 12–15)'
+    points: 5
+    completed: '2026-07-10'
