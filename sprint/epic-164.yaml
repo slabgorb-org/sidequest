@@ -53,9 +53,10 @@ stories:
     title: 'UI: SITE_MAP handling + scene-keyed mapData + breadcrumb — fixes 158-36 (plan task 9)'
     points: 3
     priority: p1
-    status: in_review
+    status: done
     repos: ui
     workflow: superpowers
+    completed: '2026-07-10'
     review_verdict: approved
   - id: 164-6
     title: Archetype catalog schema + bounded one-txn materialization + site single-writer (plan tasks 10–12)
