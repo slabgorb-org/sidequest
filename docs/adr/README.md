@@ -226,6 +226,7 @@ Current backend reference documents: `docs/architecture.md`, `docs/tech-stack.md
 | ADR | Status | Impl |
 |-----|--------|------|
 | [ADR-055: Room Graph Navigation](055-room-graph-navigation.md) | ✓ accepted | *partial* → ADR-087 |
+| [ADR-157: The Bounded-Site Interior Is Cookbook-Free — A Bounded Site Materializes From Its Archetype Alone, Not From the Megadungeon Cookbook/Corpus/Themes Stack](157-bounded-site-cookbook-free-interior.md) | ✓ accepted | *partial* → sidequest-server/sidequest/dungeon/bounded_site.py::materialize_bounded |
 
 ## Code Generation / Tooling
 
@@ -358,5 +359,6 @@ ADRs whose implementation is absent, partial, or deferred. See [DRIFT.md](DRIFT.
 | [ADR-142: Without Number Core Extraction — an Honest WithoutNumberRulesetModule Base, Reparented WN Siblings, and a Shaped-Attribute Retune](142-without-number-core-extraction.md) | *partial* | sidequest-server/sidequest/game/ruleset/without_number.py (extracted WN core); swn/wwn/cwn/awn.py reparented onto it; spans/wn.py slug-parameterized emitters; tests/game/ruleset/test_142_wn_core_extraction.py + test_102_4_wn_turn_model_family.py (shipped #841). Step-2 attributes via RulesConfig.standard_array (content packs). Deferred: lethality tuning (awaits playtest), attribute arrange-path, and the ruleset chargen seam (ADR-143 follow-on). |
 | [ADR-143: A Without-Number Binding Replaces the Native Combat Engine — We Bind the Ruleset to Stop Balancing, Not to Balance Against It](143-wn-binding-replaces-native-combat-no-balancing.md) | *partial* | sidequest-server/sidequest/server/dispatch/wn_round.py — sealed initiative-round engine; live for WWN hp_depletion combat, residual native-beat reuse + content beat_selection scaffolding to be removed |
 | [ADR-144: Fate Core Binding Replaces the Native Ruleset — Two SRDs, Zero Homebrew Rulesets to Balance](144-fate-core-binding-replaces-native-ruleset.md) | *partial* | docs/superpowers/specs/2026-06-14-fate-core-binding-replaces-native-design.md |
+| [ADR-157: The Bounded-Site Interior Is Cookbook-Free — A Bounded Site Materializes From Its Archetype Alone, Not From the Megadungeon Cookbook/Corpus/Themes Stack](157-bounded-site-cookbook-free-interior.md) | *partial* | sidequest-server/sidequest/dungeon/bounded_site.py::materialize_bounded |
 
 <!-- ADR-INDEX:GENERATED:END -->

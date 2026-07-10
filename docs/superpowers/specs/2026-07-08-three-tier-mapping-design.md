@@ -2,6 +2,8 @@
 
 **Date:** 2026-07-08
 **Status:** Approved (brainstorming session with Keith, 2026-07-08)
+**Amendments:** 2026-07-10 — bounded-site interiors are cookbook-free (ADR-157, story 164-10);
+see the §1 Extent `bounded` bullet and §5 Failure modes.
 **Repos:** server (engine, protocol, telemetry) · ui (map components, state) · content (map.yaml, archetypes, validator) · orchestrator (umbrella ADR, ADR-096 amendment)
 
 ---
@@ -149,6 +151,20 @@ extent: bounded            # bounded | frontier
   - `bounded` (default): the entire site graph + grids materialize in ONE committed
     transaction at first entry. No frontier worker, no lookahead; `no_candidate_edges`
     is structurally impossible.
+    - **Cookbook-free interior (ADR-157, amended 2026-07-10):** a bounded site materializes
+      from its `SiteArchetype` *alone* — NOT from the megadungeon `cookbook/` + `corpus/` +
+      `themes/` + `world_register.yaml` stack (which exists only in `beneath_sunden`; a
+      cozy pub is not a monster den). A parallel `materialize_bounded()` coordinator runs
+      only the two already-cookbook-free geometry stages (design + fill: `generate_interior`
+      + `_emit_mask`) plus a dedicated geometry commit (graph + masks/tactical + room
+      identities). **No curate** (no wandering-monster table / `big_bad`) and **no attach**
+      (no set-pieces / tropes / quests). The archetype's `interior_algorithm` + grid dims
+      drive a synthetic in-memory `ThemePalette`; its `room_vocabulary` / `feature_palette`
+      label the rooms (Diamonds-and-Coal: identities, not anonymous cells). **Zero
+      engine-placed creatures** — inhabitants and drama come from the Living World (narrator
+      + NPC / scenario / confrontation systems); a vault guardian or tavern brawl is a
+      *seated* confrontation, never materializer roster content. The existing `materialize()`
+      and its loud None-guards are untouched — zero regression to the frontier path.
   - `frontier`: keeps ADR-106 edge-expansion + lookahead. Sünden's deep becomes the
     first frontier site rather than a parallel system.
 - **Scene context:** per-connection `world | site:<site_id>` replaces the
@@ -268,6 +284,14 @@ host), existing `CartographyMap`, existing orrery host; site scenes use Automapp
   fallback. Unresolvable `enter_site` → `site.enter_unresolved` span + visible defer
   to narration (lie-detector watches the mismatch).
 - Bounded materialization is one transaction: no partially-committed site exists.
+- **Interior-content load is fail-loud-but-recoverable (ADR-157, amended 2026-07-10):**
+  a bounded crossing no longer calls `load_cookbook` at all (the archetype drives it), so
+  the megadungeon `FileNotFoundError` source is removed. As defense-in-depth, `movement.py`'s
+  content-load `except` is broadened so ANY content-load failure (incl. `FileNotFoundError`)
+  surfaces as a recoverable `movement.unresolved` + `site.enter_unresolved` span — never a
+  re-raise out of `run_movement_dispatch` (the prior narrow `(GenreLoadError,
+  SeamCrossingError)` catch let `load_cookbook`'s `FileNotFoundError` crash the dispatch,
+  contradicting the code's own "recoverable" comment).
 
 **Observability:** every new span (`site.enter/exit`, `site.materialize.*`,
 `tactical.move.validated/denied`, `tactical.aoe.cells`, `map.treatment_emitted`)
