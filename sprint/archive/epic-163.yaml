@@ -3,7 +3,7 @@ type: epic
 title: Mapping Track A — genre-true main-map treatments
 description: 'Spec: docs/superpowers/specs/2026-07-08-three-tier-mapping-design.md §2. Plan: docs/superpowers/plans/2026-07-08-mapping-track-a-main-map-treatments.md. Per-world map.yaml treatment layer (raster PD scans w/ provenance, orrery, dag fallback), RasterMap UI, weather_zone binding, weed-whack dead WorldGraph models. 158-50 already shipped (verify-only).'
 priority: p2
-status: backlog
+status: done
 repos: server,ui,content
 stories:
   - id: 163-1
@@ -84,7 +84,11 @@ stories:
     title: Region-change-block integration test harness — drive _execute_narration_turn end-to-end so weather.zone_changed / location_description / dungeon_map / relationships emit call sites (websocket_session_handler.py ~2568-2610) are wiring-guarded (163-6 re-review follow-up)
     points: 5
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-11'
     repos: server
-    workflow: superpowers
+    workflow: spdd
+    completed: '2026-07-11'
     type: chore
+    review_verdict: approved
+completed: '2026-07-11'
