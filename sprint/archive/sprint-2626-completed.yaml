@@ -518,3 +518,8 @@ completed_stories:
     title: Fix map_treatment MagicMock fixture regression — 47 server tests fail on CartographyTreatmentWire validation
     points: 1
     completed: '2026-07-09'
+  - id: 166-1
+    epic: '166'
+    title: "Confrontation: flee beat + lethal opponent reprisal double-resolve the same round → 'you escaped / are alive' narration over a 0-HP FALLEN PC; player_dead flag desync + flee location-move commits on death (ADR-139 win-condition liveness / seated-actor HP durability). Loss-path only; clean player_victory is coherent."
+    points: 5
+    completed: '2026-07-11'

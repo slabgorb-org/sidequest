@@ -10,10 +10,14 @@ stories:
     title: "Confrontation: flee beat + lethal opponent reprisal double-resolve the same round → 'you escaped / are alive' narration over a 0-HP FALLEN PC; player_dead flag desync + flee location-move commits on death (ADR-139 win-condition liveness / seated-actor HP durability). Loss-path only; clean player_victory is coherent."
     points: 5
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-07-11'
     repos: server
     workflow: superpowers
+    completed: '2026-07-11'
     type: bug
+    review_findings: "[HIGH] wn_slot_skipped_encounter_resolved branch (wn_round.py:382-410) shipped with zero test coverage — add RED-first 2-PC test asserting the event + hint for a live PC blocked by prior resolution. [MEDIUM] actor_downed hint says 'the fight's close' unconditionally — false in MP partial-down; condition on encounter.resolved. [MEDIUM] location-gate AND-conjunction unpinned (alive+incapacitating must ALLOW move). [MEDIUM] run_wn_round docstring missing the new resolved-slot branch. [LOW] marker-phrase coupling in narrator-truth test."
+    review_verdict: approved
   - id: 166-2
     title: "Mutation economy: picker stores the mutation as a character ability but never populates the mutation_economy projection → 'Use Mutation' confrontation beat is offered but UNCOMMITTABLE (ConfrontationOverlay refuses: no mutation_economy projection); reproduces for any mutation. Populate the economy at creation (unblocks awn.mutation.used 158-54) and make the client refusal non-silent."
     points: 5
