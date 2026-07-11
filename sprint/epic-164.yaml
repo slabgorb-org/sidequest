@@ -101,7 +101,7 @@ stories:
     description: "DESIGN STORY (Architect-led). Surfaced by 164-7 RED: the 164-6 bounded-site materializer (bounded_site.ensure_bounded_site_materialized -> materialize()) reuses the FULL megadungeon interior-content stack via load_cookbook(world_dir) (game/cookbook/loader.py:55 hard-requires world-local corpus/monsters.yaml, corpus/items.yaml, world_register.yaml, cookbook/races/, cookbook/looks.yaml, cookbook/affinities.yaml, cookbook/special_rooms.yaml) + load_theme_palette (themes/ tree). Only caverns_and_claudes/beneath_sunden has this stack; tea_and_murder/blackthorn_moor and space_opera/aureate_span have none. So authoring a tavern/vault is NOT 'YAML-only content' (violates the 'archetype = YAML, never engine coupling / tavern = lightweight content' doctrine quoted in site_archetype.py) and would generate genre-wrong monster/race interiors in a cozy pub. Deliverable: an ADR + spec amendment (docs/superpowers/specs/2026-07-08-three-tier-mapping-design.md) designing a lightweight bounded-site interior path — e.g. a genre-default/minimal cookbook+themes, or a light interior generator that needs no cookbook — so a bounded site materializes from archetype YAML alone. MUST also fix the latent bug: movement.py:562-613 catches only (GenreLoadError, SeamCrossingError), so load_cookbook's FileNotFoundError on a missing interior stack crashes run_movement_dispatch (no-re-raise contract violation). Unblocks 164-7. See .session/164-7-session.md Delivery Findings + TEA Assessment for the full trace."
     points: 3
     priority: p1
-    status: in_progress
+    status: done
     started: '2026-07-10'
     repos: server,content
     workflow: architecture
@@ -110,4 +110,5 @@ stories:
       - "The design keeps a new archetype authorable as pure content (Jade/SOUL doctrine: 'archetype = YAML, never engine coupling') and does NOT generate genre-mismatched dungeon interiors (monster spawns / cookbook 'races') in non-dungeon worlds like a tea_and_murder pub."
       - The design specifies how movement.py enter_site (bounded) fails LOUD-but-recoverable when interior content/config is absent — fixing the current uncaught load_cookbook FileNotFoundError that crashes run_movement_dispatch (movement.py:562-613 catches only GenreLoadError/SeamCrossingError).
       - 164-7 (tavern+vault e2e) is re-planned against the designed path — its tasks 13–14 become authorable and its handler/scenario tests reach GREEN under the new approach.
+    completed: '2026-07-11'
     type: refactor

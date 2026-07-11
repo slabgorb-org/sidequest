@@ -523,3 +523,8 @@ completed_stories:
     title: "Confrontation: flee beat + lethal opponent reprisal double-resolve the same round → 'you escaped / are alive' narration over a 0-HP FALLEN PC; player_dead flag desync + flee location-move commits on death (ADR-139 win-condition liveness / seated-actor HP durability). Loss-path only; clean player_victory is coherent."
     points: 5
     completed: '2026-07-11'
+  - id: 164-10
+    epic: '164'
+    title: Design a lightweight bounded-site interior path — a genre-default/minimal cookbook (or light generator) so tavern/vault archetypes materialize from YAML without the megadungeon cookbook/corpus/themes/world_register stack; fix movement.py uncaught FileNotFoundError on missing interior content. Unblocks 164-7 (Track B B2 e2e).
+    points: 3
+    completed: '2026-07-11'
