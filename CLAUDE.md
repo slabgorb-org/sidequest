@@ -297,8 +297,8 @@ Rust code samples in pre-ADR-082 ADRs are historical; translation table in
 **Narrator / Text (049)**
 - 049 Narrator Verbosity and Vocabulary (Two-Axis Text Tuning) *(partial)*
 
-**NPC / Character Systems (041, 042, 053, 091)**
-- 041 Genie Wish / Consequence Engine *(drift)* · 042 OCEAN Personality Live Evolution *(drift)* · 053 Scenario System (Clue Graph, Belief State, Gossip Propagation) *(partial)* · 091 Culture-Corpus + Markov Naming
+**NPC / Character Systems (041, 042, 053, 091, 156)**
+- 041 Genie Wish / Consequence Engine *(drift)* · 042 OCEAN Personality Live Evolution *(drift)* · 053 Scenario System (Clue Graph, Belief State, Gossip Propagation) *(partial)* · 091 Culture-Corpus + Markov Naming · 156 The Green Room — A Single-Gate NPC Materializer with Typed-Provenance Feeders and an Origin-Precedence Ladder (authored > room-bound > region-population > MM pool > narrator mint) *(deferred)*
 
 **Media / Audio / Rendering (045, 048, 050, 070, 086, 095, 127, 155)**
 - 045 Client Audio Engine · 048 Lore RAG Store with Cross-Process Embedding · 050 Image Pacing Throttle · 070 MLX Image Renderer — Replace PyTorch/diffusers with Apple MLX · 086 Image-Composition Taxonomy — Portraits, POIs, Illustrations · 095 Daemon Music Tier via ACE-Step · 127 Image Prompt-Composition Pipeline — Catalog Recipes, Token-Budget Eviction Ladder, and SceneInterpreter Rule Cascade · 155 Bestiary-Derived Creature Images — bestiary.yaml Is the Single Source of Truth for Creature-Image Production; creatures.yaml Demotes to an Optional Per-World Override

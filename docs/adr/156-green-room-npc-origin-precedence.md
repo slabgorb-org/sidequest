@@ -1,28 +1,31 @@
 ---
 id: 156
 title: "The Green Room — A Single-Gate NPC Materializer with Typed-Provenance Feeders and an Origin-Precedence Ladder (authored > room-bound > region-population > MM pool > narrator mint)"
-status: proposed
+status: accepted
 date: 2026-07-05
 deciders: ["Keith Avery", "Naomi Nagata (Architect)"]
 supersedes: []
 superseded-by: null
 related: [7, 59, 106, 109, 116, 118, 121, 128, 138, 139, 140, 152, 155]
 tags: [npc-character, game-systems, agent-system, observability]
-implementation-status: not-applicable
-implementation-pointer: "PROPOSED — design gate for epic 162; nothing built yet. Green Room implementation stories are deliberately unfiled until this ADR is accepted. Substrate stories that must land first: 162-1 (derive-don't-cache Monster Manual → supplies content_version keying), 162-2 (identity-by-id + alias ledger → supplies IdentityKey and the alias ledger), 162-3 (bestiary generics → supplies the sanctioned last-resort Other). Seams the eventual materializer replaces: sidequest-server sidequest/server/dispatch/monster_manual_inject.py (ensure_loaded + 4 patch builders → 4 feeders), sidequest/server/dispatch/narration_apply.py (_apply_npc_mentions → narrator-mint feeder), sidequest/server/session_helpers.py (_auto_mint_prose_only_npcs → second narrator-mint feeder), sidequest/server/dispatch/encounter_lifecycle.py (_seed_combat_hp_depletion_to_npcs stub-mint L428 → loud failure; six-strategy seating stack → Green-Room consumer), sidequest/game/world_materialization.py (preload_authored_npcs → authored feeder), sidequest/game/region_cast_staging.py (stage_region_cast → authored feeder), sidequest/game/materializer.py (region_population → region-population feeder). Single-gate call site: sidequest/server/websocket_session_handler.py:835-865 (where injection already re-runs every turn pre-narrator)."
+implementation-status: deferred
+implementation-pointer: "ACCEPTED 2026-07-11 with Amendments A (target-first seating — the ladder is arbitration, not targeting) and B (the router-named opponent is the modeled eighth feeder; the 108-2 conscription is deleted). Implementation is the big-bang feat/green-room branch per docs/superpowers/specs/2026-07-11-green-room-implementation-design.md — one cut: gate + eight feeders + seater collapse + verification. Substrate landed in epic 162: 162-1 (derive-don't-cache Monster Manual → content_version keying), 162-2 (identity-by-id + alias ledger → IdentityKey and the alias ledger), 162-3 (bestiary generics → the sanctioned last-resort Other). Seams the materializer replaces: sidequest-server sidequest/server/dispatch/monster_manual_inject.py (ensure_loaded + 4 patch builders → 4 feeders), sidequest/server/dispatch/narration_apply.py (_apply_npc_mentions → narrator-mint feeder), sidequest/server/session_helpers.py (_auto_mint_prose_only_npcs → second narrator-mint feeder), sidequest/server/dispatch/encounter_lifecycle.py (_resolve_opponent_from_roster → DELETED; _seed_combat_hp_depletion_to_npcs stub-mint → loud failure; seating stack → Green-Room consumer), sidequest/game/world_materialization.py (preload_authored_npcs → authored feeder), sidequest/game/region_cast_staging.py (stage_region_cast → authored feeder), sidequest/game/materializer.py (region_population → region-population feeder). Single-gate call site: sidequest/server/websocket_session_handler.py:835-865 (where injection already re-runs every turn pre-narrator)."
 ---
 
 # ADR-156: The Green Room — A Single-Gate NPC Materializer with Typed-Provenance Feeders and an Origin-Precedence Ladder
 
-> Status **proposed**. This ADR answers design question **D1** of the 2026-07-05
+> Status **accepted 2026-07-11**, with **Amendments A and B** (see end of document).
+> This ADR answers design question **D1** of the 2026-07-05
 > NPC-generation inventory (`docs/superpowers/specs/2026-07-05-npc-generation-inventory.md`)
-> and is story **162-4** of the NPC-origin-consolidation epic. It is **design only** —
-> the metaphor, the precedence ladder, and the three interface contracts. Nothing is
-> built here; the Green Room *implementation* stories are intentionally not filed until
-> this decision is accepted, because the ladder is the thing that has to be agreed
-> before any of the seven feeders is rewired. Sequencing (party-mode 2026-07-05,
-> Drummer's order): 162-1 (cache), 162-2 (identity/alias), 162-3 (generics) supply the
-> substrate; this ADR gates the refactor that consumes them.
+> and was story **162-4** of the NPC-origin-consolidation epic. Epic 162 delivered the
+> substrate (162-1 cache, 162-2 identity/alias, 162-3 generics) and archived with this
+> ADR still proposed — the acceptance never happened and the implementation stories
+> were never filed, which is how the 166-5 wrong-Other playtest findings
+> (Resonance Grazer / Restless Battlefield Ghost / Gengineered Killer) recurred on the
+> unreplaced seating stack. Accepted 2026-07-11 after that post-mortem, amended per the
+> analysis in `docs/superpowers/specs/2026-07-11-green-room-implementation-design.md`,
+> and implemented as a single big-bang branch rather than staged stories (Keith's
+> explicit call, 2026-07-11).
 
 ## Context
 
@@ -342,3 +345,84 @@ would enter as **narrator mint** (tier 5) unless promoted to structured `npcs.ya
 (tier 1, authored). Whether prose-only faction leaders should stay prose-only by
 design or get structured entries is a **content-authoring decision for Keith**, parked
 in the epic — not a blocker for this arbiter design.
+
+## Amendment A (2026-07-11) — Targeting is not arbitration; §5 is corrected to target-first seating
+
+§5 as originally written said the seater seats the Other "from the scene's
+materialized identities, **in precedence order**." That sentence conflated two
+different questions and would have **re-created the wrong-Other bug with cleaner
+provenance**: the origin-precedence ladder answers an *arbitration* question ("when
+two feeders propose the *same* identity, which record is real?"), while the seater
+asks a *targeting* question ("which *distinct* identity is the target of *this*
+action?"). Provenance rank is the wrong sort order for targeting — under §5 as
+written, the courier the player grappled (narrator mint, tier 5) loses the seat to a
+co-located Monster-Manual herbivore (MM pool, tier 4). All three 2026-07-10 playtest
+repros (166-5: Resonance Grazer, Restless Battlefield Ghost, Gengineered Killer)
+demonstrate exactly this shape.
+
+**The corrected seater contract:**
+
+1. **The dispatch's named target is authoritative.** ADR-116 already established
+   that the router names the Other (`params["opponent"]`) and the seam seats THAT;
+   this amendment makes explicit that the ladder never overrides it. The player's
+   action — not the content pipeline — is the authority on who the Other is.
+2. **Target resolution order:** resolve the named target against the roster via the
+   unified resolver (canonical name → recorded alias → `invented_from`; 162-2). A
+   match seats the canonical identity. No match → the target is admitted as a
+   **mint-tier candidate under its own name** (Amendment B) and seated. It is
+   **never substituted** with a different co-located identity.
+3. **Precedence tiebreaks only within the target reference** — when two identities
+   genuinely match the same target name (e.g. an authored NPC and a stale mint
+   sharing an alias), the higher tier wins. That is the ladder's only role in
+   seating.
+4. **No named target, on a confrontation type that requires an Other:** the
+   ADR-116 §2 room-scan fallback survives *for this case only* (a genuinely
+   unnamed-opponent dispatch), followed by `NoOpponentAvailableError` → prose.
+   The room-scan corroborates the scene; it never overrides a named target.
+
+**Consequence — the 108-2 conscription is deleted, not narrowed a sixth time.**
+`_resolve_opponent_from_roster` ("reconcile a router-named free-string opponent to a
+bound, statted adversary") was a name-agnostic guess by construction — its own
+history is the proof: 150-2 (rattlesnake seated for a standoff → category gate),
+153-9 (Fate decline), 153-10 (pool-antagonist preference, exact-match only), 158-1
+(zone reconcile), 158-34 (ship-scale firewall). Each generation narrowed *where* the
+guess may fire; none removed the need to guess, and the 166-5 repros all live in its
+remaining legal window (combat + WN binding + no exact pool match). Its one
+legitimate case — the router naming a bound creature by a prose alias (the
+Molgrath-vs-Hold-Dead split this ADR's §Context cites) — is covered by the 162-2
+resolver + alias ledger + §6 attach-before-mint. The function, its five decline
+gates, and their spans (`encounter.opponent_resolved_from_roster`,
+`encounter.roster_resolution_skipped`) retire together.
+
+## Amendment B (2026-07-11) — The router-named opponent is the modeled eighth feeder
+
+§5 originally declared the opponent-seater "not a feeder … it mints nothing." That
+was incomplete: there is a **timing gap** the original design did not model. The
+seater runs **pre-narrator** (ADR-113 dispatch bank), but the two narrator-mint
+feeders run **post-narration** — so a person who exists only in prose (the Scrapborn
+man in the tally line; the message courier) has **no identity yet** at seat time. The
+2026-07-10 trace shows it directly: the confrontation seated before
+`npc.invented_name_routed 'the Scrapborn' → 'Ihnsch of the Rusted Works'` fired.
+Someone must materialize the fiction's target pre-narrator, and today the
+`materialized_threat` path already does — unmodeled.
+
+**The router-named opponent becomes the eighth feeder:**
+
+- **Tier:** 5 (narrator/router mint — improvised, no mechanical backing of its own),
+  `source: "router_opponent"`.
+- **When:** pre-narrator, on a confrontation dispatch whose `params["opponent"]`
+  resolves to no existing identity.
+- **Identity:** the §3 deterministic mint id
+  (`mint:{hash(content_version + session_seed + normalized_name)}`) — resume-safe,
+  re-mention-stable.
+- **Stats:** the mechanical backing comes from authored content, never fabrication —
+  the world's bestiary `generics:` row (162-3) or the confrontation def's
+  `opponent_default_stats` (frame-sourced carve-out unchanged), per ADR-139's
+  "the damage lever is authored content."
+- **Aliasing:** when the narrator's subsequent prose names this entity (§6
+  attach-before-mint), the prose name attaches to this identity — the seat and the
+  fiction stay one being.
+
+With this feeder modeled, §5's "the seater mints nothing" becomes true *and*
+sufficient: the seater consumes identities the Green Room admitted — including the
+router-mint admitted moments earlier in the same turn — and the timing gap closes.
