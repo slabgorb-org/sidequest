@@ -86,13 +86,22 @@ stories:
     title: "Green Room §6 coal→diamond: promote the seated Other's placeholder name when prose names them — panel shows 'the loudest one' while narration says the proper name (player-visible split)"
     points: 3
     priority: p2
-    status: in_review
+    status: in_progress
     started: '2026-07-13'
-    repos: server
+    repos: server, ui
     workflow: tdd
+    acceptance_criteria:
+      - Narrator prose naming the lone seated coal Other records the prose name as an alias on that identity — no new NPC in snapshot.npcs, identity_key unchanged (core.name stays coal)
+      - The confrontation panel carries the prose name to the player on a DISPLAY-only field (actors[].display_name); ConfrontationOverlay renders display_name ?? name
+      - EncounterActor.name stays canonical (== Npc.core.name). The seat id the engine targets is NEVER repointed — a seat left under the prose alias is an unreachable opponent (encounter_lifecycle.py:438-446)
+      - "The named Other remains mechanically reachable: find_creature_core resolves it BOTH by seat id and by the prose name (via the alias ledger), so apply_damage / wn_tools / apply_status / query_encounter and the player's own dice throw all still land"
+      - The panel's opponent_hp survives the promotion — _primary_hp silently omits the key on a resolver miss, and the HP bar must not vanish
+      - 'No in-encounter reference is rewritten (initiative token_id, sealed commits, tags): nothing is renamed, so nothing dangles'
+      - 'OTEL: green_room.alias_attached (the identity learned the name) AND green_room.actor_promoted carrying seat_id + display_name (the name reached the surface the player is looking at)'
+      - 'No hijack: an authored Other, an ambiguous two-opponent scene, and a non-hostile bystander mention are never promoted'
     branch: feat/166-10-green-room-coal-to-diamond-name-promotion
     review_findings: "CRITICAL: promoting EncounterActor.name makes the opponent mechanically unreachable — find_creature_core (session.py:1915) exact-matches Npc.core.name, which the promotion leaves as coal by design, so apply_damage/wn_tools/apply_status/query_encounter and dice.py's edge_resolver all return not_found for the name the panel shows. The enemy takes no damage. Reproduced against real code; independently confirmed by 2 subagents. Violates the review-mandated invariant at encounter_lifecycle.py:438-446 ('a seat left under the prose alias is an unreachable opponent'), which will also silently revert the promotion. Fix: carry the display name in a separate field, keep name canonical — needs a sidequest-ui change, so re-scope to repos: server, ui. Plus 4 HIGH (opponent_hp drops from panel; wn_round downed-check no-ops; map token loses HP/AC; presence stamps skipped) and 4 MEDIUM (no collision guard; sweep misses TableSeat.party_name + FateExchangeLine; second naming mints a phantom; _repoint_actor_name and the new span have zero test coverage)."
-    review_verdict: rejected
+    review_verdict: pending
   - id: 166-11
     title: 'Feeder-8 dial-path scope: non-combat confrontation seats a bare EncounterActor with no Npc identity — attach-before-mint leg 2 unreachable there; ADR-156 scope sentence or extension'
     points: 2
