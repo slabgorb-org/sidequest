@@ -86,11 +86,13 @@ stories:
     title: "Green Room §6 coal→diamond: promote the seated Other's placeholder name when prose names them — panel shows 'the loudest one' while narration says the proper name (player-visible split)"
     points: 3
     priority: p2
-    status: in_progress
+    status: in_review
     started: '2026-07-13'
     repos: server
     workflow: tdd
     branch: feat/166-10-green-room-coal-to-diamond-name-promotion
+    review_findings: "CRITICAL: promoting EncounterActor.name makes the opponent mechanically unreachable — find_creature_core (session.py:1915) exact-matches Npc.core.name, which the promotion leaves as coal by design, so apply_damage/wn_tools/apply_status/query_encounter and dice.py's edge_resolver all return not_found for the name the panel shows. The enemy takes no damage. Reproduced against real code; independently confirmed by 2 subagents. Violates the review-mandated invariant at encounter_lifecycle.py:438-446 ('a seat left under the prose alias is an unreachable opponent'), which will also silently revert the promotion. Fix: carry the display name in a separate field, keep name canonical — needs a sidequest-ui change, so re-scope to repos: server, ui. Plus 4 HIGH (opponent_hp drops from panel; wn_round downed-check no-ops; map token loses HP/AC; presence stamps skipped) and 4 MEDIUM (no collision guard; sweep misses TableSeat.party_name + FateExchangeLine; second naming mints a phantom; _repoint_actor_name and the new span have zero test coverage)."
+    review_verdict: rejected
   - id: 166-11
     title: 'Feeder-8 dial-path scope: non-combat confrontation seats a bare EncounterActor with no Npc identity — attach-before-mint leg 2 unreachable there; ADR-156 scope sentence or extension'
     points: 2
