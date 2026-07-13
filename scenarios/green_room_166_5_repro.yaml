@@ -1,0 +1,20 @@
+# Green Room live verification — 166-5 Salt Camp wrong-Other repro (ADR-156).
+# Drives the exact playtest shape from 2026-07-10: a brawl with a named Scrapborn
+# person while bestiary creatures are co-located. PASS = the confrontation seats
+# the named person (or his prose name), never a Resonance Grazer / bestiary
+# creature absent from the fiction; green_room.materialized spans fire per feeder.
+# Run: just playtest-scenario green_room_166_5_repro   (or scripts/playtest.py --scenario ... --span-jsonl ...)
+
+name: Green Room 166-5 Salt Camp Repro
+genre: mutant_wasteland
+world: flickering_reach
+
+character:
+  strategy: auto
+
+actions:
+  - "head to Salt Camp"
+  - "look around the camp — who is here right now?"
+  - "walk up to the Scrapborn and size them up"
+  - "grab the loudest one by the collar and shove him back — I'm starting a brawl"
+  - "swing at him before he can recover"

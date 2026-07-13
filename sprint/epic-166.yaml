@@ -46,7 +46,7 @@ stories:
     title: 'Wrong-Other seated: a confrontation against a present NPC (Scrapborn brawler / message courier) seats a bestiary creature (Resonance Grazer / Restless Battlefield Ghost) as the opponent instead of the NPC actually struck. Reproduces cross-genre (flickering_reach + shattered_accord) and matches the parked coyote_star Gengineered-Killer — the opponent-seater/forced-dispatch grabs a bestiary default rather than the contextual NPC.'
     points: 5
     priority: p2
-    status: backlog
+    status: in_review
     repos: server
     workflow: superpowers
     type: bug
@@ -65,4 +65,42 @@ stories:
     status: backlog
     repos: server
     workflow: trivial
+    type: chore
+  - id: 166-8
+    title: /api/debug/state full-scan pins the event loop — sync per-save load+migrate+span across 1849 saves; run off-loop + project needed fields only (py-spy evidence in ping-pong 2026-07-13)
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 166-9
+    title: Stale-location freshness for already-narrated bound creatures — 158-1 zone-reconcile successor (deleted with the 108-2 conscription, user-adjudicated; ADR-152-adjacent)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 166-10
+    title: "Green Room §6 coal→diamond: promote the seated Other's placeholder name when prose names them — panel shows 'the loudest one' while narration says the proper name (player-visible split)"
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+  - id: 166-11
+    title: 'Feeder-8 dial-path scope: non-combat confrontation seats a bare EncounterActor with no Npc identity — attach-before-mint leg 2 unreachable there; ADR-156 scope sentence or extension'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: chore
+  - id: 166-12
+    title: '162-11 detector-family hygiene: reconcile._collapse merges on (seat,grade,kind,foe) not byte-identical excerpts; two_names_one_enemy stops reading player echoes (use the new _log_prose_turns primitive)'
+    points: 2
+    priority: p3
+    status: backlog
+    repos: understudy
+    workflow: tdd
     type: chore
