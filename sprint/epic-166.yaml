@@ -46,9 +46,10 @@ stories:
     title: 'Wrong-Other seated: a confrontation against a present NPC (Scrapborn brawler / message courier) seats a bestiary creature (Resonance Grazer / Restless Battlefield Ghost) as the opponent instead of the NPC actually struck. Reproduces cross-genre (flickering_reach + shattered_accord) and matches the parked coyote_star Gengineered-Killer — the opponent-seater/forced-dispatch grabs a bestiary default rather than the contextual NPC.'
     points: 5
     priority: p2
-    status: in_review
+    status: done
     repos: server
     workflow: superpowers
+    completed: '2026-07-13'
     type: bug
   - id: 166-6
     title: shattered_accord/history.yaml authors tropes[].notes as scalar strings but the HistoryChapter schema requires a list → HistoryParseError at world materialization (world_materialization.py:191); authored history/trope grounding silently fails to parse. Fix content (history.yaml lines ~285/295 + siblings) to list form, and add a pack-validator gate for notes-as-string.
@@ -85,9 +86,11 @@ stories:
     title: "Green Room §6 coal→diamond: promote the seated Other's placeholder name when prose names them — panel shows 'the loudest one' while narration says the proper name (player-visible split)"
     points: 3
     priority: p2
-    status: backlog
+    status: in_progress
+    started: '2026-07-13'
     repos: server
     workflow: tdd
+    branch: feat/166-10-green-room-coal-to-diamond-name-promotion
   - id: 166-11
     title: 'Feeder-8 dial-path scope: non-combat confrontation seats a bare EncounterActor with no Npc identity — attach-before-mint leg 2 unreachable there; ADR-156 scope sentence or extension'
     points: 2
