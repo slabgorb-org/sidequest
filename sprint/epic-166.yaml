@@ -119,3 +119,11 @@ stories:
     repos: understudy
     workflow: tdd
     type: chore
+  - id: 166-13
+    title: "Green Room §6 coal→diamond: the narrator's own context still names the promoted Other by its coal seat id (narrator.py participant list + query_encounter tool result) — the narrator can revert the stage name in PROSE next turn, reopening the two-names split with the surfaces swapped (panel: Ihnsch, prose: the Scrapborn). Needs a dual-name prompt format ('the Scrapborn (aka \"Ihnsch of the Rusted Works\")') so the narrator has the label for prose AND the canonical id for tools — find_actor/tag-targets are exact-only, so feeding it the bare label would dangle narrator-supplied targets. Server-only; 166-10 wired the panel/map/Fate surfaces, this wires the last one."
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
