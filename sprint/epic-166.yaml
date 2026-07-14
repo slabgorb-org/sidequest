@@ -127,3 +127,11 @@ stories:
     repos: server
     workflow: tdd
     type: bug
+  - id: 166-14
+    title: "Green Room §6 coal→diamond: first hostile prose mention wins the promotion (even a generic epithet), and a SECOND proper-name mention of the same lone Other mints a phantom NpcPoolMember instead of re-promoting — reopening the two-names split AND violating 'one enemy, one identity'. Reproduced: narrator says 'the raider' turn 5 → panel locks to 'The Raider'; says 'Ihnsch of the Rusted Works' turn 8 → panel STILL 'The Raider' and 'Ihnsch…' is minted into npc_pool as a phantom twin. Root cause is the attach-before-mint gate 'not other.aliases' (narration_apply.py ~2694): once an alias is attached the second mention falls through to mint. Pre-existing (predates 166-10); needs a disambiguation decision ADR-156 §3.4 deferred as future work (better-name re-promote vs new-arrival attach vs ignore). Server-only."
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
