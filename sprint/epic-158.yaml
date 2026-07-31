@@ -868,10 +868,12 @@ stories:
     description: 'Two boundary-hardening parity gaps from 158-54 review (security specialist + TEA finding, corroborated): (1) mutation_id and spell_id carry no length/format bound at the pydantic boundary (DiceThrowPayload); (2) the cast path validates spell_id against the catalog BEFORE seal_wn_commit, but the mutation path defers catalog membership to the use spine — so an arbitrary-length client string is persisted into encounter.wn_commits (and the PG save) before any catalog check. Add Field(max_length) to both id fields and a dispatch-time catalog-membership check for mutation_id in the guard block (mirror the cast ordering: validate before seal). Low exploitability, defense-in-depth. PROVENANCE: 158-54 session Delivery Findings (archived).'
     points: 2
     priority: p3
-    status: backlog
+    status: in_progress
+    started: '2026-07-31T15:58:28.232659+00:00'
     repos: server
     workflow: tdd
     type: refactor
+    branch: feat/158-58-dispatch-time-mutation-catalog-validation
   - id: 158-59
     title: Opposed-save dice wiring for AWN mutation use — the target actually saves (v1 resolver always returns fail)
     description: "The mutation use spine passes save_resolver=lambda stat, target: 'fail' — the target NEVER saves; every save-vs mutation lands at full effect. This was documented v1 on the narrator route ('opposed-save dice wiring rides a later plan', narration_apply._resolve_mutation_for_beat), but 158-54 put the spine on the primary combat path, so the player-favorable bias is now live crunch. Wire the real opposed save: the defender's save roll (server-side NPC roll per ADR-074 — NPCs have no client to throw) resolved through the SaveVs stat on the mutation def, honest save_result on the awn.mutation.used span. Jade/Sebastien will feel this one — crunch that quietly always favors the player reads as broken math once noticed. PROVENANCE: Reviewer Question, 158-54 session (archived); use_ops already threads save_resolver + save.stat, so the seam exists."
@@ -919,9 +921,10 @@ stories:
     type: chore
   - id: 158-63
     title: 'beneath_sunden per-room creature bindings: 33 rooms lack encounter_creatures — test_distinct_rooms_bind_distinct_creatures RED (only entrance binds gnaw_swarm)'
+    description: "SUPERSEDED by ADR-158 (2026-07-31) and replaced by 158-71..158-76. Not actionable as written: its '33 rooms' count came from untracked runtime spill, and its repos:content framing targets genre_packs/**/worlds/*/rooms/*.yaml which is gitignored BY DESIGN (.gitignore:88, commit 3cafb30) because the engine writes that directory (dungeon/room_yaml_emit.py <- materializer.py:2044). On origin/develop exactly ONE room file exists (entrance.yaml). ADR-158 rules that authored creature placement binds to keys that exist BEFORE play — the tracked themes/*.yaml creature_table, which 8 beneath_sunden themes already ship and which the server parses at themes.py:242 with ZERO production readers. See docs/adr/158-authored-creature-placement-pre-play-keys.md and docs/superpowers/specs/2026-07-31-authored-creature-placement-design.md. Do not work this story; work 158-71 (A) and 158-72 (B) first."
     points: 3
     priority: p2
-    status: backlog
+    status: canceled
     repos: content
     workflow: tdd
     type: bug
@@ -973,3 +976,63 @@ stories:
     repos: server
     workflow: tdd
     type: bug
+  - id: 158-70
+    title: 'DESIGN: where do per-room creature bindings live in a runtime-procedural megadungeon? materializer.py:1078 reads AUTHORED rooms/<id>.yaml encounter_creatures, but genre_packs/**/worlds/*/rooms/*.yaml is gitignored (.gitignore:88) so only entrance.yaml is committable — and ADR-106 makes rooms procedural anyway. Rule on the authored-vs-procedural seam, then re-plan 158-63'
+    points: 3
+    priority: p2
+    status: done
+    repos: server,content
+    workflow: architecture
+    completed: '2026-07-31'
+    type: chore
+  - id: 158-71
+    title: 'ADR-158 A: anchor-room split — add worlds/<w>/anchor_rooms/<id>.yaml + resolve_room_source() helper, repoint the 3 read sites, move entrance.yaml out of the engine-written rooms/ dir, drop the .gitignore:90 negation so rooms/ is ignored with no exceptions. ALSO fix RoomCreatureBindingError escaping a live turn (websocket_session_handler.py:823 try closes with a bare finally at :2945, no except)'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server,content
+    workflow: tdd
+    type: refactor
+  - id: 158-72
+    title: 'ADR-158 B: author the beneath_sunden theme creature tables — 10 of 17 creature_table refs are dangling and 5 of 8 themes (bone_crypt, drowned_cavern, labyrinth_trap, sunless_temple, winding_catacomb) resolve ZERO creatures against the 192-entry bestiary; nothing validates them because nothing reads them'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: content
+    workflow: tdd
+    type: bug
+  - id: 158-73
+    title: "ADR-158 C: referential + coverage validator over themes/ and anchor_rooms/ — retune test_beneath_sunden_room_binding_107_2.py; delete the disk-glob tests, read the tracked anchor file by explicit path. RED today on B's 10 dangling refs — that RED is the gate"
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 158-72
+    type: chore
+  - id: 158-74
+    title: 'ADR-158 D: wire DungeonTheme.creature_table into _stage_curate (parsed at themes.py:242 with ZERO production readers today) — delete the silent absent-binding [] at room_creature_binding.py:61-65 and emit OTEL roster_source on dungeon.materialize.curate. Depends on 158-71 AND 158-72'
+    points: 5
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 158-71
+  - id: 158-75
+    title: "ADR-158 E: behavior test test_region_rosters_are_theme_sourced_and_distinct_158_63 — materialize two different-theme regions from one fixed seed; assert non-empty rosters, every drawn id is a member of that theme's creature_table (proves authored not improvised), rosters differ, seed-determinism, and the dungeon.materialize.curate span carries roster_source='theme_table'. Green on a clean clone"
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    depends_on: 158-74
+    type: chore
+  - id: 158-76
+    title: 'ADR-158 F: schema sanction — pack_schema.yaml world.extensions += themes/bestiary/anchor_rooms and -= rooms; beneath_sunden/world.yaml omits themes and bestiary from its own extensions despite bestiary.yaml being tracked in 20 of 22 worlds'
+    points: 1
+    priority: p3
+    status: backlog
+    repos: content
+    workflow: trivial
+    depends_on: 158-71
+    type: chore

@@ -306,8 +306,8 @@ Rust code samples in pre-ADR-082 ADRs are historical; translation table in
 **Turn Management (051)**
 - 051 Two-Tier Turn Counter (Interaction vs. Round)
 
-**Room Graph / Dungeon Crawl (055, 157)**
-- 055 Room Graph Navigation *(partial)* · 157 The Bounded-Site Interior Is Cookbook-Free — A Bounded Site Materializes From Its Archetype Alone, Not From the Megadungeon Cookbook/Corpus/Themes Stack *(partial)*
+**Room Graph / Dungeon Crawl (055, 157, 158)**
+- 055 Room Graph Navigation *(partial)* · 157 The Bounded-Site Interior Is Cookbook-Free — A Bounded Site Materializes From Its Archetype Alone, Not From the Megadungeon Cookbook/Corpus/Themes Stack *(partial)* · 158 Authored Creature Placement Binds to Pre-Play Keys — `rooms/<id>.yaml` Is Engine-Written Runtime State, Not a Content Surface *(deferred)*
 
 **Code Generation / Tooling (059, 092)**
 - **059 Monster Manual — Server-Side Pre-Generation via Game-State Injection** · 092 Scene Harness — Dev-Gated HTTP Endpoint for Scenario Fixtures *(partial)*
