@@ -533,3 +533,8 @@ completed_stories:
     title: "Green Room §6 coal→diamond: promote the seated Other's placeholder name when prose names them — panel shows 'the loudest one' while narration says the proper name (player-visible split)"
     points: 3
     completed: '2026-07-14'
+  - id: 158-57
+    epic: '158'
+    title: Surface awn.mutation.refused reasons in player-facing WN round messages (span-only today)
+    points: 2
+    completed: '2026-07-31'

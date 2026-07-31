@@ -858,9 +858,11 @@ stories:
     description: "awn.mutation.refused (not_owned / limit_exhausted / strain_over_max / unknown_mutation) fires span-only on the dice path — the GM panel sees the refusal but the refused PLAYER gets silence: the round resolves, no mutation happens, nothing explains why. Thread the spine's refusal reason into the player-facing WN round messages (dispatch/wn_round.py has zero refusal surface today — grep confirmed 2026-07-03). Sebastien-legibility: expose the math in player-facing surfaces. PROVENANCE: Reviewer Delivery Finding, 158-54 session (archived). Keep the narrator-route parity in mind — refusals there are also span-only; this story may fix both or scope to the dice path."
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-31'
     repos: server
     workflow: tdd
+    completed: '2026-07-31'
   - id: 158-58
     title: Dispatch-time mutation catalog validation + length bounds on mutation_id/spell_id (validate before seal)
     description: 'Two boundary-hardening parity gaps from 158-54 review (security specialist + TEA finding, corroborated): (1) mutation_id and spell_id carry no length/format bound at the pydantic boundary (DiceThrowPayload); (2) the cast path validates spell_id against the catalog BEFORE seal_wn_commit, but the mutation path defers catalog membership to the use spine — so an arbitrary-length client string is persisted into encounter.wn_commits (and the PG save) before any catalog check. Add Field(max_length) to both id fields and a dispatch-time catalog-membership check for mutation_id in the guard block (mirror the cast ordering: validate before seal). Low exploitability, defense-in-depth. PROVENANCE: 158-54 session Delivery Findings (archived).'
@@ -918,5 +920,29 @@ stories:
     priority: p2
     status: backlog
     repos: content
+    workflow: tdd
+    type: bug
+  - id: 158-64
+    title: Narrator-route parity for AWN mutation refusals — apply_narration has the reason in hand but no player-facing emit seam (dice path fixed in 158-57)
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-65
+    title: 'WN path never drains encounter.narrator_hints — every hint is re-sent in every narrator prompt for the rest of the encounter (measured: 3 rounds = 3 retained hints); inflates per-turn cost and makes any injected string persistent'
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-66
+    title: Refused AWN mutation still burns the player's Main Action — decide refund-vs-burn now that 158-57 makes the refusal legible ('why did I lose my turn to a power I could not use?')
+    points: 3
+    priority: p3
+    status: backlog
+    repos: server
     workflow: tdd
     type: bug
