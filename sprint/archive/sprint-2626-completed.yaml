@@ -538,3 +538,8 @@ completed_stories:
     title: Surface awn.mutation.refused reasons in player-facing WN round messages (span-only today)
     points: 2
     completed: '2026-07-31'
+  - id: 158-61
+    epic: '158'
+    title: 'beneath_sunden 107-2 gate hardening: extend template-compliance checks to all low-band creature specs + add converse spec->bestiary integrity test'
+    points: 2
+    completed: '2026-07-31'

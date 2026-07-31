@@ -897,10 +897,13 @@ stories:
     description: "Two non-blocking test-coverage gaps in the 107-2 creature-image gate, surfaced by the 158-60 review (Reviewer + TEA delivery findings; content shipped correct, so these are latent regression-prevention, not live defects). Both live in the SERVER repo: sidequest-server/tests/genre/test_beneath_sunden_creature_images_107_2.py. (1) The four template-compliance tests (required-fields, style-free, no-text clause, non-proper-noun name) iterate a hardcoded LOW_BAND_IDS 6-tuple, so the 5 specs 158-60 added (darkmantle/piercer/shadow/stirge/grimlock) get ZERO quality-gating — a style-leak + a proper-noun spec name were both empirically shown to pass. Fix: derive the id list from the bestiary 'low' tags (as the dynamic presence-test already does) so all four shape checks extend to every low-band spec. (2) No converse referential-integrity test: nothing asserts every creatures.yaml spec id resolves to a real bestiary entry (a phantom orphan spec passed all 14 tests). Fix: add a converse test mirroring test_all_room_bindings_reference_real_bestiary_ids. PROVENANCE: 158-60 review delivery findings (archived session sprint/archive/158-60-session.md)."
     points: 2
     priority: p2
-    status: backlog
+    status: done
+    started: '2026-07-31'
     repos: server
     workflow: tdd
+    completed: '2026-07-31'
     type: chore
+    review_verdict: approved
   - id: 158-62
     title: '162-11 fast-follows: understudy fixture role=list fidelity comment + UI test non-null assertion + stale (RED) test headers'
     description: Three non-blocking fast-follows recorded during the 162-11 re-review (see sprint/archive/162-11-session.md → Delivery Findings → Reviewer re-review). All cosmetic/test-quality; none touch correctness.
@@ -941,6 +944,30 @@ stories:
   - id: 158-66
     title: Refused AWN mutation still burns the player's Main Action — decide refund-vs-burn now that 158-57 makes the refusal legible ('why did I lose my turn to a power I could not use?')
     points: 3
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-67
+    title: "Creature-image gate: an override spec with a missing or empty id passes every gate — _creatures_manifest:73 drops id-less entries before the converse gate sees them (same silent-orphan class as the typo'd id closed by 158-61)"
+    points: 2
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-68
+    title: "Creature-image gate: wrong-TYPE override fields pass every gate (threat_level: 'very high' with tags: [] verified passing) — 158-52 dropped the int/non-empty-tags check and did not replace it; threat_level selects render tier under ADR-155"
+    points: 2
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-69
+    title: "Creature-image gate: name guard covers only low-tagged entries — the 7 mid/deep capstones get no name gating at all even after 158-61; the 'nothing is named' conceit applies to the whole roster"
+    points: 2
     priority: p3
     status: backlog
     repos: server
