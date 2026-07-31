@@ -138,10 +138,9 @@ Standard git hooks installed into the dispatcher `.d/` directories. Handle linti
 **Where PRs are actually created:** PR creation happens at **story-finish time**, not on push:
 
 - `sm-finish` (the Scrum Master finish subagent)
-- `pf sprint story finish <id>`
 - `pf sprint standalone <title>`
 
-Each of these invokes `gh pr create` as part of completing/archiving a story. Until you finish a story, your pushed branch has no PR unless you open one manually.
+These invoke `gh pr create` as part of completing/archiving a story. Note that `pf sprint story finish <id>` does **not** create a PR — it only *merges* a pre-existing PR (opened earlier by `sm-finish` or by hand). Until a PR is opened, your pushed branch has no PR unless you open one manually.
 
 **How to disable the reminder:** remove or disable the `pre-push` entry in `.git/hooks/pre-push.d/`, or skip it for a single push with `git push --no-verify`.
 
