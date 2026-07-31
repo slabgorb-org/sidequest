@@ -868,10 +868,11 @@ stories:
     description: 'Two boundary-hardening parity gaps from 158-54 review (security specialist + TEA finding, corroborated): (1) mutation_id and spell_id carry no length/format bound at the pydantic boundary (DiceThrowPayload); (2) the cast path validates spell_id against the catalog BEFORE seal_wn_commit, but the mutation path defers catalog membership to the use spine — so an arbitrary-length client string is persisted into encounter.wn_commits (and the PG save) before any catalog check. Add Field(max_length) to both id fields and a dispatch-time catalog-membership check for mutation_id in the guard block (mirror the cast ordering: validate before seal). Low exploitability, defense-in-depth. PROVENANCE: 158-54 session Delivery Findings (archived).'
     points: 2
     priority: p3
-    status: in_progress
+    status: done
     started: '2026-07-31T15:58:28.232659+00:00'
     repos: server
     workflow: tdd
+    completed: '2026-07-31'
     type: refactor
     branch: feat/158-58-dispatch-time-mutation-catalog-validation
   - id: 158-59
@@ -1035,4 +1036,28 @@ stories:
     repos: content
     workflow: trivial
     depends_on: 158-71
+    type: chore
+  - id: 158-77
+    title: "Shape-A refusal has no per-round rate limit — 25 distinct unknown mutation_ids in one open barrier are ALL accepted (control with a valid id: 1/25, stopped by seal_wn_commit's double-commit raise). Narrator prompt 98 -> 5754 chars re-fed every turn, save blob 1421 -> 6945. REGRESSION introduced by the 158-58 Shape-A ruling (refuse without sealing bypasses the seal's implicit limiter). Compounds with 158-65 (hints never drained). Needs a limiter that does not burn the Main Action"
+    points: 3
+    priority: p2
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-78
+    title: "The DEFAULT server quality gate is red: uv run pytest (-n auto via addopts, what just server-check runs) fails 2 tests under xdist shared-state races (test_102_5_wn_tool_narrator_wiring.py:187 'assert reloaded is not None' on a PG store.load()). Pre-existing on develop and NOT caused by any 158 story — isolated by re-running with both 158-58 files --ignore'd. Serial -n0 is clean. The aggregate gate is unreliable until fixed"
+    points: 3
+    priority: p1
+    status: backlog
+    repos: server
+    workflow: tdd
+    type: bug
+  - id: 158-79
+    title: "158-58 review fast-follows (3 LOW): (1) tighten the unknown-mutation tests' tolerance to 'raised is None' per TEA's own GREEN recommendation, not applied on the three unknown-mutation tests; (2) stale doc claim at dispatch/dice.py:176-179 — 'None ONLY on the item-use outcome' is now FALSE after the Shape-A refusal outcome; (3) emit_ability_invocation_unrouted is skipped on the refusal path"
+    points: 1
+    priority: p3
+    status: backlog
+    repos: server
+    workflow: trivial
     type: chore

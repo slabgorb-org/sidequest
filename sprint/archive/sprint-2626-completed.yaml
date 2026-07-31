@@ -543,3 +543,8 @@ completed_stories:
     title: 'beneath_sunden 107-2 gate hardening: extend template-compliance checks to all low-band creature specs + add converse spec->bestiary integrity test'
     points: 2
     completed: '2026-07-31'
+  - id: 158-58
+    epic: '158'
+    title: Dispatch-time mutation catalog validation + length bounds on mutation_id/spell_id (validate before seal)
+    points: 2
+    completed: '2026-07-31'
