@@ -548,3 +548,8 @@ completed_stories:
     title: Dispatch-time mutation catalog validation + length bounds on mutation_id/spell_id (validate before seal)
     points: 2
     completed: '2026-07-31'
+  - id: 158-59
+    epic: '158'
+    title: Opposed-save dice wiring for AWN mutation use — the target actually saves (v1 resolver always returns fail)
+    points: 3
+    completed: '2026-08-01'
