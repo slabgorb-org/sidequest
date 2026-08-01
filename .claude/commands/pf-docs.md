@@ -25,4 +25,4 @@ Scans the relevant files for each domain and updates documentation with:
 ## Related
 
 - `/pf-help` — Context-aware help
-- `/tech-writer` — Technical Writer agent
+- `/pf-tech-writer` — Technical Writer agent

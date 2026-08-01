@@ -8,7 +8,7 @@ Automatically invoked on agent activation via `pf agent start`.
 </purpose>
 
 <when-to-use>
-- Automatically on agent activation (`/sm`, `/tea`, `/dev`, `/reviewer`)
+- Automatically on agent activation (`/pf-sm`, `/pf-tea`, `/pf-dev`, `/pf-reviewer`)
 - Manually to refresh context mid-session
 - To verify what context is available
 </when-to-use>
@@ -108,9 +108,9 @@ With `--quiet`, section headers are suppressed.
 
 ## Python CLI Integration
 
-The `/prime` command is automatically invoked when agents activate:
+The `/pf-prime` command is automatically invoked when agents activate:
 
-1. User invokes `/sm`, `/tea`, `/dev`, or `/reviewer`
+1. User invokes `/pf-sm`, `/pf-tea`, `/pf-dev`, or `/pf-reviewer`
 2. `pf agent start <name>` runs
 3. Context is loaded: workflow state, agent definition, persona, behavior guide, sprint context, session, sidecars
 4. Agent starts with full context AND their learned patterns loaded
@@ -119,7 +119,7 @@ This reduces the "cold start" problem where agents must discover context through
 
 ## Manual Refresh
 
-If context becomes stale mid-session, run `/prime` manually:
+If context becomes stale mid-session, run `/pf-prime` manually:
 
 ```bash
 /prime        # Refresh standard context

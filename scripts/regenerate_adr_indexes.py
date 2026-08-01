@@ -5,12 +5,15 @@ Outputs:
   docs/adr/README.md        — full index, grouped by primary tag
   docs/adr/SUPERSEDED.md    — supersession archive, grouped by successor
   docs/adr/DRIFT.md         — implementation-drift view
-  CLAUDE.md                 — compact category-keyed ADR index block
 
-The generated regions in README.md and CLAUDE.md are delimited by HTML comment
-markers. On first run, if a file lacks markers, the script inserts them at the
-known boundary (see MARKER_INSERT_HINTS below) and then fills the content. On
-subsequent runs, it replaces whatever is between the markers.
+README.md is the authoritative index. CLAUDE.md deliberately does NOT carry a
+generated copy — it points at README.md instead, so the always-loaded memory file
+stays small.
+
+The generated region in README.md is delimited by HTML comment markers. On first
+run, if the file lacks markers, the script inserts them at the known boundary (see
+MARKER_INSERT_HINTS below) and then fills the content. On subsequent runs, it
+replaces whatever is between the markers.
 
 DRIFT.md and SUPERSEDED.md are regenerated wholesale — they have no preamble
 to preserve.
@@ -24,7 +27,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 ADR_DIR = ROOT / "docs" / "adr"
-CLAUDE_MD = ROOT / "CLAUDE.md"
 
 MARKER_BEGIN = "<!-- ADR-INDEX:GENERATED:BEGIN -->"
 MARKER_END = "<!-- ADR-INDEX:GENERATED:END -->"
@@ -401,63 +403,6 @@ def render_drift(adrs: list[ADR]) -> str:
     return "\n".join(lines)
 
 
-def render_claude_block(adrs: list[ADR]) -> str:
-    """Compact ADR index for CLAUDE.md — one line per tag, accepted only."""
-    adr_map = {a.id: a for a in adrs}
-    by_primary_tag: dict[str, list[ADR]] = {}
-    for adr in adrs:
-        if adr.status != "accepted":
-            continue
-        by_primary_tag.setdefault(adr.primary_tag, []).append(adr)
-
-    lines: list[str] = []
-    lines.append(
-        "> Generated block. Edit frontmatter on individual ADRs + rerun "
-        "`scripts/regenerate_adr_indexes.py`. Preamble above and `Conventions:` "
-        "trailer below the markers are preserved."
-    )
-    lines.append("")
-
-    # Load-bearing reads
-    lines.append("**Load-bearing reads — start here:**")
-    for adr_id in LOAD_BEARING_IDS:
-        a = adr_map.get(adr_id)
-        if a is None or a.status != "accepted":
-            continue
-        lines.append(f"- **ADR-{a.id:03d}** {a.title} — {a.status}")
-    lines.append("")
-
-    for tag_key, title in TAG_SECTIONS:
-        bucket = by_primary_tag.get(tag_key, [])
-        if not bucket:
-            continue
-        ids = ", ".join(f"{a.id:03d}" for a in sorted(bucket, key=lambda x: x.id))
-        lines.append(f"**{title} ({ids})**")
-        parts: list[str] = []
-        for a in sorted(bucket, key=lambda x: x.id):
-            prefix = "**" if a.id in LOAD_BEARING_IDS else ""
-            suffix_bits: list[str] = []
-            if a.impl_status == "drift":
-                suffix_bits.append("drift")
-            elif a.impl_status == "partial":
-                suffix_bits.append("partial")
-            elif a.impl_status == "deferred":
-                suffix_bits.append("deferred")
-            suffix = f" *({', '.join(suffix_bits)})*" if suffix_bits else ""
-            parts.append(f"{prefix}{a.id:03d} {a.title}{prefix}{suffix}")
-        lines.append("- " + " · ".join(parts))
-        lines.append("")
-
-    lines.append(
-        "**Conventions:** Bold = load-bearing for current architecture. "
-        "`drift`/`partial`/`deferred` in a line means the ADR is accepted but "
-        "implementation is not fully live — see [DRIFT.md](docs/adr/DRIFT.md). "
-        "Superseded/historical ADRs are filtered from this view — see "
-        "[SUPERSEDED.md](docs/adr/SUPERSEDED.md)."
-    )
-    return "\n".join(lines)
-
-
 # -------------- Marker-aware in-place writer --------------
 
 def replace_between_markers(
@@ -531,15 +476,6 @@ def main() -> None:
     drift_path = ADR_DIR / "DRIFT.md"
     drift_path.write_text(render_drift(adrs))
     print(f"Wrote {drift_path}")
-
-    # CLAUDE.md: replace block between markers
-    claude_block = render_claude_block(adrs)
-    replace_between_markers(
-        CLAUDE_MD,
-        claude_block,
-        insert_before_line_prefix="**Load-bearing reads",
-    )
-    print(f"Wrote {CLAUDE_MD}")
 
     # Report tag coverage — any ADRs landed in an unknown tag?
     known = {k for k, _ in TAG_SECTIONS}

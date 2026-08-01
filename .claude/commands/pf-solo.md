@@ -359,7 +359,7 @@ else:
   base_path = "internal/results/benchmarks/{scenario}/{theme}-{effective_role}/"
 ```
 
-**Cross-role example:** `/solo shakespeare:prospero --as dev --scenario django-10554`
+**Cross-role example:** `/pf-solo shakespeare:prospero --as dev --scenario django-10554`
 → saves to `internal/results/benchmarks/django-10554/shakespeare-prospero-as-dev/`
 
 **For ALL runs (including n=1):**

@@ -132,7 +132,7 @@ pf sprint epic promote epic-XX
 |-------|---------|
 | `/pf-jira` | Jira operations (create, sync, claim) |
 | `/pf-sprint story` | Story creation, sizing, finish (consolidated) |
-| `/sm` | Scrum Master agent for coordination |
+| `/pf-sm` | Scrum Master agent for coordination |
 
 <reference>
 - **Skill:** `.claude/skills/sprint/skill.md`

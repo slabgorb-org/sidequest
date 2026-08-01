@@ -256,12 +256,12 @@ git commit -m "chore(sprint): add standalone ${JIRA_KEY} to sprint tracking"
 
 | Command | Tracking | Branch | PR | Use For |
 |---------|----------|--------|-----|---------|
-| `/chore` | None | chore/* | No | Quick maintenance |
-| `/standalone` | Jira | feat/* | Yes | Trackable features |
+| `/pf-chore` | None | chore/* | No | Quick maintenance |
+| `/pf-standalone` | Jira | feat/* | Yes | Trackable features |
 | `/pf-sprint work` | Jira + Sprint | feat/* | Yes | Planned sprint work |
 
 <related>
-- `/chore` - Quick commits without Jira tracking
+- `/pf-chore` - Quick commits without Jira tracking
 - `/pf-sprint work` - Full sprint workflow with story setup
 - `/pf-git cleanup` - Organize multiple changes into groups
 </related>

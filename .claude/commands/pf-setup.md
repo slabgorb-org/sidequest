@@ -65,7 +65,7 @@ cat .pennyfarthing/workflows/project-setup/steps/step-01-discover.md
 
 <related>
 - `/pf-sprint` - Sprint management after setup
-- `/theme set` - Change themes after setup
+- `/pf-theme set` - Change themes after setup
 - `/pf-workflow` - View available workflows
 - `pf doctor` - Validate installation
 </related>

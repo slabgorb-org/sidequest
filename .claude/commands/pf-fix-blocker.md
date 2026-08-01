@@ -5,7 +5,7 @@ description: Quick alias for /patch - fix blocking issue during story work
 # Fix Blocker
 
 <purpose>
-Alias for `/patch`. Use when a blocking issue prevents story progress.
+Alias for `/pf-patch`. Use when a blocking issue prevents story progress.
 </purpose>
 
 <on-invoke>
@@ -17,6 +17,6 @@ Invoke the patch command:
 </on-invoke>
 
 <related>
-- `/patch` - Full patch mode documentation
-- `/chore` - Quick commits without tracking
+- `/pf-patch` - Full patch mode documentation
+- `/pf-chore` - Quick commits without tracking
 </related>

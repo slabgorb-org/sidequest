@@ -12,12 +12,12 @@ Manage persona themes for agent characters.
 
 | Command | CLI | Purpose |
 |---------|-----|---------|
-| `/theme` | `pf theme show` | Show current theme |
-| `/theme list` | `pf theme list` | List all available themes |
-| `/theme show [name]` | `pf theme show [name] [--full]` | Show theme details |
-| `/theme set <name>` | `pf theme set <name> [--dry-run]` | Set active theme |
-| `/theme create <name>` | `pf theme create <name> [--base X] [--user] [--dry-run]` | Create from base theme |
-| `/theme maker` | *(interactive wizard)* | AI-driven theme creation |
+| `/pf-theme` | `pf theme show` | Show current theme |
+| `/pf-theme list` | `pf theme list` | List all available themes |
+| `/pf-theme show [name]` | `pf theme show [name] [--full]` | Show theme details |
+| `/pf-theme set <name>` | `pf theme set <name> [--dry-run]` | Set active theme |
+| `/pf-theme create <name>` | `pf theme create <name> [--base X] [--user] [--dry-run]` | Create from base theme |
+| `/pf-theme maker` | *(interactive wizard)* | AI-driven theme creation |
 
 ### After Setting a Theme
 
