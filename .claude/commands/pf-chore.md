@@ -29,9 +29,9 @@ Fast path for committing small changes that don't warrant story tracking.
 <variants>
 | Command | Branch | Commit Prefix | Use For |
 |---------|--------|---------------|---------|
-| `/chore` | `chore/*` | `chore:` | Maintenance, config, scripts |
-| `/chore doc` | `docs/*` | `docs:` | Documentation, README, guides |
-| `/chore ux` | `ux/*` | `style:` | UI tweaks, CSS, styling |
+| `/pf-chore` | `chore/*` | `chore:` | Maintenance, config, scripts |
+| `/pf-chore doc` | `docs/*` | `docs:` | Documentation, README, guides |
+| `/pf-chore ux` | `ux/*` | `style:` | UI tweaks, CSS, styling |
 </variants>
 
 <workflow>

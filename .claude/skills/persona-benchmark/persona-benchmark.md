@@ -47,9 +47,9 @@ theme: {persona}
 ### Step 3: Execute Task
 
 Invoke the appropriate agent:
-- `code-review` → `/reviewer`
-- `test-writing` → `/tea`
-- `architecture` → `/architect`
+- `code-review` → `/pf-reviewer`
+- `test-writing` → `/pf-tea`
+- `architecture` → `/pf-architect`
 
 Provide ONLY:
 - The instructions

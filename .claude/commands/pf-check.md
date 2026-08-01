@@ -138,7 +138,7 @@ This will:
 
 ## dev-handoff Integration
 
-The dev-handoff subagent runs `/check` automatically before handoff to Reviewer:
+The dev-handoff subagent runs `/pf-check` automatically before handoff to Reviewer:
 
 1. Dev completes implementation
 2. dev-handoff runs `check.sh`

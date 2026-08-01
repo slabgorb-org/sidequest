@@ -11,7 +11,7 @@ Manage persona themes: list available themes, view details, switch themes, creat
 
 ## Commands
 
-### `/theme` or `/theme show [name]`
+### `/pf-theme` or `/pf-theme show [name]`
 
 Show current theme or specific theme details.
 
@@ -22,7 +22,7 @@ pf theme show [name]
 pf theme show [name] --full
 ```
 
-### `/theme list`
+### `/pf-theme list`
 
 List all available themes with current theme highlighted.
 
@@ -32,7 +32,7 @@ pf theme list
 
 Output shows current theme marked with `*` and tier brackets: `[S]` elite, `[A]` excellent, `[B]` strong, `[C]` good, `[D]` below average, `[U]` unbenchmarked.
 
-### `/theme set <name>`
+### `/pf-theme set <name>`
 
 Set the active persona theme.
 
@@ -45,7 +45,7 @@ After setting, refresh the current agent's persona:
 pf agent start "sm"
 ```
 
-### `/theme create <name> [--base <theme>] [--user]`
+### `/pf-theme create <name> [--base <theme>] [--user]`
 
 Create a new custom theme by copying from a base.
 
@@ -60,7 +60,7 @@ pf theme create my-theme --base blade-runner
 pf theme create my-theme --user
 ```
 
-### `/theme maker`
+### `/pf-theme maker`
 
 Interactive wizard for AI-driven theme creation. Supports three modes:
 
@@ -74,19 +74,19 @@ Interactive wizard for AI-driven theme creation. Supports three modes:
 
 | Command | Action |
 |---------|--------|
-| `/theme` | Show current theme |
-| `/theme list` | List all themes |
-| `/theme show blade-runner` | Show specific theme |
-| `/theme show blade-runner --full` | Extended details |
-| `/theme set discworld` | Switch to theme |
-| `/theme create my-theme` | Create from base |
-| `/theme maker` | Interactive wizard |
+| `/pf-theme` | Show current theme |
+| `/pf-theme list` | List all themes |
+| `/pf-theme show blade-runner` | Show specific theme |
+| `/pf-theme show blade-runner --full` | Extended details |
+| `/pf-theme set discworld` | Switch to theme |
+| `/pf-theme create my-theme` | Create from base |
+| `/pf-theme maker` | Interactive wizard |
 
 ## Related
 
 | Skill | Purpose |
 |-------|---------|
-| `/theme` | Full skill with maker wizard details |
+| `/pf-theme` | Full skill with maker wizard details |
 
 <reference>
 - **Skill:** `.claude/skills/theme/skill.md`

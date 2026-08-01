@@ -40,11 +40,11 @@ SM → TEA → Dev → Reviewer → SM (finish)
 
 | Phase | Agent | Command | Role |
 |-------|-------|---------|------|
-| Setup | SM (Scrum Master) | `/sm` | Story selection, context creation |
-| RED | TEA (Test Engineer) | `/tea` | Write failing tests |
-| GREEN | Dev (Developer) | `/dev` | Implement to pass tests |
-| Review | Reviewer | `/reviewer` | Code review, quality enforcement |
-| Finish | SM | `/sm` | Merge PR, archive session |
+| Setup | SM (Scrum Master) | `/pf-sm` | Story selection, context creation |
+| RED | TEA (Test Engineer) | `/pf-tea` | Write failing tests |
+| GREEN | Dev (Developer) | `/pf-dev` | Implement to pass tests |
+| Review | Reviewer | `/pf-reviewer` | Code review, quality enforcement |
+| Finish | SM | `/pf-sm` | Merge PR, archive session |
 
 </workflow>
 
@@ -123,17 +123,17 @@ Commands are organized by resource. Each group is accessible via both slash comm
 
 | Agent | Command | Role |
 |-------|---------|------|
-| SM | `/sm` | Scrum Master — Story coordination, sprint management |
-| TEA | `/tea` | Test Engineer — Test strategy, TDD design |
-| Dev | `/dev` | Developer — Implementation, feature shipping |
-| Reviewer | `/reviewer` | Code Reviewer — Quality enforcement |
-| Architect | `/architect` | System Architect — Technical design |
-| PM | `/pm` | Product Manager — Strategic planning |
-| DevOps | `/devops` | DevOps — Infrastructure and deployment |
-| Tech-Writer | `/tech-writer` | Technical Writer — Documentation |
-| UX-Designer | `/ux-designer` | UX Designer — User experience |
-| Orchestrator | `/orchestrator` | Orchestrator — Multi-agent coordination |
-| BA | `/ba` | Business Analyst — Requirements discovery |
+| SM | `/pf-sm` | Scrum Master — Story coordination, sprint management |
+| TEA | `/pf-tea` | Test Engineer — Test strategy, TDD design |
+| Dev | `/pf-dev` | Developer — Implementation, feature shipping |
+| Reviewer | `/pf-reviewer` | Code Reviewer — Quality enforcement |
+| Architect | `/pf-architect` | System Architect — Technical design |
+| PM | `/pf-pm` | Product Manager — Strategic planning |
+| DevOps | `/pf-devops` | DevOps — Infrastructure and deployment |
+| Tech-Writer | `/pf-tech-writer` | Technical Writer — Documentation |
+| UX-Designer | `/pf-ux-designer` | UX Designer — User experience |
+| Orchestrator | `/pf-orchestrator` | Orchestrator — Multi-agent coordination |
+| BA | `/pf-ba` | Business Analyst — Requirements discovery |
 
 ## Utilities
 
@@ -204,11 +204,11 @@ Based on your current state, here's what you might need:
 
 ### In Dev Phase
 - Run `/pf-check` before handoff
-- Then `/reviewer` for code review
+- Then `/pf-reviewer` for code review
 
 ### In Review Phase
 - Reviewer will approve or reject
-- Then `/sm` to finish the story
+- Then `/pf-sm` to finish the story
 
 ### Between Stories
 - `/pf-work` to pick up next story

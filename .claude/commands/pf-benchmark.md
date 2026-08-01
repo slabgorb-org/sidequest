@@ -20,7 +20,7 @@ Comparisons are only meaningful if BOTH the baseline AND the contestant runs are
 
 **Before comparing:**
 1. Validate baseline has proof-of-work (check runs have `proof.*` fields)
-2. Actually run `/solo` for the contestant with real Task tool calls
+2. Actually run `/pf-solo` for the contestant with real Task tool calls
 3. Validate contestant runs have proof-of-work before calculating statistics
 
 **Baseline Validation:**
@@ -33,10 +33,10 @@ Before using a baseline, spot-check at least one run file:
 **If baseline validation fails:**
 ```markdown
 Error: Baseline for '{scenario}' appears to be fabricated (missing proof-of-work).
-Run `/benchmark-control --scenario {scenario}` to create a real baseline.
+Run `/pf-benchmark-control --scenario {scenario}` to create a real baseline.
 ```
 
-**Contestant runs MUST include proof-of-work.** See `/solo` for requirements.
+**Contestant runs MUST include proof-of-work.** See `/pf-solo` for requirements.
 </critical-integrity-requirements>
 
 <usage>
@@ -248,7 +248,7 @@ Or use the shortcut:
 If baseline sample size < 5:
 ```markdown
 **Warning:** Baseline sample size ({n}) is less than 5. Results may not be statistically reliable.
-Consider running `/benchmark-control --scenario {scenario_name} --runs 10` to add more data.
+Consider running `/pf-benchmark-control --scenario {scenario_name} --runs 10` to add more data.
 ```
 
 ## Step 5: Run Contestant Evaluation (Parallel)
@@ -280,8 +280,8 @@ Task (run 1 of N):
 ```
 
 **Example commands:**
-- Standard: `/solo discworld:dev --scenario tdd-shopping-cart`
-- Cross-role: `/solo shakespeare:prospero --as dev --scenario tdd-shopping-cart`
+- Standard: `/pf-solo discworld:dev --scenario tdd-shopping-cart`
+- Cross-role: `/pf-solo shakespeare:prospero --as dev --scenario tdd-shopping-cart`
 
 **Spawn all batch tasks in a SINGLE message for parallel execution.**
 
@@ -397,8 +397,8 @@ else:
 ```
 
 **Cross-role examples:**
-- `/benchmark shakespeare prospero --as dev` → `internal/results/benchmarks/{scenario}/shakespeare-prospero-as-dev/`
-- `/benchmark discworld granny --as dev` → `internal/results/benchmarks/{scenario}/discworld-granny-weatherwax-as-dev/`
+- `/pf-benchmark shakespeare prospero --as dev` → `internal/results/benchmarks/{scenario}/shakespeare-prospero-as-dev/`
+- `/pf-benchmark discworld granny --as dev` → `internal/results/benchmarks/{scenario}/discworld-granny-weatherwax-as-dev/`
 
 **Save structure:**
 ```
@@ -410,7 +410,7 @@ else:
 └── summary.yaml
 ```
 
-**summary.yaml format:** See `/solo` command Step 10. For cross-role runs, include:
+**summary.yaml format:** See `/pf-solo` command Step 10. For cross-role runs, include:
 ```yaml
 agent:
   theme: {theme}

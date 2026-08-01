@@ -55,7 +55,7 @@ After creation:
 
 ## Theme Maker (Interactive)
 
-Use `/theme maker` in Claude Code. The wizard walks through:
+Use `/pf-theme maker` in Claude Code. The wizard walks through:
 
 1. **Name** — lowercase, hyphens allowed (e.g., `my-universe`)
 2. **Mode** — AI-Driven, Guided, or Manual

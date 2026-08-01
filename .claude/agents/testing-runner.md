@@ -17,7 +17,7 @@ model: haiku
 </arguments>
 
 <critical>
-**Use `/check` command for unfiltered runs:**
+**Use `/pf-check` command for unfiltered runs:**
 ```bash
 .pennyfarthing/scripts/workflow/check.sh
 .pennyfarthing/scripts/workflow/check.sh --repo api

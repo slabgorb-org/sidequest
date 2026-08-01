@@ -29,14 +29,14 @@ The guided-tour workflow walks you through:
 </workflow>
 
 <when-to-use>
-- After running `/setup` for the first time
+- After running `/pf-setup` for the first time
 - When onboarding new team members
 - When you want a refresher on available features
 - Any time — the tour is always available
 </when-to-use>
 
 <prerequisites>
-- Pennyfarthing must be initialized (`pf setup` or `/setup` completed)
+- Pennyfarthing must be initialized (`pf setup` or `/pf-setup` completed)
 </prerequisites>
 
 <execution>

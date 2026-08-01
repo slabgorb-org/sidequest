@@ -6,7 +6,7 @@ argument-hint: <agent> [--scenario <name>] [--runs N]
 # Benchmark Control
 
 <purpose>
-Shortcut to run `/benchmark` with the `control` theme. Creates or extends a control baseline for comparing other personas against.
+Shortcut to run `/pf-benchmark` with the `control` theme. Creates or extends a control baseline for comparing other personas against.
 
 This is equivalent to running:
 ```
@@ -17,7 +17,7 @@ Default: 10 runs for statistically meaningful baseline data.
 </purpose>
 
 <critical-integrity-requirements>
-**See `/benchmark` for full integrity requirements.**
+**See `/pf-benchmark` for full integrity requirements.**
 
 Baselines are saved to `internal/results/baselines/{scenario}/{agent}/` with:
 - Individual runs in `runs/*.json` with proof-of-work
@@ -47,19 +47,19 @@ Control theme runs must include all proof fields. NO FABRICATION.
 <on-invoke>
 The user invoked this command with: $ARGUMENTS
 
-**This is a shortcut.** Translate the arguments and invoke `/benchmark`:
+**This is a shortcut.** Translate the arguments and invoke `/pf-benchmark`:
 
 1. Prepend `control` as the theme
 2. Pass through all other arguments
 
 **Examples:**
-- `/benchmark-control sm` → `/benchmark control sm` (runs control:sm)
-- `/benchmark-control reviewer --scenario order-service` → `/benchmark control reviewer --scenario order-service` (runs control:reviewer)
-- `/benchmark-control dev --runs 15` → `/benchmark control dev --runs 15` (runs control:dev)
+- `/pf-benchmark-control sm` → `/pf-benchmark control sm` (runs control:sm)
+- `/pf-benchmark-control reviewer --scenario order-service` → `/pf-benchmark control reviewer --scenario order-service` (runs control:reviewer)
+- `/pf-benchmark-control dev --runs 15` → `/pf-benchmark control dev --runs 15` (runs control:dev)
 
 **Default runs override:** If `--runs` is not specified, default to 10 (instead of 4) since baselines need more data.
 
-Now execute the equivalent `/benchmark` command with the translated arguments.
+Now execute the equivalent `/pf-benchmark` command with the translated arguments.
 </on-invoke>
 
 <reference>

@@ -20,8 +20,8 @@ Enable rapid bug fixes without abandoning current story context. Preserves workf
 
 <when-not-to-use>
 - For planned feature work (use `/pf-sprint work`)
-- For quick maintenance (use `/chore`)
-- For standalone features (use `/standalone`)
+- For quick maintenance (use `/pf-chore`)
+- For standalone features (use `/pf-standalone`)
 - When not actively working on a story
 </when-not-to-use>
 
@@ -39,7 +39,7 @@ Enable rapid bug fixes without abandoning current story context. Preserves workf
 </usage>
 
 <key-differences>
-| Aspect | `/patch` | `/trivial` | `/standalone` |
+| Aspect | `/pf-patch` | `/trivial` | `/pf-standalone` |
 |--------|----------|------------|---------------|
 | Branches from | Feature branch | develop | develop |
 | Merges to | Feature branch | develop | develop |
@@ -166,7 +166,7 @@ echo "Run /${AGENT} to continue story work"
 
 ## Nested Patches
 
-Patches can be nested - if a patch uncovers another blocking issue, run `/patch` again. The stack preserves each level:
+Patches can be nested - if a patch uncovers another blocking issue, run `/pf-patch` again. The stack preserves each level:
 
 ```yaml
 # .session/patch-stack.yaml
@@ -198,13 +198,13 @@ When patches complete, state is restored in LIFO order.
 
 | Command | Tracking | Branch From | Merge To | State |
 |---------|----------|-------------|----------|-------|
-| `/patch` | Implicit | Feature | Feature | Preserved |
-| `/chore` | None | develop | develop | None |
-| `/standalone` | Jira | develop | develop | None |
+| `/pf-patch` | Implicit | Feature | Feature | Preserved |
+| `/pf-chore` | None | develop | develop | None |
+| `/pf-standalone` | Jira | develop | develop | None |
 | `/pf-sprint work` | Jira + Sprint | develop | develop | Full session |
 
 <related>
-- `/chore` - Quick commits without tracking
-- `/standalone` - Wrap changes into tracked Jira story
+- `/pf-chore` - Quick commits without tracking
+- `/pf-standalone` - Wrap changes into tracked Jira story
 - `/pf-sprint work` - Start planned sprint story
 </related>

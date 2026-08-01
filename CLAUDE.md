@@ -34,118 +34,35 @@ When evaluating a feature, ask *which of these people it serves and which it los
 
 ## Repository Structure
 
-```
-orc-quest/                    # This repo (orchestrator, also cloned as oq-1 / oq-2)
-├── sprint/                   # Sprint tracking
-├── docs/                     # Architecture docs and ADRs
-│   ├── api-contract.md       # WebSocket + REST contract
-│   ├── architecture.md       # System design and layer diagram
-│   └── adr/                  # Architecture Decision Records
-├── scripts/                  # Cross-repo scripts (playtest, music gen, etc.)
-├── scenarios/                # Test/playtest scenarios
-├── JARGONFILE.md             # Glossary of project jargon (Forge terms, engine nouns, doctrine)
-└── justfile                  # Cross-repo task runner
+This repo is the orchestrator; each subrepo carries its own `CLAUDE.md` describing
+its internals. Run `ls`, or read the subrepo's own file, rather than relying on a
+tree copied in here.
 
-sidequest-content/            # Genre packs — single source of truth (subrepo)
-├── genre_packs/              # Live, wired packs (11: caverns_and_claudes, elemental_harmony,
-│   │                         #   heavy_metal, mutant_wasteland, neon_dystopia, pulp_noir,
-│   │                         #   road_warrior, space_opera, spaghetti_western, tea_and_murder,
-│   │                         #   wry_whimsy).
-│   │                         # 22 worlds, all live (no draft worlds as of 2026-06-12);
-│   │                         #   every world has POI landscapes + portraits on R2.
-│   │                         #   Newest: heavy_metal/barsoom (WWN ruleset, portraits still
-│   │                         #   rendering), mutant_wasteland/seaboard_of_saints,
-│   │                         #   caverns_and_claudes/beneath_sunden WWN port (105-2 seam
-│   │                         #   registry + entrance room). Per-world asset matrix:
-│   │                         #   docs/genre-pack-status.md. See pack README.
-│   └── <genre>/worlds/<world>/   # World-specific overrides
-│                             #   (in-progress worlds set `draft: true` in world.yaml
-│                             #   to stay out of selection; the old genre_workshopping/
-│                             #   staging tree was retired 2026-06-03)
-├── corpus/                   # Conlang word lists per culture (ADR-091)
-├── tools/                    # Pack authoring tooling
-├── PROMPTING_Z_IMAGE.md      # Z-Image prompting guide
-├── README.md
-└── CLAUDE.md
+- **sidequest-server/** — Python/FastAPI engine + WebSocket API (:8765), uv-managed.
+  Narrator backends: Anthropic SDK default, `claude -p`/Ollama opt-in; the LocalDM
+  preprocessor is **dormant** per the 2026-04-28 spec.
+- **sidequest-ui/** — React/TypeScript client (Vite, :5173). Audio is music + SFX
+  only — **no TTS** post-2026-04.
+- **sidequest-daemon/** — Python media services. `zimage_mlx_worker.py` is the
+  **sole** runtime image worker (ADR-070); music generation is operator-triggered
+  (ADR-095). `types.py` holds cross-boundary stub types replacing `sidequest.game.*`.
+- **sidequest-content/** — Genre packs, the single source of truth. 11 live packs,
+  22 worlds, all live as of 2026-06-12; every world has POI landscapes + portraits
+  on R2. Newest: `heavy_metal/barsoom` (WWN ruleset, portraits still rendering),
+  `mutant_wasteland/seaboard_of_saints`, `caverns_and_claudes/beneath_sunden` (WWN
+  port, 105-2 seam registry + entrance room). In-progress worlds set `draft: true`
+  in `world.yaml` to stay out of selection — the old `genre_workshopping/` staging
+  tree was retired 2026-06-03. Per-world asset matrix: `docs/genre-pack-status.md`.
+- **sidequest-composer/** — Notation → rights-free audio CLI. Deterministic
+  synthesis via MuseScore 4 / FluidSynth, **not** AI generation. Its Gymnopedie
+  smoke test is gated on MuseScore 4 being installed.
+- **sidequest-understudy/** — Naive simulated-player playtest client. The naivety
+  invariant (the bot sees only what a player sees) lives in `persona/`; `reports/`
+  is gitignored, and each run writes `state/` for `--reconnect`.
 
-sidequest-server/             # Python FastAPI backend (subrepo, uv-managed)
-├── sidequest/
-│   ├── agents/               # Narrator backends — Anthropic SDK (default) + claude -p/Ollama opt-in; LocalDM preprocessor dormant per 2026-04-28 spec
-│   ├── audio/                # Server-side music + SFX coordination
-│   ├── cli/                  # Standalone CLIs (encountergen, loadoutgen, namegen, validate, corpus*)
-│   ├── corpus/               # Conlang corpus + Markov naming (ADR-091)
-│   ├── daemon_client/        # Client for Python media daemon
-│   ├── game/                 # State, characters, encounters, tropes, turns, persistence (~70 modules)
-│   ├── genre/                # YAML genre pack loader
-│   ├── handlers/             # Per-message-type dispatch handlers
-│   ├── interior/             # Room / interior state
-│   ├── magic/                # Magic system mechanics
-│   ├── media/                # Image generation orchestration (daemon client wrapper)
-│   ├── orbital/              # Orbital / space-scene mechanics
-│   ├── protocol/             # GameMessage, typed payloads (pydantic v2)
-│   ├── renderer/             # Render scheduling + throttle (ADR-050)
-│   ├── server/               # FastAPI app, WebSocket, dispatch, sessions, watcher
-│   └── telemetry/            # OTEL span definitions and watcher hooks
-├── tests/
-└── pyproject.toml
-
-sidequest-ui/                 # React frontend (subrepo)
-├── src/
-│   ├── __tests__/
-│   ├── assets/               # Static assets (icons, fonts)
-│   ├── audio/                # Music + SFX playback (no TTS, post-2026-04)
-│   ├── components/           # GameBoard, NarrationCards, PartyPanel, Dashboard/, etc.
-│   ├── dice/                 # 3D dice overlay (Three.js + Rapier, ADR-075)
-│   ├── hooks/                # useWebSocket, useGameSocket, useStateMirror, useGenreTheme, etc.
-│   ├── lib/
-│   ├── providers/            # GameState, ImageBus, Theme
-│   ├── screens/              # ConnectScreen, CharacterCreation, NarrativeView
-│   ├── styles/
-│   └── types/                # WebSocket payload TypeScript definitions
-└── package.json
-
-sidequest-daemon/             # Python media services (subrepo)
-├── sidequest_daemon/         # Package root
-│   ├── media/                # Image render + music generation
-│   │   ├── workers/          # zimage_mlx_worker.py — sole runtime image worker (ADR-070)
-│   │   ├── music_pipeline.py # ACE-Step → ffmpeg → R2 (ADR-095, operator-triggered)
-│   │   ├── prompt_composer.py, subject_extractor.py, recipes.py, ...
-│   │   └── daemon.py         # Unix socket server + CLI entry
-│   ├── renderer/             # Beat filter (render-worthiness) + data models (StageCue, RenderTier, RenderResult)
-│   ├── training/             # Fine-tune + deploy CLIs (ADR-073: sidequest-train / sidequest-deploy)
-│   ├── telemetry/            # watcher_bridge.py — OTEL HTTP bridge to server (ADR-131)
-│   ├── genre/                # Cross-boundary genre model subset (VisualStyle, AudioConfig)
-│   ├── scene_interpreter.py
-│   └── types.py              # Cross-boundary stub types replacing sidequest.game.* (DocumentEvent, GameState, Character)
-├── tests/
-└── pyproject.toml
-
-sidequest-composer/           # Notation → rights-free audio CLI (subrepo, uv-managed)
-├── src/composer/             # Package root (Typer entrypoint `composer`)
-│   ├── cli.py                # `composer render <manifest|score|url>`
-│   ├── pipeline.py           # fetch → render → normalize → tag → encode
-│   ├── manifest.py           # Batch piece-list model (pydantic v2)
-│   ├── provenance.py         # PD-source + rendered-locally tags (product feature)
-│   ├── tools.py              # External CLI resolution (mscore, bundled ffmpeg)
-│   └── stages/               # fetch · render · normalize · tag · encode (swappable)
-├── tests/                    # incl. gated Gymnopedie smoke test (needs MuseScore 4)
-└── pyproject.toml
-
-sidequest-understudy/         # Naive simulated-player playtest client (subrepo, uv-managed)
-├── src/understudy/           # Package root (Typer entrypoint `understudy`)
-│   ├── cli.py                # `understudy run <manifest.yaml> [--headed|--reconnect|--turns]`
-│   ├── orchestrate/          # Run loop, seat scheduling, guards (turn/token/wall-clock)
-│   ├── perception/           # Screen-reader-style page reading (what the player sees)
-│   ├── brain/                # Per-turn LLM decision (claude_p / anthropic / ollama / fake)
-│   ├── actuation/            # Decision → Playwright browser actions
-│   ├── persona/              # Archetypes + themed name sets (naivety invariant lives here)
-│   ├── findings/             # Complaints + stuck-signals → CONFIRMED/BEHAVIORAL/CLAIMED
-│   └── report/               # report.md / findings.json / transcript / spans writers
-├── runs/                     # Example run manifests
-├── reports/                  # Run outputs (gitignored); each run writes state/ for --reconnect
-├── tests/
-└── pyproject.toml
-```
+Orchestrator-root files worth knowing: `JARGONFILE.md` (project jargon glossary),
+`docs/api-contract.md`, `docs/architecture.md`, `docs/adr/`, `scenarios/`,
+`sprint/`, `scripts/`, `justfile`.
 
 ## Architecture
 
@@ -153,47 +70,15 @@ see docs/architecture.md
 
 ## Commands
 
-All commands run from the orchestrator root. Services tee logs to `~/.sidequest/logs/sidequest-{server,client,daemon}.log` (moved out of `/tmp` so reboots don't eat them; rotated per launch with timestamped `.log.YYYYMMDD-HHMMSS` backups, 30-day retention). Re-tail with `just logs [service]` or `tail -F ~/.sidequest/logs/sidequest-server.log`. (Some older code comments still reference the retired `/tmp/sidequest-server.log` path.)
+All commands run from the orchestrator root. `just --list` prints every recipe with
+its doc comment — read that rather than a copy kept in sync by hand.
 
-```bash
+Services tee logs to `~/.sidequest/logs/sidequest-{server,client,daemon}.log` (moved
+out of `/tmp` so reboots don't eat them; rotated per launch with timestamped
+`.log.YYYYMMDD-HHMMSS` backups, 30-day retention). Re-tail with `just logs [service]`
+or `tail -F ~/.sidequest/logs/sidequest-server.log`. (Some older code comments still
+reference the retired `/tmp/sidequest-server.log` path.)
 
-just logs [service]       # Tail one or all service logs
-
-# Individual services (foreground, Ctrl-C to stop)
-just server               # FastAPI/uvicorn on :8765 (--reload)
-just client               # Vite dev server on :5173
-just daemon               # Media daemon with warmup
-
-# Server (Python / uv)
-just server-test          # uv run pytest -v
-just server-lint          # uv run ruff check .
-just server-fmt           # uv run ruff format .
-just server-check         # lint + test
-
-# Client (React)
-just client-test          # npx vitest run
-just client-build
-just client-lint
-
-# Daemon
-just daemon-test
-just daemon-lint          # ruff check
-just daemon-status        # renderer status
-just daemon-stop          # shutdown renderer
-
-# Aggregate gate
-just check-all            # server-check + client-lint + client-test + daemon-lint
-
-# Playtest / OTEL
-just playtest [flags]     # Headless playtest driver against running server
-just playtest-scenario <name>   # Runs scenarios/<name>.yaml
-just otel                 # Opens the OTEL GM panel in the React Inspector (localhost:5173/#/dashboard)
-
-# Utilities
-just status               # git status across all subrepos
-just setup                # First-time: uv sync + npm install everywhere
-just tmux                 # tmuxinator 4-pane dev session
-```
 ## Development Principles
 
 
@@ -253,80 +138,14 @@ tell whether it's engaged or whether Claude is just improvising.
 
 ## ADR Index
 
-Architecture Decision Records live at `docs/adr/` — see `docs/adr/README.md` for the
-authoritative index with summaries, status rationale, and the port-era reading
-guide. This section is a compact category-keyed list for activation-time orientation.
-Rust code samples in pre-ADR-082 ADRs are historical; translation table in
-`docs/adr/README.md`.
+Architecture Decision Records live at `docs/adr/`. **`docs/adr/README.md` is the
+authoritative index** — summaries, status rationale, and the port-era reading guide.
+Accepted-but-not-fully-live ADRs are tracked in `docs/adr/DRIFT.md`; superseded ones
+in `docs/adr/SUPERSEDED.md`. Rust code samples in pre-ADR-082 ADRs are historical;
+the translation table is in `docs/adr/README.md`.
 
-<!-- ADR-INDEX:GENERATED:BEGIN -->
-
-> Generated block. Edit frontmatter on individual ADRs + rerun `scripts/regenerate_adr_indexes.py`. Preamble above and `Conventions:` trailer below the markers are preserved.
-
-**Load-bearing reads — start here:**
-- **ADR-082** Port `sidequest-api` from Rust back to Python — accepted
-- **ADR-085** Tracker hygiene during the Rust→Python port — handling port-drift — accepted
-- **ADR-067** Unified Narrator Agent — Collapse Multi-Agent into Single Narrator — accepted
-- **ADR-059** Monster Manual — Server-Side Pre-Generation via Game-State Injection — accepted
-- **ADR-038** WebSocket Transport Architecture — accepted
-- **ADR-035** Unix Socket IPC for Python Sidecar — accepted
-- **ADR-014** Diamonds and Coal — accepted
-- **ADR-088** ADR Frontmatter Schema and Auto-Generated Indexes — accepted
-
-**Core Architecture (002, 003, 004, 005, 006, 007, 101, 115, 121, 135, 140, 149)**
-- 002 SOUL Principles · 003 Genre Pack Architecture · 004 Lazy Genre Binding · 005 Background-First Pipeline · 006 Graceful Degradation · 007 Unified Character Model · 101 Anthropic SDK as Narrator Backend *(partial)* · 115 Persistence Substrate Migration — SQLite-Per-Session to PostgreSQL · 121 Layered Content Resolution — Per-Field Merge Strategies and Provenance; the Two-Tier Archetype Shim Is the Production Path · 135 Reference Pages Are a Public Table Tool — Single Fixed Projection, No GM Audience *(partial)* · 140 Genre Is the Rulebook Only; the World Owns the Cast and Catalog — Supersedes ADR-120's Mechanics-in-Genre *(partial)* · 149 Ruleset-Tier SRD Reference Content and the rules_document Reference Section
-
-**Prompt Engineering (008, 009)**
-- 008 Three-Tier Rule Taxonomy · 009 Attention-Aware Prompt Zones
-
-**Agent System (011, 012, 013, 067, 098, 100, 102, 110, 111, 112, 113, 118, 123, 134, 150)**
-- 011 World State JSON Patches · 012 Agent Session Management · 013 Lazy JSON Extraction *(drift)* · **067 Unified Narrator Agent — Collapse Multi-Agent into Single Narrator** · 098 Stateless Narrator Turns — Drop --resume, Bounded Per-Turn Prompts · 100 Journal Pipeline Coherence — Footnotes, KnownFacts, JOURNAL_RESPONSE, and the Scenario Clue Hook · 102 Tool-Use Protocol for Structured Output *(partial)* · 110 Game-State Snapshot Slimming — Compact Encoding + Allowlist Pruning, Diff-with-Anchor Deferred *(partial)* · 111 Recency-Zone Narrator Guardrails Migrate to Tool Descriptions and Primacy-Cached Output Prose · 112 Genre Prose Cache Promotion — Four Always-Fire Session-Static Sections Move to Stable, Conditional Sections Defer *(partial)* · 113 Intent Router — Mechanical-Engagement Spine · 118 Universal Retrieval Layer — Index + Per-Turn Floor-and-Fill Retrieval for NPCs, Locations, and Factions · 123 Mechanical-Engagement Pipeline — Confidence-Gated Topological Dispatch Bank, Precondition/Unregistered Gates, and the LethalityArbiter · 134 Per-Session API Cost Runaway Detector and Hard-Kill Ceiling — Rolling-Baseline Triggers and Terminal Refusal · 150 Sidecar Accounting Leaves the Narrator Hot Path — Pre-Narration Rewrite, Post-Narration Extraction, and the One Field That Stays *(deferred)*
-
-**Game Systems (014, 015, 016, 018, 020, 021, 022, 023, 024, 025, 074, 080, 081, 096, 097, 106, 109, 114, 116, 117, 125, 126, 128, 129, 130, 136, 139, 141, 142, 143, 144, 145, 146, 151, 153)**
-- **014 Diamonds and Coal** · 015 Character Builder State Machine · 016 Three-Mode Character Creation · 018 Trope Engine · 020 NPC Disposition System · 021 Progression System *(partial)* · 022 WorldBuilder Maturity · 023 Session Persistence · 024 Dual-Track Tension Model · 025 Pacing Detection · 074 Dice Resolution Protocol — Player-Facing Rolls via WebSocket · 080 Unified Narrative Weight Trait · 081 Advancement Effect Variant Expansion (v1) *(deferred)* · 096 Cavern Renderer Revival — Pre-Rendered Cellular Caverns for Tactical Maps · 097 Class Mechanical Surface — One Signature Ability Per Non-Magical Class · 106 Runtime Procedural Jaquaysed Megadungeon — Contiguous Edge-Expansion, maze-maker Family Port + Complication Ledger *(partial)* · 109 Persistent Location Descriptions + Mechanical Manifest · 114 Ablative HP Substrate — HP Reclaims the Lethality Track Beneath the Dials *(partial)* · 116 A Confrontation Requires an Other — Participant Membership Invariant, Single Opponent-Seater, End-on-No-Other *(partial)* · 117 Pluggable Ruleset Module System — Per-Genre Resolution Behind a RulesetModule Seam · 125 Chassis/Rig as a First-Class Entity — Bidirectional Bond Ledger, Seven-Tier Threshold Ladder, and Interior Render · 126 Pluggable Magic System — MagicPlugin Protocol, Import-Time Registry, and Validator Severity Model · 128 Trope Temporal Governor, Seed-Trope Deck, and NPC Development Ladder — Pile-Up Prevention and Resume-Safe Randomness · 129 N-Seat Table Engine — Generalized Sealed-Commit Loop for Poker/Auction with Cheat/Accuse Mechanics · 130 Orbital Story-Time Clock and Course Model — Beat-Driven Time Advance and Approximate Hohmann Transit · 136 Player-Facing Relationship Surface — Reactive RELATIONSHIPS Projection, Disposition Beat-Log, and the Claims-Only Belief Firewall · 139 Confrontation Integrity Invariants — Win-Condition Liveness, Seated-Actor HP Durability, the Mechanically-Capable Other, and the Dispatch Applicability Gate *(partial)* · 141 Two-Scale Spatial Model — Galactic Graph (cartography) as Campaign View, Per-System Orrery as Local View; One File Per System *(deferred)* · 142 Without Number Core Extraction — an Honest WithoutNumberRulesetModule Base, Reparented WN Siblings, and a Shaped-Attribute Retune *(partial)* · 143 A Without-Number Binding Replaces the Native Combat Engine — We Bind the Ruleset to Stop Balancing, Not to Balance Against It *(partial)* · 144 Fate Core Binding Replaces the Native Ruleset — Two SRDs, Zero Homebrew Rulesets to Balance *(partial)* · 145 SRD-Sourced Inventory — Bind the Equipment Catalog, Don't Author It; Per-Ruleset Reproduce-vs-Derive Licensing and CatalogItem Provenance *(deferred)* · 146 Quest-Seed Authoring Contract *(deferred)* · 151 The Fate DEFEND Follow-Up Barrier — A Conditional Second Sealed-Commit Phase for Physics-Is-The-Roll Player Defense, the pending_defenses Ledger, and Defender Authorization · 153 The Ace of Aces Dogfight — A Homebrew Relative-Position Positioning Graph Feeding Bound SWN Resolution, the Positioning/Resolution Firewall, and Narrator-Motivated Maneuver Selection *(deferred)*
-
-**Frontend / Protocol (026, 027, 075, 079, 094, 107, 133, 148)**
-- 026 Client-Side State Mirror · 027 Reactive State Messaging · 075 3D Dice Rendering — Three.js + Rapier Physics Overlay *(partial)* · 079 Genre Theme System Unification · 094 Orrery Label Placement — Three-Strategy Taxonomy · 107 Out-of-Band Aside Channel — Non-Turn-Consuming Player→GM Table-Talk · 133 Client State Reconciliation v2 — Full-Replay Mirror, Streaming-Narration Accumulator, and ImageBus Scrapbook Merge · 148 Player Fate (4dF) Rolls Are Physics-Is-The-Roll; NPC Rolls Stay Server-Side — Reconciling ADR-074 and ADR-144
-
-**Multiplayer (036, 037, 104, 105, 108, 119, 122)**
-- 036 Multiplayer Turn Coordination · 037 Shared-World / Per-Player State Split · 104 Perception Filtering at the Tool Layer *(partial)* · 105 Broadcast-Layer Perception Firewall — Completing ADR-104 in the MP Fan-Out · 108 MP Item Attribution — Per-Recipient Tagging in the Narration Tool Contract · 119 Authenticated Player Identity — Player-vs-Character Identity Split via Cloudflare Access *(partial)* · 122 SessionRoom Lifecycle — RoomRegistry Never-Evict Policy, LobbyState FSM, Multi-Socket Presence Ref-Counting
-
-**Transport / Infrastructure (035, 038, 046, 047, 131)**
-- **035 Unix Socket IPC for Python Sidecar** · **038 WebSocket Transport Architecture** · 046 GPU Memory Budget Coordinator · 047 Prompt Injection Sanitization Layer · 131 Daemon↔Server Out-of-Band Contracts — Liveness Heartbeat, OTEL HTTP Bridge, Output-Dir Handshake, R2 Artifact Layout
-
-**Narrator / Text (049)**
-- 049 Narrator Verbosity and Vocabulary (Two-Axis Text Tuning) *(partial)*
-
-**NPC / Character Systems (041, 042, 053, 091, 156)**
-- 041 Genie Wish / Consequence Engine *(drift)* · 042 OCEAN Personality Live Evolution *(drift)* · 053 Scenario System (Clue Graph, Belief State, Gossip Propagation) *(partial)* · 091 Culture-Corpus + Markov Naming · 156 The Green Room — A Single-Gate NPC Materializer with Typed-Provenance Feeders and an Origin-Precedence Ladder (authored > room-bound > region-population > MM pool > narrator mint) *(deferred)*
-
-**Media / Audio / Rendering (045, 048, 050, 070, 086, 095, 127, 155)**
-- 045 Client Audio Engine · 048 Lore RAG Store with Cross-Process Embedding · 050 Image Pacing Throttle · 070 MLX Image Renderer — Replace PyTorch/diffusers with Apple MLX · 086 Image-Composition Taxonomy — Portraits, POIs, Illustrations · 095 Daemon Music Tier via ACE-Step · 127 Image Prompt-Composition Pipeline — Catalog Recipes, Token-Budget Eviction Ladder, and SceneInterpreter Rule Cascade · 155 Bestiary-Derived Creature Images — bestiary.yaml Is the Single Source of Truth for Creature-Image Production; creatures.yaml Demotes to an Optional Per-World Override
-
-**Turn Management (051)**
-- 051 Two-Tier Turn Counter (Interaction vs. Round)
-
-**Room Graph / Dungeon Crawl (055, 157, 158)**
-- 055 Room Graph Navigation *(partial)* · 157 The Bounded-Site Interior Is Cookbook-Free — A Bounded Site Materializes From Its Archetype Alone, Not From the Megadungeon Cookbook/Corpus/Themes Stack *(partial)* · 158 Authored Creature Placement Binds to Pre-Play Keys — `rooms/<id>.yaml` Is Engine-Written Runtime State, Not a Content Surface *(deferred)*
-
-**Code Generation / Tooling (059, 092)**
-- **059 Monster Manual — Server-Side Pre-Generation via Game-State Injection** · 092 Scene Harness — Dev-Gated HTTP Endpoint for Scenario Fixtures *(partial)*
-
-**Observability (090, 103, 124, 132, 154)**
-- 090 OTEL Dashboard Restoration after Python Port · 103 Native OTEL via Tool Registry *(partial)* · 124 Save-Forensics Architecture — Read-Only Tiered Save Inspection, Loud-Skip Folds, and Per-Round Mechanical Census · 132 WatcherHub Infrastructure — builtins-Pinned Singleton, ContextVar Per-Session Isolation, and Ephemeral-Event Taxonomy · 154 Companion-Seat Brain Telemetry Ingestion — Understudy Self-Reports via the Watcher Bridge, Not the Native claude -p Collector *(deferred)*
-
-**Codebase Decomposition (060, 061, 062, 063, 064, 065, 068, 088)**
-- 060 Genre Models Decomposition — Split models.rs by Domain · 061 Lore Module Decomposition — Split lore.rs by Responsibility · 062 Server lib.rs Extraction — Route Groups, State, and Watcher Events · 063 Dispatch Handler Splitting — By Pipeline Stage · 064 Game Crate Domain Modules — Organize 69 Flat Files · 065 Protocol Message Decomposition — Split message.rs by Domain *(deferred)* · 068 Magic Literal Extraction — Domain-Scoped Constants · **088 ADR Frontmatter Schema and Auto-Generated Indexes**
-
-**Narrator Architecture (073, 076)**
-- 073 Local Fine-Tuned Model Architecture · 076 Narration Protocol Collapse Post-TTS Removal
-
-**Genre Mechanics (031, 033, 093, 099)**
-- 031 Game Watcher — Semantic Telemetry for AI Agent Observability · 033 Genre Mechanics Engine — Confrontations & Resource Pools *(partial)* · 093 Confrontation Difficulty Calibration v1 · 099 Coyote Object Salvage Hooks — Two-Phase Auto-Fire for the_salvage *(deferred)*
-
-**Project Lifecycle / Meta (082, 085, 087)**
-- **082 Port `sidequest-api` from Rust back to Python** · **085 Tracker hygiene during the Rust→Python port — handling port-drift** · 087 Post-Port Subsystem Restoration Plan
-
-**Conventions:** Bold = load-bearing for current architecture. `drift`/`partial`/`deferred` in a line means the ADR is accepted but implementation is not fully live — see [DRIFT.md](docs/adr/DRIFT.md). Superseded/historical ADRs are filtered from this view — see [SUPERSEDED.md](docs/adr/SUPERSEDED.md).
-
-<!-- ADR-INDEX:GENERATED:END -->
+Load-bearing for the current architecture, if you need orientation fast: **ADR-082**
+(Rust→Python port), **ADR-085** (port-drift tracker hygiene), **ADR-067** (unified
+narrator agent), **ADR-059** (Monster Manual pre-generation), **ADR-038** (WebSocket
+transport), **ADR-035** (Unix socket IPC), **ADR-014** (Diamonds and Coal),
+**ADR-088** (ADR frontmatter + generated indexes).
