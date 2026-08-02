@@ -1053,10 +1053,13 @@ stories:
     title: "The DEFAULT server quality gate is red: uv run pytest (-n auto via addopts, what just server-check runs) fails 2 tests under xdist shared-state races (test_102_5_wn_tool_narrator_wiring.py:187 'assert reloaded is not None' on a PG store.load()). Pre-existing on develop and NOT caused by any 158 story — isolated by re-running with both 158-58 files --ignore'd. Serial -n0 is clean. The aggregate gate is unreliable until fixed"
     points: 3
     priority: p1
-    status: backlog
+    status: done
+    started: '2026-08-02'
     repos: server
     workflow: tdd
+    completed: '2026-08-02'
     type: bug
+    review_verdict: approved
   - id: 158-79
     title: "158-58 review fast-follows (3 LOW): (1) tighten the unknown-mutation tests' tolerance to 'raised is None' per TEA's own GREEN recommendation, not applied on the three unknown-mutation tests; (2) stale doc claim at dispatch/dice.py:176-179 — 'None ONLY on the item-use outcome' is now FALSE after the Shape-A refusal outcome; (3) emit_ability_invocation_unrouted is skipped on the refusal path"
     points: 1

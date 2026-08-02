@@ -553,3 +553,8 @@ completed_stories:
     title: Opposed-save dice wiring for AWN mutation use — the target actually saves (v1 resolver always returns fail)
     points: 3
     completed: '2026-08-01'
+  - id: 158-78
+    epic: '158'
+    title: "The DEFAULT server quality gate is red: uv run pytest (-n auto via addopts, what just server-check runs) fails 2 tests under xdist shared-state races (test_102_5_wn_tool_narrator_wiring.py:187 'assert reloaded is not None' on a PG store.load()). Pre-existing on develop and NOT caused by any 158 story — isolated by re-running with both 158-58 files --ignore'd. Serial -n0 is clean. The aggregate gate is unreliable until fixed"
+    points: 3
+    completed: '2026-08-02'
